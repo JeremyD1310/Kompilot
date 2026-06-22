@@ -1,0 +1,306 @@
+{
+  "_version": "2.0.0",
+  "_comment": "DOCS-AS-CODE v2 — V2 (URL onboarding, Obsidian theme, Live Cloning) + V3 (Optimistic UI, Margin Optimizer). Edit this file to update all help panels, tooltips and FAQ in the app. No code change required.",
+
+  "pages": {
+    "/dashboard": {
+      "title": "Tableau de Bord",
+      "videoId": "video_dashboard.mp4",
+      "videoLabel": "Tutoriel Dashboard",
+      "videoNote": "Découvrez en vidéo comment notre IA pilote vos tâches quotidiennes",
+      "summary": "Votre cockpit central : KPIs temps réel, aperçu des publications et alertes de performance.",
+      "steps": [
+        { "id": "dashboard-0", "target": "[data-tour='copilot-feed-carousel']", "title": "💡 Vos Actions Prioritaires", "body": "Chaque matin, l'IA de Kompilot analyse votre visibilité et vous propose des actions concrètes à fort impact (Gain Rapide, Optimisation G.E.O.). Cliquez simplement sur une carte pour exécuter l'action !", "placement": "bottom" },
+        { "id": "dashboard-1", "target": "[data-tour='kpi-cards']", "title": "Indicateurs clés", "body": "Ces 3 cartes affichent votre portée, vos vues et votre engagement sur les 30 derniers jours. Les sparklines montrent la tendance semaine par semaine.", "placement": "bottom" },
+        { "id": "dashboard-2", "target": "[data-tour='quick-schedule']", "title": "Planification rapide", "body": "Cliquez ici pour créer et programmer un post en moins de 30 secondes directement depuis le tableau de bord.", "placement": "right" },
+        { "id": "dashboard-3", "target": "[data-tour='dm-sales']", "title": "Ventes via Messages Privés", "body": "Ce widget affiche les conversions générées automatiquement par vos Triggers de Vente — commentaires qui déclenchent un DM avec votre lien de réservation.", "placement": "top" },
+        { "id": "dashboard-4", "target": "[data-tour='geo-score']", "title": "Score G.E.O.", "body": "Votre score de recommandation par les IA (ChatGPT, Gemini, Claude). Plus il est élevé, plus les clients vous trouvent via les recherches vocales et conversationnelles.", "placement": "left" },
+        { "id": "dashboard-5", "target": "[data-tour='mentor-onetap-bar']", "title": "⚡ Actions One-Tap (mobile)", "body": "Sur mobile, appuyez sur le bouton ⚡ jaune en bas à gauche pour accéder aux 4 actions prioritaires de votre Mentor IA — chacune s'exécute en un seul tap avec feedback instantané, même en zone réseau faible.", "placement": "top" },
+        { "id": "dashboard-6", "target": "[data-tour='quick-actions']", "title": "Actions Rapides avec réponse dorée", "body": "Chaque bouton d'action applique l'état de succès instantanément à l'écran (Optimistic UI) avant même la confirmation du serveur. Si votre connexion est faible, l'action reste enregistrée et se synchronise automatiquement.", "placement": "right" }
+      ]
+    },
+    "/cockpit": {
+      "title": "Cockpit IA",
+      "videoId": "video_cockpit_ia_v2.mp4",
+      "videoLabel": "Tutoriel Cockpit IA v2 — Idées Flash",
+      "videoNote": "Cette vidéo présente le nouveau module de génération d'idées flash — votre plan d'attaque marketing local en 2 minutes.",
+      "microDoc": [
+        { "step": "1", "text": "Cliquez sur le bouton violet pour générer vos 15 idées personnalisées." },
+        { "step": "2", "text": "Parcourez les suggestions de vos experts IA (Copywriter, Expert SEO Local, Community Manager)." },
+        { "step": "3", "text": "Cliquez sur 'Lancer' pour valider et laisser l'IA exécuter la tâche sur vos réseaux ou votre fiche Google." }
+      ],
+      "summary": "Générez du contenu optimisé pour chaque réseau social en quelques clics grâce à l'IA.",
+      "steps": [
+        { "id": "cockpit-0", "target": "[data-tour='idees-marketing-panel']", "title": "💡 Votre Générateur d'Idées Flash", "body": "Ne restez plus jamais devant une page blanche. Chaque semaine, votre équipe de 5 agents IA dédiés conçoit 15 scénarios de croissance sur-mesure pour votre établissement et votre ville. Il vous suffit de cliquer sur 'Lancer cette idée' pour que l'IA rédige, planifie et configure tout à votre place en 2 minutes chrono.", "placement": "bottom" },
+        { "id": "cockpit-1", "target": "[data-tour='tone-selector']", "title": "Sélection du ton", "body": "Choisissez entre Professionnel, Décontracté, Humoristique ou Sérieux selon votre audience cible.", "placement": "right" },
+        { "id": "cockpit-2", "target": "[data-tour='format-selector']", "title": "Format de publication", "body": "Post carré, Story verticale, Reel ou Article Blog — chaque format adapte automatiquement les dimensions et le texte.", "placement": "bottom" },
+        { "id": "cockpit-3", "target": "[data-tour='phone-mockup']", "title": "Prévisualisation téléphone", "body": "Voyez exactement ce que votre client verra sur son écran avant de publier. Le rendu est 1:1 avec Instagram et Facebook.", "placement": "left" },
+        { "id": "cockpit-4", "target": "[data-tour='social-share']", "title": "Publication multi-canaux", "body": "Publiez simultanément sur Instagram, Facebook, LinkedIn et Google Business en un seul clic.", "placement": "top" },
+        { "id": "cockpit-5", "target": "[data-tour='story-format-toggle']", "title": "🎬 Stories verticales 9:16", "body": "Activez le format Story 9:16 pour générer des contenus verticaux plein écran adaptés aux Stories Instagram et Facebook. L'IA crée automatiquement un visuel avec sticker CTA Réserver, barre de progression animée et swipe-up. Idéal pour les offres flash et campagnes Fête des Mères.", "placement": "right" }
+      ]
+    },
+    "/calendar": {
+      "title": "Calendrier Éditorial",
+      "videoId": "video_calendar.mp4",
+      "videoLabel": "Tutoriel Calendrier",
+      "summary": "Planifiez et organisez vos publications sur plusieurs semaines avec l'aide de l'IA.",
+      "steps": [
+        { "id": "calendar-1", "target": "[data-tour='calendar-grid']", "title": "Vue calendrier", "body": "Faites glisser-déposer vos publications pour les reprogrammer. Les cases vertes sont publiées, les oranges sont en brouillon.", "placement": "bottom" },
+        { "id": "calendar-2", "target": "[data-tour='ai-brainstorm']", "title": "Brainstorming IA", "body": "L'IA analyse votre secteur d'activité et propose des idées de contenu adaptées à la saison, aux tendances locales et à vos piliers de marque.", "placement": "right" },
+        { "id": "calendar-3", "target": "[data-tour='engagement-phrase']", "title": "Phrases d'engagement (Triggers)", "body": "Ajoutez automatiquement une phrase d'appel à l'action liée à vos Triggers de Vente. Ex: 'Commentez RESERVER pour recevoir votre lien en DM'.", "placement": "top" }
+      ]
+    },
+    "/inbox": {
+      "title": "Messagerie Unifiée",
+      "videoId": "video_inbox.mp4",
+      "videoLabel": "Tutoriel Messagerie",
+      "summary": "Gérez tous vos messages, avis clients et commentaires depuis un seul endroit.",
+      "steps": [
+        { "id": "inbox-1", "target": "[data-tour='inbox-tabs']", "title": "4 onglets centralisés", "body": "Messages directs, Avis Google, Commentaires sociaux et Triggers de Vente — tout est réuni ici.", "placement": "bottom" },
+        { "id": "inbox-2", "target": "[data-tour='magic-reply']", "title": "Réponse Magique IA", "body": "En un clic, l'IA rédige une réponse chaleureuse et personnalisée adaptée au contexte du commentaire.", "placement": "right" },
+        { "id": "inbox-3", "target": "[data-tour='triggers-panel']", "title": "Déclencheurs de Vente", "body": "Configurez des mots-clés (ex: RESERVER, MENU) — quand un abonné les commente, Kompilot lui envoie automatiquement un DM avec votre lien.", "placement": "top" }
+      ]
+    },
+    "/performance": {
+      "title": "Performance & Analytics",
+      "videoId": "video_performance.mp4",
+      "videoLabel": "Tutoriel Performance",
+      "summary": "Analysez l'impact réel de vos publications et identifiez les créneaux horaires optimaux.",
+      "steps": [
+        { "id": "perf-1", "target": "[data-tour='perf-overview']", "title": "Vue d'ensemble", "body": "Comparez vos performances semaine par semaine et identifiez les contenus qui génèrent le plus d'engagement.", "placement": "bottom" },
+        { "id": "perf-2", "target": "[data-tour='best-times']", "title": "Meilleurs créneaux", "body": "L'algorithme analyse l'activité de votre audience pour vous recommander les heures de publication idéales.", "placement": "right" },
+        { "id": "perf-3", "target": "[data-tour='roi-section']", "title": "ROI Business", "body": "Estimez le chiffre d'affaires généré par vos actions de présence digitale grâce aux métriques de conversion.", "placement": "top" }
+      ]
+    },
+    "/growth": {
+      "title": "Croissance & Fidélisation",
+      "videoId": "video_growth.mp4",
+      "videoLabel": "Tutoriel Fidélisation",
+      "summary": "Activez vos leviers de croissance : parrainage client, campagnes SMS et programme de fidélité.",
+      "steps": [
+        { "id": "growth-1", "target": "[data-tour='referral-panel']", "title": "Programme de Parrainage", "body": "Créez des liens de parrainage personnalisés et suivez les conversions de vos clients ambassadeurs en temps réel.", "placement": "right" },
+        { "id": "growth-2", "target": "[data-tour='sms-campaign']", "title": "Campagnes SMS Flash", "body": "Envoyez des offres ciblées à votre base client en SMS — taux d'ouverture moyen de 98% vs 20% pour les emails.", "placement": "bottom" },
+        { "id": "growth-3", "target": "[data-tour='margin-optimizer']", "title": "🚦 Moteur de Rendement", "body": "Si votre taux d'occupation dépasse 85%, l'IA détecte automatiquement la saturation et vous propose une alerte maïeutique : augmenter vos tarifs de 15-30% sur les créneaux porteurs, ou appliquer une empreinte bancaire Stripe plus élevée pour filtrer les clients peu rentables.", "placement": "bottom" },
+        { "id": "growth-4", "target": "[data-tour='margin-optimizer-action']", "title": "Simulation : alerte de saturation", "body": "Voici comment l'IA vous guide : quand votre agenda atteint 85% → notification maïeutique → bouton 'Ajuster les tarifs de pointe' → confirmation en 1 clic. Résultat : +15 à +30% de marge sur les heures de pointe, sans perte de clients.", "placement": "top" }
+      ]
+    },
+    "/geo-authority": {
+      "title": "Index G.E.O. — Recommandation IA",
+      "videoId": "video_geo_authority.mp4",
+      "videoLabel": "Tutoriel Index G.E.O.",
+      "summary": "Mesurez et améliorez votre présence dans les réponses des moteurs IA (ChatGPT, Gemini, Claude).",
+      "steps": [
+        { "id": "geo-1", "target": "[data-tour='geo-score-global']", "title": "Score Global /100", "body": "Ce score synthétise votre visibilité dans les 3 grands LLMs. Un score > 70 signifie que vous êtes régulièrement recommandé par l'IA.", "placement": "bottom" },
+        { "id": "geo-2", "target": "[data-tour='geo-queries']", "title": "Requêtes simulées", "body": "Voyez exactement quelles réponses ChatGPT, Gemini et Claude donnent quand un client cherche votre type de service dans votre ville.", "placement": "right" },
+        { "id": "geo-3", "target": "[data-tour='geo-actions']", "title": "Actions d'amélioration", "body": "Chaque recommandation est actionnable : mettre à jour votre fiche Google, enrichir votre site web ou publier des contenus avec les bons mots-clés locaux.", "placement": "top" }
+      ]
+    },
+    "/settings": {
+      "title": "Paramètres",
+      "videoId": "video_settings.mp4",
+      "videoLabel": "Tutoriel Paramètres",
+      "summary": "Configurez vos connexions aux plateformes sociales, vos clés API et vos préférences de publication.",
+      "steps": [
+        { "id": "settings-1", "target": "[data-tour='platform-connections']", "title": "Connexions aux plateformes", "body": "Connectez Instagram, Facebook, LinkedIn et Google Business pour activer la publication automatique.", "placement": "right" },
+        { "id": "settings-2", "target": "[data-tour='api-keys']", "title": "Clés API (BYOK)", "body": "Entrez vos propres clés OpenAI et Anthropic pour utiliser Kompilot sans limite de crédits — 100% sous votre contrôle.", "placement": "bottom" },
+        { "id": "settings-3", "target": "[data-tour='publication-slots']", "title": "Créneaux de publication", "body": "Définissez vos créneaux habituels de publication — l'IA les utilisera par défaut pour programmer vos posts.", "placement": "top" }
+      ]
+    },
+    "/creative-factory": {
+      "title": "Creative Factory IA",
+      "videoId": "video_creative_factory.mp4",
+      "videoLabel": "Tutoriel Creative Factory — Imagen 4.0",
+      "videoNote": "Découvrez comment générer des visuels de marque professionnels et des Stories IA en moins de 30 secondes.",
+      "summary": "Générez des visuels Imagen 4.0, des posts et des Stories verticales 9:16 pour Instagram et Facebook. Prévisualisez en temps réel sur smartphone.",
+      "steps": [
+        { "id": "cf-0", "target": "[data-tour='format-toggle']", "title": "📰 Post vs 🎬 Story 9:16", "body": "Basculez entre le format Post classique (carré) et le format Story vertical 9:16 (1080×1920px). Le format Story active les previews Instagram Story et Facebook Story avec barre de progression, stickers CTA et swipe-up.", "placement": "bottom" },
+        { "id": "cf-1", "target": "[data-tour='image-prompt']", "title": "Prompt sémantique", "body": "Décrivez l'ambiance de votre visuel en langage naturel. L'IA Imagen 4.0 génère une image professionnelle en 15 secondes. Conseil : mentionnez votre secteur, la lumière et les couleurs pour un résultat optimal.", "placement": "right" },
+        { "id": "cf-2", "target": "[data-tour='style-selector']", "title": "Styles visuels", "body": "4 styles disponibles : Flatlay minimaliste (vue du dessus, tons neutres), Photo de Studio (fond uni, éclairage maîtrisé), Lumineux & Moderne (tons clairs, contraste doux), Vintage texturé (grain film, couleurs patinées).", "placement": "bottom" },
+        { "id": "cf-3", "target": "[data-tour='platform-tabs']", "title": "Prévisualisation multi-plateformes", "body": "4 aperçus smartphone disponibles : Google Maps (avec bouton Réserver Stripe), Instagram Feed (likes, commentaires, partages), Instagram Story (barre de progression 15s + swipe-up) et Facebook Story (poll J'aime/M'alerter + boost Ads).", "placement": "left" },
+        { "id": "cf-4", "target": "[data-tour='agency-watermark']", "title": "Marque Blanche Agence", "body": "En mode Agence, activez le filigrane personnalisé. Votre texte (nom agence, site web) s'affiche en bas à droite de chaque visuel généré. Idéal pour les livrables clients en Marque Blanche.", "placement": "top" },
+        { "id": "cf-5", "target": "[data-tour='story-channels']", "title": "Diffusion Story simultanée", "body": "En mode Story 9:16, choisissez de diffuser sur Instagram (swipe-up + progression 3 barres), Facebook (boost Ads automatique), ou les deux simultanément. 1 clic = 2 plateformes = 0 effort.", "placement": "bottom" },
+        { "id": "cf-6", "target": "[data-tour='social-mirror-editor']", "title": "Social Mirror Editor", "body": "Modifiez le texte généré par l'IA avant publication. Pour les Stories, respectez la limite de 160 caractères recommandés. Copiez le texte ou planifiez directement sur votre calendrier de publication.", "placement": "left" }
+      ]
+    },
+    "/roas": {
+      "title": "ROAS Detector — Vérité Publicitaire",
+      "videoId": "video_roas.mp4",
+      "videoLabel": "Tutoriel ROAS Detector",
+      "videoNote": "Comment auditer vos campagnes Meta et Google Ads pour éliminer le gaspillage publicitaire.",
+      "summary": "Auditez la vérité de vos campagnes Meta et Google Ads. L'IA détecte les dépenses inutiles et optimise votre ROAS en temps réel.",
+      "steps": [
+        { "id": "roas-0", "target": "[data-tour='roas-budget-input']", "title": "Budget & ROAS cible", "body": "Entrez votre budget publicitaire mensuel total (Meta + Google) et votre ROAS objectif. L'IA calcule instantanément votre seuil de rentabilité et compare avec votre ROAS actuel.", "placement": "bottom" },
+        { "id": "roas-1", "target": "[data-tour='ad-truth-detector']", "title": "Détecteur de Vérité Publicitaire", "body": "L'IA analyse chaque campagne active et détecte : audiences saturées (+70% d'overlap), créatifs fatigués (CTR < 0,8%), enchères sous-optimales et budgets mal répartis entre campagnes.", "placement": "right" },
+        { "id": "roas-2", "target": "[data-tour='roas-action-plan']", "title": "Plan d'action priorisé", "body": "Chaque problème détecté génère une recommandation actionnable avec impact estimé en €. Cliquez 'Appliquer' pour que l'IA reconfigure automatiquement vos paramètres de campagne.", "placement": "top" }
+      ]
+    },
+    "/aio": {
+      "title": "AIO Sync — Référencement Conversationnel",
+      "videoId": "video_aio.mp4",
+      "videoLabel": "Tutoriel AIO Sync",
+      "videoNote": "Comment apparaître dans les réponses de ChatGPT, Perplexity et Gemini sans jamais payer de pub.",
+      "summary": "Injectez automatiquement vos mots-clés locaux dans les moteurs conversationnels (ChatGPT, Perplexity, Gemini) chaque semaine.",
+      "steps": [
+        { "id": "aio-0", "target": "[data-tour='aio-keywords']", "title": "Vos 12 mots-clés prioritaires", "body": "Configurez les 12 requêtes conversationnelles sur lesquelles vous voulez apparaître (ex: 'meilleur coiffeur Lyon 6e', 'salon bio Bordeaux ouvert dimanche'). L'IA suggère des variantes longue traîne à fort potentiel.", "placement": "bottom" },
+        { "id": "aio-1", "target": "[data-tour='aio-sync-schedule']", "title": "Sync hebdomadaire automatique", "body": "Chaque lundi à 9h, Kompilot injecte vos mots-clés dans les contextes sémantiques de ChatGPT, Perplexity et Gemini. Votre fiche établissement remonte dans les réponses conversationnelles sans aucune intervention manuelle.", "placement": "right" },
+        { "id": "aio-2", "target": "[data-tour='aio-visibility-score']", "title": "Score de visibilité conversationnelle", "body": "Suivez en temps réel votre taux d'apparition dans les réponses des 3 moteurs IA. Un score > 70% signifie que vous êtes recommandé dans la majorité des requêtes locales ciblées.", "placement": "top" }
+      ]
+    },
+    "/email-sequences": {
+      "title": "Séquences Emailing Automatisées",
+      "videoId": "video_email_sequences.mp4",
+      "videoLabel": "Tutoriel Séquences Email",
+      "summary": "Créez des séquences d'emails automatisées déclenchées par les actions de vos clients.",
+      "steps": [
+        { "id": "seq-0", "target": "[data-tour='sequence-trigger']", "title": "Déclencheurs de séquence", "body": "Choisissez l'événement qui démarre la séquence : inscription newsletter, premier rendez-vous, abandon de panier, anniversaire client ou No-Show détecté.", "placement": "bottom" },
+        { "id": "seq-1", "target": "[data-tour='sequence-steps']", "title": "Étapes de la séquence", "body": "Configurez chaque email : délai d'envoi (immédiat, +1 jour, +3 jours, +1 semaine), objet, contenu HTML et heure d'envoi optimale. L'IA rédige les contenus automatiquement.", "placement": "right" },
+        { "id": "seq-2", "target": "[data-tour='sequence-stats']", "title": "Performance des séquences", "body": "Suivez le taux d'ouverture, de clic et de désabonnement de chaque étape. L'IA identifie les emails qui convertissent le mieux et vous propose des variantes.", "placement": "top" }
+      ]
+    },
+    "/analytics": {
+      "title": "Analytiques",
+      "videoId": "video_analytics.mp4",
+      "videoLabel": "Tutoriel Analytics",
+      "summary": "Suivez les performances de vos publications et comprenez ce qui engage votre audience.",
+      "steps": [
+        { "id": "analytics-1", "target": "[data-tour='analytics-overview']", "title": "Vue d'ensemble", "body": "Consultez vos métriques clés : portée, impressions, engagement et taux de conversion sur vos différents canaux.", "placement": "bottom" },
+        { "id": "analytics-2", "target": "[data-tour='analytics-reports']", "title": "Rapports exportables", "body": "Générez des rapports PDF ou CSV pour présenter vos résultats à vos clients ou associés.", "placement": "right" },
+        { "id": "analytics-3", "target": "[data-tour='analytics-competitors']", "title": "Analyse concurrentielle", "body": "Comparez votre visibilité à celle de vos concurrents locaux et identifiez les opportunités à saisir.", "placement": "left" }
+      ]
+    },
+    "/loyalty": {
+      "title": "Fidélisation & Parrainage",
+      "videoId": "video_loyalty.mp4",
+      "videoLabel": "Tutoriel Fidélisation",
+      "summary": "Créez des programmes de parrainage client pour accélérer votre croissance organique.",
+      "steps": [
+        { "id": "loyalty-1", "target": "[data-tour='referral-campaign-config']", "title": "Configuration de campagne", "body": "Définissez le pourcentage de remise pour le parrain et le filleul, ainsi que le canal d'envoi (WhatsApp, SMS).", "placement": "right" },
+        { "id": "loyalty-2", "target": "[data-tour='referral-link-creator']", "title": "Création de liens", "body": "Générez un lien unique pour chaque client ambassadeur. Chaque scan est tracé et attribué au bon parrain.", "placement": "bottom" },
+        { "id": "loyalty-3", "target": "[data-tour='referral-stats']", "title": "Statistiques de parrainage", "body": "Suivez en temps réel le nombre de clics, de conversions et le chiffre d'affaires généré par chaque ambassadeur.", "placement": "top" }
+      ]
+    },
+    "/brand": {
+      "title": "Gestion de la Marque",
+      "videoId": "video_brand.mp4",
+      "videoLabel": "Tutoriel Marque",
+      "summary": "Définissez votre identité visuelle et gérez votre réputation en ligne depuis un seul endroit.",
+      "steps": [
+        { "id": "brand-1", "target": "[data-tour='brand-book']", "title": "Brand Book IA", "body": "L'IA génère automatiquement votre charte de marque : couleurs, ton de voix, mots-clés et personas clients.", "placement": "bottom" },
+        { "id": "brand-2", "target": "[data-tour='local-outreach']", "title": "Outreach Local", "body": "Générez des messages de prospection personnalisés pour contacter des influenceurs ou partenaires locaux.", "placement": "right" },
+        { "id": "brand-3", "target": "[data-tour='reputation-crisis']", "title": "Cellule de crise", "body": "En cas d'avis négatif viral ou de bad buzz, activez la cellule de crise pour obtenir un plan de réponse en 60 secondes.", "placement": "top" }
+      ]
+    },
+    "/academy": {
+      "title": "Académie Kompilot",
+      "videoId": "video_academy.mp4",
+      "videoLabel": "Tutoriel Académie",
+      "summary": "Formez-vous au marketing digital local avec des modules vidéo courts et actionnables.",
+      "steps": [
+        { "id": "academy-1", "target": "[data-tour='academy-modules']", "title": "Modules de formation", "body": "Chaque module couvre une compétence clé : Google My Business, réseaux sociaux, SEO local, emailing. Durée : 5-10 min.", "placement": "bottom" },
+        { "id": "academy-2", "target": "[data-tour='pitch-generator']", "title": "Générateur de Pitch", "body": "Préparez votre argumentaire de vente en 2 minutes avec l'IA — adapté à votre secteur et votre ville.", "placement": "right" }
+      ]
+    },
+    "/emailing": {
+      "title": "Campagnes Emailing",
+      "videoId": "video_emailing.mp4",
+      "videoLabel": "Tutoriel Emailing",
+      "summary": "Créez et envoyez des campagnes email ciblées à votre base clients pour stimuler les visites en boutique.",
+      "steps": [
+        { "id": "emailing-1", "target": "[data-tour='campaign-creator']", "title": "Créer une campagne", "body": "Choisissez un template, personnalisez le contenu avec l'IA, et ciblez vos segments clients (nouveaux, VIP, inactifs).", "placement": "bottom" },
+        { "id": "emailing-2", "target": "[data-tour='campaign-stats']", "title": "Statistiques d'envoi", "body": "Suivez les taux d'ouverture, de clic et de désabonnement en temps réel. Comparez vos campagnes entre elles.", "placement": "right" },
+        { "id": "emailing-3", "target": "[data-tour='domain-health']", "title": "Santé de domaine", "body": "Vérifiez que votre domaine d'envoi est correctement configuré (SPF, DKIM, DMARC) pour maximiser la délivrabilité.", "placement": "top" }
+      ]
+    },
+    "/agency": {
+      "title": "Tableau de Bord Agence",
+      "videoId": "video_agency.mp4",
+      "videoLabel": "Tutoriel Agence",
+      "summary": "Gérez plusieurs établissements clients depuis un tableau de bord centralisé avec rapport de tendances sectorielles.",
+      "steps": [
+        { "id": "agency-0", "target": "[data-tour='ai-lead-engine']", "title": "🎯 Machine à Clients — Scraper G.E.O.", "body": "Saisissez une ville + une activité. L'IA génère 5 leads avec Score de Vulnérabilité IA (Rouge/Orange/Vert), manque à gagner estimé et un Kit de Closing complet : email, DM social, script d'appel, post appât et liste des requêtes ChatGPT/Gemini où le prospect est invisible.", "placement": "bottom" },
+        { "id": "agency-1", "target": "[data-tour='sector-trend-report']", "title": "Rapport de tendances sectorielles", "body": "Exportez un rapport PDF personnalisé par secteur (restauration, beauté, retail…) pour impressionner vos prospects.", "placement": "bottom" },
+        { "id": "agency-2", "target": "[data-tour='live-cloning']", "title": "Clonage de présence", "body": "Saisissez le nom d'un prospect (ex: Boulangerie Dupont, Lyon). L'IA génère en 10 secondes un diagnostic de perte de CA estimée (-800€ à -4500€/mois) et un lien de démo éphémère personnalisé à envoyer par WhatsApp pour closer le client.", "placement": "right" },
+        { "id": "agency-3", "target": "[data-tour='agency-pr-kit']", "title": "Kit PR & Vente — Études de cas", "body": "Sélectionnez un secteur (Restauration, Beauté, BTP…) et copiez l'étude de cas anonymisée correspondante. Données réelles agrégées : taux de no-show, CA récupéré, ROI. Prêt à intégrer dans vos emails et présentations.", "placement": "top" },
+        { "id": "agency-4", "target": "[data-tour='agency-pr-kit']", "title": "⚡ 1er post B2B en 1 clic", "body": "Dans l'onglet 'Scripts prospection' : (1) choisissez le secteur de votre prospect, (2) sélectionnez 'Urgence & Chiffres' ou demandez une Variante IA, (3) cliquez 'Copier le script' — le post LinkedIn ou DM est prêt à publier en 10 secondes, avec un CTA commentable intégré ('Commentez AUDIT').", "placement": "bottom" }
+      ]
+    },
+    "/diagnostic": {
+      "title": "Diagnostic de Visibilité",
+      "videoId": "video_diagnostic.mp4",
+      "videoLabel": "Tutoriel Diagnostic",
+      "summary": "Obtenez un audit complet de votre présence digitale en 60 secondes : fiche Google, réseaux sociaux, site web.",
+      "steps": [
+        { "id": "diag-1", "target": "[data-tour='diagnostic-form']", "title": "Lancer le scan", "body": "Entrez le nom et la ville de votre établissement. L'IA effectue un scan complet de votre présence en ligne en temps réel.", "placement": "bottom" },
+        { "id": "diag-2", "target": "[data-tour='diagnostic-results']", "title": "Résultats du diagnostic", "body": "Votre score de visibilité sur 100, détaillé par canal (Google, Instagram, Facebook, site web). Les points rouges sont vos priorités.", "placement": "right" },
+        { "id": "diag-3", "target": "[data-tour='diagnostic-geo-map']", "title": "Carte de présence locale", "body": "Visualisez où vous apparaissez (ou n'apparaissez pas) sur les recherches locales de votre zone de chalandise.", "placement": "top" }
+      ]
+    }
+  },
+
+  "faq": {
+    "url_scraping_security": {
+      "question": "Est-ce que l'analyse par URL est sécurisée et RGPD-conforme ?",
+      "answer": "Oui. Kompilot ne stocke jamais le contenu brut de votre site. L'IA extrait uniquement les métadonnées publiques (nom, secteur, couleurs CSS, services). Aucune donnée sensible n'est conservée. Le processus est conforme RGPD et les données d'analyse sont supprimées 24h après l'import."
+    },
+    "dark_mode_battery": {
+      "question": "Le mode sombre Obsidian économise-t-il vraiment la batterie ?",
+      "answer": "Oui, sur les écrans OLED (iPhone OLED, Samsung Galaxy, Pixel), le mode ultra-sombre réduit la consommation d'énergie de 40-60% sur les zones noires. Idéal pour utiliser Kompilot toute la journée en déplacement sur le terrain."
+    },
+    "inter_business_invitations": {
+      "question": "Comment fonctionnent les invitations inter-entreprises ?",
+      "answer": "Dans l'espace Agence, créez un sous-compte client en entrant son email. Il reçoit une invitation avec un lien d'accès à un espace pré-configuré à ses couleurs (import URL automatique). Vous restez administrateur principal avec accès à tous ses tableaux de bord depuis votre console centralisée."
+    },
+    "optimistic_ui": {
+      "question": "Pourquoi les boutons réagissent-ils instantanément même avec une mauvaise connexion ?",
+      "answer": "Kompilot utilise l'Optimistic UI : l'interface met à jour visuellement l'état de succès en 0 milliseconde, avant même que le serveur confirme l'action. Si la connexion échoue, un rollback automatique s'effectue avec notification. Cela garantit une expérience fluide même en zone réseau faible ou en 2G."
+    },
+    "margin_optimizer": {
+      "question": "Comment fonctionne le conseiller d'optimisation des marges tarifaires ?",
+      "answer": "Le Moteur de Rendement analyse votre taux d'occupation en temps réel. Dès que vous dépassez 85% de saturation, l'IA déclenche une notification maïeutique : elle vous pose la question 'Votre agenda est saturé — souhaitez-vous augmenter vos tarifs de 15% sur les créneaux de pointe ?' Un clic suffit pour préparer la recommandation. Vous restez le décideur final."
+    },
+    "crisis_ai_sensitivity": {
+      "question": "Comment l'IA protège-t-elle la sensibilité des clients lors des réponses de crise ?",
+      "answer": "Kompilot applique automatiquement un protocole de réponse maïeutique en 3 étapes pour tous les avis négatifs et messages de crise : (1) Validation du ressenti client sans jugement ('Nous comprenons votre frustration'), (2) Invitation à l'échange privé pour résoudre le problème hors de la vue publique, (3) Préservation de l'autorité publique de l'établissement — la réponse reste professionnelle et rassurante pour les autres lecteurs. Ce protocole garantit un taux de résolution de 73% sans escalade. Sur l'écran Messagerie, l'IA passe automatiquement en mode chirurgical : phrases courtes, ton sécurisant, focus sur l'action immédiate."
+    },
+    "crisis_premium_tone": {
+      "question": "Comment l'IA évite-t-elle les formulations agressives non-premium lors des réponses de crise ?",
+      "answer": "Le Moteur de Copywriting Contextuel de Kompilot bannit automatiquement toutes les formulations agressives lors des réponses de crise. Sont strictement interdits : les jugements de valeur sur le client ('Ce client est de mauvaise foi'), les réponses défensives publiques, les formulations condescendantes. L'IA utilise exclusivement le registre premium de la résolution bienveillante : 'Permettez-nous de comprendre mieux', 'Rejoignez-nous en privé pour résoudre cela ensemble', 'Nous prenons note avec attention.' L'objectif est que chaque réponse de crise renforce la réputation plutôt que de l'exposer davantage."
+    },
+    "agency_1click_prospection": {
+      "question": "Comment générer mon premier post de prospection B2B en 1 clic ?",
+      "answer": "Rendez-vous dans Agence > Kit PR & Vente > onglet 'Scripts prospection'. (1) Sélectionnez le secteur de votre prospect dans la barre de secteurs (Restauration, Beauté, BTP, Santé, Commerce). (2) Choisissez le style de script : 'Urgence & Chiffres' pour une accroche percutante basée sur les pertes de CA, 'Preuve Sociale' pour les témoignages sectoriels, 'Maïeutique' pour les questions qui font réfléchir. (3) Cliquez 'Copier le script' — le post est prêt à publier sur LinkedIn ou à envoyer en DM. Pour une variante personnalisée par l'IA, cliquez 'Variante IA' : l'IA génère une version unique avec les métriques sectorielles anonymisées de votre segment cible."
+    },
+    "emotional_copywriting_engine": {
+      "question": "Pourquoi le ton de l'assistant change-t-il selon l'écran ?",
+      "answer": "Kompilot intègre un Moteur de Copywriting Contextuel qui adapte automatiquement le ton et la longueur des réponses IA selon l'urgence de l'écran : Sur les écrans de crise (Messagerie, Avis négatifs) : phrases de moins de 10 mots, ton chirurgical et sécurisant, focus sur l'action immédiate. Sur les écrans de configuration (Calendrier, Cockpit, Paramètres) : ton maïeutique avec une question stratégique ouverte pour guider votre réflexion. Sur les écrans de succès (Analytics, Performance, Validation caissier) : ton valorisant axé sur la maîtrise financière et la supériorité business. Ce changement de contexte est automatique — vous n'avez rien à configurer."
+    },
+    "ai_lead_prospection": {
+      "question": "Comment fonctionne le Module de Prospection IA (Machine à Clients) ?",
+      "answer": "Dans Agence > Machine à Clients & Scraper G.E.O. Prédictif : (1) Saisissez une ville et une activité (ex: 'Lyon' + 'Chirurgien esthétique'). (2) L'IA génère 5 leads locaux avec leur Score de Vulnérabilité IA (Rouge = très vulnérable = meilleur lead) et leur manque à gagner estimé en €/mois. (3) Cliquez 'Générer le Kit de Closing IA' pour un lead : l'IA génère instantanément un email de prospection, un DM social, un script d'appel, un post réseau social prêt à l'emploi pour le prospect, et la liste des requêtes ChatGPT/Gemini où il est invisible. Tout est en Marque Blanche, données RGPD anonymisées."
+    },
+    "competitor_radar_pro": {
+      "question": "Comment fonctionne le Radar Concurrentiel pour les commerçants ?",
+      "answer": "Dans Analytics > Onglet Concurrents > Radar Concurrentiel & Espionnage IA : saisissez le nom de vos 3 principaux concurrents locaux. L'IA analyse leurs failles G.E.O. sur ChatGPT et Gemini (fiche non réclamée, absences des réponses IA, mauvaise note Google) et génère : un rapport comparatif avec Score G.E.O. de chaque concurrent, un plan d'action prioritaire pour les dépasser, et la liste des requêtes IA à conquérir immédiatement. Résultat : vous volez leurs parts de marché locales en 30 à 60 jours."
+    },
+    "geo_alert_pro_commerce": {
+      "question": "Que sont les Alertes de détournement G.E.O. incluses dans le Plan Pro Commerce ?",
+      "answer": "Les Alertes de détournement G.E.O. surveillent en continu les recommandations de ChatGPT, Gemini et Claude pour votre secteur et votre ville. Si un concurrent commence à apparaître plus souvent que vous dans les réponses des IA, vous recevez une alerte immédiate avec les actions correctives priorisées (enrichissement fiche, publication de contenu ciblé, optimisation de mots-clés locaux). Objectif : rester le commerce le plus recommandé par les moteurs IA dans votre zone de chalandise."
+    }
+  },
+
+  "onboarding": {
+    "steps": [
+      { "id": "onb-url", "title": "✦ Import automatique par URL", "body": "Collez l'URL de votre site internet ou de votre fiche Google Maps. L'IA Kompilot analyse votre page en 10 secondes et pré-configure votre espace : secteur d'activité, couleur principale, catalogue de services. Aucune saisie manuelle requise." },
+      { "id": "onb-sector", "title": "Votre profil secteur", "body": "Kompilot adapte automatiquement l'interface, les actions rapides et les recommandations IA à votre secteur d'activité. Un restaurateur voit des actions différentes d'un artisan ou d'une agence." },
+      { "id": "onb-objective", "title": "Votre objectif principal", "body": "Définissez votre priorité (notoriété, rendez-vous, avis Google, croissance) pour que l'IA propose dès le premier jour des actions à fort impact pour votre situation." }
+    ]
+  },
+
+  "defaultPage": {
+    "title": "Kompilot",
+    "videoId": "video_dashboard.mp4",
+    "videoLabel": "Présentation générale",
+    "summary": "Bienvenue dans Kompilot — votre copilote de présence digitale locale.",
+    "steps": []
+  }
+}

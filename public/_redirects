@@ -1,0 +1,4 @@
+# SPA fallback — toutes les routes (y compris /reset-password?token=xxx, /verify-email?token=xxx)
+# sont servies par index.html ; React Router gère ensuite le rendu côté client.
+# Fonctionne sur Chrome, Firefox, Safari, Edge.
+/*    /index.html   200

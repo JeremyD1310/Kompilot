@@ -1,0 +1,672 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Lora:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Blink UI Theme CSS
+   REQUIRED for @blinkdotnew/ui components to render correctly.
+   BlinkUIProvider adds .theme-{name} + .dark/.light to <html>,
+   activating the matching CSS variable set below.
+   ───────────────────────────────────────────────────────────────────────────── */
+@import '@blinkdotnew/ui/styles';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  /* Full viewport chain so AppShell / Sidebar h-full + flex-1 SidebarContent work */
+  html {
+    height: 100%;
+  }
+
+  #root {
+    min-height: 100%;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body {
+    min-height: 100%;
+    min-height: 100dvh;
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    letter-spacing: var(--tracking-normal);
+  }
+}
+
+/* ── App palette (unlayered, after utilities) ─────────────────────────────────
+   Overrides @blinkdotnew/ui theme colors. @layer base loses specificity to UI themes.
+   Dark mode uses :root.dark + .theme-*.dark to match BlinkUIProvider.
+   ⚠️ AGENT MUST REPLACE placeholder values with a custom palette.
+   ──────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* ⚠️ AGENT MUST REPLACE: These are placeholder colors. You MUST define a custom palette before writing components. */
+  /* The template uses distinctive placeholder colors to force customization - do NOT use these in production! */
+
+  /*
+   * EXAMPLE PALETTES (use as inspiration, replace with your own):
+   *
+   * Modern SaaS (Business/Enterprise):
+   * --primary: 220 10% 20%;        (Charcoal #2D3748)
+   * --accent: 220 10% 30%;         (Lighter charcoal #4A5568)
+   *
+   * Bold Tech (Startups/Developer Tools):
+   * --primary: 348 83% 47%;        (Crimson #DA1E37)
+   * --accent: 348 83% 57%;         (Lighter crimson #F0213E)
+   *
+   * Quantum Rose (Creative/Design):
+   * --primary: 330 81% 50%;        (Pink #E6067A)
+   * --accent: 330 81% 70%;         (Lighter pink #F472B6)
+   *
+   * Rich Forest (Calm/Professional):
+   * --primary: 151 55% 25%;        (Pine #1C6340)
+   * --accent: 151 55% 35%;         (Lighter pine #288C5A)
+   *
+   * Sunset Warmth (Friendly/Welcoming):
+   * --primary: 24 95% 53%;         (Orange #F97316)
+   * --accent: 24 95% 63%;          (Lighter orange #FB923C)
+   */
+
+  /* Kompilot Light — Clean slate + Emerald brand */
+  --background: 210 20% 98%;
+  --foreground: 215 25% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 215 25% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 215 25% 12%;
+  /* Primary: Teal #0D9488 */
+  --primary: 174 85% 31%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 16% 94%;
+  --secondary-foreground: 215 25% 20%;
+  --muted: 210 16% 95%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 174 70% 94%;
+  --accent-foreground: 174 85% 20%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 22% 88%;
+  --input: 214 22% 88%;
+  --ring: 174 85% 31%;
+
+  /* Charts — emerald scale */
+  --chart-1: 160 84% 35%;
+  --chart-2: 160 70% 45%;
+  --chart-3: 160 60% 55%;
+  --chart-4: 160 50% 65%;
+  --chart-5: 160 40% 72%;
+
+  /* Sidebar — very light slate, matching app bg */
+  --sidebar: 210 20% 97%;
+  --sidebar-foreground: 215 25% 12%;
+  --sidebar-primary: 160 84% 39%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 160 70% 94%;
+  --sidebar-accent-foreground: 160 84% 25%;
+  --sidebar-border: 214 22% 88%;
+  --sidebar-ring: 160 84% 39%;
+
+  /* Fonts */
+  --font-sans: DM Sans, sans-serif;
+  --font-serif: Lora, serif;
+  --font-mono: IBM Plex Mono, monospace;
+
+  /* Shadows */
+  --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
+  --shadow: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 2px 4px -2px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 4px 6px -2px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 8px 10px -2px hsl(0 0% 0% / 0.10);
+  --shadow-2xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.25);
+
+  /* Misc */
+  --tracking-normal: -0.01em;
+  --spacing: 0.25rem;
+  /* 12px border-radius throughout — premium rounded feel */
+  --radius: 0.75rem;
+}
+
+:root.dark,
+.theme-linear.dark,
+.theme-glass.dark,
+.theme-midnight.dark,
+.theme-minimal.dark {
+  /* Kompilot Premium Dark — Slate/Navy + Teal brand */
+  /* Background: Deep navy #0F172A → hsl(222 47% 11%) */
+  --background: 222 47% 11%;
+  --foreground: 210 20% 94%;
+  /* Card: Slate #1E293B → hsl(215 28% 17%) */
+  --card: 215 28% 17%;
+  --card-foreground: 210 20% 94%;
+  --popover: 215 28% 17%;
+  --popover-foreground: 210 20% 94%;
+  /* Primary: Teal #0D9488 */
+  --primary: 174 85% 31%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 215 28% 18%;
+  --secondary-foreground: 210 20% 85%;
+  --muted: 215 28% 16%;
+  --muted-foreground: 215 16% 55%;
+  /* Accent: brighter teal for hover states */
+  --accent: 174 85% 38%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 215 28% 22%;
+  --input: 215 28% 22%;
+  --ring: 174 85% 31%;
+
+  /* Charts */
+  --chart-1: 160 84% 45%;
+  --chart-2: 160 70% 55%;
+  --chart-3: 160 60% 65%;
+  --chart-4: 160 50% 70%;
+  --chart-5: 160 40% 75%;
+
+  /* Sidebar: same slate as card */
+  --sidebar: 215 28% 11%;
+  --sidebar-foreground: 210 20% 94%;
+  --sidebar-primary: 160 84% 39%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 215 28% 18%;
+  --sidebar-accent-foreground: 160 84% 55%;
+  --sidebar-border: 215 28% 20%;
+  --sidebar-ring: 160 84% 39%;
+}
+
+/* ── Obsidian & Gold Elite Theme ─────────────────────────────────────────────
+   Activated by adding class "obsidian" to <html> element.
+   Background: pure obsidian black + warm gold accents (#C9A84C / hsl(42 57% 55%))
+   Optimised for OLED screens & outdoor/field use.
+   ─────────────────────────────────────────────────────────────────────────── */
+.obsidian,
+.obsidian.dark,
+.theme-linear.obsidian {
+  --background: 0 0% 4%;
+  --foreground: 42 15% 92%;
+  --card: 0 0% 7%;
+  --card-foreground: 42 15% 92%;
+  --popover: 0 0% 7%;
+  --popover-foreground: 42 15% 92%;
+  /* Gold: #C9A84C → hsl(42 57% 55%) */
+  --primary: 42 57% 55%;
+  --primary-foreground: 0 0% 5%;
+  --secondary: 0 0% 10%;
+  --secondary-foreground: 42 30% 85%;
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 50%;
+  /* Accent: warm amber */
+  --accent: 38 75% 62%;
+  --accent-foreground: 0 0% 5%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 14%;
+  --input: 0 0% 14%;
+  --ring: 42 57% 55%;
+
+  /* Charts — gold tones */
+  --chart-1: 42 57% 55%;
+  --chart-2: 38 70% 65%;
+  --chart-3: 34 65% 60%;
+  --chart-4: 30 60% 55%;
+  --chart-5: 26 55% 50%;
+
+  /* Sidebar */
+  --sidebar: 0 0% 5%;
+  --sidebar-foreground: 42 15% 88%;
+  --sidebar-primary: 42 57% 55%;
+  --sidebar-primary-foreground: 0 0% 5%;
+  --sidebar-accent: 0 0% 9%;
+  --sidebar-accent-foreground: 42 40% 70%;
+  --sidebar-border: 0 0% 10%;
+  --sidebar-ring: 42 57% 55%;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Ken Burns effect for image preview in phone mockup */
+.preview-ken-burns {
+  animation: kenBurns 8s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+
+@keyframes kenBurns {
+  0%   { transform: scale(1)    translateX(0)    translateY(0); }
+  25%  { transform: scale(1.08) translateX(-2%)  translateY(-1%); }
+  50%  { transform: scale(1.12) translateX(2%)   translateY(2%); }
+  75%  { transform: scale(1.06) translateX(-1%)  translateY(3%); }
+  100% { transform: scale(1)    translateX(0)    translateY(0); }
+}
+
+/* Animate-spin-slow for icons */
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 0.4s ease-out both;
+}
+
+/* ── Skeleton shimmer ──────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--muted-foreground)/0.08) 50%, hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius);
+}
+/* ── Smooth page transitions ─────────────────────────────────────────────── */
+.page-enter {
+  animation: pageEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered children entrance for page sections */
+.page-enter > * {
+  animation: pageEnter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.page-enter > *:nth-child(1) { animation-delay: 0ms; }
+.page-enter > *:nth-child(2) { animation-delay: 30ms; }
+.page-enter > *:nth-child(3) { animation-delay: 60ms; }
+.page-enter > *:nth-child(4) { animation-delay: 90ms; }
+.page-enter > *:nth-child(5) { animation-delay: 120ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter,
+  .page-enter > * {
+    animation: none;
+  }
+}
+/* ── Touch-friendly interactive elements ────────────────────────────────── */
+/* Increase tap targets on touch devices without breaking layouts */
+@media (pointer: coarse) {
+  button:not(.icon-btn):not([class*="size-"]):not([class*="h-"]),
+  [role="button"]:not([class*="h-"]) {
+    min-height: 40px;
+  }
+}
+/* ── Prevent horizontal overflow globally ────────────────────────────────── */
+body {
+  overflow-x: hidden;
+}
+
+/* ── Global Micro-interactions ──────────────────────────────────────────────── */
+
+/* Buttons: scale on hover and active */
+button:not([disabled]):not(.no-scale),
+[role="button"]:not([disabled]):not(.no-scale) {
+  transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+}
+button:not([disabled]):not(.no-scale):hover,
+[role="button"]:not([disabled]):not(.no-scale):hover {
+  transform: scale(1.02);
+}
+button:not([disabled]):not(.no-scale):active,
+[role="button"]:not([disabled]):not(.no-scale):active {
+  transform: scale(0.97);
+}
+
+/* Dialog / Modal: fade-in + slide-up */
+[data-radix-dialog-content],
+[data-radix-alert-dialog-content] {
+  animation: modalIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Dropdown / Popover: subtle fade-in */
+[data-radix-popper-content-wrapper] > * {
+  animation: popIn 0.15s ease both;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Cards: smooth hover lift */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -4px hsl(var(--primary) / 0.12);
+}
+
+/* Tab content transitions */
+[data-state="active"][role="tabpanel"] {
+  animation: tabIn 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes tabIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Input focus animation */
+input:focus,
+textarea:focus {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Spinner animation (reuse) */
+.nc-spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+/* Smooth number counter (for KPI cards) */
+.kpi-value {
+  transition: all 0.3s ease;
+}
+
+/* ── Obsidian & Gold Elite Theme ── */
+.theme-obsidian {
+  --background: 222 47% 4%;
+  --foreground: 48 100% 92%;
+  --card: 220 43% 7%;
+  --card-foreground: 48 100% 90%;
+  --primary: 43 100% 55%;
+  --primary-foreground: 0 0% 5%;
+  --secondary: 220 40% 10%;
+  --secondary-foreground: 48 90% 85%;
+  --muted: 220 40% 12%;
+  --muted-foreground: 220 20% 50%;
+  --accent: 43 100% 55%;
+  --accent-foreground: 0 0% 5%;
+  --border: 220 30% 14%;
+  --ring: 43 100% 55%;
+}
+
+.theme-obsidian body,
+.theme-obsidian .min-h-screen {
+  background-color: hsl(222, 47%, 4%) !important;
+}
+
+.theme-obsidian .nc-gold-shimmer {
+  background: linear-gradient(90deg, #1A1008, #D4A017, #1A1008);
+  background-size: 200% 100%;
+  animation: goldShimmer 2s ease-in-out infinite;
+}
+
+@keyframes goldShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Premium Shimmer Skeleton ─────────────────────────────────────── */
+@keyframes nc-shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position: 800px 0; }
+}
+.nc-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.03) 25%,
+    rgba(255,255,255,0.10) 50%,
+    rgba(255,255,255,0.03) 75%
+  );
+  background-size: 800px 100%;
+  animation: nc-shimmer 1.6s infinite linear;
+  border-radius: 8px;
+}
+.nc-skeleton-light {
+  background: linear-gradient(
+    90deg,
+    rgba(15,23,42,0.04) 25%,
+    rgba(15,23,42,0.10) 50%,
+    rgba(15,23,42,0.04) 75%
+  );
+  background-size: 800px 100%;
+  animation: nc-shimmer 1.6s infinite linear;
+  border-radius: 8px;
+}
+
+/* ── Hover lift micro-animation ─────────────────────────────────────── */
+.nc-hover-lift {
+  transition: transform 0.18s cubic-bezier(0.4,0,0.2,1), box-shadow 0.18s cubic-bezier(0.4,0,0.2,1);
+}
+.nc-hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px -8px rgba(13,148,136,0.35);
+}
+
+/* ── Button glow on hover ───────────────────────────────────────────── */
+.nc-btn-glow {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.nc-btn-glow:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px -6px rgba(13,148,136,0.55);
+}
+.nc-btn-glow:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ── Harmonisation palette globale — données positives ─────────────── */
+/* Valeurs de croissance / gains Stripe toujours en vert émeraude vif */
+.nc-positive { color: #10B981 !important; }
+.nc-positive-bg {
+  background: rgba(16,185,129,0.10);
+  border: 1px solid rgba(16,185,129,0.25);
+  color: #10B981;
+  border-radius: 9999px;
+}
+.nc-revenue { color: #4ADE80 !important; font-weight: 800; }
+
+/* Cartes dashboard — fond légèrement plus profond en dark pour contraste */
+.dark .nc-card-depth {
+  background: rgba(15,23,42,0.85);
+  backdrop-filter: blur(8px);
+  border-color: rgba(255,255,255,0.08);
+}
+
+/* Typo sans-serif premium — force DM Sans sur tous les titres dashboard */
+.dashboard-title {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+/* Souligner les valeurs numériques clés (KPI) avec tabular numbers */
+.nc-kpi-value {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  letter-spacing: -0.04em;
+}
+
+/* Quick action cards — hover elevé + accent border */
+.nc-action-card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  border-radius: 14px;
+}
+.nc-action-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -10px rgba(13,148,136,0.30);
+  border-color: rgba(13,148,136,0.35);
+}
+
+/* ── Reduced motion — respect system preference ──────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .nc-skeleton, .nc-skeleton-light { animation: none; }
+  .nc-hover-lift, .nc-btn-glow, .nc-action-card { transition: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   MOBILE-FIRST — Pro accessibility & one-hand usability
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* 1. Prevent horizontal scrollbar on all containers */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+#root, .app-shell {
+  overflow-x: hidden;
+}
+
+/* 2. Touch tap targets — WCAG 2.5.5 minimum 44×44px on mobile */
+@media (max-width: 768px) {
+  /* All interactive elements get a minimum touch area */
+  button:not([class*="w-"]):not([class*="h-"]),
+  [role="button"]:not([class*="w-"]):not([class*="h-"]) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Sidebar items — larger hit areas */
+  [data-sidebar="menu-button"] {
+    min-height: 48px !important;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+
+  /* Quick chip buttons in AI Chat */
+  .nc-chip-btn {
+    min-height: 36px;
+    padding: 8px 14px !important;
+  }
+
+  /* Form inputs — comfortable thumb target */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  textarea,
+  select {
+    min-height: 44px;
+    font-size: 16px !important; /* prevents iOS auto-zoom on focus */
+  }
+
+  /* Prevent double-tap zoom on interactive elements */
+  button, [role="button"], a, input, select, textarea {
+    touch-action: manipulation;
+  }
+
+  /* Dropdown menus & popover — no horizontal overflow */
+  [data-radix-popper-content-wrapper],
+  [data-radix-select-content],
+  [data-radix-dropdown-menu-content] {
+    max-width: calc(100vw - 16px) !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Table overflow — horizontal scroll within container only */
+  .nc-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  /* Dashboard grid — single column on mobile */
+  .nc-grid-auto {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Chat widget — full width on small screens */
+  .nc-chat-window {
+    right: 8px !important;
+    left: 8px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  /* Modals — inset from edges for easier dismissal */
+  [role="dialog"] {
+    margin: 8px !important;
+    max-height: calc(100dvh - 16px) !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* 3. Smooth scrolling — vertical only, momentum on iOS */
+.nc-scroll-smooth {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* 4. Safe area insets — notched iPhones */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .nc-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Floating button above bottom nav / home indicator */
+  .nc-floating-btn {
+    bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+}
+
+/* 5. Ensure AIChatWidget floats above home indicator on iOS */
+@media (max-width: 768px) {
+  .nc-chat-trigger {
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+  }
+}

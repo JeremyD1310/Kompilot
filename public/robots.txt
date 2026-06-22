@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /inbox
+Disallow: /calendar
+Disallow: /onboarding
+Disallow: /admin
+
+Sitemap: https://kompilot.fr/sitemap.xml
