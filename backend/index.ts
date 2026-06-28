@@ -52,6 +52,24 @@
  *   POST /api/funnels/:id/ghost-emails/register — register tracking address (auth)
  *   GET  /api/funnels/:id/organic             — SEO keywords + referring domains (auth)
  *   POST /api/funnels/onboarding-seed         — seed competitor funnels on signup (auth)
+ *
+ * Engagement (routes/engagementMetrics.ts):
+ *   GET  /api/engagement/metrics?days=30       — aggregated engagement KPIs + trend
+ *   GET  /api/engagement/campaigns?days=30     — campaign performance by UTM
+ *   POST /api/engagement/record                — record post engagement metrics
+ *   POST /api/engagement/sync-campaigns        — recompute campaign_performance
+ *
+ * L'Espion (routes/seoGapAnalysis.ts):
+ *   POST /api/seo-gap/analyze  — AI + real-data SEO gap analysis
+ *   GET  /api/seo-gap/status   — user credits + plan info
+ *
+ * URL-to-Video (routes/urlToVideo.ts):
+ *   POST /api/url-to-video/scrape               — scrape URL + extract marketing data
+ *   POST /api/url-to-video/generate              — generate video via Luma AI
+ *   GET  /api/url-to-video/status/:generationId  — poll video generation status
+ *
+ * UGC Script (routes/ugcScript.ts):
+ *   POST /api/ugc-script/generate  — generate UGC video script (Hook/Body/CTA)
  */
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
@@ -86,6 +104,10 @@ import { router as openaiIntegrationRouter }    from './routes/openaiIntegration
 import { router as claudeIntegrationRouter }    from './routes/claudeIntegration';
 import { router as coworkRouter }               from './routes/cowork';
 import { router as metaCampaignExportRouter }   from './routes/metaCampaignExport';
+import { router as engagementMetricsRouter }     from './routes/engagementMetrics';
+import { router as seoGapRouter }                from './routes/seoGapAnalysis';
+import { router as urlToVideoRouter }            from './routes/urlToVideo';
+import { router as ugcScriptRouter }             from './routes/ugcScript';
 
 const app = new Hono();
 
@@ -135,6 +157,10 @@ app.route('/', openaiIntegrationRouter);
 app.route('/', claudeIntegrationRouter);
 app.route('/', coworkRouter);
 app.route('/', metaCampaignExportRouter);
+app.route('/', engagementMetricsRouter);
+app.route('/', seoGapRouter);
+app.route('/', urlToVideoRouter);
+app.route('/', ugcScriptRouter);
 
 // ── Global error handler ─────────────────────────────────────────────────────
 app.onError((err, c) => {

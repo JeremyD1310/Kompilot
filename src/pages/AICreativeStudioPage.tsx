@@ -18,13 +18,18 @@ import { TypographyStudioPanel } from '../components/cockpit/TypographyStudioPan
 import { DataDrivenAIAds } from '../components/cockpit/DataDrivenAIAds';
 // MODULE: UGC Script Generator
 import { UGCScriptSection } from '../components/cockpit/UGCScriptSection';
+// MODULE: Enhanced UGC Script Panel (Hook → Body → CTA)
+import { UGCScriptPanel } from '../components/creative/UGCScriptPanel';
+// MODULE: URL-to-Video Ingestion
+import { URLIngestionBar } from '../components/creative/URLIngestionBar';
+import type { ScrapedData } from '../hooks/useURLToVideo';
 // MODULE: Générateur d'annonces sectorielles (identique landing page)
 import { KompilotAdGenerator } from '../components/landing/KompilotAdGenerator';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Format = '1:1' | '9:16' | '4:3';
-type Tab = 'image' | 'video' | 'watermark';
+type Tab = 'image' | 'video' | 'watermark' | 'urltovideo' | 'ugc_hook';
 
 interface GeneratedImage {
   url: string;
@@ -119,6 +124,8 @@ export default function AICreativeStudioPage() {
             { id: 'secteurs',   label: '🎯 Secteurs IA',     icon: TrendingUp },
             { id: 'image',      label: '🖼️ Images IA',       icon: ImageIcon },
             { id: 'video',      label: '🎬 Scripts Vidéos',  icon: Video },
+            { id: 'ugc_hook',   label: '🎯 Script UGC',      icon: Sparkles },
+            { id: 'urltovideo', label: '🔗 URL → Vidéo',     icon: Wand2 },
             { id: 'watermark',  label: '🔖 Smart Watermark', icon: Layers },
             { id: 'typography', label: '✏️ Studio Typo',      icon: Type },
           ] as { id: Tab | 'typography' | 'datadrivenads' | 'secteurs'; label: string; icon: any; highlight?: boolean }[]).map(tab => (

@@ -38,6 +38,7 @@ import { useScheduledPostNotification } from '../../hooks/useScheduledPostNotifi
 import { useNotificationPreferences } from '../../context/NotificationPreferencesContext';
 import { LocalAdsModal } from '../ads/LocalAdsModal';
 import { EngagementPhraseAdder } from './EngagementPhraseAdder';
+import { UTMTagInput } from './UTMTagInput';
 import { PostComments } from '../team/PostComments';
 
 // ── Brand icons ────────────────────────────────────────────────────────────
@@ -99,6 +100,9 @@ export interface ScheduledPost {
   time: string;
   status: PostStatus;
   requiresValidation?: boolean;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
 }
 
 interface AiVariants { linkedin: string; instagram: string; }
@@ -187,6 +191,11 @@ export function CreatePostModal({
   // Action link
   const [actionLink, setActionLink] = useState('');
   const [actionLabel, setActionLabel] = useState('Réserver');
+
+  // UTM parameters
+  const [utmSource, setUtmSource] = useState('');
+  const [utmMedium, setUtmMedium] = useState('');
+  const [utmCampaign, setUtmCampaign] = useState('');
 
   // Library
   const [addToLib, setAddToLib] = useState(false);
@@ -309,6 +318,12 @@ export function CreatePostModal({
   const toggleChannel = (id: string) =>
     setChannels(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
 
+  const handleUtmChange = (field: 'utm_source' | 'utm_medium' | 'utm_campaign', value: string) => {
+    if (field === 'utm_source') setUtmSource(value);
+    else if (field === 'utm_medium') setUtmMedium(value);
+    else setUtmCampaign(value);
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -362,6 +377,7 @@ export function CreatePostModal({
     setAiVariants(null); setShowVariants(true);
     setMediaUrl(null); setMediaName(''); setMediaType('image');
     setStatus('draft'); setAddToLib(false); setRestoredDraft(false); setActionLink(''); setActionLabel('Réserver'); setAiTone('Professionnel'); setRequiresValidation(false);
+    setUtmSource(''); setUtmMedium(''); setUtmCampaign('');
     setTextStyle(brandTextStyle ?? DEFAULT_TEXT_STYLE);
     setToolbarVisible(false);
     onClose();
@@ -453,7 +469,12 @@ Réponds uniquement avec l'objet JSON demandé, sans commentaires.`,
 
     setSaving(true);
     await new Promise(r => setTimeout(r, 600));
-    const newPost: ScheduledPost = { id: Date.now().toString(), text, channels, date: effectiveDate, time, status, requiresValidation };
+    const newPost: ScheduledPost = {
+      id: Date.now().toString(), text, channels, date: effectiveDate, time, status, requiresValidation,
+      ...(utmSource && { utm_source: utmSource }),
+      ...(utmMedium && { utm_medium: utmMedium }),
+      ...(utmCampaign && { utm_campaign: utmCampaign }),
+    };
     if (addToLib) {
       addToLibrary({ id: newPost.id, text: newPost.text, channels: newPost.channels, date: newPost.date, time: newPost.time });
     }
@@ -771,6 +792,14 @@ Réponds uniquement avec l'objet JSON demandé, sans commentaires.`,
                 </p>
               )}
             </div>
+
+            {/* ── UTM Campaign Tracking ── */}
+            <UTMTagInput
+              utmSource={utmSource}
+              utmMedium={utmMedium}
+              utmCampaign={utmCampaign}
+              onChange={handleUtmChange}
+            />
 
             {/* ── Media ── */}
             <div className="space-y-2">

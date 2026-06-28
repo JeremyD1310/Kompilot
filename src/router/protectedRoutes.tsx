@@ -58,6 +58,8 @@ const ROASPage             = React.lazy(() => import('../pages/ROASPage'));
 const EmailMarketingPage      = React.lazy(() => import('../pages/EmailMarketingPage'));
 const CreativeStudioHubPage   = React.lazy(() => import('../pages/CreativeStudioHubPage'));
 const TeamPage             = React.lazy(() => import('../pages/TeamPage'));
+const EngagementPage       = React.lazy(() => import('../pages/EngagementPage'));
+const SeoGapPage           = React.lazy(() => import('../pages/SeoGapPage'));
 
 // ── Onboarding (outside layout) ───────────────────────────────────────────────
 
@@ -124,6 +126,8 @@ export const creativeStudioHubRoute   = r('/creative-studio-hub',  CreativeStudi
 export const websiteScanRoute      = r('/website-scan',         WebsiteScanPage);
 export const emailSequencesRoute   = r('/email-sequences',      EmailSequencesPage);
 export const teamRoute             = r('/team',                 TeamPage);
+export const engagementRoute       = r('/engagement',           EngagementPage);
+export const seoGapRoute           = r('/espion',               SeoGapPage);
 
 export const clientMessagesRoute = createRoute({
   getParentRoute: () => d,
@@ -144,5 +148,5 @@ export const protectedChildRoutes = [
   qrCodeRoute, caisseRoute, brandRoute, creativeFactoryRoute,
   aiCreativeStudioRoute, featuresShowcaseRoute, tunnelsRoute,
   aioRoute, roasRoute, emailMarketingRoute, websiteScanRoute, emailSequencesRoute,
-  creativeStudioHubRoute, teamRoute,
+  creativeStudioHubRoute, teamRoute, engagementRoute, seoGapRoute,
 ];

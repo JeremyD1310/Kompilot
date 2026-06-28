@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Calendar, Mail, Settings, LogOut, UserCircle, PenLine,
   CreditCard, HelpCircle, ChevronLeft, ChevronRight,
   Rocket, Star, MapPin, TrendingUp, Building2, BarChart2, Sprout, Image,
-  SearchCheck, Users, Sparkles, BotMessageSquare, GitFork, Brain, AtSign, Globe, ListOrdered, UsersRound,
+  SearchCheck, Users, Sparkles, BotMessageSquare, GitFork, Brain, AtSign, Globe, ListOrdered, UsersRound, Eye,
 } from 'lucide-react';
 import { AppShellSidebar, Button, cn } from '@blinkdotnew/ui';
 import { Link } from '@tanstack/react-router';
@@ -206,6 +206,18 @@ export function DashboardSidebar({
 
           <SidebarNavItem to="/performance" icon={TrendingUp} label="Performance & Avis" active={is('/performance')} collapsed={c} {...primary} />
           <SidebarNavItem
+            to="/engagement"
+            icon={TrendingUp}
+            label="Engagement & Campagnes"
+            sublabel="UTM · Métriques · Comparaisons"
+            active={is('/engagement')}
+            collapsed={c}
+            suffix={!c ? (
+              <span className="text-[8px] bg-emerald-600 text-white font-bold px-1.5 py-0.5 rounded-full shrink-0">NEW</span>
+            ) : undefined}
+            {...primary}
+          />
+          <SidebarNavItem
             to="/roas"
             icon={TrendingUp}
             label="Performances & ROAS"
@@ -320,6 +332,18 @@ export function DashboardSidebar({
             {...primary}
           />
           <SidebarNavItem to="/geo-authority" icon={BarChart2} label="Autorité G.E.O." sublabel="Citations & IA" active={is('/geo-authority')} collapsed={c} {...primary} />
+          <SidebarNavItem
+            to="/espion"
+            icon={Eye}
+            label="L'Espion"
+            sublabel="Failles SEO concurrents"
+            active={is('/espion')}
+            collapsed={c}
+            suffix={!c ? (
+              <span className="text-[8px] bg-amber-500 text-white font-bold px-1.5 py-0.5 rounded-full shrink-0">NEW</span>
+            ) : undefined}
+            {...primary}
+          />
 
           {/* ── Mode Agence (agences) / Upsell teaser (Pro/B2C) ── */}
           {!isTeamRole && (
