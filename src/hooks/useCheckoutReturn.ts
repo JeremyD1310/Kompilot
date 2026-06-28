@@ -17,8 +17,24 @@ export function useCheckoutReturn() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const isSuccess = params.get('checkout') === 'success';
-    if (!isSuccess) return;
+    const checkoutType = params.get('checkout');
+    if (!checkoutType) return;
+
+    // Credit pack purchase
+    if (checkoutType === 'credit_pack') {
+      const credits = params.get('credits');
+      toast.success('Crédits rechargés ! 🎉', {
+        description: credits
+          ? `${credits} crédits IA ajoutés à votre compte.`
+          : 'Vos crédits ont été ajoutés. Actualisez si nécessaire.',
+      });
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, '', cleanUrl);
+      return;
+    }
+
+    // Subscription checkout
+    if (checkoutType !== 'success') return;
 
     const planLabel = params.get('plan') === 'expert' ? 'Expert' : 'Pro';
 

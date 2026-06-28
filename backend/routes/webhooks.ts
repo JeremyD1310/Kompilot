@@ -206,6 +206,29 @@ router.post('/api/webhooks/stripe', async (c) => {
       });
       console.warn(`[webhook] checkout.completed → user ${userId} subscribed${planId ? ` to plan: ${planId}` : ''}`);
     }
+
+    // credit-pack one-time payment → grant AI credits to establishment
+    if (userId && session.mode === 'payment' && session.metadata?.creditPack === 'true') {
+      const creditsToAdd = Number(session.metadata?.credits) || 0;
+      if (creditsToAdd > 0) {
+        try {
+          const establishments = await blink.db.establishments.list({ where: { userId }, limit: 1 });
+          const est = (establishments[0] as any);
+          if (est?.id) {
+            const currentLimit = Number(est.aiCreditsLimit) || 50;
+            await blink.db.establishments.update(est.id, {
+              aiCreditsLimit: currentLimit + creditsToAdd,
+              updatedAt: new Date().toISOString(),
+            });
+            console.warn(`[webhook] credit-pack → user ${userId} +${creditsToAdd} credits (new limit: ${currentLimit + creditsToAdd})`);
+          } else {
+            console.warn(`[webhook] credit-pack → no establishment found for user ${userId}, credits pending`);
+          }
+        } catch (creditErr) {
+          console.error('[webhook] credit-pack grant failed:', creditErr);
+        }
+      }
+    }
   }
 
   // invoice.payment_succeeded → clear failure + send invoice confirmation to Pro users

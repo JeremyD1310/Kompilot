@@ -60,6 +60,17 @@ router.post('/api/ugc-script/generate', async (c) => {
     return c.json({ error: 'AI keys not configured' }, 503);
   }
 
+  // Check and deduct 1 credit
+  const blink = getBlink(env);
+  const establishments = await blink.db.establishments.list({ where: { userId }, limit: 1 });
+  const est = (establishments[0] as any) ?? {};
+  const creditsUsed = Number(est.aiCreditsUsed) || 0;
+  const creditsLimit = Number(est.aiCreditsLimit) || 50;
+  const creditsLeft = Math.max(0, creditsLimit - creditsUsed);
+  if (creditsLeft <= 0) {
+    return c.json({ error: 'NO_CREDITS', message: 'Crédits épuisés.', creditsLeft: 0 }, 402);
+  }
+
   let body: {
     topic?: string;
     tone?: 'expert' | 'energetic' | 'seducer';
@@ -73,12 +84,8 @@ router.post('/api/ugc-script/generate', async (c) => {
   }
 
   const tone = body.tone ?? 'expert';
-  const blink = getBlink(env);
 
   try {
-    // 1. Get user's establishment context
-    const establishments = await blink.db.establishments.list({ where: { userId }, limit: 1 });
-    const est = (establishments[0] as any) ?? {};
     const establishmentName = est.name ?? 'votre établissement';
     const activity = est.activity ?? 'commerce local';
     const city = est.city ?? '';
@@ -245,8 +252,19 @@ Retourne un JSON avec cette structure EXACTE:
       });
     } catch { /* non-critical */ }
 
+    // 8. Deduct 1 credit
+    try {
+      await blink.db.establishments.update(est.id, {
+        aiCreditsUsed: creditsUsed + 1,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (creditErr) {
+      console.warn('[UgcScript] credit deduction failed:', creditErr);
+    }
+
     return c.json({
       script,
+      creditsLeft: creditsLeft - 1,
       meta: {
         provider: aiResult.provider,
         model: aiResult.model,

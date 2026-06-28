@@ -8,8 +8,6 @@ import { Lock, Zap, Crown, CreditCard, TrendingUp, Check, Loader2 } from 'lucide
 import { Button, toast } from '@blinkdotnew/ui';
 import { blink } from '../../blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
-
 interface EspionPaywallProps {
   plan: string; // 'starter' | 'agency' | 'pro' | 'expert'
   onRecharge?: (amount: number) => void;
@@ -18,15 +16,10 @@ interface EspionPaywallProps {
 
 async function createCreditPackCheckout(amount: number): Promise<string | null> {
   try {
-    const token = await blink.auth.getValidToken();
-    const res = await fetch(`${BACKEND_URL}/api/billing/credit-pack`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ amount }),
-    });
-    if (!res.ok) throw new Error('Checkout creation failed');
-    const data = await res.json() as { url?: string };
-    return data.url ?? null;
+    const data = await blink.functions.invoke('api/billing/credit-pack', {
+      body: { amount },
+    }) as { url?: string };
+    return data?.url ?? null;
   } catch {
     return null;
   }
