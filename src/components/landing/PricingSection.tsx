@@ -191,8 +191,6 @@ export function PricingSection({ cta, audience }: PricingSectionProps) {
       ? KOMPILOT_PLANS.filter(p => p.id === 'agency' || p.id === 'enterprise')
       : KOMPILOT_PLANS;
 
-  const isFiltered = !!audience;
-
   return (
     <section
       id="tarifs"
