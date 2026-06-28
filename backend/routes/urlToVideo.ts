@@ -306,6 +306,20 @@ router.post('/api/url-to-video/generate', async (c) => {
     return c.json({ error: 'marketingContext is required (use /scrape first)' }, 400);
   }
 
+  // Check and deduct 3 credits (video generation is expensive)
+  const blink = getBlink(env);
+  const establishments = await blink.db.establishments.list({ where: { userId }, limit: 1 });
+  const est = (establishments[0] as any) ?? {};
+  const creditsUsed = Number(est.aiCreditsUsed) || 0;
+  const creditsLimit = Number(est.aiCreditsLimit) || 50;
+  const creditsLeft = Math.max(0, creditsLimit - creditsUsed);
+  if (creditsLeft < 3) {
+    return c.json({ error: 'NO_CREDITS', message: 'Génération vidéo nécessite 3 crédits.', creditsLeft }, 402);
+  }
+  try {
+    await blink.db.establishments.update(est.id, { aiCreditsUsed: creditsUsed + 3, updatedAt: new Date().toISOString() });
+  } catch { /* non-critical */ }
+
   const mc = body.marketingContext;
   const aspectRatio = (['9:16', '16:9', '1:1'].includes(body.aspectRatio ?? ''))
     ? body.aspectRatio as string

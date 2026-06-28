@@ -214,3 +214,127 @@ router.post('/api/billing/checkout', async (c) => {
 
   return c.json({ url: session.url });
 });
+
+// ── Credit Pack Checkout (one-time payment) ─────────────────────────────────
+
+const CREDIT_PACK_PRICES: Record<number, { credits: number; label: string }> = {
+  20:  { credits: 100,  label: 'Pack Starter — 100 crédits' },
+  50:  { credits: 250,  label: 'Pack Boost — 250 crédits' },
+  100: { credits: 500,  label: 'Pack Pro — 500 crédits' },
+  200: { credits: 1250, label: 'Pack Enterprise — 1250 crédits' },
+};
+
+router.post('/api/billing/credit-pack', async (c) => {
+  const env       = c.env as unknown as Env;
+  const rawEnv    = c.env as any;
+  const blink     = getBlink(env);
+  const stripeKey = rawEnv.STRIPE_SECRET_KEY as string | undefined;
+
+  // 1. Auth
+  const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
+  if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
+
+  // 2. Stripe configured?
+  if (!stripeKey) {
+    return c.json({ error: 'Stripe not configured', code: 'NO_STRIPE_KEY' }, 503);
+  }
+
+  // 3. Parse body
+  const body = await c.req.json<{ amount?: number }>();
+  const amount = body?.amount;
+
+  if (!amount || amount < 5) {
+    return c.json({ error: 'Montant invalide. Minimum : 5 €.' }, 400);
+  }
+
+  // 4. Determine pack credits (or custom amount at 0.20€/credit)
+  const pack = CREDIT_PACK_PRICES[amount];
+  const credits = pack?.credits ?? Math.floor(amount / 0.2);
+  const label = pack?.label ?? `Recharge libre — ${credits} crédits`;
+
+  // 5. Get or create Stripe customer
+  const meta = await getUserMeta(blink, auth.userId);
+  let customerId = meta.stripe_customer_id as string | undefined;
+
+  if (!customerId) {
+    const usersResult = await blink.db.users.list({ where: { id: auth.userId } });
+    const user = usersResult?.[0];
+    const email = (user as any)?.email || '';
+
+    const custRes = await fetch('https://api.stripe.com/v1/customers', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${stripeKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ email, 'metadata[userId]': auth.userId }).toString(),
+    });
+    if (custRes.ok) {
+      const cust = await custRes.json() as { id: string };
+      customerId = cust.id;
+      await blink.db.users.update(auth.userId, {
+        metadata: JSON.stringify({ ...((meta as any) || {}), stripe_customer_id: cust.id }),
+      });
+    }
+  }
+
+  // 6. Create one-time checkout session
+  const baseUrl = 'https://kompilot.blinkpowered.com';
+  const sessionParams = new URLSearchParams({
+    mode: 'payment',
+    'line_items[0][price_data][currency]': 'eur',
+    'line_items[0][price_data][product_data][name]': label,
+    'line_items[0][price_data][product_data][description]': `${credits} crédits IA pour Kompilot`,
+    'line_items[0][price_data][unit_amount]': String(amount * 100), // Stripe uses cents
+    'line_items[0][quantity]': '1',
+    success_url: `${baseUrl}/dashboard?checkout=credit_pack&credits=${credits}`,
+    cancel_url: `${baseUrl}/account?tab=billing`,
+    'metadata[userId]': auth.userId,
+    'metadata[creditPack]': 'true',
+    'metadata[credits]': String(credits),
+  });
+
+  if (customerId) {
+    sessionParams.set('customer', customerId);
+  }
+
+  const sessRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${stripeKey}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: sessionParams.toString(),
+  });
+
+  if (!sessRes.ok) {
+    const detail = await sessRes.text();
+    console.error('[billing/credit-pack] Stripe error:', detail);
+    return c.json({ error: 'Checkout creation failed', detail }, 502);
+  }
+
+  const session = await sessRes.json() as { url: string };
+
+  // 7. Log the credit pack purchase attempt
+  try {
+    const logId = `cp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    await blink.db.complianceConsentLog.create({
+      id:               logId,
+      userId:           auth.userId,
+      cgvVersion:       'CREDIT_PACK',
+      cgvAccepted:      1,
+      retractionWaived: 0,
+      acceptedAt:       new Date().toISOString(),
+      serverTimestamp:  new Date().toISOString(),
+      ip:               c.req.header('cf-connecting-ip') || 'unknown',
+      userAgent:        c.req.header('user-agent') || 'unknown',
+      planId:           `credit_pack_${credits}`,
+      checkoutType:     'credit_pack',
+      renouncedTrial:   0,
+    });
+  } catch (logErr) {
+    console.error('[billing/credit-pack] Log failed (non-fatal):', logErr);
+  }
+
+  return c.json({ url: session.url });
+});

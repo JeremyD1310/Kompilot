@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, Link } from '@tanstack/react-router';
 import { Zap, LogIn, Menu, X } from 'lucide-react';
 import { LoginModal } from './LoginModal';
 
@@ -11,10 +11,12 @@ export function Logo({ size = 30 }: { size?: number }) {
 
 // ─── Nav link definitions ────────────────────────────────────────────────────
 const NAV_LINKS = [
-  { label: 'Pro',         href: '#commerce',   isAudience: 'commerce' as const },
-  { label: 'Agence',      href: '#agency',      isAudience: 'agency'   as const },
-  { label: 'Tarifs',      href: '#tarifs',      isAudience: null },
-  { label: 'Témoignages', href: '#temoignages', isAudience: null },
+  { label: 'Pro',           href: '#commerce',       isAudience: 'commerce' as const },
+  { label: 'Agence',        href: '#agency',          isAudience: 'agency'   as const },
+  { label: 'Tarifs',        href: '#tarifs',          isAudience: null },
+  { label: 'Témoignages',   href: '#temoignages',     isAudience: null },
+  { label: 'Tarifs Pro',    href: '/pricing-pro',     isAudience: null, isRoute: true },
+  { label: 'Tarifs Agence', href: '/pricing-agency',  isAudience: null, isRoute: true },
 ] as const;
 
 type Audience = 'commerce' | 'agency';
@@ -98,21 +100,37 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
 
           {/* ── Desktop nav links ────────────────────────────────────────── */}
           <div className="hidden md:flex" style={{ alignItems: 'center', gap: 44 }}>
-            {NAV_LINKS.map(({ label, href, isAudience }) => {
+            {NAV_LINKS.map((navLink) => {
+              const { label, href, isAudience } = navLink;
+              const isRoute = 'isRoute' in navLink && navLink.isRoute;
               const isActive = isAudience ? audience === isAudience : false;
               const activeColor = isAudience === 'agency' ? '#818CF8' : '#0D9488';
+              const linkClass = [
+                'relative pb-1 no-underline transition-colors duration-200 cursor-pointer',
+                'text-[.91rem] tracking-[.015em]',
+                isActive
+                  ? 'text-[#E2E8F0] font-bold'
+                  : 'text-[#94A3B8] font-medium hover:text-[#E2E8F0]',
+              ].join(' ');
+
+              if (isRoute) {
+                return (
+                  <Link
+                    key={label}
+                    to={href as string}
+                    className={linkClass}
+                  >
+                    {label}
+                  </Link>
+                );
+              }
+
               return (
                 <a
                   key={label}
                   href={href}
                   onClick={e => { e.preventDefault(); scrollToHref(href, setAudience, audience); }}
-                  className={[
-                    'relative pb-1 no-underline transition-colors duration-200 cursor-pointer',
-                    'text-[.91rem] tracking-[.015em]',
-                    isActive
-                      ? 'text-[#E2E8F0] font-bold'
-                      : 'text-[#94A3B8] font-medium hover:text-[#E2E8F0]',
-                  ].join(' ')}
+                  className={linkClass}
                 >
                   {label}
                   {/* Active underline */}
@@ -185,24 +203,41 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
           <div style={{ padding: '12px 24px 20px' }}>
             {/* Nav links */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 16 }}>
-              {NAV_LINKS.map(({ label, href, isAudience }) => {
+              {NAV_LINKS.map((navLink) => {
+                const { label, href, isAudience } = navLink;
+                const isRoute = 'isRoute' in navLink && navLink.isRoute;
                 const isActive = isAudience ? audience === isAudience : false;
                 const activeColor = isAudience === 'agency' ? '#818CF8' : '#0D9488';
+                const linkStyle = {
+                  display: 'flex' as const, alignItems: 'center' as const, justifyContent: 'space-between' as const,
+                  padding: '10px 14px', borderRadius: 10,
+                  color: isActive ? '#E2E8F0' : '#94A3B8',
+                  fontWeight: isActive ? 700 : 500,
+                  fontSize: '.92rem',
+                  textDecoration: 'none',
+                  background: isActive ? 'rgba(255,255,255,.05)' : 'transparent',
+                  transition: 'background .15s, color .15s',
+                };
+
+                if (isRoute) {
+                  return (
+                    <Link
+                      key={label}
+                      to={href as string}
+                      style={linkStyle}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <span>{label}</span>
+                    </Link>
+                  );
+                }
+
                 return (
                   <a
                     key={label}
                     href={href}
                     onClick={e => { e.preventDefault(); handleMobileLink(href); }}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '10px 14px', borderRadius: 10,
-                      color: isActive ? '#E2E8F0' : '#94A3B8',
-                      fontWeight: isActive ? 700 : 500,
-                      fontSize: '.92rem',
-                      textDecoration: 'none',
-                      background: isActive ? 'rgba(255,255,255,.05)' : 'transparent',
-                      transition: 'background .15s, color .15s',
-                    }}
+                    style={linkStyle}
                   >
                     <span>{label}</span>
                     {isActive && (

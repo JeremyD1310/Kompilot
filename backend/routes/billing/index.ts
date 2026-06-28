@@ -8,6 +8,7 @@
  *                 GET  /api/billing/status
  *
  *   checkout.ts → POST /api/billing/checkout
+ *                 POST /api/billing/credit-pack
  *
  *   vat.ts      → POST   /api/billing/vat/validate
  *                 GET    /api/billing/vat

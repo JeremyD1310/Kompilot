@@ -300,9 +300,23 @@ function DirectMessagesPanel({
               <RefreshCw size={18} className="animate-spin text-muted-foreground" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-2 text-muted-foreground p-6 text-center">
-              <Inbox size={32} className="opacity-30" />
-              <p className="text-sm">Aucun message</p>
+            <div className="flex-1 flex flex-col items-center justify-center gap-4 text-muted-foreground p-8 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <Inbox size={28} className="text-primary/60" />
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-sm font-bold text-foreground">Boîte de réception vide</p>
+                <p className="text-xs text-muted-foreground max-w-[260px]">
+                  {search || channelFilter !== 'all'
+                    ? 'Aucun message ne correspond à vos filtres. Essayez d\'élargir votre recherche.'
+                    : 'Vos messages, avis et commentaires apparaîtront ici dès que vos canaux seront connectés.'}
+                </p>
+              </div>
+              {!search && channelFilter === 'all' && (
+                <Button variant="outline" size="sm" onClick={onNewMessage} className="gap-2 text-xs">
+                  <Plus size={14} /> Envoyer un message test
+                </Button>
+              )}
             </div>
           ) : (
             <MessageList messages={filtered} selectedId={selectedId} onSelect={handleSelect} onArchive={handleArchive} />

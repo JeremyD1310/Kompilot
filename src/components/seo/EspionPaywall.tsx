@@ -4,13 +4,32 @@
  */
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Zap, Crown, CreditCard, TrendingUp, Check } from 'lucide-react';
+import { Lock, Zap, Crown, CreditCard, TrendingUp, Check, Loader2 } from 'lucide-react';
 import { Button, toast } from '@blinkdotnew/ui';
+import { blink } from '../../blink/client';
+
+const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
 
 interface EspionPaywallProps {
   plan: string; // 'starter' | 'agency' | 'pro' | 'expert'
   onRecharge?: (amount: number) => void;
   onUpgrade?: () => void;
+}
+
+async function createCreditPackCheckout(amount: number): Promise<string | null> {
+  try {
+    const token = await blink.auth.getValidToken();
+    const res = await fetch(`${BACKEND_URL}/api/billing/credit-pack`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ amount }),
+    });
+    if (!res.ok) throw new Error('Checkout creation failed');
+    const data = await res.json() as { url?: string };
+    return data.url ?? null;
+  } catch {
+    return null;
+  }
 }
 
 const CREDIT_PACKS = [
@@ -23,9 +42,28 @@ const CREDIT_PACKS = [
 
 export function EspionPaywall({ plan, onRecharge, onUpgrade }: EspionPaywallProps) {
   const [customAmount, setCustomAmount] = useState('');
+  const [loadingPack, setLoadingPack] = useState<number | null>(null);
   const isStarter = plan === 'starter' || plan === 'pro';
 
   const customCredits = customAmount ? Math.floor(Number(customAmount) / 0.2) : 0;
+
+  const handlePackClick = async (amount: number) => {
+    setLoadingPack(amount);
+    try {
+      const url = await createCreditPackCheckout(amount);
+      if (url) {
+        window.location.href = url;
+      } else {
+        // Fallback: call parent handler (legacy or demo mode)
+        onRecharge?.(amount);
+        toast.info(`Recharge de ${amount} € — mode démo`);
+      }
+    } catch {
+      toast.error('Erreur lors de la création du checkout');
+    } finally {
+      setLoadingPack(null);
+    }
+  };
 
   return (
     <motion.div
@@ -54,16 +92,18 @@ export function EspionPaywall({ plan, onRecharge, onUpgrade }: EspionPaywallProp
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 + i * 0.06 }}
-            onClick={() => {
-              toast.success(`Redirection vers Stripe pour ${pack.amount} €...`);
-              onRecharge?.(pack.amount);
-            }}
+            onClick={() => handlePackClick(pack.amount)}
             className={`relative rounded-xl border p-4 text-left transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 ${
               pack.badge
                 ? 'border-primary/30 bg-primary/5'
                 : 'border-border bg-card hover:bg-muted/20'
             }`}
           >
+            {loadingPack === pack.amount && (
+              <div className="absolute inset-0 bg-card/80 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
+                <Loader2 size={20} className="animate-spin text-primary" />
+              </div>
+            )}
             {pack.badge && (
               <span className="absolute -top-2 -right-2 text-[10px] font-black bg-primary text-primary-foreground rounded-full px-2 py-0.5 shadow-sm">
                 {pack.badge}
@@ -105,10 +145,7 @@ export function EspionPaywall({ plan, onRecharge, onUpgrade }: EspionPaywallProp
             size="sm"
             variant="outline"
             disabled={!customAmount || Number(customAmount) < 5}
-            onClick={() => {
-              toast.success(`Redirection vers Stripe pour ${customAmount} €...`);
-              onRecharge?.(Number(customAmount));
-            }}
+            onClick={() => handlePackClick(Number(customAmount))}
             className="mt-2 h-8 text-xs"
           >
             Recharger
