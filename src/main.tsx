@@ -31,6 +31,7 @@ import { BrandSettingsProvider } from './context/BrandSettingsContext'
 import { BYOKProvider } from './context/BYOKContext'
 import { EcoModeProvider } from './context/EcoModeContext'
 import { TrialProvider } from './context/TrialContext'
+import { IntegrationStatusProvider } from './context/IntegrationStatusContext'
 import { PremiumActionGate } from './components/shared/PremiumActionGate'
 import { CookieBanner } from './components/layout/CookieBanner'
 import { HelpFeedbackButton } from './components/layout/HelpFeedbackButton'
@@ -68,6 +69,7 @@ function compose(...providers: ProviderComponent[]) {
 // Static providers — defined once at module level (don't depend on runtime state)
 const StaticProviders = compose(
   AdminProvider,
+  IntegrationStatusProvider,
   DemoViewProvider,
   DemoModeProvider,
   UserProfileProviderWithAuth,
