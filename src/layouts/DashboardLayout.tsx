@@ -63,6 +63,11 @@ import { AlertSettingsProvider } from '../context/AlertSettingsContext';
 import { FirebaseProvider } from '../components/firebase/FirebaseProvider';
 import { useFirebaseAnalytics } from '../hooks/useFirebaseAnalytics';
 import { LaunchChecklistWidget } from '../components/dashboard/LaunchChecklistWidget';
+import { AccountHealthBanner } from '../components/shared/AccountHealthBanner';
+import { ApiKeyOnboardingWizard } from '../components/onboarding/ApiKeyOnboardingWizard';
+import type { IntegrationId } from '../context/IntegrationStatusContext';
+import { useTelemetry } from '../hooks/useTelemetry';
+import { toast } from '@blinkdotnew/ui';
 
 function CreditsExhaustedBanner() {
   const { isEmpty } = useCredits();
@@ -101,6 +106,12 @@ export function DashboardLayout() {
 
   // Firebase Analytics — auto page view tracking
   useFirebaseAnalytics();
+
+  // Telemetry — track route changes for health scoring
+  const trackPage = useTelemetry();
+  useEffect(() => {
+    trackPage('account_health_banner_viewed', { page: currentPath });
+  }, [currentPath]);
   const [createPostOpen, setCreatePostOpen] = useState(false);
   const [closureAlertOpen, setClosureAlertOpen] = useState(false);
   const [paymentFailed, setPaymentFailedState] = useState(() => getPaymentFailed());
@@ -130,6 +141,7 @@ export function DashboardLayout() {
   const [displayModeOpen, setDisplayModeOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [oneTapOpen, setOneTapOpen] = useState(false);
+  const [apiKeyWizardOpen, setApiKeyWizardOpen] = useState(false);
   const { latestToast, clearToast } = useNotifications();
 
   useEffect(() => {
@@ -279,6 +291,7 @@ export function DashboardLayout() {
             <SubscriptionStatusBanner />
             {/* External API outage banner — shown when Google/Meta/OpenAI are down */}
             <ExternalApiOutageBanner />
+            <AccountHealthBanner onConfigureApi={() => setApiKeyWizardOpen(true)} />
             <ProactiveNotificationBanner />
             <CreditsExhaustedBanner />
             <div className="flex-1">
@@ -343,6 +356,30 @@ export function DashboardLayout() {
         <MentorOneTapBar open={oneTapOpen} onClose={() => setOneTapOpen(false)} />
         <ROIPushEngine />
         <CommandMenu />
+
+        {/* API Key Onboarding Wizard — accessible from AccountHealthBanner or settings */}
+        {apiKeyWizardOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-[#0F172A] text-white shadow-2xl p-6"
+              style={{ border: '1px solid rgba(13,148,136,0.25)' }}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[10px] font-black uppercase tracking-wider">
+                  Configuration des API
+                </div>
+                <button onClick={() => setApiKeyWizardOpen(false)} className="text-xs text-slate-400 hover:text-white transition-colors cursor-pointer">
+                  Fermer
+                </button>
+              </div>
+              <ApiKeyOnboardingWizard
+                onComplete={(results) => {
+                  setApiKeyWizardOpen(false);
+                  toast.success('Clés API enregistrées', { description: 'Vos intégrations sont maintenant actives.' });
+                }}
+                onSkip={() => setApiKeyWizardOpen(false)}
+              />
+            </div>
+          </div>
+        )}
         <DemoNotificationEngine />
         <DemoViewRedirector />
       </AppShell>

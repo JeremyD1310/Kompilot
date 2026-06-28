@@ -113,6 +113,8 @@ import { router as seoGapRouter }                from './routes/seoGapAnalysis';
 import { router as urlToVideoRouter }            from './routes/urlToVideo';
 import { router as ugcScriptRouter }             from './routes/ugcScript';
 import { router as voiceoverRouter }              from './routes/voiceover';
+import { rgpdRouter }                             from './routes/rgpd';
+import { platformWebhooksRouter }                 from './routes/platformWebhooks';
 
 const app = new Hono();
 
@@ -167,6 +169,8 @@ app.route('/', seoGapRouter);
 app.route('/', urlToVideoRouter);
 app.route('/', ugcScriptRouter);
 app.route('/', voiceoverRouter);
+app.route('/', rgpdRouter);
+app.route('/', platformWebhooksRouter);
 
 // ── Global error handler ─────────────────────────────────────────────────────
 app.onError((err, c) => {

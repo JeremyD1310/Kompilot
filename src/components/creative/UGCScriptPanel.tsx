@@ -11,6 +11,9 @@ import {
 import { Button, toast } from '@blinkdotnew/ui';
 import { useGenerateUGCScript, type UGCScript } from '../../hooks/useUGCScript';
 import { UGCScriptResult } from './UGCScriptResult';
+import { useDemoMode } from '../../context/DemoModeContext';
+import { MOCK_UGC_SCRIPTS } from '../../lib/fixtures/creativeStudioFixtures';
+import { useTelemetry } from '../../hooks/useTelemetry';
 
 interface UGCScriptPanelProps {
   initialTopic?: string;
@@ -80,6 +83,8 @@ function TypingSkeleton() {
 
 export function UGCScriptPanel({ initialTopic, initialKeywords, onSchedule }: UGCScriptPanelProps) {
   const navigate = useNavigate();
+  const { isDemoActive } = useDemoMode();
+  const track = useTelemetry();
 
   // Input state
   const [topic, setTopic] = useState(initialTopic ?? '');
@@ -93,6 +98,20 @@ export function UGCScriptPanel({ initialTopic, initialKeywords, onSchedule }: UG
 
   const handleGenerate = useCallback(() => {
     if (!topic.trim()) return;
+    track('creative_studio_generation_click', { type: 'ugc_script', tone, demo: isDemoActive });
+
+    // Demo mode: return mock data instantly
+    if (isDemoActive) {
+      const mock = MOCK_UGC_SCRIPTS[0];
+      setScript({
+        fullScript: `${mock.hook.text}\n\n${mock.bodyPoints.map(p => p.text).join('\n')}\n\n${mock.cta.text}`,
+        hook: mock.hook.text,
+        body: mock.bodyPoints.map(p => p.text).join('\n'),
+        cta: mock.cta.text,
+      } as unknown as UGCScript);
+      track('creative_studio_generation_complete', { type: 'ugc_script', demo: true });
+      return;
+    }
 
     const keywords = keywordsInput
       .split(',')
@@ -102,13 +121,17 @@ export function UGCScriptPanel({ initialTopic, initialKeywords, onSchedule }: UG
     generateMutation.mutate(
       { topic: topic.trim(), tone, keywords: keywords.length > 0 ? keywords : undefined },
       {
-        onSuccess: (data) => setScript(data),
+        onSuccess: (data) => {
+          setScript(data);
+          track('creative_studio_generation_complete', { type: 'ugc_script', demo: false });
+        },
         onError: (err) => {
           toast.error(err instanceof Error ? err.message : 'Erreur lors de la génération');
+          track('creative_studio_generation_error', { type: 'ugc_script', error: String(err) });
         },
       },
     );
-  }, [topic, tone, keywordsInput, generateMutation]);
+  }, [topic, tone, keywordsInput, generateMutation, isDemoActive, track]);
 
   const handleSchedule = useCallback((s: UGCScript) => {
     if (onSchedule) onSchedule(s);

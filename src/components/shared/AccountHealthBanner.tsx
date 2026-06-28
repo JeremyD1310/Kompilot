@@ -12,7 +12,12 @@ import { Button, toast } from '@blinkdotnew/ui';
 import { useIntegrationStatus } from '../../context/IntegrationStatusContext';
 import { useTelemetry } from '../../hooks/useTelemetry';
 
-export function AccountHealthBanner() {
+interface AccountHealthBannerProps {
+  /** Called when user clicks "Configurer mes API" */
+  onConfigureApi?: () => void;
+}
+
+export function AccountHealthBanner({ onConfigureApi }: AccountHealthBannerProps) {
   const { isAccountIncomplete, connectedCount, dismissIncompleteBanner } = useIntegrationStatus();
   const track = useTelemetry();
   const [visible, setVisible] = useState(false);
@@ -79,6 +84,20 @@ export function AccountHealthBanner() {
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+              {onConfigureApi && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    track('account_health_banner_cta_clicked', { action: 'configure_api' });
+                    onConfigureApi();
+                  }}
+                  className="gap-1.5 text-xs flex-1 sm:flex-initial"
+                  style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#F1F5F9' }}
+                >
+                  Configurer mes API
+                </Button>
+              )}
               <Button
                 size="sm"
                 onClick={handleBookCall}

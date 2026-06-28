@@ -14,6 +14,7 @@ import { openAIChat } from '../hooks/useMentorTriggers';
 import { useTrial } from '../context/TrialContext';
 import { FirebaseStatusBadge } from '../components/firebase/FirebaseStatusBadge';
 import { KompilotLogo } from '../components/brand/KompilotLogo';
+import { SandboxToggle } from '../components/dashboard/SandboxToggle';
 
 // ── UserChipDropdown ──────────────────────────────────────────────────────────
 function UserChipDropdown({ displayName, userInitials }: { displayName: string; userInitials: string }) {
@@ -196,6 +197,7 @@ export function DashboardTopbar({
             </div>
           </Link>
         )}
+        <SandboxToggle />
         <AsyncJobToast />
         <PWAInstallButton />
         <div className="hidden md:block">

@@ -16,6 +16,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { URLSnapshotWidget } from './URLSnapshotWidget';
 import type { SnapshotData } from '../../hooks/useURLSnapshot';
 import { StepAPIConnectors } from './steps/StepAPIConnectors';
+import { ApiKeyOnboardingWizard } from './ApiKeyOnboardingWizard';
 import { StepAgencyROI } from './steps/StepAgencyROI';
 import { StepAgencyWhiteLabel } from './steps/StepAgencyWhiteLabel';
 import { StepAgencyClients } from './steps/StepAgencyClients';
@@ -42,6 +43,7 @@ export function SmartOnboardingWizard({ open, onComplete }: Props) {
   const [followLocalEvents, setFollowLocalEvents] = useState(true);
   const [showVideo, setShowVideo] = useState(false);
   const [notifGranted, setNotifGranted] = useState<boolean | null>(null);
+  const [showApiKeyWizard, setShowApiKeyWizard] = useState(false);
 
   if (!open) return null;
 
