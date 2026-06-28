@@ -1,15 +1,18 @@
 /**
  * UGCScriptResult — Displays the generated UGC script with Hook → Body → CTA.
- * Includes full script, voice notes, hook variations, and action buttons.
+ * Includes full script, voice notes, hook variations, action buttons,
+ * and premium voiceover generation with French UGC voice presets.
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown, ChevronUp, HelpCircle, Flame, BarChart3,
   BookOpen, CheckCircle2, Copy, CalendarCheck, Video,
+  Volume2, VolumeX, Loader2, Mic,
 } from 'lucide-react';
 import { Button, toast } from '@blinkdotnew/ui';
 import type { UGCScript } from '../../hooks/useUGCScript';
+import { useGenerateVoiceover, type VoicePreset } from '../../hooks/useVoiceover';
 
 interface UGCScriptResultProps {
   script: UGCScript;
@@ -36,6 +39,57 @@ const CTA_TYPE_BADGES: Record<UGCScript['cta']['type'], string> = {
 export function UGCScriptResult({ script, onSchedule, onSendToStudio }: UGCScriptResultProps) {
   const [activeHook, setActiveHook] = useState<string | null>(null);
   const [showFullScript, setShowFullScript] = useState(false);
+
+  // Voiceover state
+  const [selectedVoice, setSelectedVoice] = useState('nova');
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const voiceoverMutation = useGenerateVoiceover();
+
+  // French UGC voice presets
+  const FRENCH_VOICES = [
+    { id: 'nova',     emoji: '🎙️', label: 'Nova',     desc: 'Chaleureuse, naturelle' },
+    { id: 'shimmer',  emoji: '✨',  label: 'Shimmer',  desc: 'Douce, apaisante' },
+    { id: 'fable',    emoji: '📖',  label: 'Fable',    desc: 'Expressive, storytelling' },
+    { id: 'onyx',     emoji: '🎯',  label: 'Onyx',     desc: 'Profonde, autoritaire' },
+    { id: 'echo',     emoji: '🔊',  label: 'Echo',     desc: 'Claire, articulée' },
+    { id: 'alloy',    emoji: '⚖️',  label: 'Alloy',    desc: 'Neutre, équilibrée' },
+  ];
+
+  const handleGenerateVoiceover = useCallback(async () => {
+    const textToSpeak = script.fullScript || `${script.hook.text}. ${script.body.points.map(p => p.text).join('. ')}. ${script.cta.text}`;
+    voiceoverMutation.mutate(
+      { text: textToSpeak, voice: selectedVoice },
+      {
+        onSuccess: (result) => {
+          setAudioUrl(result.audio);
+          toast.success('Voix générée !', { description: `${FRENCH_VOICES.find(v => v.id === selectedVoice)?.label} — ${result.charactersUsed} caractères` });
+        },
+        onError: (err) => {
+          toast.error('Erreur de génération vocale : ' + (err?.message || 'Réessayez'));
+        },
+      },
+    );
+  }, [script, selectedVoice, voiceoverMutation]);
+
+  const handlePlayStop = useCallback(() => {
+    if (!audioUrl) return;
+    if (isPlaying) {
+      audioRef.current?.pause();
+      if (audioRef.current) audioRef.current.currentTime = 0;
+      setIsPlaying(false);
+    } else {
+      if (!audioRef.current) {
+        audioRef.current = new Audio(audioUrl);
+        audioRef.current.onended = () => setIsPlaying(false);
+      } else {
+        audioRef.current.src = audioUrl;
+      }
+      audioRef.current.play().catch(() => toast.error('Lecture impossible'));
+      setIsPlaying(true);
+    }
+  }, [audioUrl, isPlaying]);
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(script.fullScript).then(
@@ -182,6 +236,81 @@ export function UGCScriptResult({ script, onSchedule, onSendToStudio }: UGCScrip
           </p>
         </motion.div>
       )}
+
+      {/* ── Voiceover Generator ─────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.38 }}
+        className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-4 space-y-3"
+      >
+        <p className="text-[10px] font-bold text-violet-400 uppercase tracking-wider flex items-center gap-1.5">
+          <Mic size={11} /> Génération vocale premium
+        </p>
+        <p className="text-[11px] text-muted-foreground">
+          Générez une voix off professionnelle pour votre script UGC en français.
+        </p>
+
+        {/* Voice selector pills */}
+        <div className="flex flex-wrap gap-1.5">
+          {FRENCH_VOICES.map((v) => (
+            <button
+              key={v.id}
+              onClick={() => { setSelectedVoice(v.id); setAudioUrl(null); setIsPlaying(false); }}
+              title={v.desc}
+              className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all duration-150 ${
+                selectedVoice === v.id
+                  ? 'border-violet-500/50 bg-violet-500/20 text-violet-300 shadow-sm'
+                  : 'border-border bg-muted/30 text-muted-foreground hover:border-violet-500/30 hover:text-foreground'
+              }`}
+            >
+              <span>{v.emoji}</span>
+              {v.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Action row */}
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleGenerateVoiceover}
+            disabled={voiceoverMutation.isPending}
+            className="flex-1 h-9 gap-2 text-xs border-violet-500/30 text-violet-300 hover:bg-violet-500/10 hover:border-violet-500/50"
+          >
+            {voiceoverMutation.isPending ? (
+              <><Loader2 size={13} className="animate-spin" /> Génération…</>
+            ) : (
+              <><Mic size={13} /> Générer la voix off</>
+            )}
+          </Button>
+
+          {audioUrl && (
+            <Button
+              size="sm"
+              onClick={handlePlayStop}
+              className={`h-9 gap-2 text-xs font-bold ${
+                isPlaying
+                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30'
+                  : 'bg-violet-500/20 text-violet-300 border border-violet-500/30 hover:bg-violet-500/30'
+              }`}
+            >
+              {isPlaying ? <><VolumeX size={13} /> Stop</> : <><Volume2 size={13} /> Écouter</>}
+            </Button>
+          )}
+
+          {audioUrl && (
+            <a
+              href={audioUrl}
+              download="kompilot-voiceover.mp3"
+              className="flex items-center gap-1.5 text-[11px] text-violet-400 hover:text-violet-300 transition-colors"
+            >
+              <Video size={12} /> Télécharger
+            </a>
+          )}
+        </div>
+      </motion.div>
 
       {/* ── Hook variations ────────────────────────────────────────────── */}
       {script.suggestedVariations.length > 0 && (

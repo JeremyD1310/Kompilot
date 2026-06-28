@@ -21,8 +21,7 @@ import { UGCScriptSection } from '../components/cockpit/UGCScriptSection';
 // MODULE: Enhanced UGC Script Panel (Hook → Body → CTA)
 import { UGCScriptPanel } from '../components/creative/UGCScriptPanel';
 // MODULE: URL-to-Video Ingestion
-import { URLIngestionBar } from '../components/creative/URLIngestionBar';
-import type { ScrapedData } from '../hooks/useURLToVideo';
+import { URLToVideoSection } from '../components/creative/URLToVideoSection';
 // MODULE: Générateur d'annonces sectorielles (identique landing page)
 import { KompilotAdGenerator } from '../components/landing/KompilotAdGenerator';
 
@@ -148,6 +147,14 @@ export default function AICreativeStudioPage() {
         {activeTab === 'image'      && <ImageGeneratorSection userId={user?.id} />}
         {activeTab === 'video'      && <UGCScriptSection       userId={user?.id} />}
         {activeTab === 'watermark'  && <WatermarkSection      userId={user?.id} />}
+        {/* MODULE: URL-to-Video Ingestion */}
+        {activeTab === 'urltovideo' && (
+          <URLToVideoSection userId={user?.id} />
+        )}
+        {/* MODULE: Enhanced UGC Script (Hook → Body → CTA) */}
+        {activeTab === 'ugc_hook' && (
+          <UGCScriptPanel />
+        )}
         {/* MODULE 2: Typography Studio with Social Mirror */}
         {activeTab === 'typography' && (
           <TypographyStudioPanel

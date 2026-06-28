@@ -27,6 +27,8 @@ const KompilotShowcasePage  = React.lazy(() => import('../pages/demo/KompilotSho
 const KompilotOnboardingPage = React.lazy(() => import('../pages/KompilotOnboardingPage'));
 const KompilotROIDashboardPage = React.lazy(() => import('../pages/KompilotROIDashboardPage'));
 const PricingPage              = React.lazy(() => import('../pages/PricingPage'));
+const PricingProPage           = React.lazy(() => import('../pages/PricingProPage'));
+const PricingAgencyPage        = React.lazy(() => import('../pages/PricingAgencyPage'));
 
 export const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: LandingPage });
 export const loginRoute = createRoute({ getParentRoute: () => rootRoute, path: '/login', component: LoginPage });
@@ -53,6 +55,8 @@ export const showcaseRoute = createRoute({ getParentRoute: () => rootRoute, path
 export const kompilotOnboardingRoute = createRoute({ getParentRoute: () => rootRoute, path: '/onboarding-copilot', component: KompilotOnboardingPage });
 export const kompilotROIRoute = createRoute({ getParentRoute: () => rootRoute, path: '/roi-dashboard', component: KompilotROIDashboardPage });
 export const pricingRoute      = createRoute({ getParentRoute: () => rootRoute, path: '/pricing',       component: PricingPage });
+export const pricingProRoute   = createRoute({ getParentRoute: () => rootRoute, path: '/pricing-pro',   component: PricingProPage });
+export const pricingAgencyRoute = createRoute({ getParentRoute: () => rootRoute, path: '/pricing-agency', component: PricingAgencyPage });
 
 export const publicRoutes = [
   indexRoute,
@@ -79,4 +83,6 @@ export const publicRoutes = [
   kompilotOnboardingRoute,
   kompilotROIRoute,
   pricingRoute,
+  pricingProRoute,
+  pricingAgencyRoute,
 ];

@@ -115,6 +115,25 @@ export default function CalendarPage() {
   const [showPerformancePanel, setShowPerformancePanel] = useState(false);
   // AICopilotPanel is always mounted — it manages its own open/close FAB internally
 
+  // Read URL search params for prefill from UGC scripts or other sources
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const prefill = params.get('prefill');
+    const source = params.get('source');
+    if (prefill) {
+      setPrefillText(prefill);
+      setModalOpen(true);
+      // Clear URL params without reload to avoid re-triggering on refresh
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, '', cleanUrl);
+      if (source === 'ugc_script') {
+        toast.success('Script UGC chargé !', { description: 'Le script a été pré-rempli dans l\'éditeur.' });
+      } else if (source === 'url_to_video') {
+        toast.success('Script vidéo chargé !', { description: 'Le script généré depuis l\'URL a été pré-rempli.' });
+      }
+    }
+  }, []);
+
   const handleSmartRepostToggle = (v: boolean) => {
     setSmartRepost(v);
     try { localStorage.setItem('kompilot_smart_repost', String(v)); } catch { /* noop */ }

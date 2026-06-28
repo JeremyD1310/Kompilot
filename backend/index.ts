@@ -70,6 +70,10 @@
  *
  * UGC Script (routes/ugcScript.ts):
  *   POST /api/ugc-script/generate  — generate UGC video script (Hook/Body/CTA)
+ *
+ * Voiceover (routes/voiceover.ts):
+ *   POST /api/voiceover/generate   — generate TTS audio from text
+ *   GET  /api/voiceover/voices     — list available voice presets
  */
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
@@ -108,6 +112,7 @@ import { router as engagementMetricsRouter }     from './routes/engagementMetric
 import { router as seoGapRouter }                from './routes/seoGapAnalysis';
 import { router as urlToVideoRouter }            from './routes/urlToVideo';
 import { router as ugcScriptRouter }             from './routes/ugcScript';
+import { router as voiceoverRouter }              from './routes/voiceover';
 
 const app = new Hono();
 
@@ -161,6 +166,7 @@ app.route('/', engagementMetricsRouter);
 app.route('/', seoGapRouter);
 app.route('/', urlToVideoRouter);
 app.route('/', ugcScriptRouter);
+app.route('/', voiceoverRouter);
 
 // ── Global error handler ─────────────────────────────────────────────────────
 app.onError((err, c) => {
