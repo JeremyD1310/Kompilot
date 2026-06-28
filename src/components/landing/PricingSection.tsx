@@ -180,9 +180,19 @@ function PlanCard({
 
 interface PricingSectionProps {
   cta: (planId: string) => void;
+  /** Filter plans by audience tab: 'commerce' = Pro only, 'agency' = Agency + Enterprise */
+  audience?: 'commerce' | 'agency';
 }
 
-export function PricingSection({ cta }: PricingSectionProps) {
+export function PricingSection({ cta, audience }: PricingSectionProps) {
+  const filteredPlans = audience === 'commerce'
+    ? KOMPILOT_PLANS.filter(p => p.id === 'starter')
+    : audience === 'agency'
+      ? KOMPILOT_PLANS.filter(p => p.id === 'agency' || p.id === 'enterprise')
+      : KOMPILOT_PLANS;
+
+  const isFiltered = !!audience;
+
   return (
     <section
       id="tarifs"
@@ -209,14 +219,16 @@ export function PricingSection({ cta }: PricingSectionProps) {
             fontSize: 'clamp(1.9rem, 4.5vw, 2.8rem)', fontWeight: 900,
             color: TEXT, letterSpacing: '-0.03em', marginBottom: 14, lineHeight: 1.15,
           }}>
-            L'infrastructure IA qui fait croître<br />vos clients et vos revenus.
+            {audience === 'agency'
+              ? <>L'infrastructure IA qui fait croître<br />vos clients et vos revenus.</>
+              : <>L'IA qui gère votre présence,<br />pendant que vous gérez votre business.</>}
           </h2>
           <p style={{ fontSize: '1rem', color: MUTED, maxWidth: 520, margin: '0 auto', lineHeight: 1.6 }}>
             Prix HT · Facturation mensuelle · Résiliation sans frais à tout moment · Essai 14 jours inclus
           </p>
         </div>
 
-        {/* Grille des 3 plans */}
+        {/* Grille des plans filtrés */}
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
@@ -224,7 +236,7 @@ export function PricingSection({ cta }: PricingSectionProps) {
           justifyContent: 'center',
           alignItems: 'stretch',
         }}>
-          {KOMPILOT_PLANS.map(plan => (
+          {filteredPlans.map(plan => (
             <PlanCard key={plan.id} plan={plan} onCta={cta} />
           ))}
         </div>

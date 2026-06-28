@@ -185,7 +185,7 @@ export default function LandingPage() {
       <LandingTestimonials reviews={reviews} audience={audience} />
 
       <div id="pricing">
-        <PricingSection cta={handlePricingCta} />
+        <PricingSection cta={handlePricingCta} audience={audience} />
       </div>
 
       <IntegrationsSection />
