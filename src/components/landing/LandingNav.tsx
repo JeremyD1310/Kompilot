@@ -11,12 +11,10 @@ export function Logo({ size = 30 }: { size?: number }) {
 
 // ─── Nav link definitions ────────────────────────────────────────────────────
 const NAV_LINKS = [
-  { label: 'Pro',           href: '#commerce',       isAudience: 'commerce' as const },
-  { label: 'Agence',        href: '#agency',          isAudience: 'agency'   as const },
-  { label: 'Tarifs',        href: '#tarifs',          isAudience: null },
-  { label: 'Témoignages',   href: '#temoignages',     isAudience: null },
-  { label: 'Tarifs Pro',    href: '/pricing-pro',     isAudience: null, isRoute: true },
-  { label: 'Tarifs Agence', href: '/pricing-agency',  isAudience: null, isRoute: true },
+  { label: 'Pro',         href: '#commerce',       isAudience: 'commerce' as const },
+  { label: 'Agence',      href: '#agency',          isAudience: 'agency'   as const },
+  { label: 'Tarifs',      href: '#tarifs',          isAudience: null },
+  { label: 'Témoignages', href: '#temoignages',     isAudience: null },
 ] as const;
 
 type Audience = 'commerce' | 'agency';
