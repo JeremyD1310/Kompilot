@@ -44,7 +44,10 @@ export type FeatureKey =
   | 'youtube_shorts'    // YouTube Shorts + Google Maps cross-posting
   // ── Franchise only ──
   | 'team_management'   // Team role management (RGPD-safe)
-  | 'multi_establish';  // Multi-establishment panel
+  | 'multi_establish'   // Multi-establishment panel
+  // ── Add-on gated (via useAddons, not plan tier) ──
+  | 'creative_premium'  // URL-to-Video mass, advanced AI scripts (+39€/mois)
+  | 'white_label';      // White-label AIO reports, CNAME, custom PDF (+49€/mois)
 
 // ── Access matrix ─────────────────────────────────────────────────────────────
 
@@ -62,6 +65,9 @@ const FEATURE_ACCESS: Record<FeatureKey, PlanTier[]> = {
   // Franchise only
   team_management:  ['franchise'],
   multi_establish:  ['franchise'],
+  // Add-on gated (available on all plans — actual gating via useAddons + AddonGate)
+  creative_premium: ['starter', 'business', 'franchise'],
+  white_label:      ['business', 'franchise'], // requires plan >= agency (business = agency)
 };
 
 export function canAccessFeature(feature: FeatureKey, tier: PlanTier): boolean {

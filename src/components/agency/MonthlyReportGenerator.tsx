@@ -297,15 +297,16 @@ export function MonthlyReportGenerator({ clientName, clientId, metrics = {} }: M
     doc.setTextColor(150, 150, 170);
     doc.text(`Généré le ${generatedDate}`, margin, pageH - 12);
 
+    // P1-2: Viral footer — URL visible for anyone who reads the PDF
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(99, 102, 241);
-    doc.text('Powered by Kompilot', pageW - margin, pageH - 12, { align: 'right' });
+    doc.text('Rapport généré via Kompilot — kompilot.fr', pageW - margin, pageH - 12, { align: 'right' });
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(180, 180, 200);
-    doc.text('© Kompilot — Marque Blanche', pageW / 2, pageH - 7, { align: 'center' });
+    doc.text('Automatisation marketing & visibilité IA — kompilot.fr/aio-checker', pageW / 2, pageH - 7, { align: 'center' });
 
     // ── Save ──────────────────────────────────────────────────────────────
     const fileName = `rapport-mensuel-${clientName.replace(/\s+/g, '-').toLowerCase()}-${monthSlug}-${yearSlug}.pdf`;

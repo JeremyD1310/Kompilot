@@ -8,16 +8,22 @@
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Database, Sparkles, AlertTriangle, ChevronDown } from 'lucide-react';
+import { Database, Sparkles, AlertTriangle, ChevronDown, Shield } from 'lucide-react';
 import { toast } from '@blinkdotnew/ui';
 import { useDemoMode } from '../../context/DemoModeContext';
 import { useIntegrationStatus } from '../../context/IntegrationStatusContext';
+import { useAdmin, isKompilotTeam } from '../../context/AdminContext';
+import { useAuth } from '../../hooks/useAuth';
+import { MODE_KEY } from '../layout/TeamModeSelector';
 
 type DataSource = 'live' | 'demo';
 
 export function SandboxToggle() {
   const { isDemoActive, activateDemo, deactivateDemo } = useDemoMode();
   const { problemCount, hasCriticalFailure } = useIntegrationStatus();
+  const { isAdminMode, enterAdminMode, exitAdminMode } = useAdmin();
+  const { user } = useAuth();
+  const isTeam = isKompilotTeam((user as any)?.email);
   const [expanded, setExpanded] = useState(false);
 
   const currentSource: DataSource = isDemoActive ? 'demo' : 'live';
@@ -54,12 +60,14 @@ export function SandboxToggle() {
           color: isDemoActive ? '#a78bfa' : '#0D9488',
         }}
       >
-        {isDemoActive ? (
+        {isAdminMode ? (
+          <Shield size={13} />
+        ) : isDemoActive ? (
           <Sparkles size={13} />
         ) : (
           <Database size={13} />
         )}
-        {isDemoActive ? 'Démo' : 'Live'}
+        {isAdminMode ? 'Admin' : isDemoActive ? 'Démo' : 'Live'}
         {problemCount > 0 && !isDemoActive && (
           <span className="ml-1 w-4 h-4 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-bold flex items-center justify-center">
             {problemCount}
@@ -136,6 +144,44 @@ export function SandboxToggle() {
                   <div className="w-2 h-2 rounded-full bg-violet-400 shrink-0" />
                 )}
               </button>
+
+              {/* Admin mode option — visible only for team members */}
+              {isTeam && (
+                <button
+                  onClick={() => {
+                    if (isAdminMode) {
+                      exitAdminMode();
+                      toast('Mode Admin désactivé', { description: 'Retour au mode utilisateur standard.' });
+                    } else {
+                      exitAdminMode();
+                      deactivateDemo();
+                      enterAdminMode();
+                      toast.success('Mode Admin activé', { description: 'Accès complet au panneau de contrôle interne.' });
+                    }
+                    sessionStorage.setItem(MODE_KEY, isAdminMode ? 'live' : 'admin');
+                    setExpanded(false);
+                  }}
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all duration-150 cursor-pointer"
+                  style={{
+                    background: isAdminMode ? 'rgba(13,148,136,0.12)' : 'transparent',
+                    border: isAdminMode ? '1px solid rgba(13,148,136,0.25)' : '1px solid transparent',
+                  }}
+                >
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ background: 'rgba(13,148,136,0.15)' }}>
+                    <Shield size={15} color="#2DD4BF" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold" style={{ color: '#F1F5F9' }}>Mode Admin</p>
+                    <p className="text-[11px]" style={{ color: '#64748B' }}>
+                      Panneau interne, clients, impersonation
+                    </p>
+                  </div>
+                  {isAdminMode && (
+                    <div className="w-2 h-2 rounded-full bg-teal-400 shrink-0" />
+                  )}
+                </button>
+              )}
 
               {/* Critical failure warning */}
               {hasCriticalFailure && !isDemoActive && (

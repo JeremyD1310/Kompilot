@@ -15,7 +15,6 @@ import { LandingFooter } from '../components/landing/LandingFooter';
 import { IntegrationsSection } from '../components/landing/IntegrationsSection';
 import { DemoCtaBanner } from '../components/landing/DemoCtaBanner';
 import { DemoNotificationEngine } from '../components/layout/DemoNotificationEngine';
-import { GeoScannerFlash } from '../components/landing/GeoScannerFlash';
 import { captureUtmParams, getUtmSector, track } from '../lib/tracking';
 import { getSectorConfig } from '../components/landing/UTMSectorAdapter';
 
@@ -154,11 +153,6 @@ export default function LandingPage() {
           </div>
         </div>
       )}
-
-      {/* ── GEO SCANNER FLASH ── */}
-      <div style={{ paddingBottom: 40 }}>
-        <GeoScannerFlash onCta={cta} />
-      </div>
 
       {/* STICKY TABS */}
       <div style={{ position:'sticky',top:64,zIndex:30,background:'rgba(11,17,32,.97)',backdropFilter:'blur(20px)',borderBottom:'1px solid rgba(255,255,255,.07)',padding:'8px 12px' }}>

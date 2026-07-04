@@ -186,4 +186,21 @@ export function useAdmin() {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
+/** Legacy single admin email — kept for backward compatibility */
 export const ADMIN_EMAIL = 'admin@kompilot.com';
+
+/** All team member emails that should auto-detect admin mode */
+export const TEAM_EMAILS = [
+  'jeremy@kompilot.fr',
+  'romain@kompilot.fr',
+  'valentine@kompilot.fr',
+  'admin@kompilot.com',
+  'test@kompilot.com',
+];
+
+/** Returns true if the email belongs to a Kompilot team member */
+export function isKompilotTeam(email?: string | null): boolean {
+  if (!email) return false;
+  const lower = email.trim().toLowerCase();
+  return TEAM_EMAILS.includes(lower) || lower.endsWith('@kompilot.fr');
+}

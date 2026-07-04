@@ -5,23 +5,27 @@
  * Les anciens plans free/pro 39€/expert 59€/franchise sont supprimés.
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { Button } from '@blinkdotnew/ui';
 import { ArrowLeft, Zap } from 'lucide-react';
 import { KompilotLogo } from '../components/brand/KompilotLogo';
 import {
-  PLANS,
+  getPlansForBilling,
   PlanCard,
   PricingFAQ,
   TrustStrip,
+  BillingToggle,
   type Plan,
+  type BillingInterval,
 } from '../components/pricing/PricingPageParts';
 import type { KompilotPlanId } from '../components/landing/pricing/PricingData';
 
 export default function PricingPage() {
   const [checkoutPlanId, setCheckoutPlanId] = useState<KompilotPlanId | null>(null);
+  const [billing, setBilling] = useState<BillingInterval>('monthly');
+  const plans = useMemo(() => getPlansForBilling(billing), [billing]);
 
   const handleCta = (plan: Plan) => {
     if (plan.id === 'enterprise') {
@@ -86,6 +90,9 @@ export default function PricingPage() {
         </p>
       </motion.div>
 
+      {/* ── Toggle Mensuel / Annuel ──────────────────────────────── */}
+      <BillingToggle billing={billing} onChange={setBilling} />
+
       {/* ── Grille des plans ──────────────────────────────────────── */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
         <div
@@ -94,7 +101,7 @@ export default function PricingPage() {
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
           }}
         >
-          {PLANS.map((plan, i) => (
+          {plans.map((plan, i) => (
             <PlanCard
               key={plan.id}
               plan={plan}

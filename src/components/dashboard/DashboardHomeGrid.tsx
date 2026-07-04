@@ -28,6 +28,7 @@ import {
 import { blink } from '../../blink/client';
 import { useAuth } from '../../hooks/useAuth';
 import { useEstablishment } from '../../context/EstablishmentContext';
+import { WeeklyAIOCard } from './WeeklyAIOCard';
 import { DashboardWelcome } from './DashboardWelcome';
 import { CopilotActivationWidget } from './CopilotActivationWidget';
 
@@ -300,6 +301,9 @@ export function DashboardHomeGrid() {
           />
         </div>
       </div>
+
+      {/* ── 3b. Weekly AIO Report (conditional) ──────────────────────────────── */}
+      <WeeklyAIOCard />
 
       {/* ── 4. Recent activity ────────────────────────────────────────────── */}
       <div>

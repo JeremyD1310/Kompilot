@@ -416,6 +416,26 @@ export function LandingHero({ onCta, onHeroCta, heroSearch, setHeroSearch, audie
             <ArrowRight size={16} />
           </button>
 
+          {/* AIO Checker secondary CTA */}
+          <a
+            href="/aio-checker"
+            style={{
+              fontSize: '.82rem',
+              color: '#0D9488',
+              fontWeight: 700,
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '6px 0',
+              transition: 'color .15s',
+            }}
+            onMouseEnter={(e) => { (e.target as HTMLElement).style.color = '#0F766E'; }}
+            onMouseLeave={(e) => { (e.target as HTMLElement).style.color = '#0D9488'; }}
+          >
+            🔍 Vérifier ma visibilité IA gratuitement →
+          </a>
+
           {/* Trust subtext */}
           <div style={{ display:'flex',flexDirection:'column',alignItems:'center',gap:4 }}>
             <p style={{ fontSize:'.82rem',color:'#475569',fontWeight:600,margin:0,textAlign:'center' }}>

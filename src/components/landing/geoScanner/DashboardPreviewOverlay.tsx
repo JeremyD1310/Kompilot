@@ -30,6 +30,8 @@ export interface ScanData {
   googleRating: number;
   impressions: number;
   activities: ActivityItem[];
+  /** AIO visibility: % of AI engines (ChatGPT, Gemini, Perplexity, Claude) where the brand is cited */
+  aioVisibility: number;
 }
 
 interface Props {
@@ -76,6 +78,7 @@ export function DashboardPreviewOverlay({ query, elapsedMs, scanData, totalMs, i
 
   const aiScore    = useAnimatedCounter(scanData?.aiScore ?? 38, phase1Active || phase1Done, 2600);
   const impressions = useAnimatedCounter(scanData?.impressions ?? 1840, phase3Active || phase3Done, 2800);
+  const aioVisibility = useAnimatedCounter(scanData?.aioVisibility ?? 14, phase2Active || phase2Done, 2200);
 
   const googleRating = scanData?.googleRating ?? 4.2;
   const activities   = scanData?.activities ?? DEFAULT_ACTIVITIES;
@@ -158,8 +161,8 @@ export function DashboardPreviewOverlay({ query, elapsedMs, scanData, totalMs, i
           </div>
         </div>
 
-        {/* ── 3 KPI Cards ── */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+        {/* ── 4 KPI Cards (AIO added) ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 10 }}>
 
           <KPICard active={phase1Active} done={phase1Done} label="Score IA GEO"
             accentColor="rgba(249,115,22,.5)" glowColor="rgba(249,115,22,.1)">
@@ -213,6 +216,27 @@ export function DashboardPreviewOverlay({ query, elapsedMs, scanData, totalMs, i
               <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                 style={{ color: '#64748B', fontSize: '.62rem', margin: '4px 0 0' }}>
                 {impressions < 1000 ? '📉 Faible présence IA' : impressions < 3000 ? '📊 Présence modérée' : '🚀 Forte visibilité'}
+              </motion.p>
+            )}
+          </KPICard>
+
+          {/* P0-1: AIO Visibility KPI — visibilité dans les moteurs de recherche IA */}
+          <KPICard active={phase4Active} done={phase3Done} label="Visibilité AIO"
+            accentColor="rgba(129,140,248,.5)" glowColor="rgba(129,140,248,.1)">
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              <span style={{
+                fontSize: 'clamp(1.2rem,3.5vw,1.7rem)', fontWeight: 900, lineHeight: 1,
+                color: aioVisibility >= 50 ? '#34D399' : aioVisibility >= 25 ? '#FBBF24' : '#F87171',
+                fontVariantNumeric: 'tabular-nums', transition: 'color .4s',
+              }}>
+                {(phase4Active || phase3Done) ? aioVisibility : '—'}
+              </span>
+              {(phase4Active || phase3Done) && <span style={{ color: '#475569', fontSize: '.75rem', fontWeight: 600 }}>%</span>}
+            </div>
+            {phase3Done && (
+              <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                style={{ color: '#64748B', fontSize: '.62rem', margin: '4px 0 0' }}>
+                {aioVisibility < 25 ? '🤖 Invisible sur ChatGPT' : aioVisibility < 50 ? '📡 Cité partiellement' : '✅ Cité par les IA'}
               </motion.p>
             )}
           </KPICard>

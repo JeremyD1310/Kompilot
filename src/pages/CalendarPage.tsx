@@ -30,6 +30,8 @@ import { MobileValidationWidget } from '../components/calendar/MobileValidationW
 import { CityCalendarTab } from '../components/calendar/CityCalendarTab';
 import { AIContentGeneratorModal } from '../components/ai/AIContentGeneratorModal';
 import { GA4CalendarInsights } from '../components/calendar/GA4CalendarInsights';
+import { useDemoMode } from '../context/DemoModeContext';
+import { MOCK_SCHEDULED_POSTS, type MockScheduledPost } from '../lib/fixtures/calendarFixtures';
 
 // Safe date helper — always returns a valid ISO date string "yyyy-MM-DD"
 // Using format() with 'yyyy-MM' then appending the day is safe, but we add a try/catch
@@ -68,10 +70,31 @@ const INITIAL_POSTS: ScheduledPost[] = [
 
 type ViewMode = 'month' | 'week';
 
+// Convert calendarFixtures mock data to ScheduledPost format
+function mockToScheduledPost(mock: MockScheduledPost): ScheduledPost {
+  const d = new Date(mock.scheduledAt);
+  const dateStr = format(d, 'yyyy-MM-dd');
+  const timeStr = format(d, 'HH:mm');
+  const statusMap: Record<string, ScheduledPost['status']> = {
+    published: 'approved', scheduled: 'pending', draft: 'draft',
+  };
+  return {
+    id: mock.id,
+    text: `${mock.title}\n${mock.content}`,
+    channels: [mock.platform === 'google' ? 'website' : mock.platform],
+    date: dateStr,
+    time: timeStr,
+    status: statusMap[mock.status] ?? 'draft',
+  };
+}
+
 export default function CalendarPage() {
+  const { isDemoActive } = useDemoMode();
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [posts, setPosts] = useState<ScheduledPost[]>(INITIAL_POSTS);
+  const [posts, setPosts] = useState<ScheduledPost[]>(() =>
+    isDemoActive ? MOCK_SCHEDULED_POSTS.map(mockToScheduledPost) : INITIAL_POSTS
+  );
   const [modalOpen, setModalOpen] = useState(false);
   const [vacationOpen, setVacationOpen] = useState(false);
   const [vacationConfig, setVacationConfig] = useState<VacationConfig | null>(null);

@@ -19,8 +19,9 @@ import { blink } from '@/blink/client';
 import {
   Search, Plus, X, RefreshCw, CheckCircle2, XCircle,
   AlertTriangle, Activity, TrendingUp, Clock, Zap,
-  Globe, Monitor,
+  Globe, Monitor, Share2,
 } from 'lucide-react';
+import { ShareCaseStudy } from '../shared/ShareCaseStudy';
 
 const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
 
@@ -330,6 +331,39 @@ export function AIOSyncPanel({
         }}>
           Google · Bing
         </span>
+        {/* Share AIO results — export as public link or PNG */}
+        {Object.keys(results).length > 0 && (
+          <ShareCaseStudy
+            data={{
+              title: `Rapport AIO — ${brand}`,
+              score: Math.round(
+                Object.values(results).reduce((s, r) => s + (r.visibilityScore ?? 0), 0) / Object.values(results).length
+              ),
+              previousScore: 0,
+              visibility: Math.round(
+                Object.values(results).filter(r => (r.visibilityScore ?? 0) > 30).length / Object.values(results).length * 100
+              ),
+              aiReadiness: Object.values(results).filter(r => (r.visibilityScore ?? 0) > 60).length > 0 ? 80 : 40,
+              topRecommendation: Object.entries(results)
+                .sort(([, a], [, b]) => (a.visibilityScore ?? 0) - (b.visibilityScore ?? 0))
+                .map(([kw]) => kw)[0]
+                ? `Améliorer la visibilité sur "${Object.entries(results).sort(([, a], [, b]) => (a.visibilityScore ?? 0) - (b.visibilityScore ?? 0)).map(([kw]) => kw)[0]}"`
+                : 'Continuer à optimiser votre présence IA',
+            }}
+            trigger={
+              <button
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '4px 10px', borderRadius: 8,
+                  background: 'rgba(13,148,136,0.1)', border: `1px solid rgba(13,148,136,0.25)`,
+                  color: '#0D9488', fontSize: 10, fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                <Share2 size={11} /> Exporter
+              </button>
+            }
+          />
+        )}
       </div>
 
       <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>

@@ -19,6 +19,7 @@ import { OverviewTab } from './analytics/OverviewTab';
 import { BestTimesTab } from './analytics/BestTimesTab';
 import { CompetitorsTab } from './analytics/CompetitorsTab';
 import { ReportsTab } from './analytics/ReportsTab';
+import { MetaAdsTab } from './analytics/MetaAdsTab';
 import { AnalyticsEmptyState } from '../components/analytics/AnalyticsEmptyState';
 
 export default function AnalyticsPage() {
@@ -42,10 +43,11 @@ export default function AnalyticsPage() {
 
       <PageBody>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:w-[600px]">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 lg:w-[720px]">
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="best-times">Meilleures heures</TabsTrigger>
             <TabsTrigger value="competitors">Concurrents</TabsTrigger>
+            <TabsTrigger value="meta-ads">Meta Ads</TabsTrigger>
             <TabsTrigger value="reports">Rapport PDF</TabsTrigger>
           </TabsList>
 
@@ -59,6 +61,10 @@ export default function AnalyticsPage() {
 
           <TabsContent value="competitors">
             <CompetitorsTab />
+          </TabsContent>
+
+          <TabsContent value="meta-ads">
+            <MetaAdsTab />
           </TabsContent>
 
           <TabsContent value="reports">

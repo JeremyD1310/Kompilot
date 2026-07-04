@@ -7,11 +7,22 @@ import {
   patchUserMeta,
   findUserByCustomer,
   getUserMeta,
+  resolvePriceToPlan,
+  type PlanId,
+  type BillingInterval,
 } from '../lib/stripeHelpers';
 import { getDunningEmailHtml } from '../lib/emailTemplates';
 import { handleCreditPackGrant } from '../lib/creditPackHandler';
+import { handleAioCreditPackGrant } from '../lib/aioCreditPackHandler';
 
 export const router = new Hono();
+
+/** Helper: plan tier for comparison (higher = more premium) */
+function getPlanTier(planId: string | null | undefined): number {
+  if (planId === 'agency') return 2;
+  if (planId === 'starter') return 1;
+  return 0;
+}
 
 // ── Meta HMAC-SHA256 verification ─────────────────────────────────────────────
 
@@ -99,23 +110,40 @@ router.post('/api/webhooks/stripe', async (c) => {
     }
   }
 
-  // customer.subscription.created → set active immediately
+  // customer.subscription.created → set active immediately + sync billing interval
   if (event.type === 'customer.subscription.created') {
     const sub        = event.data.object;
     const customerId = sub.customer as string;
     const userId     = (sub.metadata?.user_id as string | undefined)
                     || (await findUserByCustomer(blink, customerId));
     if (userId) {
-      const planId  = (sub.metadata?.planId as string | undefined) || null;
-      const subId   = sub.id as string;
+      const planId   = (sub.metadata?.planId as string | undefined) || null;
+      const billing  = (sub.metadata?.billing as BillingInterval | undefined) || 'monthly';
+      const subId    = sub.id as string;
+
+      // Try to resolve plan + billing from actual subscription price (more reliable than metadata)
+      const firstItem = sub.items?.data?.[0];
+      const priceId   = firstItem?.price?.id as string | undefined;
+      const resolved  = priceId ? resolvePriceToPlan(priceId, rawEnv) : null;
+      const finalPlanId  = resolved?.planId ?? planId;
+      const finalBilling = resolved?.billing ?? billing;
+
+      // Extract current period end from subscription
+      const currentPeriodEnd = sub.current_period_end
+        ? new Date(sub.current_period_end * 1000).toISOString()
+        : null;
+
       await patchUserMeta(blink, userId, {
         stripe_customer_id:     customerId,
         stripe_subscription_id: subId,
         subscription_status:    'active',
         grace_period_end:       null,
-        ...(planId ? { plan_id: planId } : {}),
+        billing_interval:       finalBilling,
+        current_period_end:     currentPeriodEnd,
+        stripe_sub_status:      sub.status,
+        ...(finalPlanId ? { plan_id: finalPlanId } : {}),
       });
-      console.warn(`[webhook] subscription.created → user ${userId}, sub ${subId}${planId ? `, plan: ${planId}` : ''}`);
+      console.warn(`[webhook] subscription.created → user ${userId}, sub ${subId}, plan: ${finalPlanId ?? 'unknown'}, billing: ${finalBilling}`);
     }
   }
 
@@ -135,7 +163,7 @@ router.post('/api/webhooks/stripe', async (c) => {
     }
   }
 
-  // customer.subscription.updated → sync status + planId + trial.expired alert
+  // customer.subscription.updated → sync status + planId + billing + detect plan changes
   if (event.type === 'customer.subscription.updated') {
     const sub        = event.data.object;
     const customerId = sub.customer as string;
@@ -150,16 +178,73 @@ router.post('/api/webhooks/stripe', async (c) => {
         trialing: 'active',
       };
       const newStatus = statusMap[sub.status as string] || sub.status;
+
       // Extract planId from subscription metadata (set during checkout)
-      const planId = (sub.metadata?.planId as string | undefined) || null;
+      const planId  = (sub.metadata?.planId as string | undefined) || null;
+      const billing = (sub.metadata?.billing as BillingInterval | undefined) || null;
+
+      // Resolve plan + billing from actual subscription price (most reliable)
+      const firstItem = sub.items?.data?.[0];
+      const priceId   = firstItem?.price?.id as string | undefined;
+      const resolved  = priceId ? resolvePriceToPlan(priceId, rawEnv) : null;
+      const finalPlanId  = resolved?.planId ?? planId;
+      const finalBilling = resolved?.billing ?? billing;
+
+      // Detect plan change (upgrade/downgrade) from previous_attributes
+      const prevPlanId = (sub.previous_attributes as any)?.metadata?.planId as string | undefined;
+      const planChanged = prevPlanId && finalPlanId && prevPlanId !== finalPlanId;
+
+      // Extract current period end
+      const currentPeriodEnd = sub.current_period_end
+        ? new Date(sub.current_period_end * 1000).toISOString()
+        : null;
+
       await patchUserMeta(blink, userId, {
         stripe_customer_id:       customerId,
         stripe_subscription_id:   sub.id,
         subscription_status:      newStatus,
-        ...(planId ? { plan_id: planId } : {}),
+        current_period_end:       currentPeriodEnd,
+        stripe_sub_status:        sub.status,
+        ...(finalPlanId ? { plan_id: finalPlanId } : {}),
+        ...(finalBilling ? { billing_interval: finalBilling } : {}),
         ...(newStatus === 'active' ? { grace_period_end: null } : {}),
       });
-      console.warn(`[webhook] subscription.updated → user ${userId} → ${newStatus}${planId ? ` (plan: ${planId})` : ''}`);
+      console.warn(`[webhook] subscription.updated → user ${userId} → ${newStatus}${finalPlanId ? ` (plan: ${finalPlanId})` : ''}${finalBilling ? ` [${finalBilling}]` : ''}`);
+
+      // ── Sync add-ons from subscription items ──────────────────────────────
+      try {
+        const { syncAddonsFromStripe } = await import('../lib/addonHelpers');
+        const items = (sub.items?.data ?? []).map((item: any) => ({
+          id: item.id,
+          price: { id: item.price?.id, unit_amount: item.price?.unit_amount, recurring: item.price?.recurring },
+        }));
+        await syncAddonsFromStripe(rawEnv, userId, items, newStatus, currentPeriodEnd);
+      } catch (addonErr) {
+        console.error('[webhook] addon sync error (non-fatal):', addonErr);
+      }
+
+      // Dispatch plan change alert if upgrade/downgrade detected
+      if (planChanged) {
+        try {
+          const backendUrl = `https://${(rawEnv as any).BLINK_PROJECT_ID || 'gbrhsehk'}.backend.blink.new`;
+          const secretKey  = (rawEnv as any).BLINK_SECRET_KEY as string | undefined;
+          await fetch(`${backendUrl}/api/alerts/critical`, {
+            method:  'POST',
+            headers: {
+              'Content-Type':  'application/json',
+              'Authorization': `Bearer ${secretKey}`,
+            },
+            body: JSON.stringify({
+              userId,
+              alertType: 'plan.changed',
+              metadata:  { from: prevPlanId, to: finalPlanId, direction: getPlanTier(finalPlanId) > getPlanTier(prevPlanId) ? 'upgrade' : 'downgrade' },
+            }),
+          });
+          console.warn(`[webhook] plan.changed alert → user ${userId}: ${prevPlanId} → ${finalPlanId}`);
+        } catch (ae) {
+          console.error('[webhook] plan.changed alert dispatch error (non-fatal):', ae);
+        }
+      }
 
       // 🚨 Detect trial expiry: previous status was trialing, now not active
       const prevStatus = (sub.previous_attributes as any)?.status as string | undefined;
@@ -195,23 +280,43 @@ router.post('/api/webhooks/stripe', async (c) => {
                     || (session.client_reference_id as string | undefined)
                     || (await findUserByCustomer(blink, customerId));
     if (userId && session.mode === 'subscription') {
-      const planId = (session.metadata?.planId as string | undefined)
+      const planId  = (session.metadata?.planId as string | undefined)
                   || (session.subscription as any)?.metadata?.planId
                   || null;
+      const billing = (session.metadata?.billing as BillingInterval | undefined)
+                  || (session.subscription as any)?.metadata?.billing
+                  || 'monthly';
+
+      // Resolve from line items if available
+      const lineItems = session.line_items?.data ?? [];
+      const firstPriceId = lineItems[0]?.price?.id as string | undefined;
+      const resolved = firstPriceId ? resolvePriceToPlan(firstPriceId, rawEnv) : null;
+      const finalPlanId  = resolved?.planId ?? planId;
+      const finalBilling = resolved?.billing ?? billing;
+
       await patchUserMeta(blink, userId, {
         stripe_customer_id:     customerId,
         stripe_subscription_id: session.subscription as string,
         subscription_status:    'active',
         grace_period_end:       null,
-        ...(planId ? { plan_id: planId } : {}),
+        billing_interval:       finalBilling,
+        ...(finalPlanId ? { plan_id: finalPlanId } : {}),
       });
-      console.warn(`[webhook] checkout.completed → user ${userId} subscribed${planId ? ` to plan: ${planId}` : ''}`);
+      console.warn(`[webhook] checkout.completed → user ${userId} subscribed${finalPlanId ? ` to plan: ${finalPlanId}` : ''} [${finalBilling}]`);
     }
 
     // credit-pack one-time payment → grant AI credits to establishment
     if (userId && session.mode === 'payment' && session.metadata?.creditPack === 'true') {
-      const creditsToAdd = Number(session.metadata?.credits) || 0;
-      await handleCreditPackGrant(blink, userId, creditsToAdd);
+      // AIO + Creative Studio pack (29€) → grant Luma AI + SerpApi credits
+      if (session.metadata?.packType === 'aio_creative') {
+        const lumaCredits = Number(session.metadata?.lumaCredits) || 50;
+        const serpapiCredits = Number(session.metadata?.serpapiCredits) || 500;
+        await handleAioCreditPackGrant(blink, userId, lumaCredits, serpapiCredits);
+      } else {
+        // Legacy credit pack → grant generic AI credits
+        const creditsToAdd = Number(session.metadata?.credits) || 0;
+        await handleCreditPackGrant(blink, userId, creditsToAdd);
+      }
     }
   }
 

@@ -17,6 +17,7 @@ import {
 import { useTracking } from '@/hooks/useTracking';
 import { useAuth } from '@/hooks/useAuth';
 import { blink } from '@/blink/client';
+import { AddonGate } from '../shared/AddonGate';
 
 interface WhiteLabelInstantPreviewProps {
   onUpgrade: () => void;
@@ -108,6 +109,7 @@ export const WhiteLabelInstantPreview: React.FC<WhiteLabelInstantPreviewProps> =
   const previewUrl = agencySlug ? `https://${agencySlug}.kompilot.ai` : 'https://votre-agence.kompilot.ai';
 
   return (
+    <AddonGate addonId="white_label" featureName="Rapports AIO Marque Blanche">
     <div className="space-y-6">
       <Card className="overflow-hidden border-indigo-500/20 shadow-xl shadow-indigo-500/5">
         <div className="bg-gradient-to-r from-indigo-600 to-violet-600 p-6 text-white">
@@ -300,6 +302,7 @@ export const WhiteLabelInstantPreview: React.FC<WhiteLabelInstantPreviewProps> =
         onUpgrade={onUpgrade}
       />
     </div>
+    </AddonGate>
   );
 };
 

@@ -23,12 +23,14 @@ import { fireMentorTrigger } from '../hooks/useMentorTriggers';
 import { ChangePaymentMethodModal } from '../components/subscription/ChangePaymentMethodModal';
 import { OnboardingGuideModal, useOnboardingGuideModal } from '../components/onboarding/OnboardingGuideModal';
 import { ExhaustiveOnboardingModal, useExhaustiveOnboarding } from '../components/onboarding/ExhaustiveOnboardingModal';
-import { QuickOnboardingWizard } from '../components/onboarding/QuickOnboardingWizard';
+import { UnifiedOnboardingFlow } from '../components/onboarding/UnifiedOnboardingFlow';
 import { SectorWalkthroughEngine } from '../components/onboarding/SectorWalkthroughEngine';
 import { useUserProfile } from '../context/UserProfileContext';
 import { AuditFlashModal } from '../components/dashboard/AuditFlashModal';
 import { ProactiveNotificationBanner } from '../components/layout/ProactiveNotificationBanner';
 import { ExternalApiOutageBanner } from '../components/layout/ExternalApiOutageBanner';
+import { QuotaAlertBanner } from '../components/billing/QuotaAlertBanner';
+import { AnniversaryUpsellBanner } from '../components/billing/AnniversaryUpsellBanner';
 import { SOSResumeBanner } from '../components/cockpit/SOSResumeBanner';
 import { SubscriptionStatusBanner } from '../components/subscription/SubscriptionStatusBanner';
 import { DemoBanner } from '../components/layout/DemoBanner';
@@ -59,6 +61,7 @@ import { ROIPushEngine } from '../components/layout/ROIPushEngine';
 import { CommandMenu } from '../components/layout/CommandMenu';
 import { DemoNotificationEngine } from '../components/layout/DemoNotificationEngine';
 import { DemoViewRedirector } from '../components/layout/DemoViewRedirector';
+import { TeamModeSelector } from '../components/layout/TeamModeSelector';
 import { AlertSettingsProvider } from '../context/AlertSettingsContext';
 import { FirebaseProvider } from '../components/firebase/FirebaseProvider';
 import { useFirebaseAnalytics } from '../hooks/useFirebaseAnalytics';
@@ -294,6 +297,8 @@ export function DashboardLayout() {
             <AccountHealthBanner onConfigureApi={() => setApiKeyWizardOpen(true)} />
             <ProactiveNotificationBanner />
             <CreditsExhaustedBanner />
+            <QuotaAlertBanner />
+            <AnniversaryUpsellBanner />
             <div className="flex-1">
               <React.Suspense fallback={<div className="flex items-center justify-center h-full min-h-[200px]"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>}>
                 <Outlet />
@@ -339,11 +344,13 @@ export function DashboardLayout() {
         <DailyRefundToast />
         {showOnboarding && user && !smartWizardOpen && <ExhaustiveOnboardingModal open={showOnboarding} onClose={closeOnboarding} />}
         <SectorWalkthroughEngine open={walkthroughOpen} onClose={() => setWalkthroughOpen(false)} />
-        <QuickOnboardingWizard
+        {/* P0-3: Unified flow replaces QuickOnboardingWizard */}
+        <UnifiedOnboardingFlow
           open={smartWizardOpen && !onboardingCompleted}
           onComplete={() => {
             markOnboardingCompleted();
             setSmartWizardOpen(false);
+            closeOnboarding(); // Also dismiss ExhaustiveOnboardingModal — one flow only
           }}
         />
         <WhatsAppSupportButton variant="floating" userId={user?.id} />
@@ -382,6 +389,7 @@ export function DashboardLayout() {
         )}
         <DemoNotificationEngine />
         <DemoViewRedirector />
+        <TeamModeSelector />
       </AppShell>
     </>
     </GuardrailQueueProvider>

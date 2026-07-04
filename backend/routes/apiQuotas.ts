@@ -88,5 +88,14 @@ router.post('/api/quotas/consume', async (c) => {
 
   await patchUserMeta(blink, auth.userId, { [field]: current - amount });
 
+  // ── Quota monitoring: evaluate threshold after consumption ───────────────
+  // Fire-and-forget — don't block the response
+  try {
+    const { evaluateQuota } = await import('../lib/quotaMonitor');
+    const totalLimit = body.type === 'ai_tokens' ? limits.ai_tokens : limits.search_credits;
+    evaluateQuota(c.env as Env, auth.userId, body.type, current - amount, totalLimit)
+      .catch(() => {/* non-fatal */});
+  } catch { /* non-fatal */ }
+
   return c.json({ success: true, remaining: current - amount, consumed: amount });
 });

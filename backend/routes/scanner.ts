@@ -202,3 +202,61 @@ router.post('/api/scanner/raid/clear', async (c) => {
   await clearRaidState(env, auth.userId, body.establishmentId);
   return c.json({ success: true, message: 'Alerte Raid levée. Automatisations IA réactivées.' });
 });
+
+// ── POST /api/scanner/lead-capture — Email capture from GeoScanner ──────────
+// Public (no auth) — saves email lead from the landing page scan form.
+// The `leads` table stores business_name, email, scan_data, visibility_score.
+
+router.post('/api/scanner/lead-capture', async (c) => {
+  const env = c.env as Record<string, string>;
+  const blink = getBlink(env as any);
+
+  let body: { email?: string; query?: string; source?: string };
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+
+  if (!body?.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
+    return c.json({ error: 'Valid email required' }, 400);
+  }
+
+  const leadId = `lead_scan_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+  try {
+    // Check if email already exists to avoid duplicates
+    const existing = await blink.db.leads.list({
+      where: { email: body.email.trim().toLowerCase() },
+      limit: 1,
+    }) as any[];
+
+    if (existing.length > 0) {
+      // Update existing lead with new scan data
+      await blink.db.leads.update(existing[0].id, {
+        scanData: JSON.stringify({
+          lastQuery: body.query || '',
+          lastSource: body.source || 'geo_scanner',
+          lastScannedAt: new Date().toISOString(),
+        }),
+        updatedAt: new Date().toISOString(),
+      } as any);
+      return c.json({ success: true, id: existing[0].id, updated: true });
+    }
+
+    // Create new lead
+    await blink.db.leads.create({
+      id: leadId,
+      businessName: body.query || 'GeoScanner Lead',
+      email: body.email.trim().toLowerCase(),
+      status: 'Lead_Audit',
+      scanData: JSON.stringify({
+        query: body.query || '',
+        source: body.source || 'geo_scanner_email_capture',
+        capturedAt: new Date().toISOString(),
+      }),
+    } as any);
+
+    console.warn(`[scanner/lead-capture] New lead: ${body.email} from ${body.source || 'geo_scanner'}`);
+    return c.json({ success: true, id: leadId, created: true });
+  } catch (err) {
+    console.error('[scanner/lead-capture] Error:', err);
+    return c.json({ error: 'Failed to save lead' }, 500);
+  }
+});

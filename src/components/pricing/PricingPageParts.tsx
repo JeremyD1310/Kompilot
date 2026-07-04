@@ -11,16 +11,69 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@blinkdotnew/ui';
-import { Check, ChevronDown, Shield, RefreshCw, Lock, Mail, Star, Zap } from 'lucide-react';
+import { Check, ChevronDown, Shield, RefreshCw, Lock, Mail, Star, Zap, Gift } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { SubscriptionCheckoutPanel } from '../subscription/SubscriptionCheckoutPanel';
-import { KOMPILOT_PLANS, type KompilotPlan, type KompilotPlanId } from '../landing/pricing/PricingData';
+import {
+  getPlansForBilling,
+  type KompilotPlan,
+  type KompilotPlanId,
+  type BillingInterval,
+} from '../landing/pricing/PricingData';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 // Ré-export pour compatibilité avec PricingPage.tsx
-export type { KompilotPlan as Plan, KompilotPlanId as PlanId };
-export { KOMPILOT_PLANS as PLANS };
+export type { KompilotPlan as Plan, KompilotPlanId as PlanId, BillingInterval };
+export { getPlansForBilling };
+
+/** @deprecated Use getPlansForBilling(billing) instead — kept for legacy pages */
+export const PLANS = getPlansForBilling('monthly');
+
+// ── BillingToggle ─────────────────────────────────────────────────────────────
+
+interface BillingToggleProps {
+  billing: BillingInterval;
+  onChange: (b: BillingInterval) => void;
+}
+
+export function BillingToggle({ billing, onChange }: BillingToggleProps) {
+  const isYearly = billing === 'yearly';
+  return (
+    <div className="flex items-center justify-center gap-3 mb-10">
+      <button
+        onClick={() => onChange('monthly')}
+        className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer"
+        style={{
+          background: !isYearly ? 'rgba(13,148,136,0.15)' : 'transparent',
+          border: !isYearly ? '1px solid rgba(13,148,136,0.35)' : '1px solid rgba(255,255,255,0.08)',
+          color: !isYearly ? '#2DD4BF' : '#64748B',
+        }}
+      >
+        Mensuel
+      </button>
+      <button
+        onClick={() => onChange('yearly')}
+        className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer"
+        style={{
+          background: isYearly ? 'rgba(13,148,136,0.15)' : 'transparent',
+          border: isYearly ? '1px solid rgba(13,148,136,0.35)' : '1px solid rgba(255,255,255,0.08)',
+          color: isYearly ? '#2DD4BF' : '#64748B',
+        }}
+      >
+        Annuel
+        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black"
+          style={{
+            background: isYearly ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.06)',
+            color: isYearly ? '#34d399' : '#94a3b8',
+            border: isYearly ? '1px solid rgba(16,185,129,0.3)' : '1px solid transparent',
+          }}>
+          <Gift size={10} /> 1 mois offert
+        </span>
+      </button>
+    </div>
+  );
+}
 
 // ── Couleurs ──────────────────────────────────────────────────────────────────
 
@@ -90,14 +143,21 @@ export function PlanCard({ plan, index, checkoutPlanId, onCta, onCancelCheckout 
 
         {/* Prix */}
         <div className="mb-6 pb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          {plan.price !== null ? (
-            <div className="flex items-end gap-1">
-              <span className="font-black leading-none" style={{
-                fontSize: 52, color: isAgency ? INDIGO : '#F1F5F9', letterSpacing: '-0.04em',
-              }}>
-                {plan.priceLabel}€
-              </span>
-              <span className="text-sm pb-2" style={{ color: '#64748B' }}>HT / mois</span>
+          {plan.monthlyPrice !== null ? (
+            <div>
+              <div className="flex items-end gap-1">
+                <span className="font-black leading-none" style={{
+                  fontSize: 52, color: isAgency ? INDIGO : '#F1F5F9', letterSpacing: '-0.04em',
+                }}>
+                  {plan.priceLabel}€
+                </span>
+                <span className="text-sm pb-2" style={{ color: '#64748B' }}>HT / mois</span>
+              </div>
+              {plan.billingNote && (
+                <p className="text-xs mt-1.5" style={{ color: '#94a3b8' }}>
+                  {plan.billingNote}
+                </p>
+              )}
             </div>
           ) : (
             <span className="font-black" style={{ fontSize: 34, color: '#94a3b8' }}>Sur devis</span>

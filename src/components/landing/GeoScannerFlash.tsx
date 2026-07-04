@@ -13,6 +13,7 @@ import { BLOCKER_ITEMS, SCAN_STEPS, TOTAL_SCAN_MS } from './geoScanner/blockerDa
 import { FixChecklist } from './geoScanner/FixChecklist';
 import { DashboardPreviewOverlay } from './geoScanner/DashboardPreviewOverlay';
 import { ScanOnboardingModal } from './geoScanner/ScanOnboardingModal';
+import { ScanEmailCapture } from './geoScanner/ScanEmailCapture';
 import { validateAndIncrementScan, checkLocalQuota } from '@/lib/scanRateLimit';
 import { track, isLikelySuspiciousBot, captureUtmParams, getUtmSector } from '@/lib/tracking';
 import type { ScanData } from './geoScanner/DashboardPreviewOverlay';
@@ -36,12 +37,14 @@ function buildScanData(query: string): ScanData {
     aiScore: seed,
     googleRating: 3.5 + ((seed % 14) / 10),   // 3.5–4.9
     impressions: 800 + (seed % 22) * 90,        // 800–2738
+    aioVisibility: 8 + (seed % 18),             // 8–25% (alarming range → motivates signup)
     activities: [
       { icon: '⭐', text: `Avis 5★ reçu pour "${query}"`, time: 'il y a 2 jours', color: '#FBBF24' },
       { icon: '📸', text: 'Dernière publication détectée sur Instagram', time: 'il y a 4 jours', color: '#818CF8' },
       { icon: '🔍', text: 'Votre établissement cité par Google AI Overview', time: 'il y a 5 jours', color: '#06B6D4' },
       { icon: '💬', text: 'Message client sans réponse depuis 3 jours', time: 'il y a 3 jours', color: '#F87171' },
       { icon: '📊', text: 'Pic de visibilité locale détecté ce weekend', time: 'cette semaine', color: '#34D399' },
+      { icon: '🤖', text: `ChatGPT ne cite pas "${query}" pour vos mots-clés principaux`, time: 'maintenant', color: '#818CF8' },
     ],
   };
 }
@@ -354,6 +357,18 @@ export function GeoScannerFlash({ onCta }: Props) {
                 totalMs={TOTAL_SCAN_MS}
                 isRevealed={isRevealed}
                 onComplete={handlePreviewComplete}
+              />
+
+              {/* P0-2: Email capture form — visible after ~8s into the scan */}
+              <ScanEmailCapture
+                visible={phase === 'scanning' && elapsedMs > 8000 && !isRevealed}
+                query={query}
+                onCaptured={() => {
+                  track('Lead', {
+                    sector: getUtmSector() ?? undefined,
+                    eventUrl: window.location.href,
+                  }).catch(() => {});
+                }}
               />
 
               {/* Mini scan steps ribbon below the preview */}

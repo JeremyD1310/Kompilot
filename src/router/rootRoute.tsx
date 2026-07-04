@@ -59,7 +59,9 @@ class LazyLoadBoundary extends Component<
 
     const isChunkError = this.state.errorMsg?.includes('chunk') ||
       this.state.errorMsg?.includes('dynamically imported') ||
-      this.state.errorMsg?.includes('Failed to fetch');
+      this.state.errorMsg?.includes('Failed to fetch') ||
+      this.state.errorMsg?.includes('Importing a module script failed') ||
+      this.state.errorMsg?.includes('module script');
 
     return (
       <div style={{

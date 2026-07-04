@@ -9,6 +9,7 @@ import { Button, toast } from '@blinkdotnew/ui';
 import { URLIngestionBar } from './URLIngestionBar';
 import { useGenerateVideo, useVideoStatus, type ScrapedData } from '../../hooks/useURLToVideo';
 import { useNavigate } from '@tanstack/react-router';
+import { AddonGate } from '../shared/AddonGate';
 
 interface URLToVideoSectionProps {
   userId?: string;
@@ -59,6 +60,7 @@ export function URLToVideoSection({ userId }: URLToVideoSectionProps) {
   const isVideoReady = videoStatus?.status === 'completed' && videoStatus?.videoUrl;
 
   return (
+    <AddonGate addonId="creative_premium" featureName="URL-to-Video Hyper-Automatisé">
     <div className="space-y-6">
       {/* URL Ingestion Bar */}
       <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
@@ -221,5 +223,6 @@ export function URLToVideoSection({ userId }: URLToVideoSectionProps) {
         </motion.div>
       )}
     </div>
+    </AddonGate>
   );
 }

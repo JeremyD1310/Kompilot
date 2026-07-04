@@ -29,6 +29,9 @@ const KompilotROIDashboardPage = React.lazy(() => import('../pages/KompilotROIDa
 const PricingPage              = React.lazy(() => import('../pages/PricingPage'));
 const PricingProPage           = React.lazy(() => import('../pages/PricingProPage'));
 const PricingAgencyPage        = React.lazy(() => import('../pages/PricingAgencyPage'));
+const PlaybookImmobilierPage   = React.lazy(() => import('../pages/PlaybookImmobilierPage'));
+const PlaybookEcommercePage    = React.lazy(() => import('../pages/PlaybookEcommercePage'));
+const AIOCheckerPage           = React.lazy(() => import('../pages/AIOCheckerPage'));
 
 export const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: LandingPage });
 export const loginRoute = createRoute({ getParentRoute: () => rootRoute, path: '/login', component: LoginPage });
@@ -57,6 +60,9 @@ export const kompilotROIRoute = createRoute({ getParentRoute: () => rootRoute, p
 export const pricingRoute      = createRoute({ getParentRoute: () => rootRoute, path: '/pricing',       component: PricingPage });
 export const pricingProRoute   = createRoute({ getParentRoute: () => rootRoute, path: '/pricing-pro',   component: PricingProPage });
 export const pricingAgencyRoute = createRoute({ getParentRoute: () => rootRoute, path: '/pricing-agency', component: PricingAgencyPage });
+export const playbookImmobilierRoute = createRoute({ getParentRoute: () => rootRoute, path: '/playbook/immobilier', component: PlaybookImmobilierPage });
+export const playbookEcommerceRoute  = createRoute({ getParentRoute: () => rootRoute, path: '/playbook/e-commerce', component: PlaybookEcommercePage });
+export const aioCheckerRoute         = createRoute({ getParentRoute: () => rootRoute, path: '/aio-checker', component: AIOCheckerPage });
 
 export const publicRoutes = [
   indexRoute,
@@ -85,4 +91,7 @@ export const publicRoutes = [
   pricingRoute,
   pricingProRoute,
   pricingAgencyRoute,
+  playbookImmobilierRoute,
+  playbookEcommerceRoute,
+  aioCheckerRoute,
 ];

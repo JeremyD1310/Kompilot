@@ -7,14 +7,11 @@ import { readSessionMemory, clearSessionMemory } from '../hooks/useOnboardingPro
 import { useAdmin } from '../context/AdminContext';
 import { useDemoMode } from '../context/DemoModeContext';
 import { useDemoView } from '../context/DemoViewContext';
-import { isDemoCredentials, saveDemoSession, DEMO_EMAIL } from '../lib/demoAccount';
+import { isDemoCredentials, saveDemoSession, DEMO_EMAIL, DEMO_PASSWORD } from '../lib/demoAccount';
 import { analyticsTrackLogin, analyticsTrackSignup } from '../firebase/analytics';
 
 
 import { KompilotLogo } from '../components/brand/KompilotLogo';
-
-/* ── Constants ──────────────────────────────────────────────────────────────── */
-const DEMO_PASSWORD = 'DemoPassword2026!';
 const REMEMBER_ME_KEY = 'nc_remember_email';
 
 /* ── Logo ──────────────────────────────────────────────────────────────────── */
@@ -455,9 +452,9 @@ export default function LoginPage() {
             <div style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
               <div style={{ minWidth: 0 }}>
                 <div style={{ color: '#64748B', fontSize: '.68rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 2 }}>Email</div>
-                <div style={{ color: '#E2E8F0', fontSize: '.83rem', fontFamily: 'monospace', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>demo@kompilot.ai</div>
+                <div style={{ color: '#E2E8F0', fontSize: '.83rem', fontFamily: 'monospace', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{DEMO_EMAIL}</div>
               </div>
-              <CopyButton text="demo@kompilot.ai" />
+              <CopyButton text={DEMO_EMAIL} />
             </div>
 
             {/* Password */}

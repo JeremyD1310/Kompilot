@@ -1,14 +1,16 @@
 import { useUserProfile } from '../../context/UserProfileContext';
 import { useCredits } from '../../context/CreditsContext';
 import { Card, Badge, Button, Progress } from '@blinkdotnew/ui';
-import { BarChart2, AlertTriangle, Zap, XCircle } from 'lucide-react';
+import { BarChart2, AlertTriangle, Zap, XCircle, ArrowUpRight } from 'lucide-react';
 import { CreditsTopUpModal } from '../../components/subscription/CreditsTopUpModal';
 import { useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 
 export function CreditsQuotaWidget() {
   const { masterProfile } = useUserProfile();
   const { usage: creditsUsed, limit: maxCredits, isEmpty } = useCredits();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
   
   // CRITICAL: hide completely for non-agencies
   if (masterProfile !== 'agence') return null;
@@ -17,6 +19,8 @@ export function CreditsQuotaWidget() {
   const remaining = Math.max(0, maxCredits - creditsUsed);
   const isWarning = usagePercent >= 80 && usagePercent < 90;
   const isCritical = usagePercent >= 90;
+  // P1-1: Upsell threshold at 80%+ (when user is actively consuming)
+  const showUpsell = usagePercent >= 20;
   
   const getProgressColor = () => {
     if (usagePercent >= 90) return 'bg-red-500';
@@ -95,6 +99,22 @@ export function CreditsQuotaWidget() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* P1-1: Contextual upsell — appears when user is actively consuming credits */}
+      {showUpsell && !isCritical && !isWarning && (
+        <button
+          onClick={() => navigate({ to: '/pricing' as any })}
+          className="w-full mt-3 flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer hover:shadow-sm"
+          style={{
+            background: 'rgba(99,102,241,.06)',
+            border: '1px solid rgba(99,102,241,.15)',
+            color: '#818CF8',
+          }}
+        >
+          <span>Il vous reste {remaining} crédits — passez à Agency pour des générations illimitées</span>
+          <ArrowUpRight size={13} className="shrink-0 opacity-70" />
+        </button>
       )}
 
       <CreditsTopUpModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />

@@ -16,6 +16,7 @@
  *   PATCH /api/billing/agency/mode             — update agency billing mode   (routes/billing.ts)
  *   GET   /api/billing/agency/sub-accounts     — sub-account consumption      (routes/billing.ts)
  *   POST /api/billing/agency/invoice-preview  — consolidated invoice preview (routes/billing.ts)
+ *   POST /api/billing/change-plan             — upgrade/downgrade with proration (routes/billing/changePlan.ts)
  *   POST /api/sms/inbound                  — Twilio STOP webhook → blacklist       (routes/smsBlacklist.ts)
  *   GET  /api/sms/blacklist/check          — check phone before sending            (routes/smsBlacklist.ts)
  *   DELETE /api/sms/blacklist/:phone       — manual blacklist removal              (routes/smsBlacklist.ts)
@@ -108,6 +109,8 @@ import { router as openaiIntegrationRouter }    from './routes/openaiIntegration
 import { router as claudeIntegrationRouter }    from './routes/claudeIntegration';
 import { router as coworkRouter }               from './routes/cowork';
 import { router as metaCampaignExportRouter }   from './routes/metaCampaignExport';
+import { router as metaLocationFeesRouter }     from './routes/metaLocationFees';
+import { unifiedUsageReport }                    from './lib/quotaMiddleware';
 import { router as engagementMetricsRouter }     from './routes/engagementMetrics';
 import { router as seoGapRouter }                from './routes/seoGapAnalysis';
 import { router as urlToVideoRouter }            from './routes/urlToVideo';
@@ -115,6 +118,9 @@ import { router as ugcScriptRouter }             from './routes/ugcScript';
 import { router as voiceoverRouter }              from './routes/voiceover';
 import { rgpdRouter }                             from './routes/rgpd';
 import { platformWebhooksRouter }                 from './routes/platformWebhooks';
+import { router as weeklyReportRouter }           from './routes/weeklyReport';
+import { router as addonCheckoutRouter }          from './routes/addonCheckout';
+import { router as creditPackAioRouter }          from './routes/billing/creditPackAio';
 
 const app = new Hono();
 
@@ -132,6 +138,9 @@ app.use('*', cors({
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (c) => c.json({ ok: true, ts: Date.now() }));
+
+// ── Unified usage endpoint (v1 API) ──────────────────────────────────────────
+app.get('/api/v1/usage', unifiedUsageReport);
 
 app.route('/', aiRouter);
 app.route('/', billingRouter);
@@ -164,6 +173,7 @@ app.route('/', openaiIntegrationRouter);
 app.route('/', claudeIntegrationRouter);
 app.route('/', coworkRouter);
 app.route('/', metaCampaignExportRouter);
+app.route('/', metaLocationFeesRouter);
 app.route('/', engagementMetricsRouter);
 app.route('/', seoGapRouter);
 app.route('/', urlToVideoRouter);
@@ -171,6 +181,9 @@ app.route('/', ugcScriptRouter);
 app.route('/', voiceoverRouter);
 app.route('/', rgpdRouter);
 app.route('/', platformWebhooksRouter);
+app.route('/', weeklyReportRouter);
+app.route('/', addonCheckoutRouter);
+app.route('/', creditPackAioRouter);
 
 // ── Global error handler ─────────────────────────────────────────────────────
 app.onError((err, c) => {

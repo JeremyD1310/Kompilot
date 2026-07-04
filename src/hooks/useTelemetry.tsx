@@ -33,7 +33,10 @@ export type TelemetryEvent =
   | 'credit_pack_clicked'
   | 'share_case_study_exported'
   | 'account_health_banner_viewed'
-  | 'account_health_banner_cta_clicked';
+  | 'account_health_banner_cta_clicked'
+  | 'shortform_script_generate_click'
+  | 'shortform_script_generate_success'
+  | 'shortform_script_generate_error';
 
 export interface TelemetryPayload {
   [key: string]: string | number | boolean | undefined;

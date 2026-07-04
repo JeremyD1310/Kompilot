@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowLeft, FileText, CreditCard, RefreshCw, AlertTriangle, Shield, Users } from 'lucide-react';
 
-const LAST_UPDATED = 'Juin 2026';
+const LAST_UPDATED = '29 Juin 2026 — v2.1 (Starter/Agency, engagement annuel, clauses IA)';
 
 export default function CGVPage() {
   return (
@@ -91,23 +91,29 @@ export default function CGVPage() {
           </p>
         </Section>
 
-        <Section title="4. Offres et tarification" icon={<CreditCard size={16} />}>
+        <Section title="4. Offres, Tarification et Engagement Annuel" icon={<CreditCard size={16} />}>
+          <p>
+            Kompilot propose deux formules d'abonnement payant à destination exclusive des professionnels
+            (personnes physiques ou morales agissant dans le cadre de leur activité commerciale, industrielle,
+            artisanale ou libérale). Les tarifs sont exprimés en euros Hors Taxes (HT). La TVA applicable
+            est ajoutée lors du paiement conformément à la législation en vigueur.
+          </p>
+
           <div className="overflow-x-auto">
             <table className="w-full text-xs border-collapse my-2">
               <thead>
                 <tr className="bg-primary/10">
                   <th className="text-left p-2 border border-border font-bold text-foreground">Formule</th>
-                  <th className="text-left p-2 border border-border font-bold text-foreground">Prix mensuel</th>
-                  <th className="text-left p-2 border border-border font-bold text-foreground">Prix annuel</th>
+                  <th className="text-left p-2 border border-border font-bold text-foreground">Mensuel (sans engagement)</th>
+                  <th className="text-left p-2 border border-border font-bold text-foreground">Annuel (engagement 12 mois)</th>
                   <th className="text-left p-2 border border-border font-bold text-foreground">Caractéristiques principales</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  { plan: 'Gratuit', monthly: '0 €', yearly: '0 €', features: '1 réseau, 5 publications/mois, 50 crédits IA' },
-                  { plan: 'Pro', monthly: '49 €', yearly: '39 €/mois', features: '3 réseaux, publications illimitées, 200 crédits IA' },
-                  { plan: 'Business', monthly: '99 €', yearly: '79 €/mois', features: '10 réseaux, publications illimitées, 500 crédits IA' },
-                  { plan: 'Agence', monthly: 'Sur devis', yearly: 'Sur devis', features: 'Multi-établissements, marque blanche, crédits illimités' },
+                  { plan: 'Starter', monthly: '69 € HT / mois', yearly: '759 € HT / an (soit ~63,25 €/mois)', features: '1 compte Meta, 20 générations IA/mois, calendrier standard, AIO Sync 5 mots-clés' },
+                  { plan: 'Agency', monthly: '149 € HT / mois', yearly: '1 639 € HT / an (soit ~136,58 €/mois)', features: `IA illimitée (Fair Use), marque blanche, multi-comptes (jusqu'à 30 fiches), Radar Concurrentiel, GA4, support prioritaire 24h/7j` },
+                  { plan: 'Enterprise', monthly: 'Sur devis', yearly: 'Sur devis', features: 'Volume illimité, API dédiées, SLA garanti, ingénieur dédié' },
                 ].map(p => (
                   <tr key={p.plan} className="hover:bg-muted/10">
                     <td className="p-2 border border-border font-semibold text-foreground">{p.plan}</td>
@@ -119,21 +125,56 @@ export default function CGVPage() {
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Tous les prix sont indiqués HT. TVA applicable selon la législation en vigueur. Les prix peuvent être modifiés
-            avec un préavis de 30 jours par email.
+
+          <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 mt-2">
+            <p className="text-xs font-bold text-primary mb-1">4.1 — Option Annuelle : un mois offert</p>
+            <p className="text-xs text-foreground leading-relaxed">
+              L'option annuelle correspond à un engagement de douze (12) mois. Le Client bénéficie d'un mois
+              offert, soit l'équivalent de onze (11) mois facturés en une seule fois au moment de la souscription.
+              Le paiement est intégral, immédiat et non fractionnable. Aucune demande de proratisation
+              ou de remboursement partiel ne pourra être formulée en cours d'engagement, quel qu'en soit le motif,
+              y compris en cas de non-utilisation totale ou partielle du Service.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-border bg-muted/20 px-4 py-3 mt-2">
+            <p className="text-xs font-bold text-foreground mb-1">4.2 — Renouvellement automatique</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Tout abonnement (mensuel ou annuel) est reconduit tacitement à son terme pour une période
+              identique, sauf dénonciation par le Client via l'onglet « Paramètres → Mon Abonnement » de son
+              espace client, au plus tard <strong>48 heures avant la date d'échéance</strong> de la période en cours.
+              En cas de renouvellement annuel, le montant intégral de la nouvelle période annuelle est prélevé
+              automatiquement. Le Client sera notifié par email sept (7) jours avant chaque renouvellement.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/40 px-4 py-3 mt-2">
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-300 mb-1">4.3 — Non-remboursement</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+              Aucune résiliation anticipée en cours de période (mensuelle ou annuelle) n'ouvre droit
+              à un remboursement, même partiel, de la période en cours. Le Service demeure accessible
+              jusqu'au terme de la période effectivement payée. Cette stipulation est expressément acceptée
+              par le Client en qualité de professionnel agissant dans le cadre de son activité, conformément
+              à l'article L442-1 du Code de commerce.
+            </p>
+          </div>
+
+          <p className="text-xs text-muted-foreground mt-2">
+            Kompilot se réserve le droit de modifier ses tarifs à tout moment. Toute modification tarifaire
+            sera notifiée par email avec un préavis de trente (30) jours. Les nouveaux tarifs s'appliqueront
+            uniquement aux périodes d'abonnement renouvelées ou souscrites postérieurement à la notification.
           </p>
         </Section>
 
         <Section title="5. Modalités de paiement" icon={<CreditCard size={16} />}>
           <p>
             Les paiements sont traités exclusivement via <strong>Stripe</strong>, prestataire de paiement certifié
-            PCI DSS niveau 1. Kompilot n'a à aucun moment accès à vos données bancaires complètes.
+            PCI DSS niveau 1. Kompilot n'a à aucun moment accès aux données bancaires complètes du Client.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-3">
             {[
-              { mode: 'Carte bancaire', detail: 'Visa, Mastercard, American Express — prélèvement automatique mensuel ou annuel' },
-              { mode: 'SEPA', detail: 'Prélèvement SEPA disponible pour les abonnements Business et Agence' },
+              { mode: 'Carte bancaire', detail: 'Visa, Mastercard, American Express — prélèvement automatique à chaque échéance (mensuelle ou annuelle)' },
+              { mode: 'SEPA', detail: 'Prélèvement SEPA disponible pour les formules Agency et Enterprise' },
             ].map(m => (
               <div key={m.mode} className="rounded-lg border border-border bg-card p-3">
                 <p className="text-xs font-bold text-foreground mb-1">{m.mode}</p>
@@ -142,58 +183,170 @@ export default function CGVPage() {
             ))}
           </div>
           <p>
-            En cas de rejet de paiement, Kompilot envoie un email de notification. Si le paiement n'est pas régularisé
-            sous 7 jours, l'accès aux fonctionnalités premium est suspendu. Le compte reste accessible en mode Gratuit.
+            En cas de rejet de paiement, Kompilot envoie un email de notification. Le Client dispose d'un délai
+            de sept (7) jours pour régulariser sa situation. Passé ce délai, l'accès aux fonctionnalités premium
+            est suspendu. Si le paiement n'est pas régularisé sous trente (30) jours, Kompilot se réserve le droit
+            de résilier l'abonnement. Le compte reste accessible en lecture seule pendant la période de rétention
+            des données (30 jours après résiliation).
+          </p>
+          <p>
+            <strong>Frais de rejet :</strong> Tout rejet de paiement imputable au Client (carte expirée, provision
+            insuffisante, opposition) pourra donner lieu à l'application de frais forfaitaires de gestion de
+            dix euros (10 € HT), couvrant les frais bancaires facturés à Kompilot par Stripe.
           </p>
         </Section>
 
-        <Section title="6. Droit de rétractation et remboursements" icon={<RefreshCw size={16} />}>
+        <Section title="6. Droit de rétractation — Spécificité B2B" icon={<RefreshCw size={16} />}>
           <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 mb-3">
-            <p className="text-xs font-bold text-primary mb-1">14 jours — Droit de rétractation légal</p>
+            <p className="text-xs font-bold text-primary mb-1">Renonciation au droit de rétractation par les professionnels</p>
             <p className="text-xs text-foreground leading-relaxed">
-              Conformément à l'article L221-18 du Code de la consommation, tout consommateur dispose d'un droit de
-              rétractation de <strong>14 jours</strong> à compter de la souscription d'un abonnement payant, sans
-              avoir à justifier de motif ni à payer de pénalités.
+              Conformément aux dispositions du Code de la consommation, le droit de rétractation de
+              quatorze (14) jours prévu par l'article L221-18 s'applique exclusivement aux consommateurs.
+              Le Client reconnaît expressément que l'utilisation de Kompilot s'inscrit dans le cadre de son
+              activité professionnelle et renonce, en conséquence, à exercer tout droit de rétractation
+              à compter de la validation de sa commande.
             </p>
           </div>
           <p>
-            Pour exercer votre droit de rétractation, contactez-nous à <span className="text-primary font-medium">support@kompilot.app</span>{' '}
-            avec l'objet « Rétractation ». Le remboursement est effectué dans un délai de 14 jours après réception de votre demande.
+            Cette renonciation est confirmée par le mécanisme de « Clickwrap » intégré au tunnel de paiement :
+            le Client coche une case dédiée attestant de sa qualité de professionnel et de sa renonciation
+            explicite au droit de rétractation avant de procéder au paiement. Cette signature électronique
+            est horodatée, conservée et opposable (voir article 1366 du Code civil).
           </p>
           <p>
-            <strong>Politique de remboursement proratisé :</strong> En cas de résiliation en cours de période, aucun remboursement
-            prorata temporis n'est appliqué, sauf exercice du droit de rétractation dans les 14 jours ou circonstances exceptionnelles
-            appréciées par Kompilot.
-          </p>
-          <p>
-            <strong>Crédits IA :</strong> Les crédits IA utilisés ne sont pas remboursables. Les crédits non utilisés
-            à l'expiration d'une période ne sont pas reportés sur la période suivante, sauf pour les abonnements Business et Agence.
+            <strong>Politique de remboursement :</strong> Aucun remboursement prorata temporis n'est appliqué
+            en cas de résiliation en cours de période, sauf circonstances exceptionnelles expressément appréciées
+            par Kompilot au cas par cas. Les crédits IA consommés ne sont en aucun cas remboursables.
+            Les crédits non utilisés à l'expiration d'une période ne sont pas reportés.
           </p>
         </Section>
 
-        <Section title="7. Utilisation acceptable du service" icon={<Shield size={16} />}>
-          <p>L'utilisateur s'engage à utiliser Kompilot de manière licite et à ne pas :</p>
+        <Section title="7. Utilisation acceptable du service (AUP)" icon={<Shield size={16} />}>
+          <p>Le Client s'engage à utiliser Kompilot de manière licite et conforme à sa destination. Sont notamment interdits :</p>
           <ul>
-            <li>Publier du contenu illégal, diffamatoire, haineux, pornographique ou portant atteinte aux droits de tiers</li>
-            <li>Utiliser les fonctionnalités IA pour générer du contenu trompeur ou des faux avis</li>
-            <li>Tenter d'accéder aux données d'autres utilisateurs ou de compromettre la sécurité de la plateforme</li>
-            <li>Revendre, louer ou transférer l'accès à son compte Kompilot à des tiers non autorisés</li>
-            <li>Utiliser des robots ou scripts automatisés pour exploiter abusivement les ressources de la plateforme</li>
-            <li>Violer les Conditions d'Utilisation des réseaux sociaux connectés (Meta, Google, etc.)</li>
+            <li>La publication de contenus illégaux, diffamatoires, haineux, trompeurs ou portant atteinte aux droits de tiers</li>
+            <li>L'utilisation des fonctionnalités IA pour générer des contenus frauduleux, des faux avis, ou du spam automatisé</li>
+            <li>Toute tentative d'accès non autorisé aux données d'autres utilisateurs ou de compromission de la sécurité de la plateforme</li>
+            <li>La revente, la location ou le transfert de l'accès au compte Kompilot à des tiers non autorisés</li>
+            <li>L'utilisation de robots, scripts ou tout procédé automatisé non expressément autorisé par Kompilot pour exploiter les ressources de la plateforme</li>
+            <li>La violation des Conditions d'Utilisation des plateformes tierces connectées (Meta, Google, TikTok, etc.)</li>
+            <li>La rétro-ingénierie, la décompilation ou toute tentative d'extraction du code source de l'Application</li>
           </ul>
-          <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-900/40 px-4 py-3">
-            <p className="text-xs font-bold text-red-800 dark:text-red-300 mb-1">⚠️ Sanctions</p>
+          <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-900/40 px-4 py-3 mt-2">
+            <p className="text-xs font-bold text-red-800 dark:text-red-300 mb-1">Sanctions</p>
             <p className="text-xs text-red-700 dark:text-red-400 leading-relaxed">
-              Tout manquement aux présentes CGU peut entraîner la suspension immédiate du compte, sans préavis ni remboursement,
-              et le cas échéant des poursuites judiciaires.
+              Tout manquement aux obligations du présent article peut entraîner la suspension immédiate
+              et sans préavis du compte du Client, sans remboursement des sommes versées, et le cas échéant
+              des poursuites judiciaires. Kompilot se réserve également le droit de facturer au Client
+              les surcoûts engendrés par un usage abusif (consommation d'API anormale, infractions aux CGU).
             </p>
           </div>
           <div className="rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-900/40 px-4 py-3 mt-3">
-            <p className="text-xs font-bold text-blue-800 dark:text-blue-300 mb-1">✍️ Responsabilité éditoriale — Contenus IA</p>
+            <p className="text-xs font-bold text-blue-800 dark:text-blue-300 mb-1">Responsabilité éditoriale — Contenus IA</p>
             <p className="text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
-              En validant ou publiant un contenu généré par l'Intelligence Artificielle de Kompilot (réponses à des avis, publications sur les réseaux sociaux, articles SEO), <strong>l'utilisateur accepte l'entière responsabilité éditoriale du contenu ainsi publié</strong>. Kompilot ne saurait être tenu responsable des contenus modifiés ou validés par l'utilisateur. L'utilisateur s'engage à vérifier la conformité des contenus générés avec la réglementation applicable (droit de la consommation, publicité mensongère, etc.) avant toute publication.
+              En validant ou publiant un contenu généré par l'Intelligence Artificielle de Kompilot (réponses
+              à des avis, publications, articles SEO, scripts vidéo), <strong>le Client assume l'entière responsabilité
+              éditoriale du contenu ainsi publié</strong>. Kompilot ne saurait être tenu responsable des contenus
+              modifiés ou validés par le Client. Le Client s'engage à vérifier la conformité des contenus
+              générés avec la réglementation applicable (droit de la consommation, droit à l'image, RGPD,
+              publicité mensongère, etc.) avant toute diffusion.
             </p>
           </div>
+        </Section>
+
+        <Section title="7-bis. Consommation des ressources et quotas — Politique Anti-Abus" icon={<AlertTriangle size={16} />}>
+          <p>
+            L'accès aux fonctionnalités de Kompilot est soumis à des quotas de consommation mensuels
+            définis selon la formule souscrite (générations IA, synchronisations AIO, requêtes de tracking,
+            envois SMS, audits PDF, etc.). Ces quotas sont détaillés dans l'onglet « Mon Abonnement » de
+            l'espace client.
+          </p>
+          <div className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/40 px-4 py-3 mt-2">
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-300 mb-1">Fair Use Policy — Formules dites « illimitées »</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+              Certaines fonctionnalités de la formule Agency sont présentées comme « illimitées ». Cette
+              désignation est soumise à une politique d'usage loyal (<em>Fair Use Policy</em>). Kompilot
+              se réserve le droit de suspendre, de brider ou de facturer séparément tout compte dont la
+              consommation est anormalement élevée, automatisée (hors API officielles Kompilot), ou
+              susceptible de saturer les infrastructures, d'engendrer des surcoûts significatifs d'API
+              tiers, ou de dégrader le service rendu aux autres utilisateurs.
+            </p>
+          </div>
+          <p>
+            <strong>Seuils indicatifs de Fair Use :</strong> Au-delà de 500 générations IA/mois (Starter) ou
+            5 000 générations IA/mois (Agency), ou de tout volume anormalement élevé détecté par nos systèmes
+            de monitoring, Kompilot se réserve le droit de : (i) contacter le Client pour envisager une formule
+            adaptée, (ii) appliquer un bridage temporaire, ou (iii) facturer les consommations excédentaires
+            au tarif unitaire en vigueur.
+          </p>
+          <p>
+            <strong>Usage automatisé :</strong> Toute utilisation de scripts, bots ou procédés automatisés
+            non expressément autorisée via les API publiques de Kompilot constitue un usage abusif et
+            peut entraîner la suspension immédiate du compte.
+          </p>
+        </Section>
+
+        <Section title="7-ter. Propriété intellectuelle — Outputs d'Intelligence Artificielle" icon={<Shield size={16} />}>
+          <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 mb-3">
+            <p className="text-xs font-bold text-primary mb-1">Données d'entrée (Inputs)</p>
+            <p className="text-xs text-foreground leading-relaxed">
+              Le Client garantit qu'il dispose de l'ensemble des droits (propriété intellectuelle, droit
+              à l'image, droit à la vie privée, marques) nécessaires à l'utilisation des données, visuels,
+              textes et tout autre contenu qu'il injecte dans Kompilot pour le traitement par les moteurs
+              d'IA intégrés. Le Client s'engage à indemniser Kompilot contre toute réclamation de tiers
+              fondée sur une atteinte à leurs droits du fait des Inputs fournis.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 mb-3">
+            <p className="text-xs font-bold text-primary mb-1">Résultats générés (Outputs)</p>
+            <p className="text-xs text-foreground leading-relaxed">
+              Kompilot cède au Client l'ensemble des droits de propriété intellectuelle sur les contenus
+              finaux générés par les moteurs d'IA intégrés au Service (campagnes publicitaires, vidéos,
+              textes optimisés, scripts, visuels), à compter de leur génération. Cette cession est consentie
+              à titre exclusif, pour la durée de la protection légale du droit d'auteur, pour le monde
+              entier et pour l'ensemble des modes d'exploitation connus à la date des présentes.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/40 px-4 py-3">
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-300 mb-1">Limitation de garantie — Modèles d'IA tiers</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+              Les Outputs sont générés par des modèles d'intelligence artificielle fournis par des tiers
+              (OpenAI, Anthropic, etc.). En raison de la nature probabiliste de ces modèles, Kompilot
+              ne garantit pas : (i) l'originalité absolue des Outputs, (ii) l'absence de similitude avec
+              des contenus générés pour d'autres utilisateurs, (iii) l'absence de toute contrefaçon.
+              Le Client est seul responsable de la vérification de l'originalité des Outputs avant leur
+              exploitation commerciale et de leur conformité au droit de la propriété intellectuelle
+              applicable. Kompilot décline toute responsabilité quant aux conséquences d'une action en
+              contrefaçon ou en concurrence déloyale fondée sur un Output.
+            </p>
+          </div>
+        </Section>
+
+        <Section title="7-quater. Responsabilité liée aux outils tiers et API" icon={<AlertTriangle size={16} />}>
+          <p>
+            Le bon fonctionnement de Kompilot dépend partiellement de services et API fournis par des tiers,
+            incluant notamment : Stripe (paiements), Meta (Facebook/Instagram), Google (Search, Maps, Analytics),
+            TikTok, OpenAI, Anthropic, et d'autres fournisseurs d'API de tracking et de génération IA.
+          </p>
+          <div className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/40 px-4 py-3 mt-2">
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-300 mb-1">Exclusion de responsabilité — Dépendance technologique</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+              Kompilot ne pourra en aucun cas être tenu responsable des interruptions de service, pertes
+              de données, dégradations de fonctionnalités ou modifications unilatérales de conditions
+              générales provenant de ces fournisseurs tiers. L'éditeur s'engage toutefois à mettre en
+              œuvre ses meilleurs efforts pour informer le Client dans les meilleurs délais de toute
+              interruption significative et pour proposer, lorsque cela est techniquement possible, des
+              solutions de contournement ou des alternatives.
+            </p>
+          </div>
+          <p>
+            Le Client reconnaît avoir été informé que les tarifs, conditions d'accès et caractéristiques
+            techniques des API tierces sont susceptibles d'évoluer indépendamment de la volonté de Kompilot,
+            et que de telles évolutions peuvent impacter temporairement ou durablement certaines
+            fonctionnalités du Service sans que la responsabilité de Kompilot puisse être engagée.
+          </p>
         </Section>
 
         <Section title="8. Propriété des données utilisateur" icon={<Shield size={16} />}>
@@ -238,13 +391,24 @@ export default function CGVPage() {
 
         <Section title="10. Limitation de responsabilité" icon={<AlertTriangle size={16} />}>
           <p>
-            Dans toute la mesure permise par la loi applicable, la responsabilité de Kompilot est limitée au montant
-            des abonnements payés par l'utilisateur au cours des 12 derniers mois précédant l'événement dommageable.
+            Dans toute la mesure permise par la loi applicable, la responsabilité globale de Kompilot
+            envers le Client, toutes causes de dommages confondues, est strictement plafonnée aux sommes
+            effectivement versées par le Client au titre de son abonnement au cours des douze (12) derniers
+            mois précédant l'événement dommageable ayant donné lieu à la réclamation.
           </p>
           <p>
-            Kompilot ne saurait être tenu responsable de : (i) la perte de données consécutive à une interruption de service ;
-            (ii) les décisions commerciales prises sur la base des analyses fournies par l'application ; (iii) les performances
-            des publications sur les réseaux sociaux ; (iv) les contenus générés par IA utilisés de manière inadéquate.
+            Kompilot ne saurait être tenu responsable de : (i) la perte de données consécutive à une
+            interruption de service ; (ii) les décisions commerciales prises sur la base des analyses
+            ou recommandations fournies par l'application ; (iii) les performances des publications sur
+            les réseaux sociaux ; (iv) les contenus générés par IA utilisés de manière inadéquate ou
+            non vérifiés par le Client ; (v) tout dommage indirect, perte de chiffre d'affaires, perte
+            de clientèle, atteinte à l'image ou perte de chance.
+          </p>
+          <p>
+            Les limitations ci-dessus s'appliquent quel que soit le fondement juridique de la réclamation
+            (contractuel, délictuel, strict liability ou autre), même si Kompilot a été informé de la
+            possibilité de tels dommages. En cas de dommage causé par une API tierce, seules les dispositions
+            de l'article 7-quater (Responsabilité liée aux outils tiers et API) s'appliquent.
           </p>
           <div className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/40 px-4 py-3">
             <p className="text-xs font-bold text-amber-800 dark:text-amber-300 mb-1">⚠️ Clause de non-responsabilité — API tierces &amp; G.E.O.</p>

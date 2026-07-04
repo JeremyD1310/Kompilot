@@ -16,7 +16,7 @@ const DEMO_VIEW_KEY = 'kompilot_demo_view_role';
 const DEMO_TEST_EMAIL = 'test@kompilot.com';
 
 /** Email addresses that should always see the view switcher */
-export const DEMO_SWITCHER_EMAILS = [DEMO_TEST_EMAIL];
+export const DEMO_SWITCHER_EMAILS = [DEMO_TEST_EMAIL, 'jeremy@kompilot.fr', 'romain@kompilot.fr', 'valentine@kompilot.fr'];
 
 interface DemoViewContextValue {
   /** Current simulated view — 'pro' or 'agency' */
