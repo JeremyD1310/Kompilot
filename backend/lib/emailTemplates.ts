@@ -942,3 +942,6 @@ export function getDunningFollowUpHtml(
 </div>
 </body></html>`;
 }
+
+// ── Re-export sub-module templates ────────────────────────────────────────────
+export { getDataDeletionWarningHtml } from './emailTemplates/dataDeletion';

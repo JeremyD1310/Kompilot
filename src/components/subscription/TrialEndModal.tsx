@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Zap, FileText, Star, Users, ArrowRight,
   CheckCircle2, Lock, Rocket, ExternalLink,
+  AlertTriangle, Trash2, Clock,
 } from 'lucide-react';
 import { useSubscription } from '../../context/SubscriptionContext';
 import { useDemoMode } from '../../context/DemoModeContext';
@@ -319,6 +320,43 @@ export function TrialEndModal({ open, onClose }: TrialEndModalProps) {
                           Ne laissez pas votre moteur de croissance s'arrêter.{' '}
                           Activez votre abonnement complet pour continuer à dominer{' '}
                           <strong className="text-emerald-300">{city}</strong>.
+                        </p>
+                      </motion.div>
+
+                      {/* ── Loss Aversion Block ─────────────────────────────── */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.36 }}
+                        className="rounded-2xl border border-red-500/25 bg-red-500/8 px-4 py-4"
+                      >
+                        <div className="flex items-center gap-2 mb-3">
+                          <AlertTriangle size={14} className="text-red-400" />
+                          <p className="text-[12px] font-bold text-red-400 uppercase tracking-wider">
+                            Ce que vous allez perdre dans 7 jours
+                          </p>
+                        </div>
+                        <div className="space-y-2.5">
+                          {[
+                            { icon: Trash2, text: `${metrics.postsGenerated} posts programmés supprimés`, color: 'text-red-400' },
+                            { icon: Star, text: 'Historique et réponses aux avis Google effacés', color: 'text-amber-400' },
+                            { icon: Clock, text: 'Automatisations et alertes désactivées', color: 'text-orange-400' },
+                            { icon: Users, text: `${metrics.leadsDetected} prospects détectés perdus`, color: 'text-blue-400' },
+                          ].map((item, idx) => (
+                            <motion.div
+                              key={idx}
+                              initial={{ opacity: 0, x: -8 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.4 + idx * 0.06 }}
+                              className="flex items-center gap-2.5"
+                            >
+                              <item.icon size={13} className={item.color} />
+                              <span className="text-[12px] text-slate-300 leading-snug">{item.text}</span>
+                            </motion.div>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-3 leading-snug italic">
+                          Vos données sont conservées 90 jours. Passé ce délai, elles seront supprimées définitivement.
                         </p>
                       </motion.div>
                     </div>

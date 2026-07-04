@@ -26,6 +26,8 @@ import { MilestoneCelebrationModal } from '../components/dashboard/MilestoneCele
 import { GrowthFlightPlan } from '../components/dashboard/GrowthFlightPlan';
 import { StatCard } from '../components/dashboard/DashboardStatCard';
 import { ActionCard } from '../components/dashboard/DashboardActionCard';
+import { OnboardingChecklist } from '../components/dashboard/OnboardingChecklist';
+import { ConnectAccountModal } from '../components/dashboard/ConnectAccountModal';
 
 // ── Animation preset ──────────────────────────────────────────────────────────
 
@@ -66,6 +68,7 @@ export default function DashboardPage() {
   const [prefillChannels, setPrefillChannels] = useState<string[] | undefined>();
   const [forceOnboardingOpen, setForceOnboardingOpen] = useState(false);
   const [minuteCopilotOpen, setMinuteCopilotOpen] = useState(false);
+  const [connectAccountOpen, setConnectAccountOpen] = useState(false);
 
   const openCreatePost = (text?: string, channels?: string[]) => {
     setPrefillText(text);
@@ -146,6 +149,16 @@ export default function DashboardPage() {
           <StatCard index={3} icon={<TrendingUp size={15} />} value={String(visibilityScore)}
             label="Score de visibilité" href="/performance" accent="teal" />
         </div>
+
+        {/* ── Onboarding checklist (shows until dismissed or complete) ─────── */}
+        {!isDemoActive && user && (
+          <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible">
+            <OnboardingChecklist
+              onConnectAccount={() => setConnectAccountOpen(true)}
+              onCreatePost={() => openCreatePost()}
+            />
+          </motion.div>
+        )}
 
         {/* ── Main two-column layout ─────────────────────────────────────── */}
         <div className="flex flex-col lg:flex-row gap-6">
@@ -308,6 +321,8 @@ export default function DashboardPage() {
         avgRating: 4.5, startReviews: 5, currentReviews: 18, copilotReplied: 14,
         primaryKeyword: `${(activeEstablishment as any)?.activity ?? 'commerce'} ${(activeEstablishment as any)?.city ?? 'votre ville'}`,
       }} />
+
+      <ConnectAccountModal open={connectAccountOpen} onClose={() => setConnectAccountOpen(false)} />
 
       {!isDemoActive && user && (
         <InteractiveOnboardingWizard

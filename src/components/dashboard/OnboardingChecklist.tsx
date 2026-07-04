@@ -190,17 +190,36 @@ export function OnboardingChecklist({ onConnectAccount, onCreatePost }: Onboardi
           )}
         </div>
 
-        {/* Progress pill */}
+        {/* Circular progress ring */}
         {!allDone && (
-          <span className={`shrink-0 text-[11px] font-bold rounded-full px-2.5 py-1 ${
-            percent === 100
-              ? 'bg-green-100 text-green-700 border border-green-200'
-              : percent > 0
-                ? 'bg-primary/10 text-primary border border-primary/20'
-                : 'bg-muted text-muted-foreground border border-border'
-          }`}>
-            {percent}%
-          </span>
+          <div className="relative shrink-0 w-10 h-10">
+            <svg className="w-10 h-10 -rotate-90" viewBox="0 0 40 40">
+              {/* Background track */}
+              <circle
+                cx="20" cy="20" r="16"
+                fill="none"
+                strokeWidth="3.5"
+                className="stroke-muted"
+              />
+              {/* Progress arc */}
+              <circle
+                cx="20" cy="20" r="16"
+                fill="none"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                className={allDone ? 'stroke-green-500' : 'stroke-primary'}
+                strokeDasharray={`${2 * Math.PI * 16}`}
+                strokeDashoffset={`${2 * Math.PI * 16 * (1 - percent / 100)}`}
+                style={{ transition: 'stroke-dashoffset 0.7s ease-out' }}
+              />
+            </svg>
+            {/* Center label */}
+            <span className={`absolute inset-0 flex items-center justify-center text-[9px] font-bold ${
+              percent >= 100 ? 'text-green-600' : 'text-primary'
+            }`}>
+              {percent}%
+            </span>
+          </div>
         )}
 
         {/* Chevron */}
@@ -209,18 +228,6 @@ export function OnboardingChecklist({ onConnectAccount, onCreatePost }: Onboardi
           : <ChevronUp size={16} className="text-muted-foreground shrink-0" />
         }
       </button>
-
-      {/* Progress bar (always visible) */}
-      <div className="px-5 pb-0">
-        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-700 ease-out ${
-              allDone ? 'bg-green-500' : 'bg-primary'
-            }`}
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-      </div>
 
       {/* Task list — collapses */}
       {!collapsed && (

@@ -38,7 +38,7 @@ router.post('/api/creative-studio/analyze', checkUserQuota('creative_credits', 1
   const userId = getUserId(c.req.header('Authorization'));
   if (!userId) return c.json({ error: 'Non autorisé' }, 401);
 
-  const { adAccountId, orgId = '' } = await c.req.json<{ adAccountId: string; orgId?: string }>();
+  const { adAccountId, orgId = '', async: useQueue = false } = await c.req.json<{ adAccountId: string; orgId?: string; async?: boolean }>();
   if (!adAccountId) return c.json({ error: 'adAccountId requis' }, 400);
 
   const metaToken = c.env.META_ADS_GRAPH_TOKEN;
@@ -55,18 +55,6 @@ router.post('/api/creative-studio/analyze', checkUserQuota('creative_credits', 1
     { name: 'Campagne Test Gamma — Pain Point',       text: 'Vous perdez des clients à cause de votre visibilité ?', title: 'Visibilité locale', ctr: 5.1, roas: 6.3, spend: 210 },
     { name: 'Campagne Test Delta — Awareness',        text: 'Découvrez Kompilot, le copilote de votre présence locale.', title: 'Présentation', ctr: 0.9, roas: 0.4, spend: 55 },
   ];
-
-  /* Demo Claude analysis — retournée si la clé Anthropic n'est pas configurée */
-  const DEMO_CLAUDE_ANALYSIS = {
-    winners: 'Les accroches "Pain Point" (Gamma, CTR 5.1%, ROAS 6.3x) et "Promo directe" (Alpha, ROAS 4.2x) surperforment nettement. Le format court avec chiffre de réduction + urgence génère le meilleur CTR. Les visuels UGC avec preuve sociale fonctionnent bien sur le mid-funnel.',
-    losers: 'La campagne Delta "Awareness" est à couper immédiatement (ROAS 0.4x, CTR <1%). La campagne Beta UGC perd du budget (ROAS 0.8x) — le storytelling seul sans CTA chiffré ne convertit pas sur ce segment.',
-    next_actions: [
-      'Tester une déclinaison "Pain Point + chiffre" : "87% de nos clients ont doublé leur visibilité locale en 30 jours"',
-      'Créer une version vidéo courte (15s) de la campagne Alpha avec compteur de réduction animé',
-      'Combiner UGC + promo : témoignage client + offre -20% en fin de vidéo pour maximiser ROAS',
-    ],
-    budget_waste_euros: 140,
-  };
 
   try {
     /* 1. Fetch Meta Ads (ou données démo) ──────────────────────────────── */
@@ -104,7 +92,38 @@ router.post('/api/creative-studio/analyze', checkUserQuota('creative_credits', 1
       }
     }
 
-    /* 2. Analyse Claude (ou réponse démo) ──────────────────────────────── */
+    /* 2. Async queue mode: enqueue Claude analysis ─────────────────────── */
+    if (useQueue) {
+      try {
+        const blink = getDb(c.env) as any;
+        if (blink.queue?.enqueue) {
+          await blink.queue.enqueue('analyze-creative', {
+            userId, adAccountId, orgId, formatted, isMetaDemo, isClaudeDemo,
+          });
+          return c.json({
+            mode: 'async',
+            status: 'queued',
+            adsAnalyzed: formatted.length,
+            message: 'Analysis queued. Poll reports endpoint for results.',
+          });
+        }
+      } catch (queueErr) {
+        console.warn('[CreativeStudio] Queue enqueue failed, falling back to sync:', queueErr);
+      }
+    }
+
+    /* 3. Analyse Claude (ou réponse démo) — sync fallback ─────────────── */
+    const DEMO_CLAUDE_ANALYSIS = {
+      winners: 'Les accroches "Pain Point" (Gamma, CTR 5.1%, ROAS 6.3x) et "Promo directe" (Alpha, ROAS 4.2x) surperforment nettement. Le format court avec chiffre de réduction + urgence génère le meilleur CTR. Les visuels UGC avec preuve sociale fonctionnent bien sur le mid-funnel.',
+      losers: 'La campagne Delta "Awareness" est à couper immédiatement (ROAS 0.4x, CTR <1%). La campagne Beta UGC perd du budget (ROAS 0.8x) — le storytelling seul sans CTA chiffré ne convertit pas sur ce segment.',
+      next_actions: [
+        'Tester une déclinaison "Pain Point + chiffre" : "87% de nos clients ont doublé leur visibilité locale en 30 jours"',
+        'Créer une version vidéo courte (15s) de la campagne Alpha avec compteur de réduction animé',
+        'Combiner UGC + promo : témoignage client + offre -20% en fin de vidéo pour maximiser ROAS',
+      ],
+      budget_waste_euros: 140,
+    };
+
     let analysis: { winners: string; losers: string; next_actions: string[]; budget_waste_euros: number };
 
     if (isClaudeDemo) {
@@ -156,7 +175,7 @@ Réponds UNIQUEMENT avec un JSON valide (pas de markdown, pas d'explication) :
       }
     }
 
-    /* 3. Save to Blink DB ────────────────────────────────────────────── */
+    /* 4. Save to Blink DB ────────────────────────────────────────────── */
     const db = getDb(c.env);
     const reportId = crypto.randomUUID();
     const totalBudgetWaste = formatted

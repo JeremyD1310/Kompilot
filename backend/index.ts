@@ -125,6 +125,7 @@ import { router as trialExtensionRouter }        from './routes/trialExtension';
 import { router as trialSequenceRouter }         from './routes/trialSequence';
 import { router as highTouchRouter }             from './routes/highTouch';
 import { requireRole }                           from './lib/rbacMiddleware';
+import { createClient }                          from '@blinkdotnew/sdk';
 
 const app = new Hono();
 
@@ -199,6 +200,136 @@ app.use('/api/billing/*', requireRole('admin'));
 app.use('/api/team/*', requireRole('admin'));
 // Admin analytics: admin only
 app.use('/api/admin/*', requireRole('admin'));
+
+// ── Blink Queue handler ──────────────────────────────────────────────────────
+app.post('/api/queue', async (c) => {
+  let body: { taskName?: string; taskId?: string; payload?: any };
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+
+  const { taskName, payload } = body;
+  if (!taskName) return c.json({ error: 'taskName required' }, 400);
+
+  const env = c.env as any;
+  const blink = createClient({
+    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    secretKey:  env.BLINK_SECRET_KEY,
+  });
+
+  switch (taskName) {
+    // ── Video generation (Luma AI) ─────────────────────────────────────
+    case 'generate-video': {
+      const { userId, videoPrompt, aspectRatio, extractedData, generationId } = payload ?? {};
+      const lumaKey = env.LUMAAI_API_KEY as string | undefined;
+      if (!lumaKey) {
+        await blink.db.luma_generations.update(generationId, { status: 'failed' });
+        return c.json({ ok: false, error: 'LUMAAI_API_KEY not configured' }, 200);
+      }
+      try {
+        const res = await fetch('https://api.lumalabs.ai/dream-machine/v1/generations', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${lumaKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: videoPrompt, aspect_ratio: aspectRatio ?? '9:16' }),
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error('[Queue:generate-video] Luma error:', errText);
+          await blink.db.luma_generations.update(generationId, { status: 'failed' });
+          return c.json({ ok: false, error: errText }, 200);
+        }
+        const data = await res.json() as { id: string; state: string; video?: { url: string } };
+        await blink.db.luma_generations.update(generationId, {
+          videoUrl: data.video?.url ?? '',
+          status: data.state ?? 'processing',
+        });
+        return c.json({ ok: true, generationId: data.id, status: data.state });
+      } catch (err: any) {
+        console.error('[Queue:generate-video] error:', err.message);
+        await blink.db.luma_generations.update(generationId, { status: 'failed' });
+        return c.json({ ok: false, error: err.message }, 200);
+      }
+    }
+
+    // ── Creative Studio analysis (Meta Ads + Claude) ───────────────────
+    case 'analyze-creative': {
+      const { userId, adAccountId, orgId, formatted, isMetaDemo, isClaudeDemo } = payload ?? {};
+      const anthropicKey = env.ANTHROPIC_API_KEY as string;
+      const metaToken = env.META_ADS_GRAPH_TOKEN as string;
+
+      const DEMO_CLAUDE_ANALYSIS = {
+        winners: 'Les accroches "Pain Point" (CTR 5.1%, ROAS 6.3x) et "Promo directe" (ROAS 4.2x) surperforment nettement.',
+        losers: 'La campagne Delta "Awareness" est à couper (ROAS 0.4x).',
+        next_actions: [
+          'Tester une déclinaison "Pain Point + chiffre"',
+          'Créer une version vidéo courte (15s) de la campagne Alpha',
+          'Combiner UGC + promo pour maximiser ROAS',
+        ],
+        budget_waste_euros: 140,
+      };
+
+      try {
+        let analysis: any;
+        if (isClaudeDemo) {
+          analysis = DEMO_CLAUDE_ANALYSIS;
+        } else {
+          const prompt = `Tu es Creative Strategist. Analyse ces Meta Ads.\n\nAds:\n${JSON.stringify(formatted, null, 2)}\n\nRéponds UNIQUEMENT en JSON:\n{"winners":"...","losers":"...","next_actions":["..."],"budget_waste_euros":0}`;
+          const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: { 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+            body: JSON.stringify({ model: 'claude-3-5-sonnet-20241022', max_tokens: 1500, messages: [{ role: 'user', content: prompt }] }),
+          });
+          if (!claudeRes.ok) {
+            const errText = await claudeRes.text();
+            return c.json({ ok: false, error: `Claude API error: ${errText}` }, 200);
+          }
+          const claudeData = await claudeRes.json() as { content: { text: string }[] };
+          const rawText = claudeData.content?.[0]?.text ?? '{}';
+          try { analysis = JSON.parse(rawText); } catch {
+            const match = rawText.match(/\{[\s\S]*\}/);
+            analysis = match ? JSON.parse(match[0]) : { winners: rawText, losers: '', next_actions: [], budget_waste_euros: 0 };
+          }
+        }
+
+        const totalBudgetWaste = (formatted ?? []).filter((a: any) => a.roas < 1 && a.spend > 0).reduce((s: number, a: any) => s + a.spend, 0);
+        const reportId = crypto.randomUUID();
+        await blink.db.creative_reports.create({
+          id: reportId, userId, orgId: orgId ?? '', adAccountId,
+          adsAnalyzed: (formatted ?? []).length,
+          budgetWasteDetected: Math.round(totalBudgetWaste),
+          winners: JSON.stringify(analysis.winners ?? ''),
+          losers: JSON.stringify(analysis.losers ?? ''),
+          nextActions: JSON.stringify(analysis.next_actions ?? []),
+          rawMetaData: JSON.stringify(formatted ?? []),
+        });
+
+        return c.json({ ok: true, reportId, analysis, adsAnalyzed: (formatted ?? []).length });
+      } catch (err: any) {
+        console.error('[Queue:analyze-creative] error:', err.message);
+        return c.json({ ok: false, error: err.message }, 200);
+      }
+    }
+
+    // ── AIO Sync (SerpApi) ─────────────────────────────────────────────
+    case 'aio-sync-track': {
+      const { userId, keyword, brandName } = payload ?? {};
+      const serpKey = env.SERP_API_KEY as string ?? '';
+      if (!serpKey || serpKey.length < 10) {
+        return c.json({ ok: false, error: 'SERP_API_KEY not configured' }, 200);
+      }
+      try {
+        const { trackAiVisibility } = await import('./lib/aioSyncService');
+        const result = await trackAiVisibility(keyword, brandName, serpKey);
+        return c.json({ ok: true, ...result });
+      } catch (err: any) {
+        console.error('[Queue:aio-sync-track] error:', err.message);
+        return c.json({ ok: false, error: err.message }, 200);
+      }
+    }
+
+    default:
+      console.warn(`[Queue] Unknown taskName: ${taskName}`);
+      return c.json({ error: `Unknown task: ${taskName}` }, 400);
+  }
+});
 
 // ── Global error handler ─────────────────────────────────────────────────────
 app.onError((err, c) => {

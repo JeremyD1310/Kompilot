@@ -300,6 +300,7 @@ router.post('/api/url-to-video/generate', checkUserQuota('luma_videos', 1), asyn
     marketingContext?: MarketingContext;
     voiceStyle?: string;
     aspectRatio?: string;
+    async?: boolean;
   } = {};
   try { body = await c.req.json(); } catch { /* empty */ }
 
@@ -336,6 +337,49 @@ router.post('/api/url-to-video/generate', checkUserQuota('luma_videos', 1), asyn
     `Professional lighting, smooth transitions, modern marketing style, text overlays.`,
   ].filter(Boolean).join(' ');
 
+  // Pre-create the generation record in DB
+  const generationId = crypto.randomUUID();
+  try {
+    await blink.db.luma_generations.create({
+      id: generationId,
+      userId,
+      prompt: videoPrompt,
+      optimizedPrompt: '',
+      imageUrl: body.extractedData?.ogImage ?? '',
+      videoUrl: '',
+      status: 'processing',
+      aspectRatio,
+      isAiGenerated: 1,
+    });
+  } catch (dbErr) {
+    console.warn('[UrlToVideo] DB store failed (non-critical):', dbErr);
+  }
+
+  // ── Async queue mode: enqueue and return immediately ────────────────
+  if (body.async) {
+    try {
+      const queueFn = (blink as any).queue;
+      if (queueFn?.enqueue) {
+        await queueFn.enqueue('generate-video', {
+          userId,
+          videoPrompt,
+          aspectRatio,
+          extractedData: body.extractedData,
+          generationId,
+        });
+        return c.json({
+          mode: 'async',
+          generationId,
+          status: 'queued',
+          message: 'Video generation queued. Poll /status/:generationId for updates.',
+        });
+      }
+    } catch (queueErr) {
+      console.warn('[UrlToVideo] Queue enqueue failed, falling back to sync:', queueErr);
+    }
+  }
+
+  // ── Synchronous mode (fallback / default) ───────────────────────────
   try {
     const res = await fetch('https://api.lumalabs.ai/dream-machine/v1/generations', {
       method: 'POST',
@@ -352,6 +396,7 @@ router.post('/api/url-to-video/generate', checkUserQuota('luma_videos', 1), asyn
     if (!res.ok) {
       const errText = await res.text();
       console.error(`[UrlToVideo] Luma AI error ${res.status}: ${errText}`);
+      await blink.db.luma_generations.update(generationId, { status: 'failed' });
       return c.json({ error: `Luma AI error: ${errText}` }, 502);
     }
 
@@ -361,22 +406,14 @@ router.post('/api/url-to-video/generate', checkUserQuota('luma_videos', 1), asyn
       video?: { url: string };
     };
 
-    // Store the generation in DB for tracking
-    const blink = getBlink(env);
+    // Update the generation record
     try {
-      await blink.db.luma_generations.create({
-        id: data.id,
-        userId,
-        prompt: videoPrompt,
-        optimizedPrompt: '',
-        imageUrl: body.extractedData?.ogImage ?? '',
+      await blink.db.luma_generations.update(generationId, {
         videoUrl: data.video?.url ?? '',
         status: data.state ?? 'processing',
-        aspectRatio,
-        isAiGenerated: 1,
       });
     } catch (dbErr) {
-      console.warn('[UrlToVideo] DB store failed (non-critical):', dbErr);
+      console.warn('[UrlToVideo] DB update failed (non-critical):', dbErr);
     }
 
     return c.json({
@@ -386,6 +423,7 @@ router.post('/api/url-to-video/generate', checkUserQuota('luma_videos', 1), asyn
     });
   } catch (err: any) {
     console.error('[UrlToVideo] generate error:', err);
+    await blink.db.luma_generations.update(generationId, { status: 'failed' });
     return c.json({ error: err.message ?? 'Video generation failed' }, 500);
   }
 });

@@ -104,7 +104,7 @@ router.post('/api/aio/sync/track', checkUserQuota('serpapi_queries', 1), async (
   }
 
   // ── Parse + validation du corps ───────────────────────────────────────────
-  let body: { keyword?: string; brandName?: string };
+  let body: { keyword?: string; brandName?: string; async?: boolean };
   try {
     body = await c.req.json();
   } catch {
@@ -113,12 +113,47 @@ router.post('/api/aio/sync/track', checkUserQuota('serpapi_queries', 1), async (
 
   const keyword   = body.keyword?.trim()   ?? '';
   const brandName = body.brandName?.trim() ?? '';
+  const useQueue  = body.async ?? false;
 
   if (!keyword)   return c.json({ error: 'Paramètre "keyword" requis.',   code: 'MISSING_KEYWORD' }, 400);
   if (!brandName) return c.json({ error: 'Paramètre "brandName" requis.', code: 'MISSING_BRAND' }, 400);
   if (keyword.length > 200) return c.json({ error: 'Mot-clé trop long (max 200 chars).', code: 'KEYWORD_TOO_LONG' }, 400);
 
-  // ── Appel au service AIO Sync ─────────────────────────────────────────────
+  // ── Extract userId from JWT ───────────────────────────────────────────────
+  const authHeader = c.req.header('Authorization');
+  let userId = '';
+  if (authHeader?.startsWith('Bearer ')) {
+    try {
+      const payload = authHeader.split('.')[1];
+      const decoded = JSON.parse(atob(payload));
+      userId = decoded.sub ?? decoded.user_id ?? '';
+    } catch { /* ignore */ }
+  }
+
+  // ── Async queue mode ─────────────────────────────────────────────────────
+  if (useQueue) {
+    try {
+      const blink = createClient({
+        projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+        secretKey:  c.env.BLINK_SECRET_KEY,
+      });
+      const queueFn = (blink as any).queue;
+      if (queueFn?.enqueue) {
+        await queueFn.enqueue('aio-sync-track', { userId, keyword, brandName });
+        return c.json({
+          mode: 'async',
+          status: 'queued',
+          keyword,
+          brandName,
+          message: 'AIO sync queued. Results will be available shortly.',
+        }, 200);
+      }
+    } catch (queueErr) {
+      console.warn('[aioSync] Queue enqueue failed, falling back to sync:', queueErr);
+    }
+  }
+
+  // ── Appel au service AIO Sync (sync fallback) ─────────────────────────────
   console.log(`[aioSync route] POST /api/aio/sync/track — keyword="${keyword}" brand="${brandName}"`);
 
   try {

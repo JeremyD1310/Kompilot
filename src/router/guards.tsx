@@ -11,6 +11,7 @@ import { Navigate } from '@tanstack/react-router';
 import { useAuth } from '../hooks/useAuth';
 import { useDemoMode } from '../context/DemoModeContext';
 import { useTrialSequence } from '../hooks/useTrialSequence';
+import { useHighTouchDetection } from '../hooks/useHighTouchDetection';
 import { blink } from '../blink/client';
 import { LoadingOverlay } from '@blinkdotnew/ui';
 import OnboardingPage from '../pages/OnboardingPage';
@@ -50,6 +51,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   // Fire trial email sequence once per session (J0→J30), non-blocking
   useTrialSequence(user?.id);
+
+  // Fire high-touch lead detection once per session, non-blocking
+  useHighTouchDetection(user?.id, user?.email, user?.displayName);
 
   useEffect(() => {
     // Demo users skip onboarding entirely
