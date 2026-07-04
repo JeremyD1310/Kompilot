@@ -42,7 +42,7 @@ const BUSINESS_TEMPLATES: Record<Exclude<Sector, ''>, string[]> = {
     'Coiffure & Style {ville}',
     'Espace Bien-être {ville}',
     '{ville} Hair Studio',
-    'Studio {ville}',
+    'Coiffure {adj} {ville}',
     'Beauté & Sens {ville}',
   ],
   medical: [
@@ -67,7 +67,7 @@ const BUSINESS_TEMPLATES: Record<Exclude<Sector, ''>, string[]> = {
     'Bistrot {adj} {ville}',
     'Le Chef de {ville}',
     'La Cuisine de {name}',
-    '{name} — Bistro & Bar',
+    '{name} — Bistrot & Bar',
   ],
   hotel: [
     'Hôtel {adj} {ville}',
@@ -85,19 +85,27 @@ const BUSINESS_TEMPLATES: Record<Exclude<Sector, ''>, string[]> = {
     'Garage {name}',
     'Auto Service {ville}',
     '{name} Automobiles',
-    'Garage du {adj} {ville}',
+    'Garage {adj} — {ville}',
     'Mécanique {name}',
     'Auto Expert {ville}',
     'Carrosserie {name}',
     'Atelier Auto {ville}',
-    '{ville} Auto Center',
-    'Garage {adj} — {ville}',
+    '{name} Mécanique & Carrosserie',
+    'Garage {name} & Fils',
   ],
 };
 
 const FIRST_NAMES = ['Martin', 'Bernard', 'Dubois', 'Thomas', 'Robert', 'Richard', 'Petit', 'Durand', 'Leroy', 'Moreau', 'Simon', 'Laurent', 'Lefebvre', 'Michel', 'Garcia', 'David', 'Bertrand', 'Roux', 'Vincent', 'Fournier'];
-const ADJECTIVES = ['Authentique', 'Premium', 'Royal', 'Joli', 'Chic', 'Élégant', 'Harmonie', 'Sérénité', 'Or', 'Zen'];
 const SPECIALTIES = ['Médecine Générale', 'Dermatologie', 'Kinésithérapie', 'Dentiste', 'Ophtalmologie', 'Gynécologie', 'Cardiologie', 'ORL', 'Pédiatrie', 'Rhumatologie'];
+
+/** Sector-specific adjective/descriptor pools — avoids "Garage Sérénité" or "Salon Royal" mismatches */
+const SECTOR_ADJECTIVES: Record<Exclude<Sector, ''>, string[]> = {
+  beauty: ['Chic', 'Élégant', 'Joli', 'Harmonie', 'Sérénité', 'Zen', 'Premium', 'Lumine', 'Privilège', 'Glow'],
+  medical: ['Central', 'Saint-Pierre', 'Pasteur', 'Liberté', 'République', 'Harmonie', 'Nord', 'Sud', 'Est', 'Ouest'],
+  restaurant: ['Gourmand', 'Provençal', 'Parisien', 'Authentique', 'Campagnard', 'Marin', 'Savoyard', 'du Terroir', 'du Marché', 'du Port'],
+  hotel: ['Royal', 'Impérial', 'Prestige', 'Grand', 'Beau', 'des Alpes', 'des Lacs', 'du Parc', 'du Vieux', 'des Roses'],
+  auto: ['Express', 'Pro', 'Expert', 'Technique', 'Nord', 'Sud', 'Central', 'Est', 'Ouest', 'du Port'],
+};
 
 const PARTNER_SOURCES: Record<Exclude<Sector, ''>, { name: string; icon: string }[]> = {
   beauty: [
@@ -172,13 +180,14 @@ export function generateHybridLeads(sector: Exclude<Sector, ''>, city: string, c
   const seed = hashSeed(`${sector}-${city.toLowerCase()}`);
   const templates = BUSINESS_TEMPLATES[sector];
   const sources = PARTNER_SOURCES[sector];
+  const adjectives = SECTOR_ADJECTIVES[sector];
 
   return Array.from({ length: count }, (_, i) => {
     const template = pick(templates, seed, i);
     const name = template
       .replace('{ville}', city.charAt(0).toUpperCase() + city.slice(1).toLowerCase())
       .replace('{name}', pick(FIRST_NAMES, seed, i + 3))
-      .replace('{adj}', pick(ADJECTIVES, seed, i + 5))
+      .replace('{adj}', pick(adjectives, seed, i + 5))
       .replace('{specialty}', pick(SPECIALTIES, seed, i + 7));
 
     const rating = 3.8 + (((seed + i * 13) % 12) / 10); // 3.8 - 4.9
