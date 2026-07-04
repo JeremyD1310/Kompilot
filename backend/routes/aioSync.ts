@@ -24,6 +24,7 @@
 import { Hono }               from 'hono';
 import { createClient }        from '@blinkdotnew/sdk';
 import type { Env }            from '../lib/types';
+import { checkUserQuota }     from '../lib/quotaMiddleware';
 import { trackAiVisibility }  from '../lib/aioSyncService';
 
 // ── Codes d'erreur (constantes — évite la confusion avec les noms de secrets) ─
@@ -91,7 +92,7 @@ router.use('/api/aio/sync/*', async (c, next) => {
  *   "totalDurationMs": 3200
  * }
  */
-router.post('/api/aio/sync/track', async (c) => {
+router.post('/api/aio/sync/track', checkUserQuota('serpapi_queries', 1), async (c) => {
   const serpKey = (c.env as unknown as { SERP_API_KEY?: string }).SERP_API_KEY ?? '';
 
   // ── Vérification de la clé SerpApi ────────────────────────────────────────

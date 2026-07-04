@@ -32,6 +32,7 @@ const PricingAgencyPage        = React.lazy(() => import('../pages/PricingAgency
 const PlaybookImmobilierPage   = React.lazy(() => import('../pages/PlaybookImmobilierPage'));
 const PlaybookEcommercePage    = React.lazy(() => import('../pages/PlaybookEcommercePage'));
 const AIOCheckerPage           = React.lazy(() => import('../pages/AIOCheckerPage'));
+const ExtendTrialPage          = React.lazy(() => import('../pages/ExtendTrialPage'));
 
 export const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: LandingPage });
 export const loginRoute = createRoute({ getParentRoute: () => rootRoute, path: '/login', component: LoginPage });
@@ -63,6 +64,7 @@ export const pricingAgencyRoute = createRoute({ getParentRoute: () => rootRoute,
 export const playbookImmobilierRoute = createRoute({ getParentRoute: () => rootRoute, path: '/playbook/immobilier', component: PlaybookImmobilierPage });
 export const playbookEcommerceRoute  = createRoute({ getParentRoute: () => rootRoute, path: '/playbook/e-commerce', component: PlaybookEcommercePage });
 export const aioCheckerRoute         = createRoute({ getParentRoute: () => rootRoute, path: '/aio-checker', component: AIOCheckerPage });
+export const extendTrialRoute        = createRoute({ getParentRoute: () => rootRoute, path: '/extend-trial', component: ExtendTrialPage });
 
 export const publicRoutes = [
   indexRoute,
@@ -94,4 +96,5 @@ export const publicRoutes = [
   playbookImmobilierRoute,
   playbookEcommerceRoute,
   aioCheckerRoute,
+  extendTrialRoute,
 ];

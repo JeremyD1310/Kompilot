@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import { Navigate } from '@tanstack/react-router';
 import { useAuth } from '../hooks/useAuth';
 import { useDemoMode } from '../context/DemoModeContext';
+import { useTrialSequence } from '../hooks/useTrialSequence';
 import { blink } from '../blink/client';
 import { LoadingOverlay } from '@blinkdotnew/ui';
 import OnboardingPage from '../pages/OnboardingPage';
@@ -46,6 +47,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isDemoActive } = useDemoMode();
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+
+  // Fire trial email sequence once per session (J0→J30), non-blocking
+  useTrialSequence(user?.id);
 
   useEffect(() => {
     // Demo users skip onboarding entirely

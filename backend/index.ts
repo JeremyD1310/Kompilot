@@ -121,6 +121,10 @@ import { platformWebhooksRouter }                 from './routes/platformWebhook
 import { router as weeklyReportRouter }           from './routes/weeklyReport';
 import { router as addonCheckoutRouter }          from './routes/addonCheckout';
 import { router as creditPackAioRouter }          from './routes/billing/creditPackAio';
+import { router as trialExtensionRouter }        from './routes/trialExtension';
+import { router as trialSequenceRouter }         from './routes/trialSequence';
+import { router as highTouchRouter }             from './routes/highTouch';
+import { requireRole }                           from './lib/rbacMiddleware';
 
 const app = new Hono();
 
@@ -184,6 +188,17 @@ app.route('/', platformWebhooksRouter);
 app.route('/', weeklyReportRouter);
 app.route('/', addonCheckoutRouter);
 app.route('/', creditPackAioRouter);
+app.route('/', trialExtensionRouter);
+app.route('/', trialSequenceRouter);
+app.route('/', highTouchRouter);
+
+// ── RBAC enforcement on sensitive routes ─────────────────────────────────────
+// Billing: admin only (prevents members/guests from changing plans)
+app.use('/api/billing/*', requireRole('admin'));
+// Team management: admin only
+app.use('/api/team/*', requireRole('admin'));
+// Admin analytics: admin only
+app.use('/api/admin/*', requireRole('admin'));
 
 // ── Global error handler ─────────────────────────────────────────────────────
 app.onError((err, c) => {

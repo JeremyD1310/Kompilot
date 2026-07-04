@@ -11,7 +11,7 @@ import {
   type PlanId,
   type BillingInterval,
 } from '../lib/stripeHelpers';
-import { getDunningEmailHtml } from '../lib/emailTemplates';
+import { getDunningEmailHtml, getDunningFollowUpHtml } from '../lib/emailTemplates';
 import { handleCreditPackGrant } from '../lib/creditPackHandler';
 import { handleAioCreditPackGrant } from '../lib/aioCreditPackHandler';
 
@@ -73,25 +73,76 @@ router.post('/api/webhooks/stripe', async (c) => {
   };
   const blink = getBlink(env);
 
-  // invoice.payment_failed → 3-day grace period + critical alert
+  // invoice.payment_failed → progressive dunning (J+0, J+1, J+3) + critical alert
   if (event.type === 'invoice.payment_failed') {
     const invoice    = event.data.object;
     const customerId = invoice.customer as string;
     const userId     = (invoice.metadata?.user_id as string | undefined)
                     || (await findUserByCustomer(blink, customerId));
     if (userId) {
-      await patchUserMeta(blink, userId, {
+      // Track dunning attempt number (1, 2, or 3)
+      const currentMeta   = await getUserMeta(blink, userId);
+      const dunningAttempt = ((currentMeta.dunning_attempt as number) || 0) + 1;
+      const amount = invoice.amount_due ? `${Math.round(invoice.amount_due / 100)}€` : '';
+
+      const updateFields: Record<string, any> = {
         stripe_customer_id:  customerId,
         subscription_status: 'payment_failed',
-        grace_period_end:    new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-      });
-      console.warn(`[webhook] payment_failed → user ${userId}, grace ends in 3 days`);
+        dunning_attempt:     dunningAttempt,
+        last_dunning_at:     new Date().toISOString(),
+      };
 
-      // 🚨 Double alert: fire SMS + push notification
+      // Attempt 1: 3-day grace; Attempt 2: extend to 5 days; Attempt 3: final notice (suspend at 7 days)
+      if (dunningAttempt < 3) {
+        updateFields.grace_period_end = new Date(Date.now() + (dunningAttempt === 1 ? 3 : 5) * 24 * 60 * 60 * 1000).toISOString();
+      } else {
+        // Final attempt — set hard suspension deadline
+        updateFields.grace_period_end = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        updateFields.subscription_status = 'payment_suspended_soon';
+      }
+
+      await patchUserMeta(blink, userId, updateFields);
+      console.warn(`[webhook] payment_failed → user ${userId}, attempt ${dunningAttempt}/3, grace: ${updateFields.grace_period_end}`);
+
+      // Send progressive dunning email
+      try {
+        const userRows  = await blink.db.users.list({ where: { id: userId }, limit: 1 });
+        const user      = userRows[0] as any;
+        const userEmail = user?.email as string | undefined;
+        const firstName = (user?.display_name as string)?.split(' ')[0] ?? 'là';
+        const resumeUrl = 'https://kompilot.blinkpowered.com/account?tab=billing';
+
+        if (userEmail) {
+          const dunningSubjects = [
+            '⚠️ Votre paiement Kompilot a échoué',
+            '⚠️ Rappel : votre paiement Kompilot est toujours en attente',
+            '🚨 Dernière relance : votre espace Kompilot sera suspendu',
+          ];
+          const subject = dunningSubjects[Math.min(dunningAttempt - 1, 2)];
+          const html    = dunningAttempt === 1
+            ? getDunningEmailHtml(firstName, amount, resumeUrl)
+            : getDunningFollowUpHtml(firstName, amount, resumeUrl, dunningAttempt);
+          const textBody = dunningAttempt >= 3
+            ? `Bonjour ${firstName},\n\nURGENT : Votre paiement Kompilot${amount ? ` de ${amount}` : ''} n'a toujours pas pu être prélevé. Votre espace sera suspendu dans les 24 prochaines heures.\n\nMettez à jour votre paiement : ${resumeUrl}\n\nL'équipe Kompilot`
+            : `Bonjour ${firstName},\n\nVotre paiement Kompilot${amount ? ` de ${amount}` : ''} n'a pas pu être prélevé (relance ${dunningAttempt}/3). Mettez à jour votre moyen de paiement pour éviter toute interruption.\n\n${resumeUrl}\n\nL'équipe Kompilot`;
+
+          await blink.notifications.email({
+            to:      userEmail,
+            replyTo: 'support@kompilot.com',
+            subject,
+            html,
+            text:    textBody,
+          });
+          console.warn(`[dunning] attempt ${dunningAttempt}/3 email sent → ${userEmail}`);
+        }
+      } catch (e) {
+        console.error('[dunning] email error (non-fatal):', e);
+      }
+
+      // 🚨 Critical alert (fire-and-forget)
       try {
         const backendUrl = `https://${(rawEnv as any).BLINK_PROJECT_ID || 'gbrhsehk'}.backend.blink.new`;
         const secretKey  = (rawEnv as any).BLINK_SECRET_KEY as string | undefined;
-        const amount     = invoice.amount_due ? `${Math.round(invoice.amount_due / 100)}€` : '';
         await fetch(`${backendUrl}/api/alerts/critical`, {
           method:  'POST',
           headers: {
@@ -101,7 +152,7 @@ router.post('/api/webhooks/stripe', async (c) => {
           body: JSON.stringify({
             userId,
             alertType: 'stripe.payment_failed',
-            metadata:  { amount, attemptCount: invoice.attempt_count ?? 1 },
+            metadata:  { amount, attemptCount: dunningAttempt },
           }),
         });
       } catch (ae) {
@@ -327,12 +378,26 @@ router.post('/api/webhooks/stripe', async (c) => {
     const userId     = (invoice.metadata?.user_id as string | undefined)
                     || (await findUserByCustomer(blink, customerId));
     if (userId) {
+      // Reset monthly quota counters on successful payment (anniversary billing cycle)
+      const PLAN_LIMITS: Record<string, Record<string, number>> = {
+        starter:   { quota_ai_tokens_left: 200,  quota_search_credits_left: 50,  luma_videos_used: 0, serpapi_queries_used: 0, sms_used: 0, email_used: 0 },
+        business:  { quota_ai_tokens_left: 500,  quota_search_credits_left: 150, luma_videos_used: 0, serpapi_queries_used: 0, sms_used: 0, email_used: 0 },
+        agency:    { quota_ai_tokens_left: 2000, quota_search_credits_left: 500, luma_videos_used: 0, serpapi_queries_used: 0, sms_used: 0, email_used: 0 },
+        agency_pro:{ quota_ai_tokens_left: 5000, quota_search_credits_left: 1000, luma_videos_used: 0, serpapi_queries_used: 0, sms_used: 0, email_used: 0 },
+      };
+      const planIdForQuota = (await getUserMeta(blink, userId)).plan_id as string || 'starter';
+      const quotaReset = PLAN_LIMITS[planIdForQuota] || PLAN_LIMITS.starter;
+      quotaReset.quota_reset_at = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString();
+
       await patchUserMeta(blink, userId, {
         stripe_customer_id:  customerId,
         subscription_status: 'active',
         grace_period_end:    null,
+        dunning_attempt:     0,
+        last_dunning_at:     null,
+        ...quotaReset,
       });
-      console.warn(`[webhook] payment_succeeded → user ${userId} restored to active`);
+      console.warn(`[webhook] payment_succeeded → user ${userId} restored to active, dunning + quotas reset`);
 
       // ── Server-Side Purchase event → Conversion APIs ──────────────────────
       try {

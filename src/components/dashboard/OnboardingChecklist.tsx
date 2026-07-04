@@ -88,37 +88,50 @@ interface OnboardingChecklistProps {
 }
 
 export function OnboardingChecklist({ onConnectAccount, onCreatePost }: OnboardingChecklistProps) {
-  const { hasAny } = useConnectedAccounts();
+  const { isConnected } = useConnectedAccounts();
 
   // Derive task states
-  const socialConnected = hasAny;
-  const postPlanned     = !isFirstPost(); // isFirstPost() returns true BEFORE first post
-  const referralSent    = getReferralDone();
-
-  // Recheck referral each render (could be set in another tab)
-  const [referralDoneState, setReferralDoneState] = useState(referralSent);
-  useEffect(() => {
-    setReferralDoneState(getReferralDone());
-  }, []);
+  const googleConnected  = isConnected('google');
+  const scanLaunched     = !!localStorage.getItem('kompilot_scan_launched');
+  const socialConnected  = isConnected('instagram') || isConnected('facebook');
+  const postCreated      = !isFirstPost(); // isFirstPost() returns true BEFORE first post
+  const alertsConfigured = !!localStorage.getItem('kompilot_alerts_configured');
 
   const tasks = [
     {
+      done: googleConnected,
+      label: 'Connecter Google Business',
+      description: 'Synchronisez votre fiche, vos avis et vos statistiques locales. (+10 crédits bonus)',
+      weight: 30,
+      onClick: googleConnected ? undefined : onConnectAccount,
+    },
+    {
+      done: scanLaunched,
+      label: 'Lancer le scan d\'acquisition local',
+      description: 'Notre scanner IA identifie vos opportunités manquées en 35 secondes.',
+      weight: 25,
+      href: scanLaunched ? undefined : '/scan/fast',
+    },
+    {
       done: socialConnected,
-      label: 'Connecter mon premier réseau social',
-      description: 'Synchronisez vos statistiques et publiez directement sur vos réseaux.',
+      label: 'Connecter Instagram ou Facebook',
+      description: 'Activez le calendrier de publication et publiez sur vos réseaux en 1 clic.',
+      weight: 20,
       onClick: socialConnected ? undefined : onConnectAccount,
     },
     {
-      done: postPlanned,
-      label: 'Planifier ma première publication ou Story',
-      description: 'Créez votre premier post ou Story et planifiez-le en quelques clics.',
-      onClick: postPlanned ? undefined : onCreatePost,
+      done: postCreated,
+      label: 'Générer votre premier post IA',
+      description: 'L\'IA rédige un post professionnel adapté à votre secteur en quelques secondes.',
+      weight: 15,
+      onClick: postCreated ? undefined : onCreatePost,
     },
     {
-      done: referralDoneState,
-      label: 'Inviter un confrère (Parrainage)',
-      description: 'Partagez Kompilot avec un collègue et gagnez des avantages exclusifs.',
-      href: referralDoneState ? undefined : '/referral',
+      done: alertsConfigured,
+      label: 'Configurer les alertes avis',
+      description: 'Recevez une notification instantanée dès qu\'un nouvel avis Google arrive.',
+      weight: 10,
+      href: alertsConfigured ? undefined : '/settings',
     },
   ];
 
@@ -137,17 +150,6 @@ export function OnboardingChecklist({ onConnectAccount, onCreatePost }: Onboardi
     try { localStorage.setItem(DISMISSED_KEY, '1'); } catch { /* noop */ }
     setDismissed(true);
   };
-
-  // Mark referral as visited when link is clicked
-  const handleReferralClick = () => {
-    markReferralVisited();
-    setReferralDoneState(true);
-  };
-
-  // Update tasks[2] click handler with above
-  tasks[2].onClick = referralDoneState
-    ? undefined
-    : () => { handleReferralClick(); };
 
   // Hide if dismissed after everything done for > 2 seconds
   useEffect(() => {
@@ -229,7 +231,7 @@ export function OnboardingChecklist({ onConnectAccount, onCreatePost }: Onboardi
               <div className="text-3xl animate-bounce">🎉</div>
               <p className="text-sm font-bold text-green-800">Félicitations ! Votre compte est configuré à 100%.</p>
               <p className="text-xs text-green-700 leading-snug max-w-xs">
-                Vous avez connecté vos réseaux, planifié votre premier contenu et invité un confrère. Vous êtes prêt à cartonner !
+                Google Business connecté, scan lancé, réseaux actifs, premier post IA créé et alertes avis configurées. Vous êtes prêt à dominer votre visibilité locale !
               </p>
               <button
                 onClick={handleDismiss}

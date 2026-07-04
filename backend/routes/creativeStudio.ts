@@ -7,6 +7,7 @@
  */
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
+import { checkUserQuota } from '../lib/quotaMiddleware';
 
 type Env = {
   BLINK_SECRET_KEY: string;
@@ -33,7 +34,7 @@ function getUserId(authHeader: string | undefined): string | null {
 }
 
 /* ── POST /api/creative-studio/analyze ──────────────────────────────────── */
-router.post('/api/creative-studio/analyze', async (c) => {
+router.post('/api/creative-studio/analyze', checkUserQuota('creative_credits', 1), async (c) => {
   const userId = getUserId(c.req.header('Authorization'));
   if (!userId) return c.json({ error: 'Non autorisé' }, 401);
 

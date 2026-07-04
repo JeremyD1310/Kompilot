@@ -3,7 +3,7 @@ import { blink } from '../blink/client';
 import { useAuth } from './useAuth';
 import { toast } from '@blinkdotnew/ui';
 
-export type TeamRole = 'owner' | 'admin' | 'editor' | 'member';
+export type TeamRole = 'owner' | 'admin' | 'editor' | 'member' | 'guest';
 
 export interface TeamMember {
   id: string;
@@ -24,6 +24,7 @@ export const ROLE_LABELS: Record<TeamRole, string> = {
   admin: 'Administrateur',
   editor: 'Éditeur',
   member: 'Membre',
+  guest: 'Invité (lecture seule)',
 };
 
 export const ROLE_COLORS: Record<TeamRole, string> = {
@@ -31,6 +32,7 @@ export const ROLE_COLORS: Record<TeamRole, string> = {
   admin: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400',
   editor: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400',
   member: 'bg-muted text-muted-foreground',
+  guest: 'bg-slate-100 text-slate-500 dark:bg-slate-900/40 dark:text-slate-400',
 };
 
 function normalise(raw: Record<string, unknown>): TeamMember {
