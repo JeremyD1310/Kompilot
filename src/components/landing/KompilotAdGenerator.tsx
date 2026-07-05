@@ -58,6 +58,13 @@ const KOMPILOT_SECTORS = {
     cta: 'Je génère des entrées atelier',
     tools: ['Identifier', 'Vroomly', 'Allogarage', 'Darva'],
   },
+  clubs_sportifs: {
+    title: 'Clubs Sportifs',
+    hookFirst: 'Remplissez vos créneaux',
+    hookAccent: 'et boostez les inscriptions',
+    cta: 'Je recrute des membres',
+    tools: ['Planning Sport', 'Google Business', 'Mindbody', 'Decoplus'],
+  },
 } as const;
 
 type SectorKey = keyof typeof KOMPILOT_SECTORS;
