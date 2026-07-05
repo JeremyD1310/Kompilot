@@ -117,7 +117,7 @@ export const COMMERCE_SECTORS: CommerceSectorOption[] = [
   { id: 'beaute',       label: 'Beauté',                emoji: '💇', masterProfile: 'flux',        description: 'Salon de coiffure, barbier, onglerie' },
   { id: 'bienetre',     label: 'Bien-être & Spa',       emoji: '🧘', masterProfile: 'flux',        description: 'Spa, massage, institut de beauté, yoga' },
   { id: 'medical',      label: 'Médical / Paramédical', emoji: '🩺', masterProfile: 'flux',        description: 'Médecin, kiné, ostéo, dentiste, pharmacie' },
-  { id: 'sport',        label: 'Sport & Fitness',       emoji: '🏋️', masterProfile: 'flux',        description: 'Salle de sport, coach, studio fitness' },
+  { id: 'sport',        label: 'Sport & Fitness',       emoji: '⚽', masterProfile: 'flux',        description: 'Club sportif, salle de sport, coach, studio yoga, CrossFit, tennis, football' },
   // ── Commerce / Retail ───────────────────────────────────────────────────
   { id: 'retail',       label: 'Retail / Boutique',     emoji: '🛍️', masterProfile: 'produits',    description: 'Mode, chaussures, accessoires, maison' },
   { id: 'commerce',     label: 'Commerce de proximité', emoji: '🏪', masterProfile: 'produits',    description: 'Épicerie, tabac-presse, librairie, fleuriste' },
@@ -144,7 +144,7 @@ export const COMMERCE_SECTORS: CommerceSectorOption[] = [
 export const SECTOR_TO_MASTER_PROFILE: Record<string, NonNullable<import('./types').MasterProfile>> = {
   // Flux / Rendez-vous
   restauration: 'flux', hotellerie: 'flux', beaute: 'flux', bienetre: 'flux',
-  medical: 'flux', sante: 'flux', sport: 'flux', education: 'flux', evenementiel: 'flux',
+  medical: 'flux', sante: 'flux', sport: 'flux', fitness: 'flux', club_sportif: 'flux', education: 'flux', evenementiel: 'flux',
   // Chantier / Artisanat
   batiment: 'chantier', artisan: 'chantier', conciergerie: 'chantier', automobile: 'chantier',
   // Produits / Commerce

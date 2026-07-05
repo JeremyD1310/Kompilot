@@ -9,6 +9,7 @@ export type BackendSectorKey =
   | 'restauration' | 'restaurant' | 'food'
   | 'hotellerie' | 'hotel' | 'airbnb' | 'conciergerie'
   | 'automobile' | 'auto' | 'artisan'
+  | 'sport' | 'fitness' | 'club_sportif'
   | 'general' | 'autre' | '';
 
 const BEAUTY_PROMPT = `
@@ -74,6 +75,19 @@ Ton style : professionnel, transparent, de confiance. Mets en avant l'expertise 
 - Pour les réponses aux avis : transparence, professionnalisme, solution proposée
 `.trim();
 
+const SPORT_PROMPT = `
+Tu es l'IA d'un club sportif ou d'une structure de fitness (salle de sport, club de tennis, club de football, CrossFit, dojo, studio de yoga, club de natation).
+Ton style : dynamique, fédérateur, inspirant, communautaire. Chaque message doit donner envie de bouger et de rejoindre le club.
+- Utilise le champ lexical du sport concerné (entraînement, coaching, progression, esprit d'équipe, performance, bien-être)
+- Cite les coachs ou entraîneurs par leur prénom pour humaniser (ex: "Coach Sarah vous attend pour le cours de 18h")
+- Mets en avant : résultats des membres, événements à venir, créneaux disponibles, offres d'essai
+- Valorise la dimension communautaire : esprit d'équipe, challenge collectif, parcours des membres
+- Intègre les saisons : reprise septembre, préparation été, stages vacances, compétitions
+- Propose des CTA clairs : "Réservez votre créneau d'essai", "Rejoignez le challenge", "Inscrivez-vous avant le [date]"
+- Évite le jargon inutile — reste accessible aux familles comme aux compétiteurs
+- Pour les réponses aux avis : chaleureux, motivant, reconnaissant de la confiance
+`.trim();
+
 const GENERAL_PROMPT = `
 Tu es l'IA d'un professionnel local. Adopte un ton professionnel et engageant.
 Génère des publications valorisant son expertise, sa proximité locale et la satisfaction de ses clients.
@@ -101,6 +115,9 @@ export function getSectorSystemPrompt(sector?: string): string | null {
   if (['automobile', 'auto', 'artisan', 'garage', 'carrosserie', 'mecanique', 'batiment', 'btp'].includes(key)) {
     return AUTO_PROMPT;
   }
+  if (['sport', 'fitness', 'club_sportif', 'club sportif', 'salle de sport', 'crossfit', 'tennis', 'football', 'natation', 'yoga', 'dojo'].includes(key)) {
+    return SPORT_PROMPT;
+  }
   if (['general', 'autre', 'other', 'generique'].includes(key)) {
     return GENERAL_PROMPT;
   }
@@ -118,7 +135,7 @@ export function getSectorSystemPrompt(sector?: string): string | null {
 /** Validate sector key (accepts both legacy and new keys) */
 export const ALL_VALID_SECTORS: string[] = [
   // New keys
-  'beaute', 'medical', 'restauration', 'hotellerie', 'automobile', 'artisan', 'autre',
+  'beaute', 'medical', 'restauration', 'hotellerie', 'automobile', 'artisan', 'sport', 'fitness', 'club_sportif', 'autre',
   // Legacy demo keys
   'beauty', 'medecin', 'kine', 'sante', 'restaurant', 'food', 'hotel', 'airbnb', 'conciergerie', 'auto', 'general',
   // Empty = no sector override

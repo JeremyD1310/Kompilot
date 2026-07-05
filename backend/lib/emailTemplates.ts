@@ -92,6 +92,11 @@ const SECTOR_ACTIONS: Record<string, SectorAction[]> = {
     { emoji: '📍', title: 'Géolocalisez vos chantiers',        desc: 'Chaque chantier terminé est une opportunité de client local.' },
     { emoji: '💬', title: 'Répondez aux avis clients',         desc: 'Un artisan qui répond aux avis obtient 40 % de contacts en plus.' },
   ],
+  sport: [
+    { emoji: '🏋️', title: 'Partagez les résultats du club',   desc: "Performances, classements, parcours des membres — le contenu sportif génère 5× plus d'engagement." },
+    { emoji: '📅', title: 'Annoncez vos créneaux et événements', desc: 'Stages, compétitions, journées portes ouvertes — chaque événement est un levier d\'inscription.' },
+    { emoji: '⭐', title: 'Activez la collecte d\'avis Google', desc: "Les familles choisissent leur club sur Google. 4+ étoiles = +60% de demandes d'essai." },
+  ],
 };
 
 const DEFAULT_ACTIONS: SectorAction[] = [

@@ -77,12 +77,12 @@ const SECTORS: SectorDef[] = [
   },
   {
     id: 'sport',
-    label: 'Sport & Fitness',
-    emoji: '🏋️',
-    color: 'text-violet-600',
-    bg: 'bg-violet-50 dark:bg-violet-950/20',
-    partners: [{ name: 'MyCoach', color: 'bg-violet-100 text-violet-700' }, { name: 'Google Maps', color: 'bg-sky-100 text-sky-700' }],
-    tagline: 'Salle de sport, coach, studio fitness',
+    label: 'Clubs Sportifs & Fitness',
+    emoji: '⚽',
+    color: 'text-orange-600',
+    bg: 'bg-orange-50 dark:bg-orange-950/20',
+    partners: [{ name: 'Google Business', color: 'bg-teal-100 text-teal-700' }, { name: 'Planning Sport', color: 'bg-orange-100 text-orange-700' }],
+    tagline: 'Club de sport, salle de sport, tennis, football, CrossFit, yoga, natation',
   },
   // ── Commerce / Retail ─────────────────────────────────────────────────────
   {

@@ -3,7 +3,7 @@
  * Utilisé dans l'onboarding, l'inbox unifiée et le moteur IA sémantique.
  */
 
-export type SectorKey = 'beaute' | 'medical' | 'restauration' | 'hotellerie' | 'automobile' | 'autre';
+export type SectorKey = 'beaute' | 'medical' | 'restauration' | 'hotellerie' | 'automobile' | 'sport' | 'autre';
 
 export interface PlatformConnector {
   id: string;
@@ -273,6 +273,53 @@ Pour les artisans : valorise les réalisations avec photos avant/après, les dé
 Évite les promesses excessives. Mets en avant la réputation locale et les recommandations de bouche-à-oreille.`,
   },
 
+  sport: {
+    sectorKey: 'sport',
+    label: 'Clubs Sportifs & Fitness',
+    emoji: '⚽',
+    platforms: [
+      {
+        id: 'google_business',
+        name: 'Google Business',
+        emoji: '🌐',
+        description: 'Fiche Google My Business et avis centralisés',
+        connectUrl: 'https://business.google.com',
+        webhookSlug: 'google_business',
+        badgeColor: 'border-teal-300/60 text-teal-700 bg-teal-50 dark:bg-teal-950/30 dark:text-teal-300',
+        primary: true,
+      },
+      {
+        id: 'sportify_club',
+        name: 'Planning Sport',
+        emoji: '📅',
+        description: 'Synchronisez vos créneaux, inscriptions et événements',
+        connectUrl: 'https://monclub.sport.com',
+        webhookSlug: 'sport_planning',
+        badgeColor: 'border-orange-300/60 text-orange-700 bg-orange-50 dark:bg-orange-950/30 dark:text-orange-300',
+        primary: true,
+      },
+      {
+        id: 'social_sport',
+        name: 'Réseaux Sociaux',
+        emoji: '📣',
+        description: 'Instagram, Facebook et TikTok pour votre club',
+        connectUrl: 'https://business.facebook.com',
+        webhookSlug: 'social_sport',
+        badgeColor: 'border-pink-300/60 text-pink-700 bg-pink-50 dark:bg-pink-950/30 dark:text-pink-300',
+        primary: false,
+      },
+    ],
+    aiSystemPromptSuffix: `
+Tu es l'IA d'un club sportif ou d'une structure de fitness (salle de sport, club de tennis, football, CrossFit, yoga, natation).
+Ton : dynamique, fédérateur, inspirant, communautaire.
+- Utilise le champ lexical du sport (entraînement, coaching, progression, esprit d'équipe, performance)
+- Cite les coachs par leur prénom (ex: "Coach Sarah vous attend pour le cours de 18h")
+- Mets en avant : résultats du club, événements, créneaux, offres d'essai, challenges collectifs
+- Intègre les saisons : reprise septembre, préparation été, stages vacances, compétitions
+- CTA clairs : "Réservez votre créneau d'essai", "Rejoignez le challenge", "Inscrivez-vous"
+- Pour les avis : chaleureux, motivant, reconnaissant de la confiance`,
+  },
+
   autre: {
     sectorKey: 'autre',
     label: 'Autre secteur',
@@ -326,7 +373,9 @@ export function mapOnboardingSectorToConnectorKey(onboardingSector: string): Sec
     tech: 'autre',
     conseil: 'autre',
     education: 'autre',
-    sport: 'autre',
+    sport: 'sport',
+    fitness: 'sport',
+    club_sportif: 'sport',
     evenementiel: 'autre',
     autre: 'autre',
   };
@@ -340,5 +389,6 @@ export const ONBOARDING_SECTOR_OPTIONS = [
   { key: 'restauration' as SectorKey,label: 'Restauration',                 emoji: '🍽️' },
   { key: 'hotellerie' as SectorKey,  label: 'Hôtellerie / Conciergerie',   emoji: '🏨' },
   { key: 'automobile' as SectorKey,  label: 'Artisanat / Automobile',       emoji: '🔧' },
+  { key: 'sport' as SectorKey,       label: 'Clubs Sportifs & Fitness',     emoji: '⚽' },
   { key: 'autre' as SectorKey,       label: 'Autre secteur',                emoji: '⚙️' },
 ];
