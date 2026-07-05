@@ -12,6 +12,9 @@ import { cn } from '../../lib/utils';
 import { toast } from '@blinkdotnew/ui';
 import { WhatsAppSupportButton } from '../shared/WhatsAppSupportButton';
 import { useConnectionErrorTracker } from '../../hooks/useConnectionErrorTracker';
+import { blink } from '../../blink/client';
+
+const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -170,6 +173,42 @@ export function MetaConnectionPanel() {
     setTimeout(() => setSelectedIg(FAKE_IG[0].id), 200);
   };
 
+  // Save OAuth token to backend (encrypted via secureTokenStore)
+  const saveOAuthToken = async (provider: string, accessToken: string) => {
+    try {
+      const token = await blink.auth.getValidToken();
+      if (!token) return;
+      const expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(); // +60 days
+      await fetch(`${BACKEND_URL}/api/oauth/save-token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          provider,
+          accessToken,
+          expiresAt,
+          scopes: PERMISSIONS.filter(p => permissions[p.scope]).map(p => p.scope),
+        }),
+      });
+    } catch (err) {
+      console.warn('[MetaConnection] OAuth token save failed (non-critical):', err);
+    }
+  };
+
+  // Revoke OAuth token on backend
+  const revokeOAuthToken = async (provider: string) => {
+    try {
+      const token = await blink.auth.getValidToken();
+      if (!token) return;
+      await fetch(`${BACKEND_URL}/api/oauth/revoke-token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ provider }),
+      });
+    } catch (err) {
+      console.warn('[MetaConnection] OAuth token revoke failed (non-critical):', err);
+    }
+  };
+
   const handleSync = async () => {
     if (!selectedPage || !selectedIg) {
       toast.error('Sélectionnez une page et un compte Instagram.');
@@ -177,7 +216,14 @@ export function MetaConnectionPanel() {
       return;
     }
     setPhase('syncing');
-    await new Promise(r => setTimeout(r, 2200));
+
+    // Simulate OAuth token exchange (in production: real Meta OAuth code exchange)
+    const simulatedToken = `EAAx${crypto.randomUUID().replace(/-/g, '')}`;
+
+    // Store token encrypted via secureTokenStore
+    await saveOAuthToken('meta', simulatedToken);
+
+    await new Promise(r => setTimeout(r, 1800));
     setConnectedPage(FAKE_PAGES.find(p => p.id === selectedPage) ?? null);
     setConnectedIg(FAKE_IG.find(ig => ig.id === selectedIg) ?? null);
     setPhase('connected');
@@ -186,7 +232,10 @@ export function MetaConnectionPanel() {
     });
   };
 
-  const handleDisconnect = () => {
+  const handleDisconnect = async () => {
+    // Revoke encrypted token on backend
+    await revokeOAuthToken('meta');
+
     setPhase('idle');
     setSelectedPage('');
     setSelectedIg('');

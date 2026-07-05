@@ -124,6 +124,7 @@ import { router as creditPackAioRouter }          from './routes/billing/creditP
 import { router as trialExtensionRouter }        from './routes/trialExtension';
 import { router as trialSequenceRouter }         from './routes/trialSequence';
 import { router as highTouchRouter }             from './routes/highTouch';
+import { router as oauthTokensRouter }           from './routes/oauthTokens';
 import { requireRole }                           from './lib/rbacMiddleware';
 import { createClient }                          from '@blinkdotnew/sdk';
 
@@ -192,6 +193,7 @@ app.route('/', creditPackAioRouter);
 app.route('/', trialExtensionRouter);
 app.route('/', trialSequenceRouter);
 app.route('/', highTouchRouter);
+app.route('/', oauthTokensRouter);
 
 // ── RBAC enforcement on sensitive routes ─────────────────────────────────────
 // Billing: admin only (prevents members/guests from changing plans)
@@ -321,6 +323,84 @@ app.post('/api/queue', async (c) => {
         return c.json({ ok: true, ...result });
       } catch (err: any) {
         console.error('[Queue:aio-sync-track] error:', err.message);
+        return c.json({ ok: false, error: err.message }, 200);
+      }
+    }
+
+    // ── Data Deletion Warning (J+60 cron) ─────────────────────────────
+    case 'data-deletion-warning': {
+      const { getDataDeletionWarningHtml } = await import('./lib/emailTemplates/dataDeletion');
+      const DASHBOARD_URL = 'https://kompilot.blinkpowered.com/dashboard';
+
+      try {
+        // Find users with metadata.last_sign_in older than 55 days
+        const allUsers = await blink.db.users.list({ limit: 200 });
+        const now = Date.now();
+        const DAY_MS = 24 * 60 * 60 * 1000;
+        let sent = 0;
+
+        for (const user of allUsers as any[]) {
+          if (!user.email || !user.lastSignIn) continue;
+
+          const lastSignIn = new Date(user.lastSignIn).getTime();
+          if (isNaN(lastSignIn)) continue;
+
+          const daysInactive = Math.floor((now - lastSignIn) / DAY_MS);
+
+          // Send 30-day warning at exactly 60 days inactive
+          if (daysInactive >= 60 && daysInactive < 67) {
+            let meta: any = {};
+            try { meta = JSON.parse(user.metadata || '{}'); } catch { /* noop */ }
+
+            if (meta.deletion_warning_30d_sent) continue;
+
+            const firstName = (user.displayName || user.email).split(' ')[0];
+            const html = getDataDeletionWarningHtml(firstName, 30, DASHBOARD_URL);
+
+            try {
+              await blink.notifications.email({
+                to: user.email,
+                subject: '⚠️ Suppression de vos données dans 30 jours — Kompilot',
+                html,
+              });
+              // Mark as sent
+              meta.deletion_warning_30d_sent = new Date().toISOString();
+              await blink.db.users.update(user.id, { metadata: JSON.stringify(meta) });
+              sent++;
+            } catch (e) {
+              console.error(`[Queue:data-deletion] email failed for ${user.id}:`, e);
+            }
+          }
+
+          // Send 7-day warning at 83 days inactive
+          if (daysInactive >= 83 && daysInactive < 90) {
+            let meta: any = {};
+            try { meta = JSON.parse(user.metadata || '{}'); } catch { /* noop */ }
+
+            if (meta.deletion_warning_7d_sent) continue;
+
+            const firstName = (user.displayName || user.email).split(' ')[0];
+            const html = getDataDeletionWarningHtml(firstName, 7, DASHBOARD_URL);
+
+            try {
+              await blink.notifications.email({
+                to: user.email,
+                subject: '🚨 Suppression imminente — 7 jours restants — Kompilot',
+                html,
+              });
+              meta.deletion_warning_7d_sent = new Date().toISOString();
+              await blink.db.users.update(user.id, { metadata: JSON.stringify(meta) });
+              sent++;
+            } catch (e) {
+              console.error(`[Queue:data-deletion] 7d email failed for ${user.id}:`, e);
+            }
+          }
+        }
+
+        console.log(`[Queue:data-deletion-warning] scanned ${allUsers.length} users, sent ${sent} warnings`);
+        return c.json({ ok: true, scanned: allUsers.length, sent });
+      } catch (err: any) {
+        console.error('[Queue:data-deletion-warning] error:', err.message);
         return c.json({ ok: false, error: err.message }, 200);
       }
     }
