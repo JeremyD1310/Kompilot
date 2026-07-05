@@ -145,6 +145,48 @@ app.use('*', cors({
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (c) => c.json({ ok: true, ts: Date.now() }));
 
+// ── Queue initialization (idempotent — creates queues with parallelism) ──────
+app.get('/api/queues/init', async (c) => {
+  const env = c.env as any;
+  const blink = createClient({
+    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    secretKey: env.BLINK_SECRET_KEY,
+  });
+
+  try {
+    const queueFn = (blink as any).queue;
+    if (!queueFn?.createQueue) {
+      return c.json({ error: 'Queue API not available' }, 503);
+    }
+
+    // Create all recommended queues (idempotent — won't overwrite existing)
+    const queues = [
+      { name: 'video-generation', parallelism: 3 },
+      { name: 'aio-sync', parallelism: 5 },
+      { name: 'campaign-export', parallelism: 2 },
+      { name: 'email-sending', parallelism: 10 },
+      { name: 'weekly-report', parallelism: 5 },
+      { name: 'geo-scan', parallelism: 3 },
+    ];
+
+    const results = [];
+    for (const q of queues) {
+      try {
+        await queueFn.createQueue(q.name, { parallelism: q.parallelism });
+        results.push({ queue: q.name, parallelism: q.parallelism, status: 'created' });
+      } catch (err: any) {
+        // Queue may already exist — that's fine
+        results.push({ queue: q.name, status: 'exists', error: err.message?.substring(0, 50) });
+      }
+    }
+
+    return c.json({ success: true, queues: results });
+  } catch (err: any) {
+    console.error('[Queue Init] Error:', err.message);
+    return c.json({ error: err.message }, 500);
+  }
+});
+
 // ── Unified usage endpoint (v1 API) ──────────────────────────────────────────
 app.get('/api/v1/usage', unifiedUsageReport);
 
@@ -401,6 +443,111 @@ app.post('/api/queue', async (c) => {
         return c.json({ ok: true, scanned: allUsers.length, sent });
       } catch (err: any) {
         console.error('[Queue:data-deletion-warning] error:', err.message);
+        return c.json({ ok: false, error: err.message }, 200);
+      }
+    }
+
+    // ── Weekly Report Generation ────────────────────────────────────────
+    case 'weekly-report': {
+      try {
+        // Get all users with active establishments
+        const users = await blink.db.users.list({ limit: 100 });
+        let sent = 0;
+
+        for (const user of users as any[]) {
+          if (!user.email) continue;
+
+          try {
+            // Get user's establishments
+            const establishments = await blink.db.establishments.list({
+              where: { userId: user.id },
+              limit: 1,
+            });
+
+            if (establishments.length === 0) continue;
+
+            const est = establishments[0] as any;
+
+            // Get latest analytics
+            const analytics = await blink.db.daily_analytics.list({
+              where: { userId: user.id },
+              orderBy: { snapshotDate: 'desc' },
+              limit: 7,
+            });
+
+            if (analytics.length === 0) continue;
+
+            const latest = analytics[0] as any;
+            const weekAgo = analytics.length >= 7 ? (analytics[6] as any) : latest;
+
+            // Calculate trends
+            const geoScore = Number(latest.geoScore) || 0;
+            const prevGeoScore = Number(weekAgo.geoScore) || geoScore;
+            const geoTrend = geoScore - prevGeoScore;
+
+            const postsPublished = Number(latest.postsPublished) || 0;
+            const reviewsHandled = Number(latest.reviewsHandled) || 0;
+            const unhandledReviews = Number(latest.unhandledReviews) || 0;
+
+            // Build report HTML
+            const reportHtml = `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #0D9488;">📊 Rapport Hebdomadaire Kompilot</h2>
+                <p>Bonjour ${user.displayName || user.email.split('@')[0]},</p>
+                <p>Voici votre résumé de la semaine pour <strong>${est.name}</strong> :</p>
+                
+                <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                  <h3 style="margin-top: 0;">📈 Score G.E.O.</h3>
+                  <p style="font-size: 24px; font-weight: bold; color: ${geoTrend >= 0 ? '#10B981' : '#EF4444'};">
+                    ${geoScore}/100 ${geoTrend >= 0 ? '↑' : '↓'} ${Math.abs(geoTrend)} pts
+                  </p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0;">
+                  <div style="background: #f0fdf4; padding: 12px; border-radius: 8px;">
+                    <p style="margin: 0; font-size: 14px;">📝 Posts publiés</p>
+                    <p style="margin: 4px 0 0; font-size: 20px; font-weight: bold;">${postsPublished}</p>
+                  </div>
+                  <div style="background: #fef3c7; padding: 12px; border-radius: 8px;">
+                    <p style="margin: 0; font-size: 14px;">⭐ Avis traités</p>
+                    <p style="margin: 4px 0 0; font-size: 20px; font-weight: bold;">${reviewsHandled}</p>
+                  </div>
+                </div>
+                
+                ${unhandledReviews > 0 ? `
+                  <div style="background: #fef2f2; padding: 12px; border-radius: 8px; border-left: 4px solid #EF4444;">
+                    <p style="margin: 0; color: #991B1B;">
+                      ⚠️ <strong>${unhandledReviews} avis en attente</strong> de réponse
+                    </p>
+                  </div>
+                ` : ''}
+                
+                <p style="margin-top: 24px;">
+                  <a href="https://kompilot.blinkpowered.com/dashboard" 
+                     style="background: #0D9488; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
+                    Voir mon dashboard →
+                  </a>
+                </p>
+              </div>
+            `;
+
+            // Send email
+            await blink.notifications.email({
+              to: user.email,
+              subject: `📊 Rapport hebdomadaire — ${est.name}`,
+              html: reportHtml,
+            });
+
+            sent++;
+          } catch (userErr) {
+            console.error(`[Queue:weekly-report] Error for user ${user.id}:`, userErr);
+          }
+        }
+
+        console.log(`[Queue:weekly-report] Sent ${sent} reports`);
+        return c.json({ ok: true, sent });
+      } catch (err: any) {
+        console.error('[Queue:weekly-report] error:', err.message);
         return c.json({ ok: false, error: err.message }, 200);
       }
     }
