@@ -10,6 +10,8 @@ import { useEstablishment } from '../context/EstablishmentContext';
 import { AIOAuditPanel } from '../components/aio/AIOAuditPanel';
 import { AIOSchemaPanel } from '../components/aio/AIOSchemaPanel';
 import { SOVModule } from '../components/aio/SOVModule';
+import { LLMVisibilityTracker } from '../components/aio/LLMVisibilityTracker';
+import { TechnicalSEOAgentPanel } from '../components/seo/TechnicalSEOAgentPanel';
 
 // ── Sector helpers ────────────────────────────────────────────────────────────
 
@@ -299,6 +301,17 @@ export default function AIOPage() {
         <AIOSchemaPanel
           defaultName={bizName !== 'Votre établissement' ? bizName : ''}
           defaultBrand={bizName !== 'Votre établissement' ? bizName : ''}
+        />
+
+        {/* ── LLM Visibility Tracker (Module 3) ───────────────────── */}
+        <LLMVisibilityTracker
+          brandName={bizName !== 'Votre établissement' ? bizName : ''}
+          domainUrl={activeEstablishment?.website ?? ''}
+        />
+
+        {/* ── Technical SEO Agent (Module 4) ──────────────────────── */}
+        <TechnicalSEOAgentPanel
+          defaultSiteUrl={activeEstablishment?.website ?? ''}
         />
 
         {/* ── Score + Model grid ──────────────────────────────────── */}

@@ -125,6 +125,8 @@ import { router as trialExtensionRouter }        from './routes/trialExtension';
 import { router as trialSequenceRouter }         from './routes/trialSequence';
 import { router as highTouchRouter }             from './routes/highTouch';
 import { router as oauthTokensRouter }           from './routes/oauthTokens';
+import { router as llmTrackerRouter }            from './routes/llmTracker';
+import { router as seoAgentRouter }              from './routes/seoAgent';
 import { requireRole }                           from './lib/rbacMiddleware';
 import { createClient }                          from '@blinkdotnew/sdk';
 
@@ -236,6 +238,8 @@ app.route('/', trialExtensionRouter);
 app.route('/', trialSequenceRouter);
 app.route('/', highTouchRouter);
 app.route('/', oauthTokensRouter);
+app.route('/', llmTrackerRouter);
+app.route('/', seoAgentRouter);
 
 // ── RBAC enforcement on sensitive routes ─────────────────────────────────────
 // Billing: admin only (prevents members/guests from changing plans)
@@ -548,6 +552,30 @@ app.post('/api/queue', async (c) => {
         return c.json({ ok: true, sent });
       } catch (err: any) {
         console.error('[Queue:weekly-report] error:', err.message);
+        return c.json({ ok: false, error: err.message }, 200);
+      }
+    }
+
+    // ── LLM Visibility Check ──────────────────────────────────────────────
+    case 'llm-visibility-check': {
+      try {
+        const { handleLLMVisibilityCheck } = await import('./routes/llmTracker');
+        const result = await handleLLMVisibilityCheck(env, payload);
+        return c.json(result, 200);
+      } catch (err: any) {
+        console.error('[Queue:llm-visibility-check] error:', err.message);
+        return c.json({ ok: false, error: err.message }, 200);
+      }
+    }
+
+    // ── SEO Agent Crawl ───────────────────────────────────────────────────
+    case 'seo-agent-crawl': {
+      try {
+        const { handleSeoAgentCrawl } = await import('./routes/seoAgent');
+        const result = await handleSeoAgentCrawl(env, payload);
+        return c.json(result, 200);
+      } catch (err: any) {
+        console.error('[Queue:seo-agent-crawl] error:', err.message);
         return c.json({ ok: false, error: err.message }, 200);
       }
     }
