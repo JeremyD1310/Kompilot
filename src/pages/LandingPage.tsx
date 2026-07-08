@@ -13,6 +13,7 @@ import { LandingAgencyTab } from '../components/landing/LandingAgencyTab';
 import { LandingTestimonials } from '../components/landing/LandingTestimonials';
 import { LandingFooter } from '../components/landing/LandingFooter';
 import { IntegrationsSection } from '../components/landing/IntegrationsSection';
+import { WaitlistSection } from '../components/landing/WaitlistSection';
 import { DemoCtaBanner } from '../components/landing/DemoCtaBanner';
 import { DemoNotificationEngine } from '../components/layout/DemoNotificationEngine';
 import { captureUtmParams, getUtmSector, track } from '../lib/tracking';
@@ -187,6 +188,9 @@ export default function LandingPage() {
       <div id="faq">
         <FAQSection />
       </div>
+
+      {/* ── Waitlist / Early Access ─────────────────────────────────── */}
+      <WaitlistSection />
 
       <LandingFooter />
 
