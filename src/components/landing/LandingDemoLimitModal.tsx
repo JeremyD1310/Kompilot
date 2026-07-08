@@ -21,7 +21,7 @@ export function LandingDemoLimitModal({ open, onClose }: LandingDemoLimitModalPr
   };
 
   const PERKS = [
-    { icon: '🤖', text: 'Réponses IA illimitées pendant 14 jours' },
+    { icon: '🤖', text: 'Réponses IA illimitées pendant 7 jours' },
     { icon: '📅', text: 'Calendrier de publication automatisé' },
     { icon: '⭐', text: 'Gestion des avis Google en un clic' },
     { icon: '📊', text: 'Tableau de bord performance en temps réel' },
@@ -80,7 +80,7 @@ export function LandingDemoLimitModal({ open, onClose }: LandingDemoLimitModalPr
                     Vous avez vu la puissance<br />de Kompilot !
                   </h2>
                   <p className="text-sm text-white/85 leading-relaxed">
-                    Créez votre compte gratuit en <strong>30 secondes</strong> et accédez à tout pendant 14 jours.
+                    Créez votre compte gratuit en <strong>30 secondes</strong> et accédez à tout pendant 7 jours.
                   </p>
                 </div>
               </div>
@@ -119,7 +119,7 @@ export function LandingDemoLimitModal({ open, onClose }: LandingDemoLimitModalPr
                 </button>
 
                 <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
-                  Sans carte bancaire · Essai 14 jours · Annulable à tout moment
+                  Sans carte bancaire · Essai 7 jours · Annulable à tout moment
                 </p>
               </div>
             </div>

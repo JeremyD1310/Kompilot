@@ -86,7 +86,7 @@ export default function PricingPage() {
         </h1>
 
         <p className="text-base max-w-lg mx-auto leading-relaxed" style={{ color: '#64748B' }}>
-          3 formules B2B · Essai 14 jours inclus · Résiliation sans frais à tout moment
+          3 formules B2B · Essai 7 jours inclus · Résiliation sans frais à tout moment
         </p>
       </motion.div>
 

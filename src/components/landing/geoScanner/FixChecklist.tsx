@@ -87,7 +87,7 @@ function ConversionGate({ onCta, onDismiss }: { onCta: () => void; onDismiss: ()
       </p>
       <p style={{ color: '#94A3B8', fontSize: '.75rem', margin: '0 0 12px', lineHeight: 1.5 }}>
         Pour injecter cette correction sur votre établissement et activer la protection en continu,
-        validez votre essai gratuit de 14 jours.
+        validez votre essai gratuit de 7 jours.
       </p>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <motion.button
@@ -117,7 +117,7 @@ function ConversionGate({ onCta, onDismiss }: { onCta: () => void; onDismiss: ()
         </button>
       </div>
       <p style={{ color: '#334155', fontSize: '.67rem', margin: '8px 0 0', textAlign: 'center' }}>
-        ✓ 14 jours gratuits · Sans carte bancaire · Accès immédiat
+        ✓ 7 jours gratuits · Sans carte bancaire · Accès immédiat
       </p>
     </motion.div>
   );
@@ -315,7 +315,7 @@ export function FixChecklist({ items, onCta, query }: Props) {
           🚀 Corriger tous les points automatiquement →
         </motion.button>
         <p style={{ color: '#475569', fontSize: '.7rem', marginTop: 8 }}>
-          ✓ Essai 14 jours gratuit · Sans carte bancaire · Accès immédiat
+          ✓ Essai 7 jours gratuit · Sans carte bancaire · Accès immédiat
         </p>
       </motion.div>
     </div>

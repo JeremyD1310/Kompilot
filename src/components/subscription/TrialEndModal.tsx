@@ -175,8 +175,8 @@ export function TrialEndModal({ open, onClose }: TrialEndModalProps) {
   const estName = activeEstablishment?.name || 'votre établissement';
   const daysUsed = metrics.daysActive;
 
-  // How many days since start (minimum 3, max 14)
-  const daysClamped = Math.min(14, Math.max(3, daysUsed));
+  // How many days since start (minimum 2, max 7)
+  const daysClamped = Math.min(7, Math.max(2, daysUsed));
 
   const handleStripeClick = () => {
     const email = user?.email ?? '';

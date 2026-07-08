@@ -305,7 +305,7 @@ export default function AIOCheckerPage() {
                 <ArrowRight size={15} />
               </button>
               <p style={{ color: '#334155', fontSize: '.73rem', marginTop: 10 }}>
-                14 jours gratuits · Kompilot optimise votre présence IA en continu
+                7 jours gratuits · Kompilot optimise votre présence IA en continu
               </p>
             </div>
           </motion.div>

@@ -163,7 +163,7 @@ export default function PlaybookEcommercePage() {
           <button onClick={cta} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'linear-gradient(135deg, #818CF8, #6366F1)', color: '#fff', fontWeight: 700, fontSize: '1rem', borderRadius: 9999, padding: '16px 36px', border: 'none', cursor: 'pointer', boxShadow: '0 0 32px rgba(129,140,248,.35)' }}>
             <Zap size={16} /> Commencer le playbook — Essai gratuit <ArrowRight size={15} />
           </button>
-          <p style={{ color: '#334155', fontSize: '.73rem', marginTop: 10 }}>14 jours gratuits · Sans CB · Accès immédiat</p>
+          <p style={{ color: '#334155', fontSize: '.73rem', marginTop: 10 }}>7 jours gratuits · Sans CB · Accès immédiat</p>
         </div>
       </main>
     </div>

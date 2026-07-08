@@ -337,10 +337,10 @@ export function FAQSection() {
             lineHeight: 1.7,
             maxWidth: 480,
           }}>
-            Annulation en 1 clic · Pas de carte bancaire requise pendant 14 jours
+            Annulation en 1 clic · Pas de carte bancaire requise pendant 7 jours
             <br />
             <span style={{ color: '#0D9488', fontWeight: 600 }}>
-              ✓ Essai 14 jours gratuit
+              ✓ Essai 7 jours gratuit
             </span>{' '}·{' '}
             <span style={{ color: '#0D9488', fontWeight: 600 }}>
               ✓ Accès immédiat

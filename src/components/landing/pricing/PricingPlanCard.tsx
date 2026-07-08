@@ -183,7 +183,7 @@ export function PlanCard({ plan, onCta }: {
             margin: '8px 0 0',
             lineHeight: 1.5,
           }}>
-            Annulation en 1 clic · Pas de carte bancaire requise pendant 14 jours
+            Annulation en 1 clic · Pas de carte bancaire requise pendant 7 jours
           </p>
         )}
       </div>

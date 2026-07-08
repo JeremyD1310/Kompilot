@@ -336,7 +336,7 @@ export default function ROISimulatorWidget({ persona }: Props) {
 
       <p className="text-center text-[10px] text-slate-400 flex items-center justify-center gap-1.5">
         <Sparkles className="w-3 h-3 text-emerald-400" />
-        14 jours gratuits · Sans carte bancaire
+        7 jours gratuits · Sans carte bancaire
       </p>
     </Card>
   );

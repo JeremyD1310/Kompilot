@@ -222,7 +222,7 @@ export function PricingSection({ cta, audience }: PricingSectionProps) {
               : <>L'IA qui gère votre présence,<br />pendant que vous gérez votre business.</>}
           </h2>
           <p style={{ fontSize: '1rem', color: MUTED, maxWidth: 520, margin: '0 auto', lineHeight: 1.6 }}>
-            Prix HT · Facturation mensuelle · Résiliation sans frais à tout moment · Essai 14 jours inclus
+            Prix HT · Facturation mensuelle · Résiliation sans frais à tout moment · Essai 7 jours inclus
           </p>
         </div>
 

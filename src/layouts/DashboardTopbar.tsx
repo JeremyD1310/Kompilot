@@ -181,7 +181,7 @@ export function DashboardTopbar({
       {/* Right: PWA install + Mentor + Notification bell + Display mode + user + async job toast */}
       <div className="flex items-center gap-1.5 md:gap-2.5">
         {/* ── Trial countdown badge ── */}
-        {isTrialActive && trialDaysLeft <= 14 && (
+        {isTrialActive && trialDaysLeft <= 7 && (
           <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-amber-300/60 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 px-2.5 py-1">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
             <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400">

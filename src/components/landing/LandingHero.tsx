@@ -329,7 +329,7 @@ export function HeroChatGPTSimulatorSection({ onCta }: { onCta: () => void }) {
             <ArrowRight size={15} />
           </button>
           <p style={{ color: '#334155', fontSize: '.73rem', marginTop: 10 }}>
-            Sans CB · 14 jours offerts · Accès immédiat
+            Sans CB · 7 jours offerts · Accès immédiat
           </p>
         </div>
       </div>
@@ -439,10 +439,10 @@ export function LandingHero({ onCta, onHeroCta, heroSearch, setHeroSearch, audie
           {/* Trust subtext */}
           <div style={{ display:'flex',flexDirection:'column',alignItems:'center',gap:4 }}>
             <p style={{ fontSize:'.82rem',color:'#475569',fontWeight:600,margin:0,textAlign:'center' }}>
-              Annulation en 1 clic · Pas de carte bancaire requise pendant 14 jours
+              Annulation en 1 clic · Pas de carte bancaire requise pendant 7 jours
             </p>
             <div style={{ display:'flex',flexWrap:'wrap',justifyContent:'center',gap:'4px 10px' }}>
-              {['✓ Essai 14 jours gratuit', '✓ Accès immédiat', '✓ Configuration en 1 minute'].map((item) => (
+              {['✓ Essai 7 jours gratuit', '✓ Accès immédiat', '✓ Configuration en 1 minute'].map((item) => (
                 <span key={item} style={{ fontSize:'clamp(.72rem, 1.8vw, .78rem)',color:'#64748B',fontWeight:600,whiteSpace:'nowrap' }}>
                   {item}
                 </span>

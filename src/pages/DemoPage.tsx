@@ -120,7 +120,7 @@ export default function DemoPage() {
               onClick={goSignup}
               className="bg-[#0D9488] hover:bg-[#0B7A6F] text-white font-bold px-8 h-14 rounded-full shadow-xl transition-all hover:scale-105"
             >
-              Démarrer mon essai gratuit — 14 jours
+              Démarrer mon essai gratuit — 7 jours
             </Button>
           </div>
 

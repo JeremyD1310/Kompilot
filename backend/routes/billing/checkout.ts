@@ -133,7 +133,7 @@ router.post('/api/billing/checkout', async (c) => {
     // Do NOT set trial_period_days → Stripe bills immediately
     sessionParams.set('subscription_data[metadata][trial_renounced]', 'true');
   } else {
-    sessionParams.set('subscription_data[trial_period_days]', '14');
+    sessionParams.set('subscription_data[trial_period_days]', '7');
   }
 
   // Enable Stripe Tax if customer exists and VAT info is available

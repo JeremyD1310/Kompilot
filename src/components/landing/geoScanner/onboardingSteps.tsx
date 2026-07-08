@@ -377,7 +377,7 @@ export function Step3Activate({ onFinish, sector }: { onFinish: () => void; sect
           <span style={{ fontSize: '1.3rem' }}>🎯</span>
           <div>
             <p style={{ color: '#E2E8F0', fontWeight: 800, fontSize: '.92rem', margin: 0 }}>Offre Starter</p>
-            <p style={{ color: '#0D9488', fontWeight: 700, fontSize: '.76rem', margin: 0 }}>14 jours gratuits inclus</p>
+            <p style={{ color: '#0D9488', fontWeight: 700, fontSize: '.76rem', margin: 0 }}>7 jours gratuits inclus</p>
           </div>
           <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
             <p style={{ color: '#E2E8F0', fontWeight: 900, fontSize: '1.05rem', margin: 0 }}>49€</p>
@@ -407,7 +407,7 @@ export function Step3Activate({ onFinish, sector }: { onFinish: () => void; sect
       }}>
         <span style={{ fontSize: '.9rem', flexShrink: 0 }}>🛡️</span>
         <p style={{ color: '#FDE68A', fontSize: '.7rem', margin: 0, lineHeight: 1.4 }}>
-          <strong>Garantie 14 jours</strong> — Aucune carte bancaire requise. Résiliez en 1 clic.
+          <strong>Garantie 7 jours</strong> — Aucune carte bancaire requise. Résiliez en 1 clic.
         </p>
       </div>
 
@@ -427,7 +427,7 @@ export function Step3Activate({ onFinish, sector }: { onFinish: () => void; sect
         🔒 Verrouiller mon espace de travail →
       </motion.button>
       <p style={{ color: '#475569', fontSize: '.66rem', textAlign: 'center', margin: 0 }}>
-        ✓ Essai 14 jours gratuit · Accès immédiat · Sans carte bancaire
+        ✓ Essai 7 jours gratuit · Accès immédiat · Sans carte bancaire
       </p>
     </div>
   );

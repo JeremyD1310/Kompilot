@@ -89,7 +89,7 @@ export function HowItWorksSection({ onCta }: Props) {
           Démarrer gratuitement <ArrowRight size={16} />
         </button>
         <p style={{ color: '#475569', fontSize: '.75rem', marginTop: 8, lineHeight: 1.5 }}>
-          Annulation en 1 clic · Pas de carte bancaire requise pendant 14 jours
+          Annulation en 1 clic · Pas de carte bancaire requise pendant 7 jours
         </p>
       </div>
 

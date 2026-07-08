@@ -284,7 +284,7 @@ function SectionAIOSync({ brand, bizDescription }: { brand: string; bizDescripti
   const [optimising, setOptimising] = useState(false);
   const [optimised, setOptimised] = useState(false);
 
-  const sampleSchema = generateAioSchema({ name: brand, description: bizDescription, price: 49, currency: 'EUR', faqs: [{ question: `Pourquoi choisir ${brand} ?`, answer: `${brand} centralise la gestion de votre présence en ligne avec des outils IA adaptés aux PME.` }, { question: `${brand} propose-t-il un essai gratuit ?`, answer: 'Oui, un essai de 14 jours sans carte bancaire est disponible.' }] });
+  const sampleSchema = generateAioSchema({ name: brand, description: bizDescription, price: 49, currency: 'EUR', faqs: [{ question: `Pourquoi choisir ${brand} ?`, answer: `${brand} centralise la gestion de votre présence en ligne avec des outils IA adaptés aux PME.` }, { question: `${brand} propose-t-il un essai gratuit ?`, answer: 'Oui, un essai de 7 jours sans carte bancaire est disponible.' }] });
   const schemaStr = JSON.stringify(sampleSchema, null, 2);
   const scriptTag = `<script type="application/ld+json">\n${schemaStr}\n</script>`;
 

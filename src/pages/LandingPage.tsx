@@ -222,7 +222,7 @@ export default function LandingPage() {
           {/* Left — tagline */}
           <div style={{ minWidth: 0 }}>
             <p style={{ color: '#E2E8F0', fontWeight: 700, fontSize: '.82rem', margin: 0, lineHeight: 1.3 }}>
-              Essai gratuit 14 jours
+              Essai gratuit 7 jours
             </p>
             <p style={{ color: '#475569', fontSize: '.7rem', margin: 0 }}>Sans carte bancaire</p>
           </div>
@@ -247,7 +247,7 @@ export default function LandingPage() {
               Démarrer gratuitement →
             </button>
             <p style={{ color: '#475569', fontSize: '.65rem', margin: 0, textAlign: 'center' }}>
-              Annulation en 1 clic · Pas de carte requise 14 jours
+              Annulation en 1 clic · Pas de carte requise 7 jours
             </p>
           </div>
 

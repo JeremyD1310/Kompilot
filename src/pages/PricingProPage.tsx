@@ -75,7 +75,7 @@ export default function PricingProPage() {
         </h1>
 
         <p className="text-base max-w-lg mx-auto leading-relaxed" style={{ color: '#64748B' }}>
-          Essai 14 jours inclus · Résiliation sans frais · Paiement sécurisé Stripe
+          Essai 7 jours inclus · Résiliation sans frais · Paiement sécurisé Stripe
         </p>
       </motion.div>
 
