@@ -16,7 +16,7 @@ export const CGV_VERSION = 'CGV_V1.0_2026-06';
 export interface LegalConsentState {
   cgvAccepted: boolean;
   retractionWaived: boolean;
-  /** True when user explicitly renounces their 14-day trial for immediate access */
+  /** True when user explicitly renounces their 7-day trial for immediate access */
   renouncedTrial?: boolean;
 }
 

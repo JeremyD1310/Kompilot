@@ -12,6 +12,8 @@ import { Gift, Star, Zap, ArrowRight, CheckCircle2, Users, Shield, Sparkles, Cop
 import { blink } from '../blink/client';
 import { KompilotLogo } from '../components/brand/KompilotLogo';
 
+const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+
 // ── Logo ────────────────────────────────────────────────────────────────────────
 function Logo() { return <KompilotLogo variant="icon" height={32} />; }
 
@@ -56,7 +58,7 @@ export default function ReferralLandingPage() {
   const [copied, setCopied] = useState(false);
   const [clickTracked, setClickTracked] = useState(false);
 
-  // ── Fetch link data + track click ─────────────────────────────────────────────
+  // ── Fetch link data + track click via backend API ─────────────────────────
   useEffect(() => {
     if (!code) { setState('notfound'); return; }
 
@@ -65,8 +67,15 @@ export default function ReferralLandingPage() {
 
     async function loadLink() {
       try {
-        // Look up referral link by short_code
-        const rows = await blink.db.referralLinks.list({
+        // Use backend resolve endpoint (tracks click + returns link data)
+        const res = await fetch(`${BACKEND_URL}/api/referral/resolve/${code}`, {
+          method: 'GET',
+          redirect: 'manual', // Don't follow redirect, we want the data
+        });
+
+        // The resolve endpoint redirects — if we get a redirect, the link exists
+        // For data display, we'll use the DB directly but track via backend
+        const rows = await blink.db.table<any>('referral_links').list({
           where: { shortCode: code },
           limit: 1,
         });
@@ -76,7 +85,7 @@ export default function ReferralLandingPage() {
           return;
         }
 
-        const row = rows[0] as any;
+        const row = rows[0];
 
         // Look up campaign for discount + establishment info
         let discountPercent = 10;
@@ -86,24 +95,24 @@ export default function ReferralLandingPage() {
 
         try {
           if (row.campaignId) {
-            const campaigns = await blink.db.referralCampaigns.list({
+            const campaigns = await blink.db.table<any>('referral_campaigns').list({
               where: { id: row.campaignId },
               limit: 1,
             });
             if (campaigns.length) {
-              const c = campaigns[0] as any;
-              discountPercent = c.discountPercent ?? 10;
+              const c = campaigns[0];
+              discountPercent = Number(c.discountPercent) || 10;
               sector = c.sector;
               messageTemplate = c.messageTemplate;
             }
           }
           if (row.establishmentId) {
-            const ests = await blink.db.establishments.list({
+            const ests = await blink.db.table<any>('establishments').list({
               where: { id: row.establishmentId },
               limit: 1,
             });
             if (ests.length) {
-              establishmentName = (ests[0] as any).name;
+              establishmentName = ests[0].name;
             }
           }
         } catch {
@@ -121,14 +130,14 @@ export default function ReferralLandingPage() {
         });
         setState('found');
 
-        // Track click — only once per session
+        // Track click via backend API (once per session)
         if (!sessionStorage.getItem(sessionKey)) {
           sessionStorage.setItem(sessionKey, '1');
           try {
-            // Increment click count
-            const currentClicks = Number(row.clickCount) || 0;
-            await blink.db.referralLinks.update(row.id, {
-              clickCount: currentClicks + 1,
+            await fetch(`${BACKEND_URL}/api/referral/track-click`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ shortCode: code }),
             });
           } catch {
             // Non-critical — don't block page render

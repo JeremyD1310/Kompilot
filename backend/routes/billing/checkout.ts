@@ -128,7 +128,7 @@ router.post('/api/billing/checkout', async (c) => {
   });
 
   // If user renounces trial → no trial period (immediate billing from first minute).
-  // Otherwise apply the standard 14-day trial.
+  // Otherwise apply the standard 7-day trial.
   if (renouncedTrial) {
     // Do NOT set trial_period_days → Stripe bills immediately
     sessionParams.set('subscription_data[metadata][trial_renounced]', 'true');

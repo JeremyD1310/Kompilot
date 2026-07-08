@@ -127,6 +127,7 @@ import { router as highTouchRouter }             from './routes/highTouch';
 import { router as oauthTokensRouter }           from './routes/oauthTokens';
 import { router as llmTrackerRouter }            from './routes/llmTracker';
 import { router as seoAgentRouter }              from './routes/seoAgent';
+import { router as referralRewardsRouter }        from './routes/referralRewards';
 import { requireRole }                           from './lib/rbacMiddleware';
 import { createClient }                          from '@blinkdotnew/sdk';
 
@@ -240,6 +241,7 @@ app.route('/', highTouchRouter);
 app.route('/', oauthTokensRouter);
 app.route('/', llmTrackerRouter);
 app.route('/', seoAgentRouter);
+app.route('/', referralRewardsRouter);
 
 // ── RBAC enforcement on sensitive routes ─────────────────────────────────────
 // Billing: admin only (prevents members/guests from changing plans)
