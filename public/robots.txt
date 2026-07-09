@@ -1,10 +1,46 @@
 User-agent: *
 Allow: /
+Allow: /pricing
+Allow: /cgv
+Allow: /privacy
+Allow: /mentions-legales
+Allow: /confidentialite
+Allow: /ref/*
+
 Disallow: /dashboard
 Disallow: /settings
 Disallow: /inbox
 Disallow: /calendar
 Disallow: /onboarding
 Disallow: /admin
+Disallow: /team
+Disallow: /mon-equipe
+Disallow: /api/
 
-Sitemap: https://kompilot.fr/sitemap.xml
+# AI search bots — allow citation
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Training crawlers — block
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+Sitemap: https://kompilot.blinkpowered.com/sitemap.xml

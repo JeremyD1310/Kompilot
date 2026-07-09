@@ -22,7 +22,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Kompilot" />
-    <title>Kompilot | Le Hub Tout-en-Un</title>
+    <title>Kompilot — Plateforme IA Marketing pour Commerçants et Agences</title>
+    <meta name="description" content="Gérez vos réseaux sociaux, avis Google et visibilité IA depuis un seul cockpit. L'IA génère vos posts et booste votre référencement local." />
+    <link rel="canonical" href="https://kompilot.blinkpowered.com/" />
 
     <!--
       ⚠️ CRITICAL — DOM safety patch installed BEFORE any ES module loads.
@@ -89,36 +91,80 @@
         } catch (_) { /* never break the page */ }
       })();
     </script>
-    <meta name="description" content="Dominez les recherches locales, sans y passer vos journées. De la création sur vos réseaux sociaux à la gestion des avis Google sans changer d'onglet. L'IA s'occupe de la technique et des conseils, vous récoltez des clients." />
     <!-- Open Graph — image hébergée sur le domaine public garanti accessible aux crawlers -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Kompilot | Le Hub Tout-en-Un pour Commerçants" />
-    <meta property="og:description" content="Gérez vos réseaux sociaux, avis Google et visibilité IA depuis un seul tableau de bord. L'IA génère vos posts, répond à vos avis et booste votre référencement local en automatique." />
-    <meta property="og:url" content="https://kompilot.fr" />
+    <meta property="og:title" content="Kompilot — Plateforme IA Marketing pour Commerçants et Agences" />
+    <meta property="og:description" content="Cockpit IA tout-en-un : posts automatiques, avis Google, visibilité locale. Essai 7 jours, sans CB." />
+    <meta property="og:url" content="https://kompilot.blinkpowered.com" />
     <meta property="og:site_name" content="Kompilot" />
     <meta property="og:locale" content="fr_FR" />
-    <meta property="og:image" content="https://kompilot.fr/og-image.png" />
-    <meta property="og:image:secure_url" content="https://kompilot.fr/og-image.png" />
+    <meta property="og:image" content="https://kompilot.blinkpowered.com/og-image.png" />
+    <meta property="og:image:secure_url" content="https://kompilot.blinkpowered.com/og-image.png" />
     <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content="1024" />
-    <meta property="og:image:height" content="1024" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Kompilot — tableau de bord IA tout-en-un : réseaux sociaux, avis Google, visibilité locale" />
     <!-- Twitter / X Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Kompilot | Le Hub Tout-en-Un pour Commerçants" />
-    <meta name="twitter:description" content="Gérez vos réseaux sociaux, avis Google et visibilité IA depuis un seul tableau de bord. Essai gratuit 14 jours, sans carte bancaire." />
-    <meta name="twitter:image" content="https://kompilot.fr/og-image.png" />
+    <meta name="twitter:title" content="Kompilot — Plateforme IA Marketing pour Commerçants" />
+    <meta name="twitter:description" content="Cockpit IA tout-en-un : posts automatiques, avis Google, visibilité locale. Essai 7 jours, sans CB." />
+    <meta name="twitter:image" content="https://kompilot.blinkpowered.com/og-image.png" />
     <meta name="twitter:image:alt" content="Kompilot — Hub IA tout-en-un pour commerçants et agences" />
     <meta name="twitter:site" content="@kompilot_fr" />
     <!-- WhatsApp / iMessage prefer absolute URLs — fallback via CDN -->
     <link rel="preload" as="image" href="/og-image.png" />
+    <!-- Security headers (complement server-side headers) -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <!-- JSON-LD: Organization + WebSite -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Kompilot",
+      "url": "https://kompilot.blinkpowered.com",
+      "logo": "https://kompilot.blinkpowered.com/og-image.png",
+      "description": "Plateforme IA marketing tout-en-un pour commerçants et agences : posts automatiques, avis Google, visibilité locale.",
+      "foundingDate": "2025",
+      "sameAs": [
+        "https://x.com/kompilot_fr",
+        "https://www.linkedin.com/company/kompilot"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "email": "support@kompilot.com"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Kompilot",
+      "url": "https://kompilot.blinkpowered.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://kompilot.blinkpowered.com/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
     <!-- ── Third-party chat widget relocation (CRITICAL — loaded before any widget script)
          Forces any chat launcher injected at bottom-right to move bottom-left
          so it never overlaps the primary "Démarrer gratuitement" CTA button.
          Using !important to override widget inline styles. ── -->
     <style id="nc-widget-safety">
-      /* Crisp */
-      #crisp-chatbox, .crisp-client { bottom: 20px !important; right: auto !important; left: 20px !important; }
+      /* Crisp — keep widget discreet: smaller, bottom-left, rounded */
+      #crisp-chatbox, .crisp-client {
+        bottom: 20px !important;
+        right: auto !important;
+        left: 20px !important;
+      }
+      /* Minimize Crisp branding noise */
+      .crisp-client .crisp-1rjp3u9 { opacity: 0.9; transition: opacity .2s; }
+      .crisp-client .crisp-1rjp3u9:hover { opacity: 1; }
       /* Intercom */
       .intercom-lightweight-app, .intercom-launcher-frame, .intercom-messenger-frame,
       .intercom-app { bottom: 20px !important; right: auto !important; left: 20px !important; }
@@ -860,10 +906,35 @@
     boot();
   }
 })();</script>
+    <!-- Crisp live-chat widget — loaded eagerly, hidden by default via CSS class.
+         useCrispChat() hook reveals it once the user is authenticated. -->
+    <script type="text/javascript">window.$crisp=[];window.CRISP_WEBSITE_ID="6489e565-3f8c-457c-8249-c23c610e7997";(function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();</script>
     <script src="https://blink.new/widget.js?projectId=presence-manager-saas-gbrhsehk" type="module"></script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html> ule" src="/src/main.tsx"></script>
+  </body>
+</html> ew/widget.js?projectId=presence-manager-saas-gbrhsehk" type="module"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html> ule" src="/src/main.tsx"></script>
+  </body>
+</html> "></script>
+  </body>
+</html> ule" src="/src/main.tsx"></script>
+  </body>
+</html> ew/widget.js?projectId=presence-manager-saas-gbrhsehk" type="module"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html> ule" src="/src/main.tsx"></script>
   </body>
 </html> 

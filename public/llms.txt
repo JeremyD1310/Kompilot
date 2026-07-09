@@ -1,0 +1,27 @@
+# Kompilot
+
+> Plateforme IA marketing tout-en-un pour commerçants locaux et agences. Gérez vos réseaux sociaux, avis Google et visibilité IA depuis un seul cockpit.
+
+## Pages principales
+
+- [Accueil](https://kompilot.blinkpowered.com/) — Présentation de la plateforme Kompilot et ses fonctionnalités IA
+- [Tarifs](https://kompilot.blinkpowered.com/pricing) — Plans Starter (69€/mois) et Agency (149€/mois)
+- [Connexion](https://kompilot.blinkpowered.com/login) — Espace client Kompilot
+
+## Fonctionnalités
+
+- **Creative Studio** — Génération automatique de posts pour Instagram, Facebook, LinkedIn avec IA
+- **Gestion des avis** — Réponses automatiques aux avis Google Maps en 1 clic
+- **AIO Sync** — Optimisation pour les moteurs de recherche IA (ChatGPT, Gemini, Perplexity)
+- **Calendrier éditorial** — Planification multi-canal avec suggestions IA
+- **Inbox unifié** — Messages, commentaires et DM centralisés
+- **Scanner GEO** — Analyse de visibilité locale en 30 secondes
+
+## Secteurs cibles
+
+Restauration, Beauté & Coiffure, Clubs Sportifs & Fitness, Hôtellerie, Immobilier, Santé, Commerce de proximité, Artisanat, Automobile.
+
+## Contact
+
+- Support : support@kompilot.com
+- Site web : https://kompilot.blinkpowered.com

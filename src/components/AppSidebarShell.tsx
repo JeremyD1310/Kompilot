@@ -22,6 +22,7 @@ import {
   Settings,
   LogOut,
   PanelLeft,
+  Sparkles,
 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
@@ -39,6 +40,7 @@ interface NavItemDef {
 
 const NAV_ITEMS: NavItemDef[] = [
   { href: '/', icon: <LayoutDashboard className="h-4 w-4" />, label: 'Dashboard', active: true },
+  { href: '/mon-equipe', icon: <Sparkles className="h-4 w-4" />, label: 'Mon Équipe' },
   { href: '/settings', icon: <Settings className="h-4 w-4" />, label: 'Settings' },
 ]
 

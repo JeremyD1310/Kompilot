@@ -58,6 +58,7 @@ const ROASPage             = React.lazy(() => import('../pages/ROASPage'));
 const EmailMarketingPage      = React.lazy(() => import('../pages/EmailMarketingPage'));
 const CreativeStudioHubPage   = React.lazy(() => import('../pages/CreativeStudioHubPage'));
 const TeamPage             = React.lazy(() => import('../pages/TeamPage'));
+const MonEquipePage        = React.lazy(() => import('../pages/MonEquipePage'));
 const EngagementPage       = React.lazy(() => import('../pages/EngagementPage'));
 const SeoGapPage           = React.lazy(() => import('../pages/SeoGapPage'));
 
@@ -126,6 +127,7 @@ export const creativeStudioHubRoute   = r('/creative-studio-hub',  CreativeStudi
 export const websiteScanRoute      = r('/website-scan',         WebsiteScanPage);
 export const emailSequencesRoute   = r('/email-sequences',      EmailSequencesPage);
 export const teamRoute             = r('/team',                 TeamPage);
+export const monEquipeRoute        = r('/mon-equipe',           MonEquipePage);
 export const engagementRoute       = r('/engagement',           EngagementPage);
 export const seoGapRoute           = r('/espion',               SeoGapPage);
 
@@ -148,5 +150,5 @@ export const protectedChildRoutes = [
   qrCodeRoute, caisseRoute, brandRoute, creativeFactoryRoute,
   aiCreativeStudioRoute, featuresShowcaseRoute, tunnelsRoute,
   aioRoute, roasRoute, emailMarketingRoute, websiteScanRoute, emailSequencesRoute,
-  creativeStudioHubRoute, teamRoute, engagementRoute, seoGapRoute,
+  creativeStudioHubRoute, teamRoute, monEquipeRoute, engagementRoute, seoGapRoute,
 ];

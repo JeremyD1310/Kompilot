@@ -127,8 +127,11 @@ export default function LandingPage() {
     <div ref={ref} style={{ backgroundColor: '#0B1120', color: '#E2E8F0', fontFamily: 'Inter, system-ui, sans-serif' }} className="min-h-screen overflow-x-hidden">
       <style>{LANDING_CSS}</style>
 
-      <LandingNav audience={audience} setAudience={setAudience} onCta={cta} isLoggedIn={!!user} />
+      <header>
+        <LandingNav audience={audience} setAudience={setAudience} onCta={cta} isLoggedIn={!!user} />
+      </header>
 
+      <main>
       <LandingHero onCta={cta} onHeroCta={heroCtaOverride} heroSearch={heroSearch} setHeroSearch={setHeroSearch} audience={audience} />
 
       {/* ── UTM Sector Banner (s'affiche uniquement si utm_sector détecté) ── */}
@@ -191,6 +194,8 @@ export default function LandingPage() {
 
       {/* ── Waitlist / Early Access ─────────────────────────────────── */}
       <WaitlistSection />
+
+      </main>
 
       <LandingFooter />
 

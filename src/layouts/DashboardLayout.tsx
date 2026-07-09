@@ -14,6 +14,7 @@ import { NotificationToast } from '../components/layout/NotificationToast';
 import { useNotifications } from '../context/NotificationsContext';
 import { useDemoMode } from '../context/DemoModeContext';
 import { useEstablishment } from '../context/EstablishmentContext';
+import { useCrispChat } from '../hooks/useCrispChat';
 import {
   getPaymentFailed,
   setPaymentFailed,
@@ -47,7 +48,7 @@ import { WhatsAppSupportButton } from '../components/shared/WhatsAppSupportButto
 import { AcademyContextualToast } from '../components/academy/AcademyContextualToast';
 import { useCredits } from '../context/CreditsContext';
 import { useBYOK } from '../context/BYOKContext';
-import { CreditsTopUpModal } from '../components/subscription/CreditsTopUpModal';
+import { CreditsTopUpModal } from '../components/subscription/CreditsTopUpModal';;
 import { HelpSidebarPanel, HelpButton } from '../components/layout/HelpSidebarPanel';
 import { DashboardSidebar } from './DashboardSidebar';
 import { useAuthExpiredToast } from '../hooks/useAuthExpiredToast';
@@ -70,6 +71,8 @@ import { AccountHealthBanner } from '../components/shared/AccountHealthBanner';
 import { ApiKeyOnboardingWizard } from '../components/onboarding/ApiKeyOnboardingWizard';
 import type { IntegrationId } from '../context/IntegrationStatusContext';
 import { useTelemetry } from '../hooks/useTelemetry';
+import { useImmediateWelcomeEmail } from '../hooks/useImmediateWelcomeEmail';
+import { useJ3ReminderCheck } from '../hooks/useWelcomeEmailSequence';
 import { toast } from '@blinkdotnew/ui';
 
 function CreditsExhaustedBanner() {
@@ -103,6 +106,9 @@ export function DashboardLayout() {
   const { subscriptionStatus, isAgentEnabled } = useSubscription();
   const location = useLocation();
 
+  // Crisp live-chat: hidden by default, auto-shows + pushes user data for authenticated users
+  useCrispChat(user);
+
   // Intercepte les 401 globaux et affiche un toast discret au lieu de crasher
   useAuthExpiredToast();
   const currentPath = location.pathname;
@@ -112,6 +118,12 @@ export function DashboardLayout() {
 
   // Telemetry — track route changes for health scoring
   const trackPage = useTelemetry();
+
+  // ── Welcome email sequence ─────────────────────────────────────────────────
+  // Fires J0 immediately on first signup, J3 on app open after 3+ days
+  useImmediateWelcomeEmail(user?.id);
+  useJ3ReminderCheck(user?.id);
+
   useEffect(() => {
     trackPage('account_health_banner_viewed', { page: currentPath });
   }, [currentPath]);

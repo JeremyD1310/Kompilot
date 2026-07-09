@@ -172,6 +172,20 @@ export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const toggle = (i: number) => setOpenIndex(prev => (prev === i ? null : i));
 
+  // FAQPage JSON-LD for AI/SEO
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': FAQ_ITEMS.map(item => ({
+      '@type': 'Question',
+      'name': item.q,
+      'acceptedAnswer': {
+        '@type': 'Answer',
+        'text': item.a,
+      },
+    })),
+  };
+
   return (
     <section
       id="faq"
@@ -187,6 +201,9 @@ export function FAQSection() {
         overflow: 'hidden',
       }}
     >
+      {/* FAQPage JSON-LD */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+
       {/* Grid background pattern */}
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none', opacity: .03,

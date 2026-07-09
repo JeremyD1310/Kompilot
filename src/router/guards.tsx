@@ -11,8 +11,9 @@ import { Navigate } from '@tanstack/react-router';
 import { useAuth } from '../hooks/useAuth';
 import { useDemoMode } from '../context/DemoModeContext';
 import { useTrialSequence } from '../hooks/useTrialSequence';
+import { useImmediateWelcomeEmail } from '../hooks/useImmediateWelcomeEmail';
 import { useHighTouchDetection } from '../hooks/useHighTouchDetection';
-import { blink } from '../blink/client';
+import { useCrispChat } from '../hooks/useCrispChat';
 import { LoadingOverlay } from '@blinkdotnew/ui';
 import OnboardingPage from '../pages/OnboardingPage';
 
@@ -52,8 +53,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   // Fire trial email sequence once per session (J0→J30), non-blocking
   useTrialSequence(user?.id);
 
+  // Fire immediate welcome email for brand-new signups (< 10 min), non-blocking
+  useImmediateWelcomeEmail(user?.id);
+
   // Fire high-touch lead detection once per session, non-blocking
   useHighTouchDetection(user?.id, user?.email, user?.displayName);
+
+  // Crisp chat: show for authenticated users, hide on public pages
+  useCrispChat(user, isLoading);
 
   useEffect(() => {
     // Demo users skip onboarding entirely
