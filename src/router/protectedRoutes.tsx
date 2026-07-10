@@ -6,7 +6,7 @@ import React from 'react';
 import { createRoute, Navigate } from '@tanstack/react-router';
 import { dashboardLayoutRoute } from './dashboardLayoutRoute';
 import { rootRoute } from './rootRoute';
-import { OnboardingGuard } from './guards';
+import { OnboardingGuard, AdminGuard } from './guards';
 
 // ── Pages (lazy-loaded) ───────────────────────────────────────────────────────
 const DashboardPage        = React.lazy(() => import('../pages/DashboardPage'));
@@ -76,6 +76,14 @@ const d = dashboardLayoutRoute;
 const r = (path: string, component: React.ComponentType) =>
   createRoute({ getParentRoute: () => d, path, component });
 
+// Admin-only route — wrapped with AdminGuard for RBAC
+const ra = (path: string, AdminComponent: React.ComponentType) =>
+  createRoute({
+    getParentRoute: () => d,
+    path,
+    component: () => <AdminGuard><AdminComponent /></AdminGuard>,
+  });
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 
 export const setupRoute            = r('/setup',               ProfileSetupPage);
@@ -86,8 +94,8 @@ export const settingsRoute         = r('/settings',            SettingsPage);
 export const profileRoute          = r('/profile',             ProfilePage);
 export const guideRoute            = r('/guide',               GuidePage);
 export const subscriptionRoute     = r('/subscription',        SubscriptionPage);
-export const adminRoute            = r('/admin',               AdminPage);
-export const adminAnalyticsRoute   = r('/admin/analytics',     AdminAnalyticsPage);
+export const adminRoute            = ra('/admin',               AdminPage);
+export const adminAnalyticsRoute   = ra('/admin/analytics',     AdminAnalyticsPage);
 export const referralRoute         = r('/referral',            ReferralPage);
 export const widgetRoute           = r('/widget',              WebsiteWidgetPage);
 export const libraryRoute          = r('/library',             ContentLibraryPage);

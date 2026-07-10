@@ -16,6 +16,7 @@ import { useHighTouchDetection } from '../hooks/useHighTouchDetection';
 import { useCrispChat } from '../hooks/useCrispChat';
 import { LoadingOverlay } from '@blinkdotnew/ui';
 import OnboardingPage from '../pages/OnboardingPage';
+import { isKompilotTeam } from '../context/AdminContext';
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
@@ -70,8 +71,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
     if (!user) return;
-    // Admin users skip onboarding check
-    if (user.email === 'admin@kompilot.com') {
+    // Admin/Kompilot team members skip onboarding — smart routing sends them to /admin
+    if (isKompilotTeam(user.email)) {
       setNeedsOnboarding(false);
       setOnboardingChecked(true);
       return;
@@ -99,8 +100,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   // ── 4. Onboarding check still in flight ─────────────────────────────────────
   if (!onboardingChecked) return <LoadingOverlay loading />;
 
-  // ── 5. Needs onboarding ──────────────────────────────────────────────────────
+  // ── 5. Needs onboarding (regular users only — admins already skipped) ──────
   if (needsOnboarding && !isDemoActive) return <Navigate to="/onboarding" />;
+
+  // ── 5.5. Smart Routing — admin/staff → /admin ─────────────────────────────
+  // After login, team members (jeremy, romain, valentine @kompilot.fr) are
+  // automatically redirected to the admin dashboard instead of the client view.
+  // The /admin route uses AdminGuard (not AuthGuard), so this won't loop.
+  if (user && isKompilotTeam(user.email)) return <Navigate to="/admin" />;
 
   // ── 6. All clear ─────────────────────────────────────────────────────────────
   return <>{children}</>;
@@ -116,6 +123,12 @@ export function OnboardingGuard() {
 
   useEffect(() => {
     if (!user) return;
+    // Admin/Kompilot team → skip onboarding entirely, redirect to admin
+    if (isKompilotTeam(user.email)) {
+      setDone(true);
+      setChecked(true);
+      return;
+    }
     hasCompletedOnboarding(user.id).then(completed => {
       setDone(completed);
       setChecked(true);
@@ -125,7 +138,23 @@ export function OnboardingGuard() {
   if (isLoading) return <LoadingOverlay loading />;
   if (!isAuthenticated) return <Navigate to="/login" />;
   if (!checked) return <LoadingOverlay loading />;
+  // Admin team members → admin dashboard (not client dashboard)
+  if (user && isKompilotTeam(user.email)) return <Navigate to="/admin" />;
   if (done) return <Navigate to="/dashboard" />;
 
   return <OnboardingPage />;
+}
+
+// ── AdminGuard ───────────────────────────────────────────────────────────────
+// Protects /admin routes. Only Kompilot team members can access.
+// Non-admin users are redirected to /dashboard.
+
+export function AdminGuard({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  if (isLoading) return <LoadingOverlay loading />;
+  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!user || !isKompilotTeam(user.email)) return <Navigate to="/dashboard" />;
+
+  return <>{children}</>;
 }
