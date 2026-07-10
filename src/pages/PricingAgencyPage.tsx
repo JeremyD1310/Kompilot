@@ -13,6 +13,7 @@ import { SubscriptionCheckoutPanel } from '../components/subscription/Subscripti
 import { PLANS } from '../components/pricing/PricingPageParts';
 import type { KompilotPlanId } from '../components/landing/pricing/PricingData';
 import { PricingFAQ } from '../components/pricing/PricingPageParts';
+import { AgencyShowcaseSection } from '../components/landing/pricing/AgencyShowcaseSection';
 
 const INDIGO = '#818CF8';
 const TEAL = '#0D9488';
@@ -89,6 +90,9 @@ export default function PricingAgencyPage() {
           Marque blanche · Multi-comptes · Support prioritaire 24/7 · Essai 7 jours inclus
         </p>
       </motion.div>
+
+      {/* ── Agency Showcase (features bento grid) ────────────────── */}
+      <AgencyShowcaseSection />
 
       {/* ── Grille 2 colonnes (Agency + Enterprise) ──────────────── */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
