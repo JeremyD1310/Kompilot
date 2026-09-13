@@ -15,7 +15,7 @@ function CustomizeModal({
 }) {
   const [prefs, setPrefs] = useState({
     essential: true,
-    analytics: true,
+    analytics: false,
     marketing: false,
   });
 
@@ -110,10 +110,23 @@ export function CookieBanner() {
     }
   }, []);
 
-  const dismiss = (state: ConsentState) => {
+  const persistConsent = (state: Exclude<ConsentState, null>, prefs?: Record<string, boolean>) => {
+    localStorage.setItem(STORAGE_KEY, state);
+    if (prefs) localStorage.setItem('kompilot_cookie_prefs', JSON.stringify(prefs));
+    else localStorage.removeItem('kompilot_cookie_prefs');
+
+    window.dispatchEvent(new CustomEvent('kompilot:consent-updated', {
+      detail: {
+        analytics: state === 'accepted' || (state === 'custom' && prefs?.analytics === true),
+        marketing: state === 'accepted' || (state === 'custom' && prefs?.marketing === true),
+      },
+    }));
+  };
+
+  const dismiss = (state: Exclude<ConsentState, null>, prefs?: Record<string, boolean>) => {
+    persistConsent(state, prefs);
     setHiding(true);
     setTimeout(() => {
-      localStorage.setItem(STORAGE_KEY, state ?? 'declined');
       setVisible(false);
       setHiding(false);
     }, 350);
@@ -123,10 +136,8 @@ export function CookieBanner() {
   const decline = () => dismiss('declined');
 
   const handleCustomSave = (prefs: Record<string, boolean>) => {
-    localStorage.setItem(STORAGE_KEY, 'custom');
-    localStorage.setItem('kompilot_cookie_prefs', JSON.stringify(prefs));
     setShowCustomize(false);
-    dismiss('custom');
+    dismiss('custom', prefs);
   };
 
   if (!visible) return null;
