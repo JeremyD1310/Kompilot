@@ -1,91 +1,122 @@
 /**
- * GoogleAnalyticsLoader
+ * Loads GA4 only after explicit analytics consent.
  *
- * Tracks page views and user identity for GA4 without using any
- * router hooks — avoids the useRouterState null-context crash.
- *
- * How to activate:
- *   1. Go to Google Analytics → Admin → Data Streams → your web stream
- *   2. Copy the Measurement ID (format: G-XXXXXXXXXX)
- *   3. Add  VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX  to your .env.local file
- *   4. Restart the dev server — GA4 will start receiving events
+ * The measurement ID is public by design. The environment variable can
+ * override the production fallback for previews and alternate deployments.
  */
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { trackPageView, setUserProperties } from '../../hooks/useAnalytics'
 import { useAuth } from '../../hooks/useAuth'
 
+const DEFAULT_MEASUREMENT_ID = 'G-58L48L66DD'
+const CONSENT_KEY = 'kompilot_cookie_consent'
+const PREFS_KEY = 'kompilot_cookie_prefs'
+
+function hasAnalyticsConsent(): boolean {
+  try {
+    const consent = localStorage.getItem(CONSENT_KEY)
+    if (consent === 'accepted') return true
+    if (consent !== 'custom') return false
+
+    const preferences = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}')
+    return preferences.analytics === true
+  } catch {
+    return false
+  }
+}
+
 export function GoogleAnalyticsLoader() {
-  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined
+  const measurementId =
+    (import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined) ||
+    DEFAULT_MEASUREMENT_ID
   const { user } = useAuth()
+  const [analyticsAllowed, setAnalyticsAllowed] = useState(hasAnalyticsConsent)
   const lastPath = useRef<string>('')
 
-  // ── 1. Inject gtag.js script once ───────────────────────────────────────
+  // Keep consent state in sync with the cookie banner.
   useEffect(() => {
-    if (!measurementId) return
+    const onConsentUpdated = () => setAnalyticsAllowed(hasAnalyticsConsent())
+    window.addEventListener('kompilot:consent-updated', onConsentUpdated)
+    window.addEventListener('storage', onConsentUpdated)
+    return () => {
+      window.removeEventListener('kompilot:consent-updated', onConsentUpdated)
+      window.removeEventListener('storage', onConsentUpdated)
+    }
+  }, [])
+
+  // Inject gtag.js only after consent; no Google Analytics request is made before it.
+  useEffect(() => {
+    if (!analyticsAllowed) return
     if (document.getElementById('ga4-script')) return
 
     window.dataLayer = window.dataLayer || []
     window.gtag = function (...args: unknown[]) {
       window.dataLayer!.push(args)
     }
+    window.gtag('consent', 'default', {
+      analytics_storage: 'granted',
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+    })
     window.gtag('js', new Date())
-    window.gtag('config', measurementId, { send_page_view: false })
+    window.gtag('config', measurementId, {
+      send_page_view: false,
+      anonymize_ip: true,
+    })
 
     const script = document.createElement('script')
     script.id = 'ga4-script'
     script.async = true
     script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
     document.head.appendChild(script)
-  }, [measurementId])
+  }, [analyticsAllowed, measurementId])
 
-  // ── 2. Track page views via history events (no router hook) ─────────────
+  // Track SPA page views after consent.
   useEffect(() => {
-    if (!measurementId) return
+    if (!analyticsAllowed) return
 
-    function sendView(path: string) {
+    function sendView() {
+      const path = window.location.pathname + window.location.search
       if (path === lastPath.current) return
       lastPath.current = path
       trackPageView(path)
-      // Broadcast to the rest of the app (e.g. DashboardLayout active-link highlighting)
-      window.dispatchEvent(new CustomEvent('nc:navigate', { detail: { path } }))
+      window.dispatchEvent(new CustomEvent('nc:navigate', {
+        detail: { path: window.location.pathname },
+      }))
     }
 
-    // Track the initial load
-    sendView(window.location.pathname)
+    sendView()
 
-    // Patch pushState / replaceState to emit a custom event
     const origPush = history.pushState.bind(history)
     const origReplace = history.replaceState.bind(history)
 
     history.pushState = (...args) => {
       origPush(...args)
-      sendView(window.location.pathname)
+      sendView()
     }
     history.replaceState = (...args) => {
       origReplace(...args)
-      sendView(window.location.pathname)
+      sendView()
     }
 
-    // Also handle browser back/forward
-    const onPop = () => sendView(window.location.pathname)
-    window.addEventListener('popstate', onPop)
-
+    window.addEventListener('popstate', sendView)
     return () => {
       history.pushState = origPush
       history.replaceState = origReplace
-      window.removeEventListener('popstate', onPop)
+      window.removeEventListener('popstate', sendView)
     }
-  }, [measurementId])
+  }, [analyticsAllowed, measurementId])
 
-  // ── 3. Identify user when they log in ───────────────────────────────────
+  // Add pseudonymous user properties only after consent.
   useEffect(() => {
-    if (!measurementId || !user) return
+    if (!analyticsAllowed || !user) return
     const domain = typeof user.email === 'string'
       ? user.email.split('@')[1] || 'unknown'
       : 'unknown'
     setUserProperties(user.id, { email_domain: domain })
-  }, [measurementId, user?.id])
+  }, [analyticsAllowed, measurementId, user?.id])
 
   return null
 }
