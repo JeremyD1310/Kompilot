@@ -15,6 +15,7 @@ import { analyticsTrackSignup } from '../firebase/analytics';
 import { SignupLogo } from '../components/auth/SignupLogo';
 import { SiretSection } from '../components/auth/SiretSection';
 import { SIGNUP_CSS } from '../components/auth/signupStyles';
+import { trackEvent } from '../hooks/useAnalytics';
 
 /* ── Schema ─────────────────────────────────────────────────────────────────── */
 const schema = z.object({
@@ -168,6 +169,8 @@ export default function SignupPage() {
         },
       });
       analyticsTrackSignup('email');
+      trackEvent('sign_up', { method: 'email', profile_type: data.profileType });
+      trackEvent('trial_start', { method: 'email', trial_days: 7 });
       navigate({ to: '/email-unverified' });
     } catch (err: any) {
       const code = err?.code ?? '';

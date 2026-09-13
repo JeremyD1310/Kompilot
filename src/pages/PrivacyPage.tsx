@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowLeft, Shield, Lock, Database, Eye, Trash2, Download, Mail } from 'lucide-react';
 
-const LAST_UPDATED = 'Juin 2026';
+const LAST_UPDATED = 'Septembre 2026';
 
 export default function PrivacyPage() {
   return (
@@ -177,7 +177,7 @@ export default function PrivacyPage() {
           <div className="space-y-2">
             {[
               { type: 'Cookies essentiels', desc: 'Session d\'authentification, préférences de thème, panier de commande.', required: true },
-              { type: 'Cookies analytiques', desc: 'Mesure d\'audience anonymisée (Blink Analytics, sans transfert vers Google). Durée : 13 mois.', required: false },
+              { type: 'Cookies analytiques', desc: 'Google Analytics 4 (GA4), activé uniquement après votre consentement, pour mesurer les visites et conversions. Durée maximale : 13 mois.', required: false },
               { type: 'Cookies fonctionnels', desc: 'Mémorisation de vos préférences d\'interface (mode sombre, onglet actif).', required: false },
             ].map(c => (
               <div key={c.type} className="flex items-start justify-between gap-4 rounded-lg border border-border px-3 py-2.5 bg-muted/10">

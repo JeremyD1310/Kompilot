@@ -11,18 +11,26 @@
  *   4. Restart the dev server — GA4 will start receiving events
  */
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { trackPageView, setUserProperties } from '../../hooks/useAnalytics'
 import { useAuth } from '../../hooks/useAuth'
+import { COOKIE_CONSENT_EVENT, hasAnalyticsConsent } from '../../lib/cookieConsent'
 
 export function GoogleAnalyticsLoader() {
   const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined
   const { user } = useAuth()
   const lastPath = useRef<string>('')
+  const [analyticsAllowed, setAnalyticsAllowed] = useState(hasAnalyticsConsent)
+
+  useEffect(() => {
+    const updateConsent = () => setAnalyticsAllowed(hasAnalyticsConsent())
+    window.addEventListener(COOKIE_CONSENT_EVENT, updateConsent)
+    return () => window.removeEventListener(COOKIE_CONSENT_EVENT, updateConsent)
+  }, [])
 
   // ── 1. Inject gtag.js script once ───────────────────────────────────────
   useEffect(() => {
-    if (!measurementId) return
+    if (!measurementId || !analyticsAllowed) return
     if (document.getElementById('ga4-script')) return
 
     window.dataLayer = window.dataLayer || []
@@ -37,11 +45,11 @@ export function GoogleAnalyticsLoader() {
     script.async = true
     script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
     document.head.appendChild(script)
-  }, [measurementId])
+  }, [measurementId, analyticsAllowed])
 
   // ── 2. Track page views via history events (no router hook) ─────────────
   useEffect(() => {
-    if (!measurementId) return
+    if (!measurementId || !analyticsAllowed) return
 
     function sendView(path: string) {
       if (path === lastPath.current) return
@@ -76,16 +84,16 @@ export function GoogleAnalyticsLoader() {
       history.replaceState = origReplace
       window.removeEventListener('popstate', onPop)
     }
-  }, [measurementId])
+  }, [measurementId, analyticsAllowed])
 
   // ── 3. Identify user when they log in ───────────────────────────────────
   useEffect(() => {
-    if (!measurementId || !user) return
+    if (!measurementId || !analyticsAllowed || !user) return
     const domain = typeof user.email === 'string'
       ? user.email.split('@')[1] || 'unknown'
       : 'unknown'
     setUserProperties(user.id, { email_domain: domain })
-  }, [measurementId, user?.id])
+  }, [measurementId, analyticsAllowed, user?.id])
 
   return null
 }

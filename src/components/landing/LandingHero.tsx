@@ -16,8 +16,8 @@ interface LandingHeroProps {
 const HERO_COPY = {
   commerce: {
     badge: '✦ Réservé aux professionnels & agences — Configuration en 60 secondes',
-    h1Main: 'Votre présence en ligne,',
-    h1Gradient: 'pilotée par l\'IA.',
+    h1Main: 'Votre marketing local,',
+    h1Gradient: 'piloté par l\'IA.',
     sub: '',
     cta: 'Lancer mon copilote gratuitement',
   },

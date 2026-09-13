@@ -33,6 +33,8 @@ const PlaybookImmobilierPage   = React.lazy(() => import('../pages/PlaybookImmob
 const PlaybookEcommercePage    = React.lazy(() => import('../pages/PlaybookEcommercePage'));
 const AIOCheckerPage           = React.lazy(() => import('../pages/AIOCheckerPage'));
 const ExtendTrialPage          = React.lazy(() => import('../pages/ExtendTrialPage'));
+const SectorPage               = React.lazy(() => import('../pages/SectorPage'));
+const MarketingInfoPage        = React.lazy(() => import('../pages/MarketingInfoPage'));
 
 export const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: LandingPage });
 export const loginRoute = createRoute({ getParentRoute: () => rootRoute, path: '/login', component: LoginPage });
@@ -65,6 +67,11 @@ export const playbookImmobilierRoute = createRoute({ getParentRoute: () => rootR
 export const playbookEcommerceRoute  = createRoute({ getParentRoute: () => rootRoute, path: '/playbook/e-commerce', component: PlaybookEcommercePage });
 export const aioCheckerRoute         = createRoute({ getParentRoute: () => rootRoute, path: '/aio-checker', component: AIOCheckerPage });
 export const extendTrialRoute        = createRoute({ getParentRoute: () => rootRoute, path: '/extend-trial', component: ExtendTrialPage });
+export const sectorRoute             = createRoute({ getParentRoute: () => rootRoute, path: '/secteurs/$sector', component: SectorPage });
+export const localRoute              = createRoute({ getParentRoute: () => rootRoute, path: '/local', component: MarketingInfoPage });
+export const featuresRoute           = createRoute({ getParentRoute: () => rootRoute, path: '/features', component: MarketingInfoPage });
+export const testimonialsRoute       = createRoute({ getParentRoute: () => rootRoute, path: '/temoignages', component: MarketingInfoPage });
+export const faqRoute                = createRoute({ getParentRoute: () => rootRoute, path: '/faq', component: MarketingInfoPage });
 
 export const publicRoutes = [
   indexRoute,
@@ -97,4 +104,9 @@ export const publicRoutes = [
   playbookEcommerceRoute,
   aioCheckerRoute,
   extendTrialRoute,
+  sectorRoute,
+  localRoute,
+  featuresRoute,
+  testimonialsRoute,
+  faqRoute,
 ];

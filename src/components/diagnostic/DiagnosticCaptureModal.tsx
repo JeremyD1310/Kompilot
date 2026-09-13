@@ -11,6 +11,7 @@ import {
   DIAGNOSTIC_EMAIL_SUBJECT,
 } from '../../lib/diagnosticEmail';
 import type { DiagnosticFormData } from './DiagnosticForm';
+import { trackEvent } from '../../hooks/useAnalytics';
 
 function generateId(): string {
   return `lead_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -68,6 +69,11 @@ export function DiagnosticCaptureModal({ formData, score, open, onClose }: Props
         });
 
         setEmailSent(true);
+        trackEvent('generate_lead', {
+          lead_source: 'diagnostic',
+          visibility_score: score,
+          city: formData.city || undefined,
+        });
       } catch (err) {
         // Non-blocking — still show modal even if save/email fails
         console.warn('[DiagnosticCapture]', err);
