@@ -4,19 +4,14 @@
  * All events follow the GA4 naming convention.
  * Functions are no-ops when Firebase is not configured.
  */
-import { logEvent } from 'firebase/analytics';
-import { getFirebaseAnalytics } from './client';
+import { trackEvent } from '../hooks/useAnalytics';
 
 type EventParams = Record<string, string | number | boolean | undefined>;
 
-async function track(eventName: string, params?: EventParams) {
-  try {
-    const analytics = await getFirebaseAnalytics();
-    if (!analytics) return;
-    logEvent(analytics, eventName, params);
-  } catch (e) {
-    // Silently fail — analytics should never crash the app
-  }
+function track(eventName: string, params?: EventParams) {
+  // The shared GA4 helper enforces consent and uses the configured
+  // Kompilot measurement ID, preventing a second analytics pipeline.
+  trackEvent(eventName, params);
 }
 
 // ── Auth events ──────────────────────────────────────────────────────────────
