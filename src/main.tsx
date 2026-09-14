@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactDOM from 'react-dom/client'
+import ReactDOM, { type Root } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BlinkUIProvider, Toaster } from '@blinkdotnew/ui'
 import { SubscriptionProvider } from './context/SubscriptionContext'
@@ -57,6 +57,10 @@ installGlobalErrorHandlers(
 )
 
 const queryClient = new QueryClient()
+const rootContainer = document.getElementById('root')
+if (!rootContainer) throw new Error('Kompilot root container is missing')
+const rootStore = globalThis as typeof globalThis & { __kompilotRoot?: Root }
+const appRoot = rootStore.__kompilotRoot ?? (rootStore.__kompilotRoot = ReactDOM.createRoot(rootContainer))
 
 // ── Provider composer ────────────────────────────────────────────────────────
 // Composes an array of providers to avoid deep nesting ("provider hell").
@@ -121,7 +125,7 @@ function ThemedApp() {
   )
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+appRoot.render(
   <React.StrictMode>
     <ObsidianThemeProvider>
       <DarkModeProvider>

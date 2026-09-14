@@ -49,6 +49,7 @@ export const DEMO_STORAGE_KEYS = [
   'kompilot_switcher_unlocked',
   'kompilot_demo_sector',
   'kompilot_demo_credits_v1',
+  'kompilot_demo_approval_statuses_v1',
   'kompilot_demo_start_v1',
   'kompilot_demo_onboarding_v1',
   'kompilot_plan',

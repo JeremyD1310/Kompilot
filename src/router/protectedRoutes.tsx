@@ -166,7 +166,7 @@ export const protectedChildRoutes = [
   qrCodeRoute, caisseRoute, brandRoute, creativeFactoryRoute,
   aiCreativeStudioRoute, featuresShowcaseRoute, tunnelsRoute,
   aioRoute, roasRoute, emailMarketingRoute, websiteScanRoute, emailSequencesRoute,
-  creativeStudioHubRoute, teamRoute, monEquipeRoute, engagementRoute, seoGapRoute,
+  creativeStudioHubRoute, monEquipeRoute, engagementRoute, seoGapRoute,
   calendarAliasRoute, caisseAliasRoute, teamAliasRoute, creativeFactoryAliasRoute,
   emailMarketingAliasRoute, resultsAliasRoute, seoAuthorityAliasRoute,
 ];

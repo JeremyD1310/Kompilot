@@ -39,6 +39,7 @@ const personaToProfile: Record<DemoPersona, DemoProfile> = {
 
 export default function DemoPage() {
   const [activePersona, setActivePersona] = useState<DemoPersona>('merchant');
+  const [demoInfoOpen, setDemoInfoOpen] = useState(false);
   const { setProfile } = useDemoData();
   const navigate = useNavigate();
   const goSignup = () => navigate({ to: '/signup' });
@@ -52,21 +53,14 @@ export default function DemoPage() {
     <PremiumWinProvider>
       <div className="min-h-screen bg-slate-50 dark:bg-[#0F172A] pb-24">
 
-        {/* Bannière fixe */}
-        <div className="fixed top-0 left-0 right-0 h-14 bg-[#0D9488] text-white z-50 flex items-center justify-between px-4 md:px-8 shadow-lg">
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <span className="hidden sm:inline">🎯 Mode Démonstration — Explorez Kompilot sans créer de compte</span>
-            <span className="sm:hidden font-bold">Kompilot Demo</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={goSignup}
-              className="bg-white text-[#0D9488] hover:bg-slate-100 font-bold text-xs md:text-sm px-3 md:px-4 h-9 shrink-0"
-            >
-              Créer mon espace
-            </Button>
-          </div>
+        {/* Compact demo header */}
+        <div className="fixed left-0 right-0 top-0 z-50 flex min-h-12 items-center justify-between border-b border-teal-700 bg-[#0D9488] px-3 text-white shadow-md sm:px-6">
+          <button type="button" onClick={() => setDemoInfoOpen(true)} className="min-h-11 rounded-xl px-2 text-left text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+            <span className="inline-flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-white" aria-hidden="true" /> Kompilot <span className="rounded-full bg-white/15 px-2 py-1 text-[10px] uppercase tracking-wide">Démo</span></span>
+          </button>
+          <Button onClick={goSignup} className="min-h-11 bg-white px-3 text-xs font-bold text-[#0D9488] hover:bg-slate-100">Créer mon espace</Button>
         </div>
+        {demoInfoOpen && <div className="fixed inset-0 z-[60] bg-slate-950/40" role="presentation" onMouseDown={event => event.target === event.currentTarget && setDemoInfoOpen(false)}><section role="dialog" aria-modal="true" aria-labelledby="demo-info-title" className="absolute inset-x-0 top-12 rounded-b-2xl bg-white p-4 shadow-2xl sm:inset-x-4 sm:top-16 sm:rounded-2xl"><div className="flex items-start justify-between gap-3"><div><h2 id="demo-info-title" className="text-base font-bold text-slate-950">Mode démonstration</h2><p className="mt-1 text-sm leading-6 text-slate-600">Explorez un cockpit fictif sans créer de compte. Les actions sont locales et aucune donnée client ou connexion externe n’est utilisée.</p></div><button type="button" onClick={() => setDemoInfoOpen(false)} aria-label="Fermer les informations de démonstration" className="min-h-11 min-w-11 rounded-xl text-xl text-slate-600 hover:bg-slate-100">×</button></div><p className="mt-3 rounded-xl bg-teal-50 p-3 text-xs font-semibold text-teal-900">Mode démo — aucun envoi réel</p></section></div>}
 
         <div className="pt-20 max-w-7xl mx-auto px-4">
 

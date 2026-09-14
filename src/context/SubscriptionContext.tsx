@@ -10,6 +10,7 @@ import {
 } from '../lib/billingStorage';
 import { fetchBillingStatus } from '../lib/billingClient';
 import { blink } from '../blink/client';
+import { isDemoRuntime } from '../lib/demoDomain';
 
 /**
  * PlanId — Nouveaux planId 2026 + aliases legacy pour rétrocompatibilité.
@@ -193,7 +194,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   // Refresh only for authenticated users (non-blocking, best-effort).
   // Anonymous landing pages must not request the protected billing endpoint.
   useEffect(() => {
-    if (!hasAuthenticatedUser) return;
+    // The public demo is a local-only sandbox: never probe billing or Stripe.
+    if (isDemoRuntime() || !hasAuthenticatedUser) return;
     refreshBillingStatus().catch(() => { /* noop */ });
   }, [hasAuthenticatedUser, refreshBillingStatus]);
 

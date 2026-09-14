@@ -71,6 +71,7 @@ export const demoWorkspaceMessagesRoute = createRoute({ getParentRoute: () => ro
 export const demoWorkspaceCampaignsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/campaigns', component: DemoWorkspacePage });
 export const demoWorkspaceResultsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/results', component: DemoWorkspacePage });
 export const demoWorkspaceOrganizationRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/organization', component: DemoWorkspacePage });
+export const demoWorkspaceTeamRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/team', component: DemoWorkspacePage });
 export const demoWorkspaceSettingsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/settings', component: DemoWorkspacePage });
 export const tunnelReportRoute = createRoute({ getParentRoute: () => rootRoute, path: '/tunnel-report/$token', component: TunnelReportPage });
 export const showcaseRoute = createRoute({ getParentRoute: () => rootRoute, path: '/showcase', component: KompilotShowcasePage });
@@ -120,6 +121,7 @@ export const publicRoutes = [
   demoWorkspaceCampaignsRoute,
   demoWorkspaceResultsRoute,
   demoWorkspaceOrganizationRoute,
+  demoWorkspaceTeamRoute,
   demoWorkspaceSettingsRoute,
   tunnelReportRoute,
   showcaseRoute,
