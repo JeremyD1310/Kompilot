@@ -10,6 +10,8 @@
  *   track('Lead', { email: user.email, sector: 'beaute' });
  */
 
+import { hasAnalyticsConsent } from './cookieConsent';
+
 const BACKEND_URL = (import.meta as any).env?.VITE_BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -145,6 +147,8 @@ const TIKTOK_MAP: Record<TrackingEvent, string> = {
  *   2. Server-Side via /api/tracking/conversion (données PII hachées backend)
  */
 export async function track(event: TrackingEvent, opts: TrackingOptions = {}): Promise<void> {
+  if (!hasAnalyticsConsent()) return;
+
   // Persister click ids à chaque call (au cas où on serait sur la 1ère page)
   persistClickIds();
 
@@ -187,6 +191,7 @@ export async function trackAudience(
   authToken: string,
   opts: { value?: number; sector?: string; userType?: 'commerce' | 'agency' } = {},
 ): Promise<void> {
+  if (!hasAnalyticsConsent()) return;
   try {
     await fetch(`${BACKEND_URL}/api/tracking/audience`, {
       method: 'POST',
@@ -203,19 +208,23 @@ export async function trackAudience(
 
 // ── UTM sector detection ──────────────────────────────────────────────────────
 export function getUtmSector(): string | null {
+  if (!hasAnalyticsConsent()) return null;
   return getUrlParam('utm_sector') || getStoredParam('_utm_sector');
 }
 
 export function getUtmSource(): string | null {
+  if (!hasAnalyticsConsent()) return null;
   return getUrlParam('utm_source') || getStoredParam('_utm_source');
 }
 
 export function getUtmCampaign(): string | null {
+  if (!hasAnalyticsConsent()) return null;
   return getUrlParam('utm_campaign') || getStoredParam('_utm_campaign');
 }
 
 /** Persiste tous les paramètres UTM pour la durée de la session */
 export function captureUtmParams(): Record<string, string> {
+  if (!hasAnalyticsConsent()) return {};
   const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_sector'];
   const captured: Record<string, string> = {};
   const sp = new URLSearchParams(window.location.search);
@@ -291,7 +300,7 @@ export function checkScanRateClientSide(): boolean {
     // Plus de 15 scans en 10 min = suspect
     return bucket.count <= 15;
   } catch {
-    return true;
+    return false;
   }
 }
 
@@ -305,6 +314,7 @@ export function injectPixelScripts(config: {
   ga4MeasurementId?: string;
   tiktokPixelId?: string;
 }): void {
+  if (!hasAnalyticsConsent()) return;
   const { metaPixelId, ga4MeasurementId, tiktokPixelId } = config;
 
   // ── Meta Pixel ──

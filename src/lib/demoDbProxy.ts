@@ -11,7 +11,7 @@
  */
 
 import { blink } from '../blink/client';
-import { IS_DEMO_RUNTIME } from './demoDomain';
+import { isDemoRuntime } from './demoDomain';
 import { MOCK_TABLES, MOCK_INSTANT_FORM_CONFIGS, MOCK_INSTANT_FORM_APPOINTMENTS } from './demoMockData';
 
 // ── UUID generator for mock creates ────────────────────────────────────────
@@ -164,7 +164,7 @@ export function createDemoDbProxy() {
 let _cachedBlink: typeof blink | null = null;
 
 export function getBlink(): typeof blink {
-  if (!IS_DEMO_RUNTIME) return blink;
+  if (!isDemoRuntime()) return blink;
 
   if (_cachedBlink) return _cachedBlink;
 
@@ -200,38 +200,26 @@ export function getBlink(): typeof blink {
  * This catches any DB calls that bypass the SDK (direct REST).
  */
 export function installDemoFetchInterceptor(): void {
-  if (!IS_DEMO_RUNTIME) return;
+  if (typeof window === 'undefined') return;
+  const origFetch = window.fetch.bind(window);
+  const demoFetch = async function(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+    if (!isDemoRuntime()) return origFetch(input, init);
 
-  const origFetch = window.fetch;
-  window.fetch = async function(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
 
-    // Intercept all backend calls while the public demo is running. The
-    // dashboard is local-only; synthetic demo auth must never reach protected
-    // production endpoints and create misleading 401s.
-    if (url.includes('.backend.blink.new')) {
-      return new Response(JSON.stringify({ success: true, status: 'demo', data: [], items: [], results: [] }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
+    // The dashboard demo is local-only. Never report success for unknown
+    // backend/DB/function calls: a successful envelope can make a destructive
+    // action look completed and hide a production leak.
+    if (url.includes('.backend.blink.new') || url.includes('/api/db/') || url.includes('blink.new/api/db/')) {
+      return new Response(JSON.stringify({ blocked: true, status: 'demo', message: 'Cette action est désactivée dans la démonstration.' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json', 'X-Kompilot-Demo-Blocked': 'true' },
       });
     }
 
-    // Intercept Blink DB REST API calls
-    if (url.includes('/api/db/') || url.includes('blink.new/api/db/')) {
-      // Return mock success response
-      return new Response(JSON.stringify({ data: [], total: 0, success: true }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Intercept Blink function calls that might fail
+    // Billing status is read-only and can safely be represented locally.
     if (url.includes('/api/functions/') && url.includes('billing')) {
-      return new Response(JSON.stringify({
-        status: 'active',
-        planId: 'agency',
-        gracePeriodEnd: null,
-      }), {
+      return new Response(JSON.stringify({ status: 'active', planId: 'agency', gracePeriodEnd: null }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -499,6 +487,16 @@ export function installDemoFetchInterceptor(): void {
       });
     }
 
-    return origFetch.call(window, input, init);
+    // Block every non-local request by default. Local assets, Vite HMR and
+    // same-origin navigation remain available for the real dashboard shell.
+    if (url.startsWith('http') && !url.startsWith(window.location.origin)) {
+      return new Response(JSON.stringify({ blocked: true, status: 'demo', message: 'External calls are disabled in demo mode.' }), {
+        status: 204,
+        headers: { 'Content-Type': 'application/json', 'X-Kompilot-Demo-Blocked': 'true' },
+      });
+    }
+
+    return origFetch(input, init);
   };
+  window.fetch = demoFetch;
 }

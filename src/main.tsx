@@ -25,6 +25,7 @@ import { DarkModeProvider, useDarkMode } from './context/DarkModeContext'
 import { ObsidianThemeProvider } from './context/ObsidianThemeContext'
 import { DemoModeProvider } from './context/DemoModeContext'
 import { DemoViewProvider } from './context/DemoViewContext'
+import { DemoDataProvider } from './context/DemoDataProvider'
 import { GuidedTourProvider } from './context/GuidedTourContext'
 import { NotificationsProvider } from './context/NotificationsContext'
 import { BrandSettingsProvider } from './context/BrandSettingsContext'
@@ -40,7 +41,11 @@ import { GoogleAnalyticsLoader } from './components/layout/GoogleAnalyticsLoader
 import App from './App'
 import { registerServiceWorker } from './lib/registerServiceWorker'
 import { installGlobalErrorHandlers } from './lib/errorLogger'
+import { installDemoFetchInterceptor } from './lib/demoDbProxy'
 import './index.css'
+
+// Install the demo network boundary before any provider or SDK hook mounts.
+installDemoFetchInterceptor()
 
 // Register SW for offline caching — after first paint
 registerServiceWorker()
@@ -66,12 +71,22 @@ function compose(...providers: ProviderComponent[]) {
   }
 }
 
+// Keep dependent demo contexts explicit. DemoModeProvider consumes DemoDataProvider,
+// so this relationship must remain visible instead of relying on list ordering.
+function DemoProviders({ children }: { children: React.ReactNode }) {
+  return (
+    <DemoDataProvider>
+      <DemoModeProvider>{children}</DemoModeProvider>
+    </DemoDataProvider>
+  )
+}
+
 // Static providers — defined once at module level (don't depend on runtime state)
 const StaticProviders = compose(
   AdminProvider,
   IntegrationStatusProvider,
   DemoViewProvider,
-  DemoModeProvider,
+  DemoProviders,
   UserProfileProviderWithAuth,
   SubscriptionProvider,
   EstablishmentProvider,
