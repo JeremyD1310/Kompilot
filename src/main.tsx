@@ -25,6 +25,7 @@ import { DarkModeProvider, useDarkMode } from './context/DarkModeContext'
 import { ObsidianThemeProvider } from './context/ObsidianThemeContext'
 import { DemoModeProvider } from './context/DemoModeContext'
 import { DemoViewProvider } from './context/DemoViewContext'
+import { DemoDataProvider } from './context/DemoDataProvider'
 import { GuidedTourProvider } from './context/GuidedTourContext'
 import { NotificationsProvider } from './context/NotificationsContext'
 import { BrandSettingsProvider } from './context/BrandSettingsContext'
@@ -72,6 +73,7 @@ const StaticProviders = compose(
   IntegrationStatusProvider,
   DemoViewProvider,
   DemoModeProvider,
+  DemoDataProvider,
   UserProfileProviderWithAuth,
   SubscriptionProvider,
   EstablishmentProvider,

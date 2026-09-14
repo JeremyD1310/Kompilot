@@ -157,7 +157,7 @@ router.get('/api/ga4/health', async (c) => {
   const raw = c.env as unknown as Record<string, string | undefined>;
   return c.json({
     propertyId:  { configured: !!(raw.GA4_PROPERTY_ID?.trim()),  value: raw.GA4_PROPERTY_ID ? `${raw.GA4_PROPERTY_ID.slice(0, 4)}…` : null },
-    clientEmail: { configured: !!(raw.GA4_CLIENT_EMAIL?.trim()), value: raw.GA4_CLIENT_EMAIL ? raw.GA4_CLIENT_EMAIL.split('@')[0] + '@…' : null },
+    clientEmail: { configured: !!(raw.GA4_CLIENT_EMAIL?.trim()) },
     privateKey:  { configured: !!(raw.GA4_PRIVATE_KEY?.length > 20) },
     checkedAt:   new Date().toISOString(),
   });

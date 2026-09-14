@@ -60,22 +60,20 @@ export function requireRole(...roles: KompilotRole[]) {
 
     const userId = auth.userId;
 
-    // Check if user is the workspace owner (implicit admin)
+    // Platform admins and workspace owners are always admin
     // The workspace owner is identified by their own userId
     const meta = await (async () => {
       try {
         const rows = await (blink as any).db.users.list({ where: { id: userId }, limit: 1 });
         return rows[0] ? JSON.parse(rows[0].metadata ?? '{}') : {};
-      } catch { return {}; }
+      } catch {
+        return null;
+      }
     })();
 
-    // Platform admins and workspace owners are always admin
-    const userRole = meta.role as string | undefined;
-    if (userRole === 'admin' || userRole === 'agency') {
-      c.set('userId', userId);
-      c.set('userRole', 'admin' as KompilotRole);
-      await next();
-      return;
+    // Metadata is user-writable and must not grant elevated access.
+    if (meta === null) {
+      return c.json({ error: 'AUTHORITY_UNAVAILABLE', message: 'Impossible de vérifier les autorisations.' }, 503);
     }
 
     // Check team_members table for role
@@ -91,29 +89,23 @@ export function requireRole(...roles: KompilotRole[]) {
       });
 
       const membership = memberships[0];
-      const role = (membership?.role as KompilotRole) || 'member';
+      const role = membership?.role as KompilotRole | undefined;
 
-      if (!roles.includes(role)) {
+      if (!role || !roles.includes(role)) {
         return c.json({
           error: 'FORBIDDEN',
           message: `Accès insuffisant. Rôle requis : ${roles.map(r => ROLE_LABELS[r]).join(' ou ')}.`,
-          your_role: ROLE_LABELS[role] || role,
+          your_role: role ? ROLE_LABELS[role] || role : 'Aucun rôle actif',
           required_roles: roles.map(r => ROLE_LABELS[r]),
         }, 403);
       }
 
       c.set('userId', userId);
       c.set('userRole', role);
-      c.set('workspaceOwnerId', membership?.workspaceOwnerId || userId);
+      c.set('workspaceOwnerId', membership.workspaceOwnerId || userId);
       c.set('membership', membership);
     } catch {
-      // If team_members lookup fails, default to member-level access
-      // (for users without team memberships — solo accounts)
-      if (!roles.includes('member') && !roles.includes('admin')) {
-        return c.json({ error: 'FORBIDDEN', message: 'Accès insuffisant.' }, 403);
-      }
-      c.set('userId', userId);
-      c.set('userRole', 'member' as KompilotRole);
+      return c.json({ error: 'AUTHORITY_UNAVAILABLE', message: 'Impossible de vérifier les autorisations.' }, 503);
     }
 
     await next();

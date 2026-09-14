@@ -12,13 +12,12 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
-import { trackPageView, setUserProperties } from '../../hooks/useAnalytics'
-import { useAuth } from '../../hooks/useAuth'
+import { trackPageView } from '../../hooks/useAnalytics'
 import { COOKIE_CONSENT_EVENT, hasAnalyticsConsent } from '../../lib/cookieConsent'
+import { isDemoRuntime } from '../../lib/demoDomain'
 
 export function GoogleAnalyticsLoader() {
   const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined
-  const { user } = useAuth()
   const lastPath = useRef<string>('')
   const [analyticsAllowed, setAnalyticsAllowed] = useState(hasAnalyticsConsent)
 
@@ -30,6 +29,9 @@ export function GoogleAnalyticsLoader() {
 
   // ── 1. Inject gtag.js script once ───────────────────────────────────────
   useEffect(() => {
+    // Public demo sessions never load or send analytics, even if this browser
+    // previously accepted analytics cookies on the marketing site.
+    if (isDemoRuntime()) return
     if (!measurementId || !analyticsAllowed) return
     if (document.getElementById('ga4-script')) return
 
@@ -49,6 +51,7 @@ export function GoogleAnalyticsLoader() {
 
   // ── 2. Track page views via history events (no router hook) ─────────────
   useEffect(() => {
+    if (isDemoRuntime()) return
     if (!measurementId || !analyticsAllowed) return
 
     function sendView(path: string) {
@@ -85,15 +88,6 @@ export function GoogleAnalyticsLoader() {
       window.removeEventListener('popstate', onPop)
     }
   }, [measurementId, analyticsAllowed])
-
-  // ── 3. Identify user when they log in ───────────────────────────────────
-  useEffect(() => {
-    if (!measurementId || !analyticsAllowed || !user) return
-    const domain = typeof user.email === 'string'
-      ? user.email.split('@')[1] || 'unknown'
-      : 'unknown'
-    setUserProperties(user.id, { email_domain: domain })
-  }, [measurementId, analyticsAllowed, user?.id])
 
   return null
 }

@@ -457,7 +457,7 @@ export function GeoScanDemo() {
                   {
                     step: '3',
                     action: 'Génération d\'articles de presse locaux',
-                    detail: 'Publication automatique de 2 articles sur des médias locaux pour booster vos Trust Signals',
+                    detail: 'Publication préparée par l’IA, puis validée par vous avant toute diffusion',
                     time: '7–14 jours',
                     impact: '+9 pts G.E.O.',
                     color: 'bg-amber-500',

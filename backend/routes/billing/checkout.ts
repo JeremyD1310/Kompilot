@@ -42,8 +42,12 @@ router.post('/api/billing/checkout', async (c) => {
       renouncedTrial?: boolean;
     };
   }>();
-  const planId = body?.planId || 'pro';
+  const planId = body?.planId;
   const billing: 'monthly' | 'yearly' = body?.billing === 'yearly' ? 'yearly' : 'monthly';
+
+  if (!planId || !['starter', 'agency'].includes(planId)) {
+    return c.json({ error: 'Offre invalide', code: 'INVALID_PLAN' }, 400);
+  }
 
   // 3b. Enforce clickwrap — both boxes must be ticked
   const consent = body?.legalConsent;
@@ -53,6 +57,11 @@ router.post('/api/billing/checkout', async (c) => {
       code: 'MISSING_LEGAL_CONSENT',
       detail: 'Veuillez accepter les CGV et renoncer au droit de rétractation avant de procéder au paiement.',
     }, 422);
+  }
+
+  const currentCgvVersion = 'CGV_V1.0_2026-06';
+  if (consent.cgvVersion !== currentCgvVersion) {
+    return c.json({ error: 'Version des CGV obsolète', code: 'STALE_LEGAL_CONSENT' }, 422);
   }
 
   // ── Map planId + billing → Stripe price IDs ──────────────────────────────────
@@ -95,7 +104,10 @@ router.post('/api/billing/checkout', async (c) => {
     // Get user email from auth
     const usersResult = await blink.db.users.list({ where: { id: auth.userId } });
     const user = usersResult?.[0];
-    const email = (user as any)?.email || '';
+    const email = String((user as any)?.email || '').trim();
+    if (!email || !(user as any)?.emailVerified) {
+      return c.json({ error: 'Un email de compte vérifié est requis avant le paiement.', code: 'VERIFIED_EMAIL_REQUIRED' }, 422);
+    }
 
     const custRes = await fetch('https://api.stripe.com/v1/customers', {
       method: 'POST',
@@ -105,6 +117,9 @@ router.post('/api/billing/checkout', async (c) => {
       },
       body: new URLSearchParams({ email, 'metadata[userId]': auth.userId }).toString(),
     });
+    if (!custRes.ok) {
+      return c.json({ error: 'Impossible de créer le client Stripe.' }, 502);
+    }
     if (custRes.ok) {
       const cust = await custRes.json() as { id: string };
       customerId = cust.id;
@@ -183,7 +198,7 @@ router.post('/api/billing/checkout', async (c) => {
     await patchUserMeta(blink, auth.userId, {
       legal_consent_log: JSON.stringify({
         cgvVersion:        consent!.cgvVersion,
-        acceptedAt:        consent!.acceptedAt || serverTs,
+        acceptedAt:        serverTs,
         serverTimestamp:   serverTs,
         ip:                clientIp,
         userAgent:         consent!.userAgent || c.req.header('user-agent') || 'unknown',
@@ -210,7 +225,7 @@ router.post('/api/billing/checkout', async (c) => {
       cgvVersion:        consent!.cgvVersion,
       cgvAccepted:       1,
       retractionWaived:  1,
-      acceptedAt:        consent!.acceptedAt || serverTs,
+      acceptedAt:        serverTs,
       serverTimestamp:   serverTs,
       ip:                clientIp,
       userAgent:         consent!.userAgent || c.req.header('user-agent') || 'unknown',
@@ -222,8 +237,8 @@ router.post('/api/billing/checkout', async (c) => {
 
     console.log(`[billing/checkout] Compliance log saved → user ${auth.userId} / logId ${logId} / IP ${clientIp} / CGV ${consent!.cgvVersion}`);
   } catch (logErr) {
-    // Non-fatal — don't block checkout for a log failure, but do warn
-    console.error('[billing/checkout] Failed to save compliance log (non-fatal):', logErr);
+    console.error('[billing/checkout] Failed to save compliance log:', logErr);
+    return c.json({ error: 'Impossible d’enregistrer le consentement légal. Aucun paiement n’a été lancé.', code: 'LEGAL_AUDIT_UNAVAILABLE' }, 503);
   }
 
   return c.json({ url: session.url });
