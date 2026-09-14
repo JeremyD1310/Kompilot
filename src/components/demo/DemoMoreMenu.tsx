@@ -10,6 +10,7 @@ const links = [
   ['Messages', '/demo/workspace/messages', MessageSquare],
   ['Calendrier', '/demo/workspace/calendar', CalendarDays],
   ['Campagnes', '/demo/workspace/campaigns', Check],
+  ['Plus d’outils', '/demo/workspace/tools', ShieldCheck],
   ['Clients / établissements', '/demo/workspace/organization', Building2],
   ['Équipe', '/demo/workspace/team', Users],
   ['Paramètres', '/demo/workspace/settings', Settings],

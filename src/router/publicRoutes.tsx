@@ -69,6 +69,7 @@ export const demoWorkspaceReviewsRoute = createRoute({ getParentRoute: () => roo
 export const demoWorkspaceContentRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/content', component: DemoWorkspacePage });
 export const demoWorkspaceMessagesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/messages', component: DemoWorkspacePage });
 export const demoWorkspaceCampaignsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/campaigns', component: DemoWorkspacePage });
+export const demoWorkspaceToolsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/tools', component: DemoWorkspacePage });
 export const demoWorkspaceResultsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/results', component: DemoWorkspacePage });
 export const demoWorkspaceOrganizationRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/organization', component: DemoWorkspacePage });
 export const demoWorkspaceTeamRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/team', component: DemoWorkspacePage });
@@ -119,6 +120,7 @@ export const publicRoutes = [
   demoWorkspaceContentRoute,
   demoWorkspaceMessagesRoute,
   demoWorkspaceCampaignsRoute,
+  demoWorkspaceToolsRoute,
   demoWorkspaceResultsRoute,
   demoWorkspaceOrganizationRoute,
   demoWorkspaceTeamRoute,
