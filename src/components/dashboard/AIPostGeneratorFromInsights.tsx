@@ -112,7 +112,7 @@ function PlatformCard({
       hashtags: variant.hashtags.join(' '),
       platform: variant.platform,
     });
-    window.location.href = `/calendar?${params.toString()}`;
+    window.location.href = `/calendrier?${params.toString()}`;
   };
 
   return (
@@ -589,7 +589,7 @@ Ne rajoute aucun texte avant "### Instagram" ni après le dernier CONSEIL.`;
               <RefreshCw size={11} /> Régénérer
             </button>
             <a
-              href="/calendar"
+              href="/calendrier"
               className="flex items-center gap-1.5 text-[11px] font-bold text-primary bg-primary/8 hover:bg-primary/15 border border-primary/20 rounded-lg px-3 py-2 transition-colors"
             >
               <Calendar size={11} /> Ouvrir le calendrier

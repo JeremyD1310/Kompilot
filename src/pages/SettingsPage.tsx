@@ -170,7 +170,7 @@ export default function SettingsPage() {
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {currentPlan.id === 'free'
-                    ? `Offre gratuite : ${currentPlan.maxNetworks} réseau maximum. Passez à Pro pour en connecter plus.`
+                    ? `Offre gratuite : ${currentPlan.maxNetworks} réseau maximum. Passez à Starter pour en connecter plus.`
                     : 'Connectez vos comptes pour publier directement depuis Kompilot.'}
                 </p>
               </div>
@@ -183,7 +183,7 @@ export default function SettingsPage() {
                 )}
                 {currentPlan.id === 'free' && (
                   <Button size="sm" variant="outline" className="gap-1.5 h-7 text-xs" onClick={() => setUpgradeOpen(true)}>
-                    Passer à Pro
+                    Passer à Starter
                   </Button>
                 )}
               </div>
@@ -581,8 +581,8 @@ export default function SettingsPage() {
         open={upgradeOpen}
         onClose={() => setUpgradeOpen(false)}
         title="Oups ! Limite atteinte 🚧"
-        description={`Vous avez atteint la limite de ${currentPlan.maxNetworks} réseau${currentPlan.maxNetworks > 1 ? 'x' : ''} de l'offre gratuite. Passez à l'offre Pro pour connecter jusqu'à 3 réseaux sociaux.`}
-        targetPlan="pro"
+        description={`Vous avez atteint la limite de ${currentPlan.maxNetworks} réseau${currentPlan.maxNetworks > 1 ? 'x' : ''} de l'offre gratuite. Passez à l'offre Starter pour connecter jusqu'à 3 réseaux sociaux.`}
+        targetPlan="starter"
       />
     </Page>
   );

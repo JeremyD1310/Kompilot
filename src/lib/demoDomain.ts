@@ -20,7 +20,7 @@ export function isDemoDomain(): boolean {
 }
 
 /** Returns true for the public demo flow, including protected-looking paths
- * reached after the demo CTA. The session marker keeps /calendar and /social
+ * reached after the demo CTA. The session marker keeps /calendrier and /social
  * local-only after a full navigation from /demo/dashboard. */
 export function isDemoRuntime(): boolean {
   if (typeof window === 'undefined') return false;

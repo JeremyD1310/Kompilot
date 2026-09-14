@@ -61,7 +61,7 @@ function InboxGate({ onUpgrade }: { onUpgrade: () => void }) {
           <h3 className="text-lg font-bold text-foreground">Fonctionnalité Pro</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
             La boîte de réception est disponible dès l'offre{' '}
-            <span className="font-semibold text-primary">Pro à 19€/mois</span>.
+            <span className="font-semibold text-primary">Pro à 69€/mois HT</span>.
           </p>
         </div>
         <ul className="text-left text-sm space-y-2 text-foreground">

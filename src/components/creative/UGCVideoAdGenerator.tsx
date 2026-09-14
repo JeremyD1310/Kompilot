@@ -419,7 +419,7 @@ export function UGCVideoAdGenerator() {
     if (selected) params.set('prefill', selected.fullScript);
     if (completedVariant?.videoUrl) params.set('videoUrl', completedVariant.videoUrl);
     // Navigate to the cockpit/create-post with prefill
-    const destination = platform === 'youtube' ? '/cockpit' : '/calendar';
+    const destination = platform === 'youtube' ? '/cockpit' : '/calendrier';
     navigate({ to: `${destination}?${params.toString()}` });
     const labels: Record<string, string> = { tiktok: 'TikTok', instagram: 'Instagram Reels', youtube: 'YouTube Shorts' };
     toast.success(`Redirection vers le module ${labels[platform]}…`);
@@ -435,7 +435,7 @@ export function UGCVideoAdGenerator() {
     params.set('source', 'ugc_video_ad');
     if (projectId) params.set('projectId', projectId);
     if (completedVariant?.videoUrl) params.set('videoUrl', completedVariant.videoUrl);
-    navigate({ to: `/calendar?${params.toString()}` });
+    navigate({ to: `/calendrier?${params.toString()}` });
     toast.success('Redirection vers le calendrier…');
   }, [scripts, selectedScriptIndex, variants, projectId, navigate]);
 

@@ -14,8 +14,8 @@ import { isDemoRuntime } from '../lib/demoDomain';
 
 /**
  * PlanId — Nouveaux planId 2026 + aliases legacy pour rétrocompatibilité.
- * 'starter' = Pro 69€, 'agency' = Agency 149€
- * 'pro'/'expert' maintenus comme alias pour les abonnements existants.
+ * 'starter' = Starter 69€, 'agency' = Agency 149€
+ * 'pro'/'expert' sont maintenus comme alias techniques pour les abonnements existants.
  */
 export type PlanId = 'free' | 'starter' | 'agency' | 'pro' | 'expert';
 
@@ -49,10 +49,10 @@ export const PLANS: Plan[] = [
     hasStories: false,
     unlimited: false,
   },
-  // ── Pro 69€ (nouveau planId 'starter') ────────────────────────────────────
+  // ── Starter 69€ ───────────────────────────────────────────────────────────
   {
     id: 'starter',
-    name: 'Pro',
+    name: 'Starter',
     price: 69,
     maxNetworks: 5,
     maxSites: 5,
@@ -79,10 +79,11 @@ export const PLANS: Plan[] = [
     hasStories: true,
     unlimited: true,
   },
-  // ── Aliases legacy (rétrocompatibilité abonnements existants) ─────────────
+  // Technical aliases kept only for existing subscriptions and feature gates.
+  // They intentionally use the canonical display names and prices.
   {
     id: 'pro',
-    name: 'Pro (ancien)',
+    name: 'Starter',
     price: 69,
     maxNetworks: 5,
     maxSites: 5,
@@ -96,7 +97,7 @@ export const PLANS: Plan[] = [
   },
   {
     id: 'expert',
-    name: 'Agency (ancien)',
+    name: 'Agency',
     price: 149,
     maxNetworks: Infinity,
     maxSites: 30,
@@ -178,11 +179,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       setAgentEnabled(computeAgentEnabled());
 
       // If Stripe confirmed a plan upgrade, update local plan state
-      if (data.planId && ['pro', 'expert'].includes(data.planId)) {
-        const backendPlanId = data.planId as PlanId;
-        if (PLANS.find(p => p.id === backendPlanId)) {
-          setPlanId(backendPlanId);
-          try { localStorage.setItem(PLAN_STORAGE_KEY, backendPlanId); } catch { /* noop */ }
+      if (data.planId && ['starter', 'agency', 'pro', 'expert'].includes(data.planId)) {
+        const backendPlanId = data.planId === 'pro' ? 'starter' : data.planId === 'expert' ? 'agency' : data.planId;
+        const canonicalPlanId = backendPlanId as PlanId;
+        if (PLANS.find(p => p.id === canonicalPlanId)) {
+          setPlanId(canonicalPlanId);
+          try { localStorage.setItem(PLAN_STORAGE_KEY, canonicalPlanId); } catch { /* noop */ }
         }
       }
     } catch (e) {

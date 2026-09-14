@@ -1,6 +1,6 @@
 /**
- * PricingProPage — Page publique /pricing-pro
- * Affiche UNIQUEMENT la carte Pro (69€ HT/mois), centrée élégamment.
+ * PricingStarterPage — alias public /pricing-pro conservé pour les anciens liens
+ * Affiche UNIQUEMENT la carte Starter (69€ HT/mois), centrée élégamment.
  */
 
 import { useState } from 'react';

@@ -21,7 +21,7 @@ const HELPDESK_FAQS = [
     iconColor: 'text-rose-600',
     iconBg: 'bg-rose-50',
     question: 'Comment fonctionne le système de génération de vidéos IA ?',
-    answer: 'Le générateur de vidéos IA crée automatiquement des clips verticaux (format 9:16) adaptés à TikTok et Instagram Reels. Pour y accéder : ouvrez l\'éditeur de post via "+ Créer un post", puis cliquez sur l\'onglet "Vidéos IA" sous la zone de texte. Vous verrez des clips générés par thème (tutoriel, témoignage, produit, ambiance). Sélectionnez-en un — il s\'affiche en boucle dans l\'aperçu smartphone à droite. Cette fonctionnalité est réservée aux plans Pro (19€/mois) et Expert (39€/mois). Si vous êtes sur le plan Gratuit, un message vous invutera à mettre à niveau.',
+    answer: 'Le générateur de vidéos IA crée automatiquement des clips verticaux (format 9:16) adaptés à TikTok et Instagram Reels. Pour y accéder : ouvrez l\'éditeur de post via "+ Créer un post", puis cliquez sur l\'onglet "Vidéos IA" sous la zone de texte. Vous verrez des clips générés par thème (tutoriel, témoignage, produit, ambiance). Sélectionnez-en un — il s\'affiche en boucle dans l\'aperçu smartphone à droite. Cette fonctionnalité est disponible selon le périmètre souscrit : Starter à 69 € HT/mois, Agency à 149 € HT/mois ou Enterprise sur devis. Les résultats restent indicatifs et ne constituent pas une garantie de performance.',
     tags: ['vidéo', 'ia', 'tiktok', 'reels', 'pro'],
   },
   {
@@ -30,7 +30,7 @@ const HELPDESK_FAQS = [
     iconColor: 'text-amber-600',
     iconBg: 'bg-amber-50',
     question: 'Que se passe-t-il si je tombe à 0 crédit de publication ?',
-    answer: 'Quand votre solde atteint 0, le bouton "Planifier" dans l\'éditeur de post se grise et se désactive. Un pop-up "Solde insuffisant" apparaît avec deux options : acheter un pack de crédits ponctuels (5, 20 ou 50 crédits) depuis Mon Abonnement, ou souscrire à l\'offre Pro pour obtenir 30 crédits automatiquement renouvelés chaque mois. Votre solde est toujours visible dans le menu latéral gauche, juste sous le bouton "+ Créer un post". Les membres Expert ne sont jamais bloqués — leur compteur affiche "Illimité".',
+    answer: 'Quand votre solde atteint 0, le bouton "Planifier" dans l\'éditeur de post se grise et se désactive. Un pop-up "Solde insuffisant" apparaît avec les options disponibles dans votre abonnement. Votre solde est toujours visible dans le menu latéral gauche, juste sous le bouton "+ Créer un post". Les capacités varient selon le périmètre Starter, Agency ou Enterprise souscrit.',
     tags: ['crédit', 'solde', 'payer', 'bloqué'],
   },
   {
@@ -39,7 +39,7 @@ const HELPDESK_FAQS = [
     iconColor: 'text-red-600',
     iconBg: 'bg-red-50',
     question: 'Comment résilier mon abonnement Kompilot ?',
-    answer: 'Les offres Starter Pro et Business sont sans engagement — vous pouvez les résilier à tout moment depuis Mon Compte → onglet "Résiliation". Un tunnel de confirmation vous rappelle les fonctionnalités que vous perdrez, puis votre accès reste actif jusqu\'à la fin de la période de facturation en cours. Un email de confirmation vous est envoyé automatiquement. Pour les offres Franchise & Réseau (contrats annuels sur-mesure), un conseiller dédié traite votre demande sous 48h : utilisez le bouton "Contacter le service client" dans le même onglet. Dans tous les cas, conformément au RGPD, vous disposez de 30 jours après la coupure de votre accès pour exporter votre historique de performances et vos données clients avant suppression définitive.',
+    answer: 'Les offres Starter et Agency sont sans engagement — vous pouvez les résilier à tout moment depuis Mon Compte → onglet "Résiliation". Un tunnel de confirmation vous rappelle les fonctionnalités que vous perdrez, puis votre accès reste actif jusqu\'à la fin de la période de facturation en cours. Un email de confirmation vous est envoyé automatiquement. Pour les offres Franchise & Réseau (contrats annuels sur-mesure), un conseiller dédié traite votre demande sous 48h : utilisez le bouton "Contacter le service client" dans le même onglet. Dans tous les cas, conformément au RGPD, vous disposez de 30 jours après la coupure de votre accès pour exporter votre historique de performances et vos données clients avant suppression définitive.',
     tags: ['résiliation', 'annuler', 'abonnement', 'fin de contrat', 'données'],
   },
   {
@@ -48,7 +48,7 @@ const HELPDESK_FAQS = [
     iconColor: 'text-primary',
     iconBg: 'bg-primary/10',
     question: 'Combien de réseaux sociaux puis-je connecter ?',
-    answer: 'Avec le plan Gratuit : 1 réseau connecté. Plan Pro : jusqu\'à 3 réseaux. Plan Expert : connexions illimitées. Vous pouvez changer d\'offre à tout moment dans l\'onglet "Mon Abonnement".',
+    answer: 'Le périmètre de connexions dépend de l\'offre souscrite. Starter couvre les besoins d\'une activité locale, Agency ajoute les usages d\'équipe et Enterprise s\'adapte aux volumes convenus. Vous pouvez changer d\'offre à tout moment dans l\'onglet "Mon Abonnement".',
     tags: ['réseau', 'abonnement', 'gratuit'],
   },
   {
@@ -57,7 +57,7 @@ const HELPDESK_FAQS = [
     iconColor: 'text-violet-600',
     iconBg: 'bg-violet-50',
     question: 'Mes publications sont-elles vraiment publiées automatiquement ?',
-    answer: 'Oui, à l\'heure exacte choisie dans le calendrier. Une fois planifiée, aucune action manuelle n\'est requise. Vous recevrez une notification de confirmation quand la publication sera diffusée.',
+    answer: 'Kompilot prépare la publication à l\'heure choisie dans le calendrier, puis vous la soumet pour validation. Une notification confirme l\'état de la préparation ; aucune diffusion n\'est présentée comme garantie.',
     tags: ['calendrier', 'automatique', 'planifier'],
   },
   {

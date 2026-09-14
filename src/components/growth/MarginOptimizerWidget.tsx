@@ -41,7 +41,7 @@ const SECTOR_PRICING: Record<string, SectorPricing> = {
     timeframe: 'créneaux du vendredi & samedi soir',
     maieuticQuestion: "Votre agenda est saturé à plus de 85%. Les clients acceptent de payer 15-20% de plus pour les créneaux du week-end. Souhaitez-vous que l'IA recalibrage vos tarifs de pointe dès ce soir ?",
     actionLabel: 'Ajuster les tarifs de pointe',
-    actionRoute: '/calendar'
+    actionRoute: '/calendrier'
   },
   chantier: {
     avgIncrease: 20,
@@ -49,7 +49,7 @@ const SECTOR_PRICING: Record<string, SectorPricing> = {
     timeframe: 'interventions urgentes',
     maieuticQuestion: "Votre planning chantier est saturé à plus de 85%. Les artisans surchargés appliquent une majoration d'urgence de 20-25%. Voulez-vous élever votre empreinte bancaire à 200€ pour filtrer les demandes prioritaires et doubler votre marge sur les interventions urgentes ?",
     actionLabel: "Activer majoration urgence",
-    actionRoute: '/calendar'
+    actionRoute: '/calendrier'
   },
   services_b2b: {
     avgIncrease: 25,
@@ -57,7 +57,7 @@ const SECTOR_PRICING: Record<string, SectorPricing> = {
     timeframe: 'prestations haute valeur',
     maieuticQuestion: "Votre calendrier de prestations est saturé à plus de 85%. C'est le signal que votre tarif journalier est sous-valorisé. Les prestataires B2B à forte demande augmentent de 25% sans perdre de clients. Souhaitez-vous recalibrer votre grille tarifaire dès la semaine prochaine ?",
     actionLabel: 'Revaloriser ma grille tarifaire',
-    actionRoute: '/calendar'
+    actionRoute: '/calendrier'
   },
   produits: {
     avgIncrease: 10,
@@ -256,7 +256,7 @@ export function MarginOptimizerWidget() {
                         </Button>
                         {isStarter && (
                           <Button variant="ghost" size="sm" className="text-slate-400 text-xs" asChild>
-                            <Link to="/subscription">Passer au plan Business</Link>
+                            <Link to="/subscription">Passer au plan Agency</Link>
                           </Button>
                         )}
                       </div>
@@ -290,7 +290,7 @@ export function MarginOptimizerWidget() {
             {/* ── Quick access ── */}
             <div className="flex justify-end">
               <Link
-                to="/calendar"
+                to="/calendrier"
                 className="text-[10px] uppercase tracking-wider font-bold text-teal-400 hover:text-teal-300 flex items-center gap-0.5 transition-colors"
               >
                 Gérer mon agenda <ArrowUpRight className="h-3 w-3" />

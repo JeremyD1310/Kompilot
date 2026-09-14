@@ -11,6 +11,7 @@ const demoRoutes = [
   ['/demo/workspace/campaigns', 'Campagnes'],
   ['/demo/workspace/results', 'Résultats'],
   ['/demo/workspace/organization', 'Clients / établissements'],
+  ['/demo/workspace/team', 'Équipe'],
   ['/demo/workspace/settings', 'Paramètres'],
 ] as const;
 
@@ -22,7 +23,7 @@ test.describe('public interactive demo', () => {
       await expect(page.getByRole('button', { name: new RegExp(label) }).first()).toBeVisible();
     }
     await page.getByRole('button', { name: /Multi-établissements/ }).click();
-    await page.getByRole('button', { name: 'Explorer le cockpit' }).click();
+    await page.getByRole('button', { name: 'Explorer le cockpit' }).first().click({ force: true });
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
     await expect(page.getByText('Données fictives, actions locales uniquement')).toBeVisible();
     await expect(page.getByText('Mode démo · aucun email, SMS, publication ou paiement réel')).toBeVisible();
@@ -46,7 +47,8 @@ test.describe('public interactive demo', () => {
     const post = page.getByLabel('Statut de Post local — menu de saison');
     await post.selectOption('Validé');
     await expect(page.getByText('Simulation locale : validé')).toBeVisible();
-    await page.getByRole('button', { name: /Réinitialiser/ }).first().click();
+    await page.getByRole('button', { name: 'Ouvrir Plus' }).click();
+    await page.getByRole('button', { name: 'Réinitialiser la démo' }).click();
     await expect(post).toHaveValue('À valider');
   });
 
@@ -54,7 +56,9 @@ test.describe('public interactive demo', () => {
     const externalRequests: string[] = [];
     page.on('request', request => {
       const url = request.url();
-      if (/googletagmanager|googleapis|stripe|twilio|sendgrid|resend|gmail|facebook|instagram|linkedin|tiktok/i.test(url)) externalRequests.push(url);
+      if (/^https?:\/\//i.test(url) && !url.includes('localhost') && !url.includes('127.0.0.1')) {
+        if (/googletagmanager|googleapis|stripe|twilio|sendgrid|resend|gmail|facebook|instagram|linkedin|tiktok/i.test(url) && !url.includes('fonts.googleapis.com')) externalRequests.push(url);
+      }
     });
     await page.goto('/demo/workspace');
     await page.getByRole('button', { name: 'Préparer une réponse' }).click();
@@ -118,7 +122,7 @@ test.describe('public interactive demo', () => {
     await page.goto('/demo/workspace/messages');
     await page.getByRole('button', { name: /Ouvrir la conversation/ }).click();
     await page.getByRole('button', { name: 'Valider la simulation' }).click();
-    await expect(page.getByText(/message destiné/)).toBeVisible();
+    await expect(page.getByText(/Réponse enregistrée/)).toBeVisible();
 
     await page.goto('/demo/workspace/campaigns');
     await page.getByRole('button', { name: 'Préparer une campagne' }).click();

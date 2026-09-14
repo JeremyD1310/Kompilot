@@ -74,7 +74,7 @@ const ACTION_CARDS: ActionCard[] = [
     title: 'Aucune publication depuis 4 jours',
     description: "Vos futurs clients cherchent sur ChatGPT et Google Maps. Un post aujourd'hui peut générer +80 visites supplémentaires cette semaine.",
     cta: 'Créer un post maintenant →',
-    ctaHref: '/calendar',
+    ctaHref: '/calendrier',
     variant: 'primary',
   },
   {

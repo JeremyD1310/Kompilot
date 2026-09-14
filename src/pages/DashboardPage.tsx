@@ -141,11 +141,11 @@ export default function DashboardPage() {
         {/* ── Hero KPI grid ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard index={0} icon={<Calendar size={15} />} value={scheduledCount}
-            label="Publications planifiées" href="/calendar" accent="teal" />
+            label="Publications planifiées" href="/calendrier" accent="teal" />
           <StatCard index={1} icon={<MessageSquare size={15} />} value={unreadCount}
             label="Messages non lus" href="/inbox" accent={unreadCount > 0 ? 'amber' : 'teal'} />
           <StatCard index={2} icon={<CheckCircle2 size={15} />} value={publishedCount}
-            label="Posts publiés (30j)" href="/calendar" accent="emerald" />
+            label="Posts publiés (30j)" href="/calendrier" accent="emerald" />
           <StatCard index={3} icon={<TrendingUp size={15} />} value={String(visibilityScore)}
             label="Score de visibilité" href="/performance" accent="teal" />
         </div>
@@ -185,7 +185,7 @@ export default function DashboardPage() {
                   onClick={() => navigate({ to: '/inbox' })} badge={unreadCount} iconBg="bg-teal-500/10" />
                 <ActionCard index={8} icon={<Calendar size={16} className="text-muted-foreground/70" />}
                   label="Calendrier éditorial" desc="Visualisez et planifiez vos publications"
-                  onClick={() => navigate({ to: '/calendar' })} iconBg="bg-white/[0.05]" />
+                  onClick={() => navigate({ to: '/calendrier' })} iconBg="bg-white/[0.05]" />
               </div>
             </div>
 
@@ -215,7 +215,7 @@ export default function DashboardPage() {
                   </div>
                   <span className="text-sm font-semibold text-foreground">Prochains posts</span>
                 </div>
-                <Link to="/calendar">
+                <Link to="/calendrier">
                   <span className="text-[11px] font-semibold text-teal-400 hover:text-teal-300 flex items-center gap-0.5 transition-colors">
                     Voir tout <ArrowRight size={11} />
                   </span>

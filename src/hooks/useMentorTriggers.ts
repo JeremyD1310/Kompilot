@@ -122,7 +122,7 @@ function buildMessages(
       title: `3 jours de publication consécutifs !`,
       body: `${name}, vous êtes en feu ! 3 jours de publication d'affilée, c'est exactement ce que l'algorithme adore. Continuez cette série pour décupler votre portée !`,
       ctaLabel: 'Programmer la suite',
-      ctaHref: '/calendar',
+      ctaHref: '/calendrier',
       priority: 'medium',
       gradient: 'from-orange-500 to-rose-500',
     },

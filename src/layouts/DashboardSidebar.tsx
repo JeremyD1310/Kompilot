@@ -168,8 +168,8 @@ export function DashboardSidebar({
             suffix={!c ? <Star size={10} className="text-primary/60 shrink-0" /> : undefined}
             {...primary}
           />
-          <SidebarNavItem to="/calendar" icon={Calendar} label="Calendrier" active={is('/calendar')} collapsed={c} {...primary} />
-          <SidebarNavItem to="/team" icon={Users} label="Équipe" sublabel="Membres · Chat · Activité" active={is('/team')} collapsed={c} data-tour="nav-team"
+          <SidebarNavItem to="/calendrier" icon={Calendar} label="Calendrier" active={is('/calendrier')} collapsed={c} {...primary} />
+          <SidebarNavItem to="/mon-equipe" icon={Users} label="Équipe" sublabel="Membres · Chat · Activité" active={is('/mon-equipe')} collapsed={c} data-tour="nav-team"
             suffix={!c ? (
               <span className="text-[8px] bg-primary text-primary-foreground font-bold px-1.5 py-0.5 rounded-full shrink-0">NEW</span>
             ) : undefined}

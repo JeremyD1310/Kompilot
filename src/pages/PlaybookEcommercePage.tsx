@@ -48,7 +48,7 @@ const WEEKS: Week[] = [
     steps: [
       { title: 'Générez 12 posts Instagram/Facebook', action: '4 posts/semaine via Creative Studio — visuels + légendes optimisées', kompilotFeature: 'Creative Studio', featureLink: '/creative-studio', expectedResult: '12 posts générés et planifiés' },
       { title: 'Créez 3 scripts UGC', action: 'Scripts vidéo courts pour vos 3 best-sellers via UGCScriptPanel', kompilotFeature: 'UGC Script', featureLink: '/creative-studio', expectedResult: '3 scripts vidéo prêts à tourner' },
-      { title: 'Programmez vos publications', action: 'Planifiez tout le mois sur le Calendar en une session', kompilotFeature: 'Campaign Calendar', featureLink: '/calendar', expectedResult: 'Calendrier mensuel complet' },
+      { title: 'Programmez vos publications', action: 'Planifiez tout le mois sur le Calendar en une session', kompilotFeature: 'Campaign Calendar', featureLink: '/calendrier', expectedResult: 'Calendrier mensuel complet' },
     ],
   },
   {

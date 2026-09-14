@@ -135,7 +135,7 @@ export function LiveWorkFeed() {
           </span>
         </h3>
         {/* Live scheduled post count badge */}
-        <Link to="/calendar" className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors group">
+        <Link to="/calendrier" className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors group">
           <CalendarDays size={12} className="text-primary" />
           <span className={scheduledCount > 0 ? 'text-primary font-bold' : ''}>
             {scheduledCount} post{scheduledCount !== 1 ? 's' : ''} planifié{scheduledCount !== 1 ? 's' : ''}

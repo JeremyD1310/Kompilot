@@ -90,7 +90,7 @@ const B2B_CHECKLIST: ChecklistItem[] = [
     label: 'Planifier votre première publication réseau',
     desc: "Créez un post type à dupliquer sur tous vos établissements en un clic grâce au multiposting IA.",
     cta: 'Planifier →',
-    href: '/calendar',
+    href: '/calendrier',
     estimatedTime: '5 min',
     priority: 'recommended',
   },
@@ -157,7 +157,7 @@ function B2CContent({ planName, onClose }: { planName: string; onClose: () => vo
 
   const NEXT_STEPS = [
     { icon: Zap, label: 'Lancer mon Audit GEO', href: '/cockpit', desc: 'Découvrez ce que ChatGPT dit de vous' },
-    { icon: Calendar, label: 'Planifier mon 1er post', href: '/calendar', desc: 'Calendrier éditorial IA' },
+    { icon: Calendar, label: 'Planifier mon 1er post', href: '/calendrier', desc: 'Calendrier éditorial IA' },
     { icon: BarChart2, label: 'Voir mes stats', href: '/performance', desc: 'ROI et performances réseaux' },
   ];
 
