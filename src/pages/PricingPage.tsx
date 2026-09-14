@@ -1,8 +1,8 @@
 /**
  * PricingPage — Page publique /pricing de Kompilot
  *
- * Grille 3 plans uniquement : Pro (69€) · Agency (149€, phare) · Enterprise (devis)
- * Les anciens plans free/pro 39€/expert 59€/franchise sont supprimés.
+ * Grille 3 plans uniquement : Starter (69€) · Agency (149€, phare) · Enterprise (devis)
+ * La grille tarifaire conserve uniquement Starter, Agency et Enterprise.
  */
 
 import { useState, useMemo } from 'react';

@@ -80,7 +80,7 @@ export function SocialFluxTracker() {
       label: 'Prochain post',
       value: nextPostLabel,
       status: postCount > 0 ? 'scheduled' : 'warning',
-      route: '/calendar',
+      route: '/calendrier',
       accent: '#60A5FA',
     },
     {
@@ -98,7 +98,7 @@ export function SocialFluxTracker() {
       label: 'Cadence éditoriale',
       value: `${postCount} post${postCount !== 1 ? 's' : ''} planifié${postCount !== 1 ? 's' : ''}`,
       status: postCount >= 3 ? 'active' : postCount > 0 ? 'scheduled' : 'warning',
-      route: '/calendar',
+      route: '/calendrier',
       accent: '#0D9488',
     },
     {
@@ -200,7 +200,7 @@ export function SocialFluxTracker() {
         style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
       >
         <button
-          onClick={() => navigate({ to: '/calendar' })}
+          onClick={() => navigate({ to: '/calendrier' })}
           className="w-full text-[10px] font-semibold text-slate-500 hover:text-[#0D9488] transition-colors flex items-center justify-center gap-1.5"
         >
           Gérer le calendrier éditorial

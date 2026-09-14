@@ -385,7 +385,7 @@ export function QuickScheduleWidget() {
         {/* Footer link */}
         <div className="border-t border-border/40 px-5 py-2.5">
           <Link
-            to="/calendar"
+            to="/calendrier"
             className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline transition-colors"
           >
             Voir le calendrier complet

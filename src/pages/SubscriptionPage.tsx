@@ -12,6 +12,7 @@ import { WelcomeModal } from '../components/subscription/WelcomeModal';
 import { useWelcomeEmail } from '../hooks/useWelcomeEmail';
 import { useAuth } from '../hooks/useAuth';
 import { cn } from '../lib/utils';
+import { KOMPILOT_PLANS_MONTHLY } from '../components/landing/pricing/PricingData';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function monthYearLabel() {
@@ -20,149 +21,28 @@ function monthYearLabel() {
 }
 
 // ── B2C Plans ─────────────────────────────────────────────────────────────────
-const B2C_PLANS = [
-  {
-    id: 'decouverte',
-    emoji: '🎁',
-    name: 'Découverte / Bêta',
-    tagline: 'Idéal pour tester l\'outil',
-    price: null as null | number, // free
-    priceLabel: 'Gratuit',
-    badgeLabel: 'Bêta Gratuite',
-    badgeClass: 'bg-green-100 text-green-700 border-green-200',
-    gradient: 'from-slate-400 to-slate-300',
-    popular: false,
-    features: [
-      'Cockpit de création IA basique',
-      '5 générations de posts par mois',
-      'Aperçu Instagram',
-    ],
-    ctaLabel: '✅ Activer la Bêta',
-    ctaVariant: 'default' as const,
-    ctaNote: 'Aucune carte bancaire requise',
-    isFree: true,
-    contactOnly: false,
-  },
-  {
-    id: 'creator',
-    emoji: '🚀',
-    name: 'Creator',
-    tagline: 'Pour créateurs indépendants et freelances',
-    price: 30,
-    priceLabel: '30€ / mois TTC',
-    badgeLabel: 'B2C',
-    badgeClass: 'bg-teal-100 text-teal-700 border-teal-200',
-    gradient: 'from-teal-500 to-emerald-400',
-    popular: true,
-    features: [
-      'Cockpit IA complet',
-      '20 générations de posts/mois',
-      'Génération d\'images par IA',
-      'Connexion de 1 profil social',
-    ],
-    ctaLabel: 'S\'abonner (Simulation Stripe)',
-    ctaVariant: 'default' as const,
-    ctaNote: null,
-    isFree: false,
-    contactOnly: false,
-  },
-] as const;
+const B2C_PLANS = KOMPILOT_PLANS_MONTHLY.map(plan => ({
+  id: plan.id,
+  emoji: plan.id === 'starter' ? '⚡' : plan.id === 'agency' ? '✦' : '◈',
+  name: plan.name,
+  tagline: plan.tagline,
+  price: plan.monthlyPrice,
+  priceLabel: plan.monthlyPrice === null ? 'Sur devis HT' : `${plan.monthlyPrice}€ / mois HT`,
+  badgeLabel: plan.badge ?? plan.name,
+  badgeClass: plan.id === 'agency' ? 'bg-violet-100 text-violet-700 border-violet-200' : plan.id === 'enterprise' ? 'bg-slate-100 text-slate-700 border-slate-300' : 'bg-teal-100 text-teal-700 border-teal-200',
+  gradient: plan.id === 'agency' ? 'from-violet-600 to-indigo-500' : plan.id === 'enterprise' ? 'from-slate-700 to-slate-500' : 'from-teal-600 to-emerald-500',
+  popular: plan.popular,
+  features: plan.features,
+  ctaLabel: plan.id === 'starter' ? 'Choisir Starter' : plan.id === 'agency' ? 'Choisir Agency' : 'Nous contacter',
+  ctaVariant: plan.id === 'agency' ? 'default' as const : 'outline' as const,
+  ctaNote: null,
+  isFree: false,
+  contactOnly: plan.id === 'enterprise',
+}));
 
-// ── B2B Plans ─────────────────────────────────────────────────────────────────
-const B2B_PLANS = [
-  {
-    id: 'decouverte-pro',
-    emoji: '🎁',
-    name: 'Découverte',
-    tagline: 'Pour tester la puissance de l\'IA',
-    price: 0,
-    priceLabel: '0€ / mois',
-    badgeLabel: 'Gratuit',
-    badgeClass: 'bg-green-100 text-green-700 border-green-200',
-    gradient: 'from-emerald-500 to-teal-400',
-    popular: false,
-    features: [
-      '3 Posts IA / mois (Idéal pour débuter)',
-      'Multiposting (1 seul réseau social au choix)',
-      'Calendrier éditorial simplifié',
-    ],
-    ctaLabel: 'Créer un compte gratuit 🚀',
-    ctaVariant: 'default' as const,
-    ctaNote: 'Aucune carte bancaire requise',
-    isFree: true,
-    contactOnly: false,
-  },
-  {
-    id: 'starter-pro',
-    emoji: '💼',
-    name: 'Starter Pro',
-    tagline: 'Pour 1 établissement',
-    price: 39,
-    priceLabel: '39€ / mois HT',
-    badgeLabel: 'Pro',
-    badgeClass: 'bg-blue-100 text-blue-700 border-blue-200',
-    gradient: 'from-blue-500 to-blue-400',
-    popular: false,
-    features: [
-      '15 Posts & Stories IA / mois',
-      'Calendrier éditorial complet',
-      'Multiposting',
-      'Gestion des avis clients Google Maps',
-    ],
-    ctaLabel: 'S\'abonner (Simulation Stripe)',
-    ctaVariant: 'outline' as const,
-    ctaNote: null,
-    isFree: false,
-    contactOnly: false,
-  },
-  {
-    id: 'business',
-    emoji: '⚙️',
-    name: 'Business',
-    tagline: 'Idéal pour les multi-établissements',
-    price: 59,
-    priceLabel: '59€ / mois HT',
-    badgeLabel: 'Populaire',
-    badgeClass: 'bg-violet-100 text-violet-700 border-violet-200',
-    gradient: 'from-violet-600 to-violet-400',
-    popular: true,
-    features: [
-      'Posts & Stories IA ILLIMITÉS 🔥',
-      'Toutes les fonctionnalités Starter Pro',
-      'Bouton de réservation en ligne automatique (Planity/ZenChef)',
-      'Médiathèque avancée',
-      'Suggestions anti-page blanche',
-    ],
-    ctaLabel: 'S\'abonner (Simulation Stripe)',
-    ctaVariant: 'default' as const,
-    ctaNote: null,
-    isFree: false,
-    contactOnly: false,
-  },
-  {
-    id: 'franchise',
-    emoji: '🏢',
-    name: 'Franchise / Réseau',
-    tagline: 'Pour groupements et réseaux',
-    price: null as null | number,
-    priceLabel: 'Sur devis HT',
-    badgeLabel: 'Entreprise',
-    badgeClass: 'bg-gray-100 text-gray-700 border-gray-300',
-    gradient: 'from-gray-700 to-gray-500',
-    popular: false,
-    features: [
-      'Gestion centralisée multi-sites',
-      'Statistiques globales',
-      'Outils collaboratifs',
-      'Account Manager dédié',
-    ],
-    ctaLabel: 'Nous contacter',
-    ctaVariant: 'outline' as const,
-    ctaNote: null,
-    isFree: false,
-    contactOnly: true,
-  },
-] as const;
+// The same canonical catalogue is used for professional accounts. Keeping one
+// shape here avoids old subscription prices resurfacing through profile tabs.
+const B2B_PLANS = B2C_PLANS;
 
 // ── Credit packs ──────────────────────────────────────────────────────────────
 const CREDIT_PACKS = [
@@ -179,7 +59,7 @@ type CheckoutTarget = {
   isSubscription: boolean;
   creditsToAdd?: number;
   /** For real Stripe subscription checkout via SubscriptionCheckoutPanel */
-  stripePlanId?: 'pro' | 'expert';
+  stripePlanId?: 'starter' | 'agency';
 };
 
 // ── Plan card ─────────────────────────────────────────────────────────────────
@@ -362,25 +242,24 @@ export default function SubscriptionPage() {
     ) : null;
 
     if (found && !found.isFree && !(found as any).contactOnly && found.price != null) {
-      const isB2B = B2B_PLANS.some(p => p.id === found.id);
-      const priceHT = isB2B ? found.price! : parseFloat((found.price! / 1.2).toFixed(2));
+      const priceHT = found.price!;
       setCheckout({
         planName: found.name,
         priceHT,
         invoiceDesc: `Abonnement ${found.name} – ${monthYearLabel()}`,
         isSubscription: true,
-        stripePlanId: isB2B ? (found.id === 'starter-pro' ? 'pro' : 'expert') : 'pro',
+        stripePlanId: found.id === 'starter' ? 'starter' : 'agency',
       });
       const msg = skipTrial ? `⚡ Accès immédiat — finalisez votre abonnement` : `Plan ${found.name} sélectionné`;
       toast.success(msg, { description: 'Finalisez votre abonnement ci-dessous.' });
     } else if (skipTrial) {
-      // User skipped trial from signup — open Creator/Pro plan by default
+      // User skipped trial from signup — open the canonical Pro plan by default
       setCheckout({
-        planName: 'Creator',
-        priceHT: parseFloat((30 / 1.2).toFixed(2)),
-        invoiceDesc: `Abonnement Creator – ${monthYearLabel()}`,
+        planName: 'Starter',
+        priceHT: 69,
+        invoiceDesc: `Abonnement Starter – ${monthYearLabel()}`,
         isSubscription: true,
-        stripePlanId: 'pro',
+        stripePlanId: 'starter',
       });
       toast.success('⚡ Accès immédiat activé', { description: 'Cochez la case de renonciation pour confirmer.' });
     }
@@ -390,19 +269,17 @@ export default function SubscriptionPage() {
   const creditsLabel = credits === 'unlimited' ? 'Illimité' : `${credits} crédits restants`;
 
   const handleB2CPlanSelect = (plan: typeof B2C_PLANS[number]) => {
-    if (plan.isFree) {
-      toast.success('🎁 Bêta gratuite activée !', {
-        description: 'Profitez de vos 5 générations de posts offertes. Aucune carte requise.',
-      });
+    if (plan.contactOnly) {
+      window.location.href = 'mailto:sales@kompilot.fr';
       return;
     }
-    const priceHT = parseFloat((plan.price! / 1.2).toFixed(2));
+    const priceHT = plan.price!;
     setCheckout({
       planName: plan.name,
       priceHT,
       invoiceDesc: `Abonnement ${plan.name} – ${monthYearLabel()}`,
       isSubscription: true,
-      stripePlanId: 'pro', // Creator → Pro tier
+      stripePlanId: plan.id === 'starter' ? 'starter' : 'agency',
     });
   };
 
@@ -415,8 +292,8 @@ export default function SubscriptionPage() {
       window.location.href = 'mailto:contact@kompilot.fr';
       return;
     }
-    const stripePlanId: 'pro' | 'expert' =
-      plan.id === 'starter-pro' ? 'pro' : 'expert';
+    const stripePlanId: 'starter' | 'agency' =
+      plan.id === 'starter' ? 'starter' : 'agency';
     setCheckout({
       planName: plan.name,
       priceHT: plan.price!,
@@ -439,14 +316,9 @@ export default function SubscriptionPage() {
   const handlePaymentSuccess = () => {
     if (!checkout) return;
     if (checkout.isSubscription) {
-      // Map plan name to PlanId for context
-      const nameToId: Record<string, string> = {
-        'Creator': 'pro',
-        'Starter Pro': 'expert',
-        'Business': 'expert',
-      };
+      const nameToId: Record<string, string> = { Starter: 'starter', Agency: 'agency' };
       const pid = nameToId[checkout.planName];
-      if (pid) setPlan(pid as 'free' | 'pro' | 'expert');
+      if (pid) setPlan(pid as 'starter' | 'agency');
       setWelcomeModal({ open: true, planName: checkout.planName });
       sendWelcomeEmail(checkout.planName);
       toast.success(`🎉 Offre ${checkout.planName} activée !`, {
@@ -469,7 +341,7 @@ export default function SubscriptionPage() {
             <Zap size={22} className="text-primary" /> Mon Abonnement
           </PageTitle>
           <PageDescription>
-            Choisissez l'offre adaptée à votre profil — particulier, créateur ou professionnel.
+            Choisissez l'offre adaptée à votre activité — Starter, Agency ou Enterprise.
           </PageDescription>
         </div>
       </PageHeader>
@@ -483,7 +355,7 @@ export default function SubscriptionPage() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-extrabold text-emerald-800">Accès Démo Total activé</p>
               <p className="text-xs text-emerald-700/80 mt-0.5">
-                Vous bénéficiez de toutes les fonctionnalités de l'offre <strong>Business à 59€/mois</strong> gratuitement pendant cette démonstration.
+                Vous bénéficiez de toutes les fonctionnalités de l'offre <strong>Agency</strong> gratuitement pendant cette démonstration.
               </p>
             </div>
             <span className="shrink-0 flex items-center gap-1.5 rounded-full bg-emerald-500 text-white px-3 py-1 text-xs font-bold">
@@ -504,9 +376,9 @@ export default function SubscriptionPage() {
             <div>
               <p className="text-xs text-muted-foreground font-medium">Offre actuelle</p>
               <p className="text-sm font-bold text-foreground">
-                {isDemoActive ? 'Business' : currentPlan.name}
+                {isDemoActive ? 'Agency' : currentPlan.name}
                 {isDemoActive ? (
-                  <span className="ml-1 text-muted-foreground font-normal">· 59€/mois</span>
+                  <span className="ml-1 text-muted-foreground font-normal">· accès démo</span>
 ) : currentPlan.price > 0 ? (
                   <span className="ml-1 text-muted-foreground font-normal">· {currentPlan.price}€/mois</span>
                 ) : null}
@@ -553,8 +425,8 @@ export default function SubscriptionPage() {
                   : 'bg-muted text-muted-foreground hover:bg-muted/70',
               )}
             >
-              👤 Particulier / Créateur{' '}
-              <span className="ml-1 text-[10px] font-bold opacity-70">TTC</span>
+              👤 Starter{' '}
+              <span className="ml-1 text-[10px] font-bold opacity-70">HT</span>
             </button>
             <button
               onClick={() => setBillingMode('b2b')}
@@ -565,7 +437,7 @@ export default function SubscriptionPage() {
                   : 'bg-muted text-muted-foreground hover:bg-muted/70',
               )}
             >
-              💼 Professionnel{' '}
+              💼 Agency / Enterprise{' '}
               <span className="ml-1 text-[10px] font-bold opacity-70">HT</span>
             </button>
           </div>
@@ -576,10 +448,10 @@ export default function SubscriptionPage() {
               <span style={{ fontSize: '1.2rem' }}>🚀</span>
               <div>
                 <p style={{ fontSize: '.82rem', fontWeight: 700, color: 'hsl(var(--foreground))' }}>
-                  Offre Creator recommandée pour vous
+                  Offre Starter recommandée pour vous
                 </p>
                 <p style={{ fontSize: '.75rem', color: 'hsl(var(--muted-foreground))', marginTop: 2 }}>
-                  En tant que créateur indépendant, l'offre <strong>Creator à 30€ TTC/mois</strong> est idéale pour votre profil.
+                  L'offre <strong>Starter à 69€ HT/mois</strong> est idéale pour démarrer.
                 </p>
               </div>
             </div>
@@ -602,11 +474,11 @@ export default function SubscriptionPage() {
           {billingMode === 'b2b' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-start">
               {B2B_PLANS.map((plan) => {
-                const isActiveDemoPlan = isDemoActive && plan.id === 'business';
-                const isOtherDemoPlan = isDemoActive && plan.id !== 'business';
+                const isActiveDemoPlan = isDemoActive && plan.id === 'agency';
+                const isOtherDemoPlan = isDemoActive && plan.id !== 'agency';
                 return (
                   <div key={plan.id} className="relative">
-                    {/* Active demo overlay for Business plan */}
+                    {/* Active demo overlay for Agency plan */}
                     {isActiveDemoPlan && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 bg-emerald-500 text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-md whitespace-nowrap">
                         <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
@@ -623,7 +495,7 @@ export default function SubscriptionPage() {
                         onSelect={isOtherDemoPlan ? () => {} : () => handleB2BPlanSelect(plan)}
                       />
                     </div>
-                    {/* "Inclus" overlay for non-Business plans in demo mode */}
+                    {/* "Inclus" overlay for non-Agency plans in demo mode */}
                     {isOtherDemoPlan && (
                       <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-background/40 backdrop-blur-[1px] z-10">
                         <span className="flex items-center gap-2 bg-card border border-border rounded-xl px-4 py-2 text-xs font-bold text-muted-foreground shadow-sm">
@@ -639,8 +511,8 @@ export default function SubscriptionPage() {
 
           <p className="text-xs text-muted-foreground mt-5">
             {billingMode === 'b2c'
-              ? 'Prix TTC · Paiement sécurisé simulé · Résiliation à tout moment'
-              : "Prix HT · Sans carte bancaire requise pour l'offre Découverte · Résiliation à tout moment"}
+              ? 'Prix HT · Paiement sécurisé · Résiliation à tout moment'
+              : "Prix HT · Paiement sécurisé · Enterprise sur devis · Résiliation à tout moment"}
           </p>
         </section>
 

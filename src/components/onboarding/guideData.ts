@@ -210,8 +210,8 @@ export const AGENCY_STEPS: GuideStep[] = [
     keywords: ['roi', 'revenus', 'agence', 'marge', 'mrr'],
     tips: [
       'Marge moyenne des agences : 68%',
-      'Avec 10 clients a 99e = 893e/mois de profit net',
-      'Le plan Agency est a 97e/mois, clients illimites',
+      'Avec 10 clients, simulez votre marge et vos revenus récurrents',
+      'Le plan Agency est à 149€ HT/mois, avec gestion multi-clients',
     ],
   },
   {
@@ -269,9 +269,9 @@ export const AGENCY_STEPS: GuideStep[] = [
     interactive: StepAgencyPricing,
     keywords: ['tarifs', 'grille', 'offres', 'plans', 'prix'],
     tips: [
-      'Plan recommande : 3 offres avec upsell naturel',
-      'Starter 49e / Growth 99e / Premium 199e',
-      'Facturez annuellement pour +25% de MRR',
+      'Plan recommandé : Starter, Agency ou Enterprise selon votre périmètre',
+      'Starter 69€ HT/mois · Agency 149€ HT/mois · Enterprise sur devis',
+      'Présentez clairement le périmètre et les conditions de chaque offre',
     ],
   },
   {
@@ -284,7 +284,7 @@ export const AGENCY_STEPS: GuideStep[] = [
     interactive: StepAgencyPipeline,
     keywords: ['pipeline', 'prospection', 'leads', 'commerces', 'ia'],
     tips: [
-      'Ciblez les commerces avec score GEO < 30',
+      'Ciblez les commerces avec un score GEO à améliorer',
       'Email de prospection personnalise en 1 clic',
       'Suivi automatique dans le CRM agence',
     ],

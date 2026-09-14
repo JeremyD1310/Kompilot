@@ -144,7 +144,7 @@ function CalendarFooterLink() {
   const navigate = useNavigate();
   return (
     <button
-      onClick={() => navigate({ to: '/calendar' as any })}
+      onClick={() => navigate({ to: '/calendrier' as any })}
       className="flex w-full items-center justify-center gap-1.5 px-4 py-3 text-xs font-semibold text-primary hover:bg-primary/5 transition-colors cursor-pointer"
     >
       Voir tous les posts <ArrowRight size={12} />
@@ -248,7 +248,7 @@ export function DashboardHomeGrid() {
             label="Posts planifiés"
             value={kpiLoading ? '…' : (allPostsStats?.scheduled ?? 0)}
             icon={<Calendar size={16} />}
-            href="/calendar"
+            href="/calendrier"
             loading={kpiLoading}
           />
           <KpiCard
@@ -292,7 +292,7 @@ export function DashboardHomeGrid() {
           <QuickAction
             icon={<Calendar size={15} />}
             label="Voir le calendrier"
-            href="/calendar"
+            href="/calendrier"
           />
           <QuickAction
             icon={<Inbox size={15} />}

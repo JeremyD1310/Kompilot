@@ -57,7 +57,7 @@ export default function PricingAgencyPage() {
             </Link>
             <Link to="/pricing-pro">
               <Button size="sm" variant="outline" className="text-xs border-border text-foreground hover:bg-white/10">
-                Plan Pro
+                Plan Starter
               </Button>
             </Link>
             <Link to="/dashboard">

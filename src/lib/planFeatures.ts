@@ -46,8 +46,8 @@ export type FeatureKey =
   | 'team_management'   // Team role management (RGPD-safe)
   | 'multi_establish'   // Multi-establishment panel
   // ── Add-on gated (via useAddons, not plan tier) ──
-  | 'creative_premium'  // URL-to-Video mass, advanced AI scripts (+39€/mois)
-  | 'white_label';      // White-label AIO reports, CNAME, custom PDF (+49€/mois)
+  | 'creative_premium'  // URL-to-Video mass et scripts IA avancés selon le périmètre Agency
+  | 'white_label';      // White-label AIO reports, CNAME, custom PDF selon le périmètre Agency
 
 // ── Access matrix ─────────────────────────────────────────────────────────────
 

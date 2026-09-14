@@ -134,7 +134,7 @@ export function QuickSocialPost() {
           </div>
         </div>
         <button
-          onClick={() => navigate({ to: '/calendar' })}
+          onClick={() => navigate({ to: '/calendrier' })}
           className="text-[11px] font-semibold text-violet-500 hover:text-violet-400 transition-colors"
         >
           Calendrier →

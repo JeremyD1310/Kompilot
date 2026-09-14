@@ -33,7 +33,7 @@ function VideoUpgradeDialog({ open, onClose, onUpgrade }: { open: boolean; onClo
             <h3 className="text-lg font-extrabold text-foreground">Boostez votre engagement avec la vidéo !</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               La génération de vidéos par IA est réservée aux membres <span className="font-bold text-primary">Pro</span>.
-              Passez à l'offre Pro pour <span className="font-bold">19€/mois</span>.
+              Passez à l'offre Pro pour <span className="font-bold">69€/mois HT</span>.
             </p>
           </div>
           <div className="w-full space-y-2">
@@ -46,7 +46,7 @@ function VideoUpgradeDialog({ open, onClose, onUpgrade }: { open: boolean; onClo
           </div>
           <Button onClick={onUpgrade} className="w-full gap-2 mt-1">
             <Zap size={14} />
-            Passer à Pro — 19€/mois
+            Passer à Pro — 69€/mois HT
             <ArrowRight size={14} />
           </Button>
           <button onClick={onClose} className="text-xs text-muted-foreground hover:underline">

@@ -11,7 +11,7 @@ const TEMPLATES = [
 export function OnboardingPostTemplates({ sector }: { sector?: string }) {
   const useTemplate = (text: string) => {
     const enriched = sector ? `${text}\n\nSecteur : ${sector}` : text;
-    window.location.assign(`/calendar?prefill=${encodeURIComponent(enriched)}&source=onboarding_template`);
+    window.location.assign(`/calendrier?prefill=${encodeURIComponent(enriched)}&source=onboarding_template`);
   };
 
   return <section className="space-y-4 rounded-2xl border border-teal-200 bg-teal-50/40 p-5 sm:p-6">

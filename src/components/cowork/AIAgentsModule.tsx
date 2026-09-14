@@ -33,7 +33,7 @@ export function AIAgentsModule() {
     subscriptionStatus === 'trialing' ||
     subscriptionStatus === 'none';
   const isAgency = currentPlan.id === 'expert';
-  const addonPrice = isAgency ? '+50€/HT/mois' : '+30€/HT/mois';
+  const addonPrice = isAgency ? 'Inclus dans Agency' : 'Disponible dans Agency';
 
   const [aiOptionActivated, setAiOptionActivated] = useState(false);
   const [qaIsTrialOverride, setQaIsTrialOverride] = useState<boolean | null>(null);

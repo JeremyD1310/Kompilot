@@ -11,10 +11,14 @@ export const KOMPILOT_IDENTITY = {
 } as const;
 
 /** Public commercial facts. Keep this list aligned with the pricing source of truth. */
-export const PUBLIC_PLANS = [
-  { name: 'Starter', monthly: '69 € HT / mois', annual: '759 € HT / an', scope: 'Fonctionnalités de pilotage pour une activité locale, avec périmètre détaillé dans l’espace client et les conditions contractuelles.' },
-  { name: 'Agency', monthly: '149 € HT / mois', annual: '1 639 € HT / an', scope: 'Fonctionnalités pour équipes et agences, avec options de marque blanche et de reporting selon le périmètre souscrit.' },
-] as const;
+import { KOMPILOT_PLANS_MONTHLY } from '../components/landing/pricing/PricingData';
+
+export const PUBLIC_PLANS = KOMPILOT_PLANS_MONTHLY.filter(plan => plan.id !== 'enterprise').map(plan => ({
+  name: plan.name,
+  monthly: `${plan.monthlyPrice} € HT / mois`,
+  annual: `${plan.yearlyTotal} € HT / an`,
+  scope: plan.tagline,
+}));
 
 export const PUBLIC_FEATURES = [
   'Création et planification de contenus sociaux assistées par IA',
@@ -75,7 +79,7 @@ export function createKompilotGraph(path: string, title: string, includeFaq = fa
         name: plan.name,
         description: plan.scope,
         priceCurrency: 'EUR',
-        price: plan.name === 'Starter' ? '69' : '149',
+        price: plan.monthly.replace(/[^0-9]/g, ''),
         url: `${KOMPILOT_IDENTITY.domain}/pricing`,
         availability: 'https://schema.org/InStock',
       })),

@@ -201,7 +201,7 @@ export function buildB2CWelcomeEmail(params: B2CEmailParams): { subject: string;
       <table style="border-collapse:collapse;width:100%;">
         <tr>
           <td style="padding:6px 0;">
-            <a href="${BASE_URL}/calendar" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#0d9488;font-size:13px;font-weight:600;">
+            <a href="${BASE_URL}/calendrier" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#0d9488;font-size:13px;font-weight:600;">
               📅 Planifier mon premier post
             </a>
           </td>
