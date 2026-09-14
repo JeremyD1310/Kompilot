@@ -10,7 +10,6 @@ import { LANDING_CSS } from '../components/landing/LandingPageStyles';
 import { LandingNav } from '../components/landing/LandingNav';
 import { LandingHero } from '../components/landing/LandingHero';
 import { LandingAgencyTab } from '../components/landing/LandingAgencyTab';
-import { LandingTestimonials } from '../components/landing/LandingTestimonials';
 import { LandingFooter } from '../components/landing/LandingFooter';
 import { IntegrationsSection } from '../components/landing/IntegrationsSection';
 import { WaitlistSection } from '../components/landing/WaitlistSection';
@@ -18,6 +17,8 @@ import { DemoCtaBanner } from '../components/landing/DemoCtaBanner';
 import { DemoNotificationEngine } from '../components/layout/DemoNotificationEngine';
 import { captureUtmParams, getUtmSector, track } from '../lib/tracking';
 import { getSectorConfig } from '../components/landing/UTMSectorAdapter';
+import { VisibilityLandingSections } from '../components/landing/VisibilityLandingSections';
+import { usePageSeo } from '../hooks/usePageSeo';
 
 function useScrollReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -34,18 +35,6 @@ function useScrollReveal() {
   return ref;
 }
 
-const COMMERCE_REVIEWS = [
-  { name: 'Sophie R.', role: 'Restauratrice, Lyon', rating: 5, text: "En 3 semaines je suis passée de 12 à 47 avis Google (+292%). L'IA génère des réponses personnalisées en 1 clic — mes clients me complimentent même sur la qualité des réponses !" },
-  { name: 'Marc D.', role: 'Artisan plombier, Bordeaux', rating: 5, text: "Je mettais 3h/semaine sur les réseaux. Maintenant je planifie tout le lundi en 20 minutes. J'ai gagné 4 nouveaux clients en 1 mois grâce à ma visibilité Google améliorée." },
-  { name: 'Amandine L.', role: 'Coach nutritionniste, Paris', rating: 5, text: "En 6 semaines, mon score de visibilité IA est passé de 18 à 74/100. Je suis maintenant citée par ChatGPT quand on cherche 'coach nutrition Paris'. Ça m'a apporté 8 nouveaux clients." },
-];
-
-const AGENCY_REVIEWS = [
-  { name: 'Julien M.', role: 'Directeur Agence Digitale, Paris', rating: 5, text: "Grâce à la marque blanche de Kompilot, mon agence a packagé une offre de visibilité locale et l'a ajoutée à 15 contrats en moins d'un mois. Nos clients adorent les rapports automatisés à notre nom." },
-  { name: 'Sarah K.', role: 'Freelance Marketing Digital', rating: 5, text: "J'ai triplé mon MRR en 3 mois. L'IA génère les posts, optimise le G.E.O. et répond aux avis pour mes 12 clients — en arrière-plan pendant que je me concentre sur la stratégie." },
-  { name: 'Thomas B.', role: 'Fondateur, Agence SEO Local', rating: 5, text: "Le tableau de bord multi-clients et les rapports PDF brandés ont révolutionné notre façon de présenter les résultats. Nos clients perçoivent la valeur immédiatement." },
-];
-
 /** Smooth-scroll to a section id */
 function scrollTo(id: string) {
   const el = document.getElementById(id);
@@ -55,6 +44,11 @@ function scrollTo(id: string) {
 export default function LandingPage() {
   const ref = useScrollReveal();
   const { user } = useAuth();
+  usePageSeo(
+    'Logiciel de visibilité locale et marketing IA | Kompilot',
+    'Centralisez contenus, avis Google, réseaux sociaux, SEO local et visibilité dans les IA avec Kompilot. Essai gratuit pendant 7 jours.',
+    '/',
+  );
   const cta = () => blink.auth.login(window.location.origin + '/dashboard');
 
   // ── UTM / Sector detection ─────────────────────────────────────────────────
@@ -119,8 +113,6 @@ export default function LandingPage() {
     }
   };
 
-  const reviews = audience === 'commerce' ? COMMERCE_REVIEWS : AGENCY_REVIEWS;
-
   return (
     <>
     <PWABanner />
@@ -133,6 +125,8 @@ export default function LandingPage() {
 
       <main>
       <LandingHero onCta={cta} onHeroCta={heroCtaOverride} heroSearch={heroSearch} setHeroSearch={setHeroSearch} audience={audience} />
+
+      <VisibilityLandingSections onCta={cta} />
 
       {/* ── UTM Sector Banner (s'affiche uniquement si utm_sector détecté) ── */}
       {detectedSector && (
@@ -179,8 +173,6 @@ export default function LandingPage() {
           <LandingAgencyTab onCta={cta} />
         </div>
       )}
-
-      <LandingTestimonials reviews={reviews} audience={audience} />
 
       <div id="pricing">
         <PricingSection cta={handlePricingCta} audience={audience} />

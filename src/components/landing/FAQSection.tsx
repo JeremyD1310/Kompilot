@@ -15,44 +15,44 @@ import { Plus, Minus } from 'lucide-react';
 
 const FAQ_ITEMS = [
   {
-    emoji: '⏱️',
-    q: "Je n'ai pas le temps, ça prend combien de minutes par jour ?",
-    a: "Moins de 2 minutes. Votre moteur de croissance fait 95% du travail en arrière-plan : il analyse, rédige et prépare tout. Vous n'avez qu'à valider et aller servir vos clients.",
-  },
-  {
-    emoji: '📊',
-    q: "Comment Kompilot suit-il le ROI de mes actions ?",
-    a: "Chaque euro généré par un coupon, sauvé par un blocage de no-show ou activé par une relance IA est tracé en direct sur votre tableau de bord. Votre première carte affiche votre Chiffre d'Affaires Sécurisé.",
-  },
-  {
-    emoji: '🔒',
-    q: "Est-ce que l'IA peut publier des choses sans mon accord ?",
-    a: "Jamais. Vous gardez le contrôle absolu. Rien n'est publié sur votre fiche Google ou vos réseaux sans que vous n'ayez cliqué sur le bouton de validation. Votre réputation est notre priorité.",
-  },
-  {
-    emoji: '🔔',
-    q: "Puis-je couper les notifications push ?",
-    a: "Oui, à tout moment depuis vos paramètres. Kompilot n'envoie aucune notification inutile — uniquement des alertes à fort enjeu financier : un lead capturé, une relance arrivée à échéance.",
-  },
-  {
-    emoji: '💡',
-    q: "Je ne suis pas à l'aise avec la technologie, est-ce un problème ?",
-    a: "C'est précisément pour cela que Kompilot a été conçu. L'interface est épurée au maximum. Si vous savez envoyer un SMS, vous savez piloter votre croissance avec Kompilot.",
-  },
-  {
-    emoji: '🤖',
-    q: "Qu'est-ce que le Score G.E.O. ?",
-    a: "Le G.E.O. (Generative Engine Optimization) est le référencement de demain. Kompilot analyse si votre commerce est recommandé par ChatGPT, Perplexity ou Gemini — et ajuste vos fiches en continu.",
-  },
-  {
-    emoji: '🏢',
-    q: "Je suis une agence, puis-je l'utiliser en Marque Blanche ?",
-    a: "Absolument. Nos plans Agence vous permettent d'intégrer votre logo et votre domaine. Vos clients se connectent à une interface à vos couleurs, avec rapports PDF personnalisés en un clic.",
+    emoji: '📍',
+    q: "Qu'est-ce qu'un logiciel de visibilité locale ?",
+    a: "Un logiciel de visibilité locale centralise les actions qui aident une entreprise à être trouvée près de ses clients : informations locales, contenus, avis, réseaux sociaux et suivi des performances.",
   },
   {
     emoji: '⭐',
-    q: "Comment fonctionne l'Analyse de Sentiment de mes avis ?",
-    a: "Notre IA scanne sémantiquement vos 100 derniers avis pour extraire vos forces et faiblesses réelles. Elle vous propose des plans d'action immédiats directement depuis votre Cockpit.",
+    q: "Comment répondre aux avis Google avec l'IA ?",
+    a: "Kompilot rassemble vos avis et prépare une réponse adaptée au message et au ton de votre établissement. Vous relisez et validez chaque proposition avant son envoi.",
+  },
+  {
+    emoji: '🔒',
+    q: "Kompilot publie-t-il automatiquement ?",
+    a: "Vous gardez le contrôle. Les contenus, réponses et actions préparés par Kompilot restent soumis à la validation définie par votre équipe avant publication ou envoi.",
+  },
+  {
+    emoji: '🔎',
+    q: "Comment améliorer la visibilité locale de mon entreprise ?",
+    a: "Commencez par maintenir des informations cohérentes, répondre aux avis, publier des contenus utiles et suivre les recherches qui génèrent des visites. Kompilot regroupe ces signaux et aide à prioriser les prochaines actions.",
+  },
+  {
+    emoji: '🤖',
+    q: "Qu'est-ce que le GEO ?",
+    a: "Le GEO, ou Generative Engine Optimization, vise à rendre une organisation et ses contenus plus faciles à comprendre, sélectionner et citer par les moteurs de réponse comme ChatGPT, Gemini ou Perplexity.",
+  },
+  {
+    emoji: '✨',
+    q: "Comment Kompilot aide-t-il à apparaître dans les moteurs IA ?",
+    a: "Kompilot analyse les informations locales, les contenus, les avis et les signaux de marque, puis propose des corrections et sujets à traiter. Aucune plateforme ne peut toutefois garantir une citation par une IA.",
+  },
+  {
+    emoji: '🏢',
+    q: "Kompilot convient-il aux agences et aux entreprises multi-établissements ?",
+    a: "Oui. L'offre Agency est conçue pour piloter plusieurs établissements ou clients, personnaliser les rapports et centraliser les actions depuis une seule interface.",
+  },
+  {
+    emoji: '💬',
+    q: "Quelle différence entre Kompilot et ChatGPT ?",
+    a: "ChatGPT est un assistant généraliste. Kompilot est un cockpit métier qui organise les données, canaux, validations et indicateurs nécessaires au pilotage continu de la visibilité locale.",
   },
 ];
 
