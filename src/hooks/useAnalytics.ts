@@ -9,6 +9,8 @@
  * with your own Google Analytics 4 Measurement ID (e.g. G-XXXXXXXXXX).
  */
 
+import { hasAnalyticsConsent } from '../lib/cookieConsent'
+
 declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void
@@ -18,6 +20,7 @@ declare global {
 
 function gtag(...args: unknown[]) {
   if (typeof window === 'undefined') return
+  if (!hasAnalyticsConsent()) return
   window.dataLayer = window.dataLayer || []
   if (typeof window.gtag === 'function') {
     window.gtag(...args)

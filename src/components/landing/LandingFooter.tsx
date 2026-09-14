@@ -11,6 +11,10 @@ export function LandingFooter() {
           <div style={{ display:'flex',alignItems:'center',gap:10 }}><KompilotLogo variant="full" height={28} textColor="#E2E8F0" /></div>
           <nav style={{ display:'flex',flexWrap:'wrap',gap:'8px 28px',alignItems:'center' }}>
             {[
+              {to:'/features',label:'Fonctionnalités'},
+              {to:'/local',label:'Marketing local'},
+              {to:'/temoignages',label:'Témoignages'},
+              {to:'/faq',label:'FAQ'},
               {to:'/pricing',label:'Tarifs'},
               {to:'/cgv',label:'CGV / CGU'},
               {to:'/confidentialite',label:'Confidentialité & RGPD'},

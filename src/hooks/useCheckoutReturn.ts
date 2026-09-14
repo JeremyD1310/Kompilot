@@ -10,6 +10,7 @@ import { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from '@blinkdotnew/ui';
 import { useSubscription } from '../context/SubscriptionContext';
+import { trackEvent } from './useAnalytics';
 
 export function useCheckoutReturn() {
   const { refreshBillingStatus } = useSubscription();
@@ -37,6 +38,11 @@ export function useCheckoutReturn() {
     if (checkoutType !== 'success') return;
 
     const planLabel = params.get('plan') === 'expert' ? 'Expert' : 'Pro';
+    trackEvent('purchase', {
+      plan: params.get('plan') || 'pro',
+      transaction_id: params.get('session_id') || undefined,
+      currency: 'EUR',
+    });
 
     // Refresh billing status so the plan syncs from Stripe → DB → context
     refreshBillingStatus().then(() => {

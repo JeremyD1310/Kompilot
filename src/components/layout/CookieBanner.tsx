@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ShieldCheck, Settings2, X } from 'lucide-react';
-
-const STORAGE_KEY = 'kompilot_cookie_consent';
+import { COOKIE_CONSENT_KEY, COOKIE_PREFS_KEY, notifyConsentChanged } from '../../lib/cookieConsent';
 
 type ConsentState = 'accepted' | 'declined' | 'custom' | null;
 
@@ -103,7 +102,7 @@ export function CookieBanner() {
   const [showCustomize, setShowCustomize] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem(STORAGE_KEY);
+    const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!consent) {
       const t = setTimeout(() => setVisible(true), 1200);
       return () => clearTimeout(t);
@@ -113,7 +112,9 @@ export function CookieBanner() {
   const dismiss = (state: ConsentState) => {
     setHiding(true);
     setTimeout(() => {
-      localStorage.setItem(STORAGE_KEY, state ?? 'declined');
+      localStorage.setItem(COOKIE_CONSENT_KEY, state ?? 'declined');
+      if (state !== 'custom') localStorage.removeItem(COOKIE_PREFS_KEY);
+      notifyConsentChanged();
       setVisible(false);
       setHiding(false);
     }, 350);
@@ -123,8 +124,8 @@ export function CookieBanner() {
   const decline = () => dismiss('declined');
 
   const handleCustomSave = (prefs: Record<string, boolean>) => {
-    localStorage.setItem(STORAGE_KEY, 'custom');
-    localStorage.setItem('kompilot_cookie_prefs', JSON.stringify(prefs));
+    localStorage.setItem(COOKIE_CONSENT_KEY, 'custom');
+    localStorage.setItem(COOKIE_PREFS_KEY, JSON.stringify(prefs));
     setShowCustomize(false);
     dismiss('custom');
   };
