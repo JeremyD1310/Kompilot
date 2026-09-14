@@ -21,7 +21,7 @@ export default function PostDetailPage() {
   const when = useMemo(() => currentPost?.date ? new Date(`${currentPost.date}T${currentPost.time || '09:00'}`) : null, [currentPost]);
 
   if (!currentPost) {
-    return <Page><PageBody><Button variant="ghost" onClick={() => navigate({ to: '/calendar' })}><ArrowLeft size={16} /> Retour au calendrier</Button><div className="mt-12 text-center text-muted-foreground">Publication introuvable.</div></PageBody></Page>;
+    return <Page><PageBody><Button variant="ghost" onClick={() => navigate({ to: '/calendrier' })}><ArrowLeft size={16} /> Retour au calendrier</Button><div className="mt-12 text-center text-muted-foreground">Publication introuvable.</div></PageBody></Page>;
   }
 
   const save = () => {
@@ -34,7 +34,7 @@ export default function PostDetailPage() {
   const removePost = () => {
     remove(currentPost.id);
     toast.success('Publication supprimée');
-    navigate({ to: '/calendar' });
+    navigate({ to: '/calendrier' });
   };
 
   const publish = () => {
@@ -47,7 +47,7 @@ export default function PostDetailPage() {
     <Page className="page-enter">
       <PageHeader>
         <div>
-          <Button variant="ghost" size="sm" onClick={() => navigate({ to: '/calendar' })} className="mb-2 gap-2"><ArrowLeft size={15} /> Calendrier</Button>
+          <Button variant="ghost" size="sm" onClick={() => navigate({ to: '/calendrier' })} className="mb-2 gap-2"><ArrowLeft size={15} /> Calendrier</Button>
           <PageTitle>Détail de la publication</PageTitle>
         </div>
         <div className="flex flex-wrap gap-2">

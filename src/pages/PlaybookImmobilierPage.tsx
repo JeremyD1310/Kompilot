@@ -73,7 +73,7 @@ const WEEKS: Week[] = [
         title: 'Configurez votre calendrier',
         action: '4 posts/semaine : biens récents, quartiers, conseils achat',
         kompilotFeature: 'Campaign Calendar',
-        featureLink: '/calendar',
+        featureLink: '/calendrier',
         expectedResult: '8 posts planifiés pour le mois',
       },
       {

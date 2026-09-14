@@ -336,7 +336,7 @@ export function CockpitDashboard({ onPromptSubmit, onOpenCreatePost }: CockpitDa
                   subtext="à venir"
                   icon={MessageSquare}
                   color="#34D399"
-                  onClick={() => navigate({ to: '/calendar' })}
+                  onClick={() => navigate({ to: '/calendrier' })}
                 />
               </div>
 

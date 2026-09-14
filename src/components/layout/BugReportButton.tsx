@@ -68,7 +68,7 @@ export function getBugReports(): Array<{ id: string; snapshot: BugSnapshot; user
 
 const PATH_LABELS: Record<string, string> = {
   '/dashboard': 'Tableau de bord',
-  '/calendar': 'Calendrier éditorial',
+  '/calendrier': 'Calendrier éditorial',
   '/inbox': 'Boîte de réception',
   '/cockpit': 'Cockpit IA',
   '/performance': 'Performance & Avis',

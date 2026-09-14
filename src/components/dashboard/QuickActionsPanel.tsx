@@ -72,8 +72,8 @@ export function QuickActionsPanel() {
             />
             <ActionButton 
               icon={<CalendarIcon />} 
-              label="Voir le calendrier" 
-              onClick={() => navigate({ to: '/calendar' })} 
+              label="Voir le calendrier"
+              onClick={() => navigate({ to: '/calendrier' })}
             />
           </>
         );
@@ -141,8 +141,8 @@ export function QuickActionsPanel() {
             />
             <ActionButton 
               icon={<CalendarIcon />} 
-              label="Relances contrats" 
-              onClick={() => navigate({ to: '/calendar' })} 
+              label="Relances contrats"
+              onClick={() => navigate({ to: '/calendrier' })}
             />
             <ActionButton 
               icon={<Download />} 

@@ -393,7 +393,7 @@ export function AgentContentFactory({ quota }: AgentContentFactoryProps) {
                 </div>
               )}
               <button
-                onClick={() => window.location.href = '/calendar'}
+                onClick={() => window.location.href = '/calendrier'}
                 className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold bg-slate-700/40 border border-slate-600/40 text-slate-300 hover:bg-slate-700/60 transition-all"
               >
                 <Calendar size={13} /> Voir le Calendrier Éditorial →

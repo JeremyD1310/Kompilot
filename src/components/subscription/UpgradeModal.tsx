@@ -9,7 +9,7 @@ interface UpgradeModalProps {
   onClose: () => void;
   title?: string;
   description?: string;
-  targetPlan?: 'pro' | 'expert';
+  targetPlan?: 'starter' | 'agency';
   /** Special mode: shows Stories-specific messaging */
   storiesPaywall?: boolean;
 }
@@ -19,19 +19,19 @@ export function UpgradeModal({
   onClose,
   title,
   description,
-  targetPlan = 'pro',
+  targetPlan = 'starter',
   storiesPaywall = false,
 }: UpgradeModalProps) {
   const { setPlan } = useSubscription();
   const [paymentOpen, setPaymentOpen] = useState(false);
 
   const plan = PLANS.find(p => p.id === targetPlan)!;
-  const planLabel = targetPlan === 'pro' ? 'Pro — 19€/mois' : 'Expert — 39€/mois';
+  const planLabel = targetPlan === 'starter' ? 'Pro — 69€/mois HT' : 'Agency — 149€/mois HT';
 
   // Stories paywall overrides defaults
   const modalTitle = storiesPaywall ? '🔒 Fonctionnalité Premium' : (title ?? 'Limite atteinte');
   const modalDesc  = storiesPaywall
-    ? "Boostez votre engagement avec les Stories Instagram & Facebook en passant à l'offre Expert à 39€/mois !"
+    ? "Boostez votre engagement avec les Stories Instagram & Facebook en passant à l'offre Agency à 149€/mois HT !"
     : (description ?? undefined);
 
   const handleCheckoutOpened = () => {
@@ -70,9 +70,9 @@ export function UpgradeModal({
               : 'bg-primary/5 border-primary/20'
           }`}>
             <p className={`text-xs font-semibold uppercase tracking-wide ${
-              storiesPaywall || targetPlan === 'expert' ? 'text-violet-600' : 'text-primary'
+              storiesPaywall || targetPlan === 'agency' ? 'text-violet-600' : 'text-primary'
             }`}>
-              Offre {targetPlan === 'pro' ? 'Pro — 19€/mois' : 'Expert — 39€/mois'}
+              Offre {targetPlan === 'starter' ? 'Pro — 69€/mois HT' : 'Agency — 149€/mois HT'}
             </p>
 
             {storiesPaywall ? (
@@ -83,10 +83,10 @@ export function UpgradeModal({
                 <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Réseaux illimités</li>
                 <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Rapports PDF & multi-utilisateurs</li>
               </ul>
-            ) : targetPlan === 'pro' ? (
+            ) : targetPlan === 'starter' ? (
               <ul className="space-y-1 text-sm text-foreground">
-                <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> 15 posts par mois</li>
-                <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Jusqu'à 3 réseaux sociaux</li>
+                <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Pilotage de présence locale</li>
+                <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Calendrier éditorial</li>
                 <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Boîte de réception unifiée</li>
                 <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Génération de contenu par IA</li>
               </ul>
@@ -104,7 +104,7 @@ export function UpgradeModal({
             <Button
               onClick={() => setPaymentOpen(true)}
               className={`w-full gap-2 text-base py-5 ${
-                storiesPaywall || targetPlan === 'expert'
+                storiesPaywall || targetPlan === 'agency'
                   ? 'bg-gradient-to-r from-violet-600 to-purple-500 hover:from-violet-700 hover:to-purple-600 border-0'
                   : ''
               }`}

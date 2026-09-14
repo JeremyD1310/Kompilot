@@ -39,7 +39,7 @@ const INVOICES: Invoice[] = [
   { id: 'NC-2026-04-001', date: '01 avr. 2026',   plan: 'Offre Business', htEur: 89,   tvaEur: 17.80, ttcEur: 106.80, status: 'paid', periodStart: '01/04/2026', periodEnd: '30/04/2026' },
   { id: 'NC-2026-03-001', date: '01 mars 2026',   plan: 'Offre Pro',      htEur: 49,   tvaEur: 9.80,  ttcEur: 58.80,  status: 'paid', periodStart: '01/03/2026', periodEnd: '31/03/2026' },
   { id: 'NC-2026-02-001', date: '01 févr. 2026',  plan: 'Offre Pro',      htEur: 49,   tvaEur: 9.80,  ttcEur: 58.80,  status: 'paid', periodStart: '01/02/2026', periodEnd: '28/02/2026' },
-  { id: 'NC-2026-01-001', date: '01 janv. 2026',  plan: 'Offre Starter',  htEur: 29,   tvaEur: 5.80,  ttcEur: 34.80,  status: 'paid', periodStart: '01/01/2026', periodEnd: '31/01/2026' },
+  { id: 'NC-2026-01-001', date: '01 janv. 2026',  plan: 'Offre Pro',  htEur: 69,   tvaEur: 13.80,  ttcEur: 82.80,  status: 'paid', periodStart: '01/01/2026', periodEnd: '31/01/2026' },
 ];
 
 // ── Ligne de facture ──────────────────────────────────────────────────────────

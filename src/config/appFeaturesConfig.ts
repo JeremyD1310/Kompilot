@@ -71,14 +71,14 @@ export const APP_FEATURES: AppFeature[] = [
   {
     id: 'caissier',
     title: 'Validation Coupon en Caisse',
-    route: '/caissier',
+    route: '/caisse',
     onboarding: {
       tourSteps: [
         { targetAnchor: 'data-tour="caisse-input"', title: 'Validation Instantanée', content: 'Entrez ou scannez le code coupon. Le CA Copilote se met à jour en temps réel.' },
       ],
       helpVideoUrl: '',
       faqItems: [
-        { question: 'Comment valider un coupon IA en caisse ?', answer: 'Entrez le code généré par Kompilot dans l\'interface /caissier. Chaque validation incrémente votre CA Copilote en direct.' },
+        { question: 'Comment valider un coupon IA en caisse ?', answer: 'Entrez le code généré par Kompilot dans l\'interface /caisse. Chaque validation incrémente votre CA Copilote en direct.' },
       ],
     },
   },

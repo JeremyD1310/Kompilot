@@ -20,7 +20,7 @@ export function isDemoDomain(): boolean {
 }
 
 /** Returns true for the public demo flow, including protected-looking paths
- * reached after the demo CTA. The session marker keeps /calendar and /social
+ * reached after the demo CTA. The session marker keeps /calendrier and /social
  * local-only after a full navigation from /demo/dashboard. */
 export function isDemoRuntime(): boolean {
   if (typeof window === 'undefined') return false;
@@ -49,6 +49,8 @@ export const DEMO_STORAGE_KEYS = [
   'kompilot_switcher_unlocked',
   'kompilot_demo_sector',
   'kompilot_demo_credits_v1',
+  'kompilot_demo_approval_statuses_v1',
+  'kompilot_demo_selection_v1',
   'kompilot_demo_start_v1',
   'kompilot_demo_onboarding_v1',
   'kompilot_plan',

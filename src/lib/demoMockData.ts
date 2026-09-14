@@ -98,7 +98,7 @@ export const MOCK_CREDIT_TRANSACTIONS = [
 
 export const MOCK_NOTIFICATIONS = [
   { id: 'notif-1', userId: 'demo-user-kompilot-test', title: 'Nouvel avis Google', body: 'Thomas R. a laissé un avis 5 étoiles sur votre fiche Google.', type: 'review', url: '/reviews', status: 'sent', createdAt: '2026-07-17T10:00:00.000Z' },
-  { id: 'notif-2', userId: 'demo-user-kompilot-test', title: 'Publication réussie', body: 'Votre post "Plat du jour" a été publié sur Instagram avec succès.', type: 'post', url: '/calendar', status: 'sent', createdAt: '2026-07-15T10:05:00.000Z' },
+  { id: 'notif-2', userId: 'demo-user-kompilot-test', title: 'Publication réussie', body: 'Votre post "Plat du jour" a été publié sur Instagram avec succès.', type: 'post', url: '/calendrier', status: 'sent', createdAt: '2026-07-15T10:05:00.000Z' },
   { id: 'notif-3', userId: 'demo-user-kompilot-test', title: 'Score GEO en hausse', body: 'Votre score de visibilité locale est passé de 64 à 78 (+22%).', type: 'geo', url: '/geo', status: 'sent', createdAt: '2026-07-14T08:00:00.000Z' },
 ];
 

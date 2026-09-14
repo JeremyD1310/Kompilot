@@ -26,6 +26,7 @@ export interface DemoPublication {
   id: string;
   title: string;
   channel: 'Instagram' | 'Facebook' | 'LinkedIn';
+  channels?: string[];
   status: 'draft' | 'scheduled' | 'published';
   scheduledAt: string;
 }
@@ -36,6 +37,7 @@ export interface DemoReview {
   rating: number;
   text: string;
   replied: boolean;
+  replyText?: string;
 }
 
 export interface DemoMessage {
@@ -44,6 +46,7 @@ export interface DemoMessage {
   subject: string;
   preview: string;
   read: boolean;
+  responseText?: string;
 }
 
 export interface DemoValidation {
@@ -127,8 +130,8 @@ export function createDemoData(persona: DemoPersona): DemoData {
       { id: `demo-publication-${persona}-1`, title: 'Idée locale de saison', channel: 'Instagram', status: 'published', scheduledAt: '2026-09-18T09:00:00.000Z' },
       { id: `demo-publication-${persona}-2`, title: 'Conseil utile pour nos clients', channel: 'LinkedIn', status: 'scheduled', scheduledAt: '2026-09-21T11:30:00.000Z' },
     ],
-    reviews: [{ id: `demo-review-${persona}-1`, author: 'Camille B.', rating: 5, text: 'Une expérience fictive, claire et agréable.', replied: false }],
-    messages: [{ id: `demo-message-${persona}-1`, sender: 'Sophie Martin', subject: 'Question sur votre activité', preview: 'Message de démonstration sans destinataire réel.', read: false }],
+    reviews: [{ id: `demo-review-${persona}-1`, author: 'Camille B.', rating: 5, text: 'Une expérience fictive, claire et agréable.', replied: false, replyText: '' }],
+    messages: [{ id: `demo-message-${persona}-1`, sender: 'Sophie Martin', subject: 'Question sur votre activité', preview: 'Message de démonstration sans destinataire réel.', read: false, responseText: '' }],
     validations: [{ id: `demo-validation-${persona}-1`, title: 'Réponse locale à relire', status: 'pending' }],
     calendar: [{ id: `demo-event-${persona}-1`, title: 'Publication simulée', date: '2026-09-21', channel: 'Instagram' }],
     statistics: { reach: persona === 'agency' ? 12800 : 4350, engagementRate: persona === 'agency' ? 7.4 : 6.8, postsPublished: 7, leads: persona === 'multi_location' ? 38 : 12 },
