@@ -227,7 +227,7 @@ export function buildCriticalDropEmail(p: AlertEmailParams): {
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
       <tr>
         <td style="padding:0 8px 0 0;">
-          <a href="${BASE_URL}/calendar"
+          <a href="${BASE_URL}/calendrier"
              style="display:inline-block;background:${TEAL};color:#fff;font-size:13px;
                     font-weight:700;text-decoration:none;padding:11px 20px;border-radius:8px;">
             📅 Publier maintenant
@@ -262,7 +262,7 @@ KPIs actuels :
 • Publications : ${snap.posts}/12
 
 ${aiSummary ? `Analyse IA :\n${aiSummary}\n\n` : ''}Actions recommandées :
-→ Publier un post maintenant : ${BASE_URL}/calendar
+→ Publier un post maintenant : ${BASE_URL}/calendrier
 → Voir les stats complètes : ${BASE_URL}/performance
 
 Publiez 2–3 fois cette semaine pour inverser la tendance.

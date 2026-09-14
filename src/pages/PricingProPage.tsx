@@ -1,5 +1,5 @@
 /**
- * PricingProPage — Page publique /pricing-pro
+ * PricingProPage — alias public /pricing-pro conservé pour les anciens liens
  * Affiche UNIQUEMENT la carte Pro (69€ HT/mois), centrée élégamment.
  */
 

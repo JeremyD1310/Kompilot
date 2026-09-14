@@ -1,7 +1,7 @@
 /**
  * DemoDomainBanner — Persistent banner shown on demo.kompilot.fr
  * Appears at the top of the dashboard to indicate demo mode.
- * All features are unlocked — this is just a visual indicator.
+ * Demo actions remain local and are never sent to connected services.
  */
 import { useState } from 'react';
 import { X, Zap, Shield, ExternalLink } from 'lucide-react';
@@ -24,7 +24,7 @@ export function DemoDomainBanner() {
     >
       <Zap size={14} className="shrink-0" />
       <span>
-        Mode Démo — Toutes les fonctionnalités sont débloquées
+        Mode démonstration — actions locales, validation humaine requise
       </span>
       <span className="hidden sm:inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-teal-500/20 border border-teal-500/30">
         <Shield size={10} />

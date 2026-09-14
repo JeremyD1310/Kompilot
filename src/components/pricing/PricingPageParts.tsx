@@ -1,11 +1,11 @@
 /**
  * PricingPageParts — Composants de la page /pricing
  *
- * Grille 3 plans uniquement (anciens plans free/pro 39€/expert 59€/franchise supprimés) :
- *   Pro (69€) · Agency (149€, phare) · Enterprise (devis)
+ * Grille tarifaire unifiée à 3 offres :
+ *   Starter (69€) · Agency (149€, phare) · Enterprise (devis)
  *
  * Les boutons Starter → planId='starter', Agency → planId='agency'
- * qui correspondent à PRICE_STARTER_ID et PRICE_AGENCY_ID côté Stripe backend.
+ * qui correspondent aux identifiants canoniques Starter et Agency côté Stripe backend.
  */
 
 import { useState } from 'react';

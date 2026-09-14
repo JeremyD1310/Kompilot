@@ -138,7 +138,7 @@ export function UGCScriptPanel({ initialTopic, initialKeywords, onSchedule }: UG
     const params = new URLSearchParams();
     params.set('prefill', s.fullScript);
     params.set('source', 'ugc_script');
-    navigate({ to: `/calendar?${params.toString()}` });
+    navigate({ to: `/calendrier?${params.toString()}` });
     toast.success('Redirection vers le calendrier…');
   }, [onSchedule, navigate]);
 

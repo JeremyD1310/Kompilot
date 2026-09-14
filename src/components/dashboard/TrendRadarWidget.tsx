@@ -114,7 +114,7 @@ export function TrendRadarWidget({ onOpenStoryCreator }: TrendRadarWidgetProps) 
               </p>
               <Link to="/subscription">
                 <Button size="sm" className="gap-1.5 text-xs font-bold">
-                  Passer à Pro — 19€/mois
+                  Passer à Pro — 69€/mois HT
                 </Button>
               </Link>
             </div>

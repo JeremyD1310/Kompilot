@@ -140,7 +140,7 @@ export function AgentAdSpy({ quota }: AgentAdSpyProps) {
     { type: 'angle', label: 'Angle', content: 'Concurrents misent sur "expertise locale" — différenciez avec preuves sociales chiffrées (avis clients).', impact: 'high' },
     { type: 'gap', label: 'Gap', content: 'Absence de contenu vidéo court format — opportunité TikTok/Reels à forte visibilité.', impact: 'high' },
     { type: 'hook', label: 'Hook', content: '"Ce que les autres salons ne vous disent pas sur votre colorisation…" → intrigue + curiosité.', impact: 'medium' },
-    { type: 'counter', label: 'Contre-offre', content: 'Offre découverte 30€ vs concurrent à 45€ — capturez les indécis avec garantie satisfaction.', impact: 'medium' },
+    { type: 'counter', label: 'Contre-offre', content: 'Offre découverte face aux concurrents — comparez le positionnement sans promesse de résultat.', impact: 'medium' },
   ];
 
   const handleAnalyze = useCallback(async () => {

@@ -1,8 +1,8 @@
 /**
  * PricingData — Source unique de vérité pour la grille tarifaire Kompilot.
  *
- * 3 forfaits (anciens 49€/99€/299€/599€ supprimés définitivement) :
- *   • Starter   — 69 € HT/mois  → planId = 'starter'
+ * 3 offres canoniques :
+ *   • Pro       — 69 € HT/mois  → planId = 'starter' (identifiant historique conservé)
  *   • Agency    — 149 € HT/mois → planId = 'agency'   (formule phare)
  *   • Enterprise — Sur devis    → planId = 'enterprise'
  *
@@ -28,7 +28,7 @@ export interface KompilotPlan {
   yearlyTotal: number | null;
   /** Price label shown on card (depends on billing toggle) */
   priceLabel: string;
-  /** Sub-label under the price ("Facturé 759€ / an") */
+  /** Sub-label under the price (annual billing note) */
   billingNote: string;
   period: string;
   popular: boolean;
@@ -49,13 +49,12 @@ export interface KompilotPlan {
  * Backend env mapping (to be set in Blink backend secrets):
  *
  * PRICE_STARTER_MONTHLY_ID  → price_xxx  (69 € HT / month, currency: eur)
- * PRICE_STARTER_YEARLY_ID   → price_xxx  (759 € HT / year, currency: eur)
+ * PRICE_STARTER_YEARLY_ID   → price_xxx  (annual Starter price, currency: eur)
  * PRICE_AGENCY_MONTHLY_ID   → price_xxx  (149 € HT / month, currency: eur)
- * PRICE_AGENCY_YEARLY_ID    → price_xxx  (1639 € HT / year, currency: eur)
+ * PRICE_AGENCY_YEARLY_ID    → price_xxx  (annual Agency price, currency: eur)
  *
- * Legacy aliases still supported:
- *   PRICE_STARTER_ID → PRICE_STARTER_MONTHLY_ID
- *   PRICE_AGENCY_ID  → PRICE_AGENCY_MONTHLY_ID
+ * No legacy public offer IDs are exposed here; backend aliases may remain internal
+ * while existing subscriptions are migrated to the canonical catalogue.
  */
 
 /** Stripe creation specs — used by the init script, referenced in webhook config */
@@ -72,15 +71,14 @@ export const STRIPE_PRICING_SPECS = {
 
 // ── Price labels (computed once, used by UI) ──────────────────────────────────
 
-/** Starter: 69€/mois → annuel = 759€ → 759/11 = ~69€ (lissé) */
+/** Canonical monthly prices; annual billing is represented as a product label. */
 const STARTER_MONTHLY = 69;
-const STARTER_YEARLY_TOTAL = 759;    // 11 × 69 = 759€
-const STARTER_YEARLY_MONTHLY = 69;   // 759 / 11 ≈ 69 (affichage lissé)
+const STARTER_YEARLY_TOTAL = 69 * 11;
+const STARTER_YEARLY_MONTHLY = 69;
 
-/** Agency: 149€/mois → annuel = 1639€ → 1639/11 = ~149€ (lissé) */
 const AGENCY_MONTHLY = 149;
-const AGENCY_YEARLY_TOTAL = 1639;    // 11 × 149 = 1639€
-const AGENCY_YEARLY_MONTHLY = 149;   // 1639 / 11 ≈ 149 (affichage lissé)
+const AGENCY_YEARLY_TOTAL = 149 * 11;
+const AGENCY_YEARLY_MONTHLY = 149;
 
 // ── Plan builder ──────────────────────────────────────────────────────────────
 
@@ -91,15 +89,15 @@ function buildPlans(billing: BillingInterval): KompilotPlan[] {
     // ── Starter ─────────────────────────────────────────────────────────────
     {
       id: 'starter',
-      name: 'Starter',
+      name: 'Pro',
       tagline: "L'essentiel pour les consultants solos, freelances et commerçants qui automatisent leur présence.",
       monthlyPrice: STARTER_MONTHLY,
       yearlyTotal: STARTER_YEARLY_TOTAL,
       priceLabel: isYearly ? String(STARTER_YEARLY_MONTHLY) : String(STARTER_MONTHLY),
-      billingNote: isYearly ? `Facturé ${STARTER_YEARLY_TOTAL}€ / an` : '',
+      billingNote: isYearly ? 'Facturation annuelle · 1 mois offert' : '',
       period: '€ HT / mois',
       popular: false,
-      ctaLabel: 'Commencer avec Starter',
+      ctaLabel: 'Commencer avec Pro',
       highlightColor: '#0D9488',
       metadata: { plan: 'starter', billing },
       features: [
@@ -123,7 +121,7 @@ function buildPlans(billing: BillingInterval): KompilotPlan[] {
       monthlyPrice: AGENCY_MONTHLY,
       yearlyTotal: AGENCY_YEARLY_TOTAL,
       priceLabel: isYearly ? String(AGENCY_YEARLY_MONTHLY) : String(AGENCY_MONTHLY),
-      billingNote: isYearly ? `Facturé ${AGENCY_YEARLY_TOTAL}€ / an` : '',
+      billingNote: isYearly ? 'Facturation annuelle · 1 mois offert' : '',
       period: '€ HT / mois',
       popular: true,
       ctaLabel: 'Choisir Agency',

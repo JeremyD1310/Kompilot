@@ -55,7 +55,7 @@ export function ReportsTab() {
             </div>
           </div>
           <Button className="w-full max-w-xs h-12 text-lg font-bold" onClick={() => toast.info('Redirection vers la page d\'abonnement')}>
-            Passer à Expert — 39€/mois
+            Passer à Agency — 149€/mois HT
           </Button>
         </CardContent>
       </Card>

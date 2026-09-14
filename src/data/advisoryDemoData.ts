@@ -19,7 +19,7 @@ export const ADVISORY_DEMO_REPORT: AdvisoryReport = {
       summary: 'Les Reels génèrent 2,4× plus d’engagement que les posts statiques, mais la cadence est irrégulière.',
       signals: ['Engagement moyen : 6,8%', 'Meilleur format : vidéo courte', 'Dernière publication : il y a 5 jours'],
       actions: [
-        { id: 'social-1', title: 'Planifier 3 Reels locaux cette semaine', detail: 'Décliner vos avis clients en vidéos de 15 secondes avec un appel à la réservation.', impact: 'high', effort: 'low', href: '/calendar' },
+        { id: 'social-1', title: 'Planifier 3 Reels locaux cette semaine', detail: 'Décliner vos avis clients en vidéos de 15 secondes avec un appel à la réservation.', impact: 'high', effort: 'low', href: '/calendrier' },
         { id: 'social-2', title: 'Répondre aux commentaires sous 2 heures', detail: 'Votre taux de réponse est inférieur à celui des acteurs les mieux classés dans votre ville.', impact: 'medium', effort: 'low', href: '/inbox' },
       ],
     },

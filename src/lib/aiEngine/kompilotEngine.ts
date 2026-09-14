@@ -243,10 +243,10 @@ export function getIssueLabel(issue: string | null): string {
 export function getActionRoute(actionId: string | null): string | null {
   const routes: Record<string, string> = {
     trigger_seo_brief: '/seo-local',
-    reschedule_post: '/calendar',
+    reschedule_post: '/calendrier',
     refresh_creative: '/cockpit',
     activate_copilot: '/dashboard',
-    schedule_optimal: '/calendar',
+    schedule_optimal: '/calendrier',
   };
   return actionId ? (routes[actionId] ?? null) : null;
 }

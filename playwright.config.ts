@@ -44,10 +44,10 @@ export default defineConfig({
   },
 
   projects: [
-    {
-      name: 'Chromium (Desktop)',
-      use: { ...devices['Desktop Chrome'] },
-    },
+    { name: 'Chromium (Desktop)', use: { ...devices['Desktop Chrome'] } },
+    { name: 'Width 375', use: { ...devices['Desktop Chrome'], viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true } },
+    { name: 'Width 390', use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } },
+    { name: 'Width 768', use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 }, isMobile: false, hasTouch: true } },
   ],
 
   // Re-use the already-running Vite dev server (port 3000)

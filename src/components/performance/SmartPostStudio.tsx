@@ -88,7 +88,7 @@ function PostCard({ variant, topPlatform }: { variant: PostVariant; topPlatform:
       hashtags: variant.hashtags.join(' '),
       platform: variant.platform,
     });
-    window.location.href = `/calendar?${params.toString()}`;
+    window.location.href = `/calendrier?${params.toString()}`;
   };
 
   return (
@@ -438,7 +438,7 @@ export function SmartPostStudio({ performanceContext, prefillIdea = '' }: SmartP
                 className="px-5 py-4 border-t border-border bg-muted/20 flex items-center gap-3 flex-wrap"
               >
                 <a
-                  href="/calendar"
+                  href="/calendrier"
                   className="flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-primary to-violet-500 rounded-lg px-3 py-1.5 hover:opacity-90 transition-all shadow-sm"
                 >
                   <Calendar size={11} /> Aller au calendrier <ArrowRight size={10} />

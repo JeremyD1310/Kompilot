@@ -10,7 +10,7 @@ import { isFirebaseConfigured } from '../firebase/client';
 const PAGE_NAMES: Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/cockpit': 'Cockpit IA',
-  '/calendar': 'Calendrier',
+  '/calendrier': 'Calendrier',
   '/inbox': 'Boîte de réception',
   '/performance': 'Performance & Avis',
   '/google-maps': 'Google Maps',

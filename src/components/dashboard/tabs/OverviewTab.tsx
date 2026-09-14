@@ -141,7 +141,7 @@ export function WeekPlanningTable() {
             <span className="rounded-full bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5">{allUpcoming.length}</span>
           )}
         </div>
-        <Link to="/calendar" className="flex items-center gap-1 text-[11px] font-medium text-primary hover:underline">
+        <Link to="/calendrier" className="flex items-center gap-1 text-[11px] font-medium text-primary hover:underline">
           Calendrier complet <ChevronRight size={11} />
         </Link>
       </div>
@@ -150,7 +150,7 @@ export function WeekPlanningTable() {
         <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
           <CalendarDays size={24} className="text-muted-foreground/30" />
           <p className="text-xs text-muted-foreground">Aucun post planifié</p>
-          <Link to="/calendar" className="flex items-center gap-1 text-[11px] text-primary hover:underline hover:gap-1.5 transition-all">
+          <Link to="/calendrier" className="flex items-center gap-1 text-[11px] text-primary hover:underline hover:gap-1.5 transition-all">
             Planifier sur le calendrier <ArrowRight size={11} />
           </Link>
         </div>

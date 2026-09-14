@@ -43,7 +43,7 @@ export function ROICalculatorSection() {
   const [noShows, setNoShows] = useState(8);
   const [basket, setBasket] = useState(65);
 
-  const plan = 99; // Pro Commerce monthly cost
+  const plan = 69; // Starter monthly cost (canonical Kompilot offer)
 
   const result = useMemo(() => {
     const recovered = noShows * basket;                     // revenue recovered from no-shows
@@ -100,7 +100,7 @@ export function ROICalculatorSection() {
               borderRadius: 12, padding: '12px 16px',
             }}>
               <span style={{ fontSize: '.75rem', color: '#2DD4BF', fontWeight: 600, lineHeight: 1.5 }}>
-                Plan Pro Commerce = {plan} €/mois — Coût pris en compte dans le calcul.
+                Plan Starter = {plan} €/mois — Coût pris en compte dans le calcul.
               </span>
             </div>
           </div>
