@@ -269,7 +269,7 @@ export const AGENCY_STEPS: GuideStep[] = [
     interactive: StepAgencyPricing,
     keywords: ['tarifs', 'grille', 'offres', 'plans', 'prix'],
     tips: [
-      'Plan recommandé : Starter, Agency ou Enterprise selon votre périmètre',
+      'Plan recommandé : Pro, Agency ou Enterprise selon votre périmètre',
       'Starter 69€ HT/mois · Agency 149€ HT/mois · Enterprise sur devis',
       'Présentez clairement le périmètre et les conditions de chaque offre',
     ],

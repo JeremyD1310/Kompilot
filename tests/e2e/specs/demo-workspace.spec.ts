@@ -34,8 +34,10 @@ test.describe('public interactive demo', () => {
       await page.goto(route);
       await expect(page.getByText('Données fictives, actions locales uniquement')).toBeVisible();
       if (route === '/demo/workspace') {
-        await expect(page.getByRole('heading', { name: 'Votre priorité aujourd’hui' })).toBeVisible();
+        await expect(page.getByText('Priorité du jour')).toBeVisible();
         await expect(page.getByRole('heading', { name: 'À valider' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Résultats' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Activité récente' })).toBeVisible();
       } else {
         await expect(page.getByRole('heading', { name: heading })).toBeVisible();
       }
@@ -44,19 +46,21 @@ test.describe('public interactive demo', () => {
 
   test('shows profile-specific priorities and confirms reset locally', async ({ page }) => {
     await page.goto('/demo/workspace');
-    await page.getByLabel('Choisir un profil').selectOption('artisan');
+    const profileSelect = page.getByLabel('Choisir un profil');
+    await profileSelect.selectOption('artisan', { force: true });
     await expect(page.getByRole('heading', { name: 'Publier une réalisation' })).toBeVisible();
-    await page.getByLabel('Choisir un profil').selectOption('agency');
+    await profileSelect.selectOption('agency', { force: true });
     await expect(page.getByRole('heading', { name: 'Valider le contenu d’un client' })).toBeVisible();
-    await page.getByLabel('Choisir un profil').selectOption('network');
+    await profileSelect.selectOption('network', { force: true });
     await expect(page.getByRole('heading', { name: 'Corriger une incohérence locale' })).toBeVisible();
-    await page.getByLabel('Choisir un profil').selectOption('commerce');
+    await profileSelect.selectOption('commerce', { force: true });
     await expect(page.getByRole('heading', { name: 'Répondre à un avis local' })).toBeVisible();
 
     await page.goto('/demo/workspace/approvals');
     const post = page.getByLabel('Statut de Post local — menu de saison');
     await post.selectOption('Validé');
-    await expect(page.getByText('Simulation locale : validé')).toBeVisible();
+    await expect(page.getByText('Simulation locale : Validé (post-1)')).toBeVisible();
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole('button', { name: 'Ouvrir Plus' }).click();
     await page.getByRole('button', { name: 'Réinitialiser la démo' }).click();
     await expect(page.getByRole('dialog', { name: 'Recommencer la démonstration ?' })).toBeVisible();

@@ -2,7 +2,7 @@
  * PricingPage — Page publique /pricing de Kompilot
  *
  * Grille 3 plans uniquement : Starter (69€) · Agency (149€, phare) · Enterprise (devis)
- * La grille tarifaire conserve uniquement Starter, Agency et Enterprise.
+ * La grille tarifaire conserve uniquement Pro, Agency et Enterprise.
  */
 
 import { useState, useMemo } from 'react';
@@ -25,8 +25,8 @@ import type { KompilotPlanId } from '../components/landing/pricing/PricingData';
 
 export default function PricingPage() {
   usePageSeo(
-    'Tarifs Kompilot — Starter, Agency et Enterprise',
-    'Comparez les tarifs et fonctionnalités de Kompilot pour les professionnels, équipes et agences : Starter, Agency et Enterprise.',
+    'Tarifs Kompilot — Pro, Agency et Enterprise',
+    'Comparez les tarifs et fonctionnalités de Kompilot pour les professionnels, équipes et agences : Pro, Agency et Enterprise.',
     '/pricing',
   );
 

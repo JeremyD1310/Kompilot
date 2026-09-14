@@ -2,7 +2,7 @@
  * PricingSection — Grille tarifaire B2B Kompilot
  *
  * 3 forfaits uniquement : Starter (69€) · Agency (149€, formule phare) · Enterprise (devis)
- * La grille tarifaire est limitée aux offres Starter, Agency et Enterprise.
+ * La grille tarifaire est limitée aux offres Pro, Agency et Enterprise.
  *
  * Design :
  *   • Fond dark navy (#0F172A) — cohérent avec le reste de la landing

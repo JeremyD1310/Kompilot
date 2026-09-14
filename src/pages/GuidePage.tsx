@@ -21,7 +21,7 @@ const HELPDESK_FAQS = [
     iconColor: 'text-rose-600',
     iconBg: 'bg-rose-50',
     question: 'Comment fonctionne le système de génération de vidéos IA ?',
-    answer: 'Le générateur de vidéos IA crée automatiquement des clips verticaux (format 9:16) adaptés à TikTok et Instagram Reels. Pour y accéder : ouvrez l\'éditeur de post via "+ Créer un post", puis cliquez sur l\'onglet "Vidéos IA" sous la zone de texte. Vous verrez des clips générés par thème (tutoriel, témoignage, produit, ambiance). Sélectionnez-en un — il s\'affiche en boucle dans l\'aperçu smartphone à droite. Cette fonctionnalité est disponible selon le périmètre souscrit : Starter à 69 € HT/mois, Agency à 149 € HT/mois ou Enterprise sur devis. Les résultats restent indicatifs et ne constituent pas une garantie de performance.',
+    answer: 'Le générateur de vidéos IA crée automatiquement des clips verticaux (format 9:16) adaptés à TikTok et Instagram Reels. Pour y accéder : ouvrez l\'éditeur de post via "+ Créer un post", puis cliquez sur l\'onglet "Vidéos IA" sous la zone de texte. Vous verrez des clips générés par thème (tutoriel, témoignage, produit, ambiance). Sélectionnez-en un — il s\'affiche en boucle dans l\'aperçu smartphone à droite. Cette fonctionnalité est disponible selon le périmètre souscrit : Pro à 69 € HT/mois, Agency à 149 € HT/mois ou Enterprise sur devis. Les résultats restent indicatifs et ne constituent pas une garantie de performance.',
     tags: ['vidéo', 'ia', 'tiktok', 'reels', 'pro'],
   },
   {

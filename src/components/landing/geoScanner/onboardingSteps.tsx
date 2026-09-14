@@ -376,11 +376,11 @@ export function Step3Activate({ onFinish, sector }: { onFinish: () => void; sect
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
           <span style={{ fontSize: '1.3rem' }}>🎯</span>
           <div>
-            <p style={{ color: '#E2E8F0', fontWeight: 800, fontSize: '.92rem', margin: 0 }}>Offre Starter</p>
+            <p style={{ color: '#E2E8F0', fontWeight: 800, fontSize: '.92rem', margin: 0 }}>Offre Pro</p>
             <p style={{ color: '#0D9488', fontWeight: 700, fontSize: '.76rem', margin: 0 }}>7 jours gratuits inclus</p>
           </div>
           <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-            <p style={{ color: '#E2E8F0', fontWeight: 900, fontSize: '1.05rem', margin: 0 }}>49€</p>
+            <p style={{ color: '#E2E8F0', fontWeight: 900, fontSize: '1.05rem', margin: 0 }}>69€ HT</p>
             <p style={{ color: '#64748B', fontSize: '.62rem', margin: 0 }}>/mois après essai</p>
           </div>
         </div>

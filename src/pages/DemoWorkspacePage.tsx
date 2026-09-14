@@ -81,7 +81,20 @@ export default function DemoWorkspacePage() {
     return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKeyDown); };
   }, [mobileMenuOpen, moreOpen, action, notificationsOpen]);
 
-  const openAction = (nextAction: string) => { setAction(nextAction); const [actionType] = nextAction.split(':', 1); setDraft(actionType === 'avis' ? 'Bonjour, merci pour votre retour. Votre avis nous aide à progresser.' : actionType === 'campaign' ? 'Campagne locale fictive' : ''); setChannels(['Instagram', 'Facebook']); };
+  const openAction = (nextAction: string) => {
+    setAction(nextAction);
+    const [actionType] = nextAction.split(':', 1);
+    setDraft(
+      actionType === 'avis'
+        ? 'Bonjour, merci pour votre retour. Votre avis nous aide à progresser.'
+        : actionType === 'message'
+          ? 'Merci pour votre message. Nous revenons vers vous très bientôt.'
+          : actionType === 'campaign'
+            ? 'Campagne locale fictive'
+            : '',
+    );
+    setChannels(['Instagram', 'Facebook']);
+  };
   const confirmAction = () => {
     if (!action) return;
     const [actionType, actionTarget] = action.split(':', 2);

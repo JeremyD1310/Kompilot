@@ -255,9 +255,9 @@ export default function SubscriptionPage() {
     } else if (skipTrial) {
       // User skipped trial from signup — open the canonical Pro plan by default
       setCheckout({
-        planName: 'Starter',
+        planName: 'Pro',
         priceHT: 69,
-        invoiceDesc: `Abonnement Starter – ${monthYearLabel()}`,
+        invoiceDesc: `Abonnement Pro – ${monthYearLabel()}`,
         isSubscription: true,
         stripePlanId: 'starter',
       });
@@ -341,7 +341,7 @@ export default function SubscriptionPage() {
             <Zap size={22} className="text-primary" /> Mon Abonnement
           </PageTitle>
           <PageDescription>
-            Choisissez l'offre adaptée à votre activité — Starter, Agency ou Enterprise.
+            Choisissez l'offre adaptée à votre activité — Pro, Agency ou Enterprise.
           </PageDescription>
         </div>
       </PageHeader>
@@ -425,7 +425,7 @@ export default function SubscriptionPage() {
                   : 'bg-muted text-muted-foreground hover:bg-muted/70',
               )}
             >
-              👤 Starter{' '}
+              👤 Pro{' '}
               <span className="ml-1 text-[10px] font-bold opacity-70">HT</span>
             </button>
             <button
@@ -448,10 +448,10 @@ export default function SubscriptionPage() {
               <span style={{ fontSize: '1.2rem' }}>🚀</span>
               <div>
                 <p style={{ fontSize: '.82rem', fontWeight: 700, color: 'hsl(var(--foreground))' }}>
-                  Offre Starter recommandée pour vous
+                  Offre Pro recommandée pour vous
                 </p>
                 <p style={{ fontSize: '.75rem', color: 'hsl(var(--muted-foreground))', marginTop: 2 }}>
-                  L'offre <strong>Starter à 69€ HT/mois</strong> est idéale pour démarrer.
+                  L'offre <strong>Pro à 69€ HT/mois</strong> est idéale pour démarrer.
                 </p>
               </div>
             </div>
