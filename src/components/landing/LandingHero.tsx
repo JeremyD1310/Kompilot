@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Zap, ArrowRight, Search, Star, TrendingUp, Users } from 'lucide-react';
+import { Zap, ArrowRight, Search } from 'lucide-react';
 import { HeroDashboardMockup } from './HeroDashboardMockup';
 import { ReviewSimulator } from './ReviewSimulator';
 
@@ -15,33 +15,26 @@ interface LandingHeroProps {
 // ── Hero copy per audience ────────────────────────────────────────────────────
 const HERO_COPY = {
   commerce: {
-    badge: '✦ Réservé aux professionnels & agences — Configuration en 60 secondes',
-    h1Main: 'Votre marketing local,',
-    h1Gradient: 'piloté par l\'IA.',
-    sub: '',
-    cta: 'Lancer mon copilote gratuitement',
+    badge: '✦ Le cockpit IA des commerces et entreprises locales',
+    h1Main: 'Pilotez toute votre visibilité locale',
+    h1Gradient: 'depuis un seul cockpit IA.',
+    sub: 'Kompilot vous aide à créer vos contenus, gérer vos avis et améliorer votre présence sur Google, les réseaux sociaux et dans les réponses des IA.',
+    cta: 'Essayer gratuitement',
   },
   agency: {
-    badge: '✦ Marque Blanche — Revendez sous votre nom dès aujourd\'hui',
-    h1Main: 'Dominez les recherches locales,',
-    h1Gradient: 'sans y passer vos journées.',
-    sub: 'Gérez 10, 50, 100 clients depuis un seul dashboard. De la publication aux avis Google, l\'IA pilote la visibilité locale de vos clients pendant que vous vous concentrez sur la stratégie.',
-    cta: 'Lancer mon copilote gratuitement',
+    badge: '✦ Pilotage multi-clients et marque blanche',
+    h1Main: 'Pilotez la visibilité locale de vos clients',
+    h1Gradient: 'depuis un seul cockpit IA.',
+    sub: 'Centralisez contenus, avis, SEO local, GEO et reporting pour chaque établissement, tout en gardant la validation finale.',
+    cta: 'Découvrir Kompilot Agency',
   },
 };
 
 // ── 3-step blocks for commerce hero ──────────────────────────────────────────
 const COMMERCE_STEPS = [
   { num: '01', emoji: '📝', title: 'Décrivez votre activité', desc: 'L\'IA apprend votre secteur, votre ton et vos objectifs en moins de 3 minutes.' },
-  { num: '02', emoji: '⚡', title: 'L\'IA travaille en automatique', desc: 'Posts planifiés, avis répondus, fiche Google optimisée — sans action de votre part.' },
+  { num: '02', emoji: '⚡', title: 'Kompilot prépare vos actions', desc: 'Contenus, réponses et recommandations sont organisés selon vos priorités.' },
   { num: '03', emoji: '📈', title: 'Vous suivez les résultats', desc: 'Score de visibilité, nouveaux avis, reach — tout en temps réel sur votre tableau de bord.' },
-];
-
-// ── Social proof bar data ─────────────────────────────────────────────────────
-const PROOF_STATS = [
-  { icon: Users, value: '1 200+', label: 'établissements actifs' },
-  { icon: Star,  value: '4,9/5',  label: 'note moyenne' },
-  { icon: TrendingUp, value: '+1,4 ★', label: 'avis Google en 30j' },
 ];
 
 // ── ChatGPT Simulator ────────────────────────────────────────────────────────
@@ -439,10 +432,10 @@ export function LandingHero({ onCta, onHeroCta, heroSearch, setHeroSearch, audie
           {/* Trust subtext */}
           <div style={{ display:'flex',flexDirection:'column',alignItems:'center',gap:4 }}>
             <p style={{ fontSize:'.82rem',color:'#475569',fontWeight:600,margin:0,textAlign:'center' }}>
-              Annulation en 1 clic · Pas de carte bancaire requise pendant 7 jours
+              7 jours gratuits · Sans carte bancaire · Validation humaine avant publication
             </p>
             <div style={{ display:'flex',flexWrap:'wrap',justifyContent:'center',gap:'4px 10px' }}>
-              {['✓ Essai 7 jours gratuit', '✓ Accès immédiat', '✓ Configuration en 1 minute'].map((item) => (
+              {['✓ Contenus et avis centralisés', '✓ SEO local et GEO', '✓ Vous gardez le contrôle'].map((item) => (
                 <span key={item} style={{ fontSize:'clamp(.72rem, 1.8vw, .78rem)',color:'#64748B',fontWeight:600,whiteSpace:'nowrap' }}>
                   {item}
                 </span>
@@ -451,40 +444,9 @@ export function LandingHero({ onCta, onHeroCta, heroSearch, setHeroSearch, audie
           </div>
         </div>
 
-        {/* ── Social proof bar ── */}
-        {/* Strategy: keep items on ONE row with nowrap to avoid broken borderRight.
-            On very small screens (< 400px) we scale font down via clamp so all 3
-            items still fit without wrapping. The borderRight only appears between
-            items that are on the same row, which is always the case now. */}
-        <div className="sr d4" style={{
-          display: 'flex', justifyContent: 'center',
-          marginBottom: '2.5rem', padding: '0 8px',
-        }}>
-          <div style={{
-            display: 'flex', alignItems: 'center',
-            background: 'rgba(255,255,255,.04)',
-            border: '1px solid rgba(255,255,255,.08)',
-            borderRadius: 9999, padding: '6px 4px',
-            flexWrap: 'nowrap', justifyContent: 'center',
-            overflow: 'hidden', maxWidth: '100%',
-          }}>
-            {PROOF_STATS.map((stat, i) => {
-              const Icon = stat.icon;
-              return (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  padding: '4px 12px',
-                  borderRight: i < PROOF_STATS.length - 1 ? '1px solid rgba(255,255,255,.08)' : 'none',
-                  flexShrink: 1,
-                }}>
-                  <Icon size={12} style={{ color: '#0D9488', flexShrink: 0 }} />
-                  <span style={{ color: '#E2E8F0', fontWeight: 800, fontSize: 'clamp(.72rem, 2vw, .85rem)', whiteSpace: 'nowrap' }}>{stat.value}</span>
-                  <span style={{ color: '#475569', fontSize: 'clamp(.62rem, 1.8vw, .77rem)', whiteSpace: 'nowrap' }}>{stat.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <p className="sr d4" style={{ color:'#64748B',fontSize:'.78rem',margin:'0 0 2rem' }}>
+          Plateforme française · Bêta testée par des professionnels · Conçue pour une utilisation conforme au RGPD
+        </p>
 
         {/* ── Dashboard mockup ── */}
         <div className="sr d5" style={{ marginTop:24,position:'relative',overflowX:'hidden',width:'100%' }}>
