@@ -10,7 +10,7 @@ const items = [
 
 export function DemoMobileNav({ currentPath, onMore }: { currentPath: string; onMore: () => void }) {
   return (
-    <nav aria-label="Navigation mobile de la démo" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 items-end border-t border-slate-200 bg-white/95 px-1 pb-[env(safe-area-inset-bottom)] pt-1 shadow-[0_-8px_25px_rgba(15,23,42,.08)] backdrop-blur lg:hidden">
+    <nav aria-label="Navigation mobile de la démo" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 items-end border-t border-slate-200 bg-white/95 px-1 pb-[max(env(safe-area-inset-bottom),0.25rem)] pt-1 shadow-[0_-8px_25px_rgba(15,23,42,.08)] backdrop-blur lg:hidden">
       {items.map(({ label, path, icon: Icon }, index) => {
         const active = path === '/demo/workspace' ? currentPath === path : currentPath.startsWith(path);
         const isCreate = index === 2;
