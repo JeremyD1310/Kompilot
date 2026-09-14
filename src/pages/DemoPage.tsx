@@ -15,7 +15,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Store, UserCircle, Building2 } from 'lucide-react';
+import { Store, UserCircle, Building2, Network, ArrowRight, ShieldCheck } from 'lucide-react';
 import { Button } from '@blinkdotnew/ui';
 import { useNavigate } from '@tanstack/react-router';
 import ROISimulatorWidget, { type DemoPersona } from '@/components/demo/ROISimulatorWidget';
@@ -25,11 +25,26 @@ import { MerchantView } from './demo/MerchantView';
 import { FreelanceView } from './demo/FreelanceView';
 import { AgencyView } from './demo/AgencyView';
 import { GeoScanSection } from './demo/GeoScanSection';
+import { useDemoData } from '../context/DemoDataProvider';
+import type { DemoProfile } from '../lib/demoProductData';
+import type { DemoPersona } from '@/components/demo/ROISimulatorWidget';
+
+const personaToProfile: Record<DemoPersona, DemoProfile> = {
+  merchant: 'commerce',
+  freelance: 'artisan',
+  agency: 'agency',
+};
 
 export default function DemoPage() {
   const [activePersona, setActivePersona] = useState<DemoPersona>('merchant');
+  const { setProfile } = useDemoData();
   const navigate = useNavigate();
   const goSignup = () => navigate({ to: '/signup' });
+  const enterWorkspace = (persona: DemoPersona = activePersona) => {
+    setActivePersona(persona);
+    setProfile(personaToProfile[persona]);
+    navigate({ to: '/demo/workspace' });
+  };
 
   return (
     <PremiumWinProvider>
@@ -41,21 +56,37 @@ export default function DemoPage() {
             <span className="hidden sm:inline">🎯 Mode Démonstration — Explorez Kompilot sans créer de compte</span>
             <span className="sm:hidden font-bold">Kompilot Demo</span>
           </div>
-          <Button
-            onClick={goSignup}
-            className="bg-white text-[#0D9488] hover:bg-slate-100 font-bold text-xs md:text-sm px-3 md:px-4 h-9 shrink-0"
-          >
-            Créer mon espace 🚀
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={enterWorkspace} className="hidden border border-white/30 bg-white/10 text-white hover:bg-white/20 font-bold text-xs md:flex items-center gap-1.5 px-3 h-9 shrink-0">
+              Explorer le cockpit <ArrowRight size={14} />
+            </Button>
+            <Button
+              onClick={goSignup}
+              className="bg-white text-[#0D9488] hover:bg-slate-100 font-bold text-xs md:text-sm px-3 md:px-4 h-9 shrink-0"
+            >
+              Créer mon espace
+            </Button>
+          </div>
         </div>
 
         <div className="pt-20 max-w-7xl mx-auto px-4">
 
-          {/* Onglets persona */}
-          <div className="flex flex-wrap justify-center gap-2 md:gap-3 py-8">
-            <PersonaTab active={activePersona === 'merchant'} onClick={() => setActivePersona('merchant')} icon={<Store className="w-4 h-4" />} label="Vue Commerçant" />
-            <PersonaTab active={activePersona === 'freelance'} onClick={() => setActivePersona('freelance')} icon={<UserCircle className="w-4 h-4" />} label="Vue Artisan / Bâtiment" />
-            <PersonaTab active={activePersona === 'agency'} onClick={() => setActivePersona('agency')} icon={<Building2 className="w-4 h-4" />} label="Vue Agence Premium" />
+          {/* Choix de profil avant exploration du vrai cockpit */}
+          <section className="mx-auto max-w-5xl py-8 text-center">
+            <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-teal-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-teal-800"><ShieldCheck size={13} /> Données fictives, actions locales uniquement</p>
+            <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white md:text-5xl">Explorez le cockpit Kompilot</h1>
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-600 dark:text-slate-300 md:text-base">Choisissez un profil, puis parcourez une session de démonstration réaliste. Aucun compte, aucune connexion client et aucune écriture de production.</p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <button onClick={() => enterWorkspace('merchant')} className="flex min-h-24 flex-col items-start gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm hover:-translate-y-0.5 hover:border-teal-300"><Store size={20} className="text-teal-700" /><span className="text-sm font-bold">Commerce local</span><span className="text-xs text-slate-500">Avis, fiche Google, contenu local</span></button>
+              <button onClick={() => enterWorkspace('freelance')} className="flex min-h-24 flex-col items-start gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm hover:-translate-y-0.5 hover:border-teal-300"><UserCircle size={20} className="text-teal-700" /><span className="text-sm font-bold">Artisan ou PME</span><span className="text-xs text-slate-500">Réalisation, post, prospects locaux</span></button>
+              <button onClick={() => enterWorkspace('agency')} className="flex min-h-24 flex-col items-start gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm hover:-translate-y-0.5 hover:border-teal-300"><Building2 size={20} className="text-teal-700" /><span className="text-sm font-bold">Agence</span><span className="text-xs text-slate-500">Clients, alertes, rapports marque blanche</span></button>
+              <button onClick={() => { setProfile('network'); navigate({ to: '/demo/workspace' }); }} className="flex min-h-24 flex-col items-start gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm hover:-translate-y-0.5 hover:border-teal-300"><Network size={20} className="text-teal-700" /><span className="text-sm font-bold">Multi-établissements</span><span className="text-xs text-slate-500">Cohérence et rapport consolidé</span></button>
+            </div>
+          </section>
+          <div className="flex flex-wrap justify-center gap-2 md:gap-3 pb-8">
+            <PersonaTab active={activePersona === 'merchant'} onClick={() => setActivePersona('merchant')} icon={<Store className="w-4 h-4" />} label="Aperçu Commerce" />
+            <PersonaTab active={activePersona === 'freelance'} onClick={() => setActivePersona('freelance')} icon={<UserCircle className="w-4 h-4" />} label="Aperçu Artisan" />
+            <PersonaTab active={activePersona === 'agency'} onClick={() => setActivePersona('agency')} icon={<Building2 className="w-4 h-4" />} label="Aperçu Agence" />
           </div>
 
           {/* Grille 2 colonnes : dashboard + widget ROI */}
@@ -100,7 +131,7 @@ export default function DemoPage() {
                 </motion.div>
               </AnimatePresence>
               <p className="text-center text-[10px] text-slate-400">
-                🔒 Calcul local — aucune donnée envoyée
+              Calcul local · estimation indicative · aucune donnée envoyée
               </p>
             </div>
           </div>
@@ -112,16 +143,14 @@ export default function DemoPage() {
 
           {/* CTA bas de page */}
           <div className="mt-16 py-12 border-t border-slate-200 dark:border-slate-800 text-center">
-            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-6">
-              Prêt à déployer Kompilot pour votre activité ?
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-3">
+              Vous voulez voir le vrai cockpit ?
             </h2>
-            <Button
-              size="lg"
-              onClick={goSignup}
-              className="bg-[#0D9488] hover:bg-[#0B7A6F] text-white font-bold px-8 h-14 rounded-full shadow-xl transition-all hover:scale-105"
-            >
-              Démarrer mon essai gratuit — 7 jours
-            </Button>
+            <p className="mx-auto mb-6 max-w-xl text-sm text-slate-500">Explorez d’abord la démonstration locale, puis créez votre espace pour mesurer vos propres résultats.</p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Button size="lg" onClick={enterWorkspace} className="gap-2 border border-[#0D9488] bg-transparent text-[#0D9488] hover:bg-teal-50 font-bold px-6 h-12"><ArrowRight size={16} /> Explorer le cockpit</Button>
+              <Button size="lg" onClick={goSignup} className="bg-[#0D9488] hover:bg-[#0B7A6F] text-white font-bold px-6 h-12">Créer mon espace</Button>
+            </div>
           </div>
 
         </div>
