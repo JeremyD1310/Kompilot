@@ -51,11 +51,8 @@ function ReviewCarousel({ theme }: { theme: typeof WIDGET_THEMES[0] }) {
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-widest opacity-60">Ils parlent de nous</p>
           <div className="flex items-center gap-2 mt-0.5">
-            <div className="flex items-center gap-0.5">
-              {[...Array(5)].map((_, i) => <Star key={i} size={14} className="fill-amber-400 text-amber-400" />)}
-            </div>
-            <span className="text-lg font-bold">4.9/5</span>
-            <span className="text-[11px] opacity-60">sur Google</span>
+            <span className="text-lg font-bold">Aperçu configurable</span>
+            <span className="text-[11px] opacity-60">d’après vos avis publiés</span>
           </div>
         </div>
         <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5 border border-border/30" style={{ backgroundColor: theme.card }}>
@@ -164,7 +161,7 @@ export default function WebsiteWidgetPage() {
                 </h2>
                 <p className="text-white/80 text-sm max-w-xl">
                   Votre cockpit marketing analyse en permanence votre site pour optimiser votre visibilité et capter de nouveaux clients. 
-                  <span className="font-bold text-white"> +34% de trafic estimé</span> ce mois-ci.
+                  <span className="font-bold text-white"> Simulation indicative</span> — les résultats réels dépendent de votre activité et de vos canaux.
                 </p>
               </div>
               <Button size="lg" className="bg-white text-primary hover:bg-white/90 border-none font-bold gap-2">

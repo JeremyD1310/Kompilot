@@ -167,6 +167,9 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
 
             {/* Essai gratuit CTA */}
             <button
+              type="button"
+              aria-label="Essai gratuit Kompilot"
+              data-testid="nav-signup-cta"
               className="nc-pill nc-pill-shimmer"
               style={{ padding: '9px 22px', fontSize: '.83rem', boxShadow: '0 0 24px rgba(13,148,136,.35)' }}
               onClick={handleCta}

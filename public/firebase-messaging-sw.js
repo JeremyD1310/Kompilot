@@ -9,7 +9,7 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-com
 
 // Firebase config hardcoded here — SW cannot access Vite env vars
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAi7xQWO-N0741VFtw4j8CaW4PJwhnPMfM",
+  apiKey: "AIzaSyAi7xQWO-N0741VFtw4j8CaW4PJwhnPMFM",
   authDomain: "projet-app-c16a4.firebaseapp.com",
   projectId: "projet-app-c16a4",
   storageBucket: "projet-app-c16a4.firebasestorage.app",

@@ -231,7 +231,6 @@ export function GeoScanDemo() {
             <Progress
               value={scanProgress}
               className="h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"
-              indicatorClassName="bg-gradient-to-r from-[#0D9488] to-teal-400 transition-all duration-500"
             />
 
             <div className="space-y-2">

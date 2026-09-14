@@ -6,10 +6,12 @@
  */
 import { logEvent } from 'firebase/analytics';
 import { getFirebaseAnalytics } from './client';
+import { hasAnalyticsConsent } from '../lib/cookieConsent';
 
 type EventParams = Record<string, string | number | boolean | undefined>;
 
 async function track(eventName: string, params?: EventParams) {
+  if (!hasAnalyticsConsent()) return;
   try {
     const analytics = await getFirebaseAnalytics();
     if (!analytics) return;

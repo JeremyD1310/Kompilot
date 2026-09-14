@@ -394,6 +394,9 @@ export function LandingHero({ onCta, onHeroCta, heroSearch, setHeroSearch, audie
         {/* ── Primary CTA block ── */}
         <div className="sr d3" style={{ marginBottom:'2rem',display:'flex',flexDirection:'column',alignItems:'center',gap:12,width:'100%' }}>
           <button
+            type="button"
+            aria-label="Créer mon espace gratuitement"
+            data-testid="home-signup-cta"
             className="nc-pill nc-pill-shimmer"
             style={{
               fontSize: 'clamp(.95rem,2.8vw,1.08rem)',

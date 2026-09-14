@@ -14,7 +14,6 @@ export const KOMPILOT_IDENTITY = {
 export const PUBLIC_PLANS = [
   { name: 'Starter', monthly: '69 € HT / mois', annual: '759 € HT / an', scope: 'Fonctionnalités de pilotage pour une activité locale, avec périmètre détaillé dans l’espace client et les conditions contractuelles.' },
   { name: 'Agency', monthly: '149 € HT / mois', annual: '1 639 € HT / an', scope: 'Fonctionnalités pour équipes et agences, avec options de marque blanche et de reporting selon le périmètre souscrit.' },
-  { name: 'Enterprise', monthly: 'Sur devis', annual: 'Sur devis', scope: 'Périmètre, volumes, support et conditions définis au cas par cas ; aucune promesse de résultat n’est publiée ici.' },
 ] as const;
 
 export const PUBLIC_FEATURES = [

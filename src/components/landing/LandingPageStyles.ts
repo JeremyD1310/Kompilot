@@ -50,6 +50,10 @@ export const LANDING_CSS = `
 
   /* On mobile: hide any floating chat widgets (our sticky CTA bar takes full width) */
   @media(max-width:767px){
+    #nc-cta-safe-zone{grid-template-columns:1fr!important;gap:6px!important;padding:9px 12px!important}
+    #nc-cta-safe-zone>div:first-child,#nc-cta-safe-zone>div:last-child{display:none!important}
+    #nc-cta-safe-zone>div:nth-child(2){width:100%!important}
+    #nc-cta-safe-zone button{max-width:100%;width:100%;justify-content:center}
     #crisp-chatbox,.crisp-client,
     .intercom-lightweight-app,.intercom-launcher-frame,
     #tidio-chat,#tidio-chat-iframe,

@@ -105,7 +105,7 @@ export function LandingDemoLimitModal({ open, onClose }: LandingDemoLimitModalPr
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} size={12} className="text-amber-400 fill-amber-400" />
                   ))}
-                  <span className="text-[11px] text-muted-foreground ml-1">+1 200 commerçants nous font confiance</span>
+                  <span className="text-[11px] text-muted-foreground ml-1">Un espace pour structurer votre présence locale</span>
                 </div>
 
                 {/* Primary CTA */}

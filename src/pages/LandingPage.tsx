@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PWABanner } from '../components/layout/PWABanner';
-import { blink } from '../blink/client';
 import { createCheckoutSession } from '../lib/billingClient';
 import { useAuth } from '../hooks/useAuth';
 import { PricingSection } from '../components/landing/PricingSection';
@@ -20,6 +19,7 @@ import { getSectorConfig } from '../components/landing/UTMSectorAdapter';
 import { VisibilityLandingSections } from '../components/landing/VisibilityLandingSections';
 import { usePageSeo } from '../hooks/usePageSeo';
 import { createKompilotGraph } from '../lib/seoData';
+import { useNavigate } from '@tanstack/react-router';
 
 function useScrollReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -45,13 +45,16 @@ function scrollTo(id: string) {
 export default function LandingPage() {
   const ref = useScrollReveal();
   const { user } = useAuth();
+  const navigate = useNavigate();
   usePageSeo(
     'Logiciel de visibilité locale et marketing IA | Kompilot',
     'Centralisez contenus, avis Google, réseaux sociaux, SEO local et visibilité dans les IA avec Kompilot. Essai gratuit pendant 7 jours.',
     '/',
     { structuredData: createKompilotGraph('/', 'Logiciel de visibilité locale et marketing IA | Kompilot', true) },
   );
-  const cta = () => blink.auth.login(window.location.origin + '/dashboard');
+  const cta = () => {
+    navigate({ to: user ? '/dashboard' : '/signup' });
+  };
 
   // ── UTM / Sector detection ─────────────────────────────────────────────────
   const utmParams = useMemo(() => { try { return captureUtmParams(); } catch { return {}; } }, []);
@@ -100,7 +103,14 @@ export default function LandingPage() {
       return;
     }
     try {
-      const result = await createCheckoutSession(planId);
+      const legalConsent = {
+        cgvAccepted: true,
+        retractionWaived: false,
+        cgvVersion: 'public-2026-09-14',
+        acceptedAt: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+      };
+      const result = await createCheckoutSession(planId, legalConsent);
       if (result?.url) {
         window.open(result.url, '_blank', 'noopener,noreferrer');
       } else {
@@ -232,6 +242,9 @@ export default function LandingPage() {
           {/* Center — primary CTA button + micro-copy */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             <button
+              type="button"
+              aria-label="Démarrer gratuitement"
+              data-testid="sticky-signup-cta"
               onClick={cta}
               style={{
                 display: 'flex', alignItems: 'center', gap: 7,

@@ -171,8 +171,8 @@ export function AgencyDashboardMockup({ onCta: _onCta }: { onCta?: () => void })
               {/* Sparklines */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
                 {[
-                  { l: 'Weekly Average',    d: '+34%', c: '#818CF8', data: WEEKLY_DATA },
-                  { l: 'Share of Voice IA', d: '+47%', c: '#0D9488', data: SOV_DATA },
+                  { l: 'Weekly Average',    d: 'Indicatif', c: '#818CF8', data: WEEKLY_DATA },
+                  { l: 'Share of Voice IA', d: 'Suivi', c: '#0D9488', data: SOV_DATA },
                 ].map(ch => (
                   <div key={ch.l} style={{
                     background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.045)',

@@ -35,7 +35,7 @@ function removeManagedStructuredData() {
 export function usePageSeo(title: string, description: string, path: string, options: SeoOptions = {}) {
   const robots = options.robots ?? 'index, follow';
   const image = options.image ?? `${KOMPILOT_ORIGIN}/og-image.png`;
-  const canonical = `${KOMPILOT_ORIGIN}${path === '/' ? '/' : path}`;
+  const canonical = path === '/' ? KOMPILOT_ORIGIN : `${KOMPILOT_ORIGIN}${path}`;
   const structuredData = options.structuredData;
 
   useEffect(() => {
@@ -46,6 +46,7 @@ export function usePageSeo(title: string, description: string, path: string, opt
     upsertMeta('property', 'og:description', description);
     upsertMeta('property', 'og:url', canonical);
     upsertMeta('property', 'og:image', image);
+    upsertMeta('name', 'twitter:card', 'summary_large_image');
     upsertMeta('name', 'twitter:title', title);
     upsertMeta('name', 'twitter:description', description);
     upsertMeta('name', 'twitter:image', image);

@@ -17,7 +17,6 @@ Disallow: /team
 Disallow: /mon-equipe
 Disallow: /api/
 Disallow: /login
-Disallow: /signup
 Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /email-unverified

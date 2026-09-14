@@ -125,9 +125,9 @@ export function MerchantView() {
       </div>
 
       <StatGroup className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Stat label="Pertes évitées ce mois" value="520€" trend={18} trendLabel="anti no-show" icon={<ShieldCheck className="text-emerald-500" />} />
-        <Stat label="Score G.E.O." value="87/100" icon={<TrendingUp className="text-emerald-500" />} />
-        <Stat label="Avis à traiter" value="3" icon={<Star className="text-orange-500" />} />
+        <Stat label="Protection des rendez-vous" value="À configurer" icon={<ShieldCheck className="text-emerald-500" />} />
+        <Stat label="Score G.E.O." value="Exemple" icon={<TrendingUp className="text-emerald-500" />} />
+        <Stat label="Avis à traiter" value="À vérifier" icon={<Star className="text-orange-500" />} />
       </StatGroup>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -144,19 +144,19 @@ export function MerchantView() {
           <Card className="p-6 flex flex-col justify-center space-y-5">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-base">Bouclier Stripe Anti No-Show</h3>
-              <span className="text-2xl font-black text-emerald-500">520€</span>
+              <span className="text-sm font-black text-emerald-500">Aperçu</span>
             </div>
-            <p className="text-slate-500 text-xs">520€ protégés ce mois (4 tentatives bloquées)</p>
+            <p className="text-slate-500 text-xs">Exemple de suivi des rendez-vous selon vos règles de confirmation.</p>
             <div className="space-y-2">
               <div className="flex justify-between text-xs">
                 <span>Objectif mensuel</span>
                 <span className="font-bold text-emerald-600">78%</span>
               </div>
-              <Progress value={78} className="h-3 bg-slate-100 dark:bg-slate-800" indicatorClassName="bg-emerald-500" />
+              <Progress value={78} className="h-3 bg-slate-100 dark:bg-slate-800" />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <MiniStat label="RDV protégés" value="12 / mois" />
-              <MiniStat label="Taux récupération" value="85 %" />
+              <MiniStat label="RDV protégés" value="Selon activité" />
+              <MiniStat label="Taux de récupération" value="À mesurer" />
             </div>
           </Card>
 

@@ -6,19 +6,19 @@
 import { X, Check } from 'lucide-react';
 
 const WITHOUT = [
-  { emoji: '😰', text: 'Réponse aux avis Google oubliée pendant 3 semaines' },
-  { emoji: '📱', text: 'Posts rédigés en urgence depuis le téléphone à 23h' },
-  { emoji: '💸', text: '8 no-shows non facturés = 520 € perdus ce mois' },
-  { emoji: '📊', text: 'Aucune visibilité sur le trafic ou l\'engagement' },
-  { emoji: '🔇', text: 'Messages DM ignorés — clients non convertis' },
+  { emoji: '😰', text: 'Réponses aux avis Google préparées trop tard' },
+  { emoji: '📱', text: 'Posts rédigés dans l’urgence, sans calendrier partagé' },
+  { emoji: '🧾', text: 'Rendez-vous non confirmés ou non suivis' },
+  { emoji: '📊', text: 'Peu de visibilité sur les actions et l’engagement' },
+  { emoji: '🔇', text: 'Messages directs dispersés entre plusieurs outils' },
 ];
 
 const WITH = [
-  { emoji: '⭐', text: 'Réponse IA aux avis Google en 1 clic, dans les 2h' },
-  { emoji: '🗓️', text: 'Calendrier de posts planifié pour le mois en 30 min' },
-  { emoji: '🛡️', text: 'Empreinte Stripe obligatoire — aucun RDV non garanti' },
-  { emoji: '📈', text: 'Dashboard de visibilité mis à jour en temps réel' },
-  { emoji: '💬', text: 'Inbox unifiée — zéro message manqué, 100% convertion' },
+  { emoji: '⭐', text: 'Réponses assistées par IA, relues avant envoi' },
+  { emoji: '🗓️', text: 'Calendrier de contenus partagé et planifié' },
+  { emoji: '🛡️', text: 'Rappels et règles de validation selon vos réglages' },
+  { emoji: '📈', text: 'Tableau de bord pour suivre vos actions prioritaires' },
+  { emoji: '💬', text: 'Inbox unifiée pour organiser les conversations' },
 ];
 
 function Side({ title, accent, items, isGood }: {

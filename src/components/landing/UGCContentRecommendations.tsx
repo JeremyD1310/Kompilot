@@ -93,7 +93,7 @@ const GENERATOR_EXAMPLES: Record<string, { prompt: string; output: string; platf
   'LinkedIn Professionnel': {
     platform: 'LinkedIn',
     prompt: 'Expertise restauration · Tendance réservations en ligne 2025 · Ton professionnel',
-    output: '📈 La restauration locale se digitalise plus vite que prévu.\n\nEn 2025, 68% des réservations restaurant passent par une app ou un moteur IA (source : Semrush). Chez nous, nous avons investi dans notre présence en ligne il y a 18 mois.\n\nRésultat : +34% de couverts en semaine, sans budget publicité.\n\nLa leçon : visibilité locale ≠ Google Ads. Elle commence par vos avis, votre fiche Google et… votre présence sur les plateformes que les IA consultent.\n\n#RestaurantLocal #DigitalLocal #GEO',
+    output: '📈 Exemple de publication à personnaliser.\n\nLa restauration locale se digitalise et les clients utilisent plusieurs points de contact avant de réserver.\n\nKompilot vous aide à structurer vos avis, votre fiche Google et vos contenus locaux. Les résultats doivent être mesurés sur vos propres données avant toute communication.\n\n#RestaurantLocal #DigitalLocal #GEO',
   },
   'Forums & UGC Local': {
     platform: 'Reddit r/Lyon · Tripadvisor · Google Q&A',

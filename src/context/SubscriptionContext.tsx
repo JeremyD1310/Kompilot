@@ -137,6 +137,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   // ── Scope all billing storage keys to the authenticated user ────────────────
   useEffect(() => {
     const unsub = blink.auth.onAuthStateChanged((state) => {
+      setHasAuthenticatedUser(Boolean(state.user));
       setActiveUserId(state.user?.id ?? null);
       if (!state.user) {
         // Reset plan to free on logout to avoid stale data showing
@@ -154,6 +155,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   };
 
   // ── Subscription status ────────────────────────────────────────────────────
+  // Public pages mount this provider too, but billing is a protected endpoint.
+  // Track auth state before refreshing so anonymous visitors never hit /api/billing/status.
+  const [hasAuthenticatedUser, setHasAuthenticatedUser] = useState(() => blink.auth.isAuthenticated());
   const [subscriptionStatus, setStatusState] = useState<SubscriptionStatus>(
     () => getSubscriptionStatus(),
   );
@@ -186,10 +190,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Refresh on mount (non-blocking, best-effort)
+  // Refresh only for authenticated users (non-blocking, best-effort).
+  // Anonymous landing pages must not request the protected billing endpoint.
   useEffect(() => {
+    if (!hasAuthenticatedUser) return;
     refreshBillingStatus().catch(() => { /* noop */ });
-  }, [refreshBillingStatus]);
+  }, [hasAuthenticatedUser, refreshBillingStatus]);
 
   // Keep storage in sync when plan changes externally (e.g. tab sync)
   useEffect(() => {

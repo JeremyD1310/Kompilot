@@ -110,13 +110,25 @@ export async function createCheckoutSession(
  * Falls back gracefully on network error.
  */
 export async function fetchBillingStatus(): Promise<BillingStatus> {
+  const fallback: BillingStatus = {
+    status: 'active',
+    gracePeriodEnd: null,
+    hasStripeCustomer: false,
+    planId: null,
+    stripeSubscriptionId: null,
+  };
+
   try {
-    const headers = await getAuthHeader();
-    const res = await fetch(`${BACKEND_URL}/api/billing/status`, { headers });
-    if (!res.ok) return { status: 'active', gracePeriodEnd: null, hasStripeCustomer: false, planId: null, stripeSubscriptionId: null };
+    const token = await blink.auth.getValidToken().catch(() => null);
+    if (!token) return fallback;
+
+    const res = await fetch(`${BACKEND_URL}/api/billing/status`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return fallback;
     return await res.json() as BillingStatus;
   } catch {
-    return { status: 'active', gracePeriodEnd: null, hasStripeCustomer: false, planId: null, stripeSubscriptionId: null };
+    return fallback;
   }
 }
 

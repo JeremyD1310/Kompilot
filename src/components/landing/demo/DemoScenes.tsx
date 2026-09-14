@@ -548,7 +548,7 @@ export function SceneCalendar() {
           }}>
             <span style={{ fontSize: '.8rem', animation: phase >= 2 ? 'hd-pulse-dot .8s ease infinite' : undefined }}>✦</span>
             <p style={{ fontSize: '.5rem', color: '#CBD5E1', lineHeight: 1.5 }}>
-              <strong style={{ color: '#2DD4BF' }}>IA suggère</strong> — Idéal pour publier <strong>samedi 14h</strong> (pic d'engagement +34%)
+              <strong style={{ color: '#2DD4BF' }}>IA suggère</strong> — créneau indicatif selon les signaux observés
             </p>
             <button style={{
               marginLeft: 'auto', flexShrink: 0, padding: '4px 9px',

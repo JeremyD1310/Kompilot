@@ -222,7 +222,7 @@ export default function AcademyPage() {
               </p>
             </div>
             <span className="shrink-0 text-[11px] font-bold text-teal-700 bg-teal-100 border border-teal-200 rounded-full px-3 py-1.5">
-              🎯 Taux de conversion moyen : 34%
+              🎯 Scripts à personnaliser selon votre marché
             </span>
           </div>
           <PitchGeneratorPanel />

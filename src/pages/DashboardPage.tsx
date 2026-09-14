@@ -49,18 +49,11 @@ export default function DashboardPage() {
   const { isAgencyView } = useDemoView();
   const { activeEstablishment } = useEstablishment();
   const { user, isLoading: authLoading } = useAuth();
-
-  // Axe 1 FIX — évite la page blanche en mode agence
-  // Un return null ici laisse un écran vide ; Navigate redirige proprement.
-  if (isAgencyView) return <Navigate to="/agence/dashboard" />;
-
-  // Show skeleton while auth state resolves — avoids blank white screen
-  if (authLoading) return <DashboardPageSkeleton />;
   const growthChecklist = useGrowthChecklist(user?.id);
   const { posts } = useScheduledPosts();
   const { messages } = useInboxMessages();
 
-  // Modal state
+  // Modal state must be declared before any conditional return so hook order stays stable.
   const [vacationOpen, setVacationOpen] = useState(false);
   const [vacationConfig, setVacationConfig] = useState<VacationConfig | null>(null);
   const [createPostOpen, setCreatePostOpen] = useState(false);
@@ -69,6 +62,13 @@ export default function DashboardPage() {
   const [forceOnboardingOpen, setForceOnboardingOpen] = useState(false);
   const [minuteCopilotOpen, setMinuteCopilotOpen] = useState(false);
   const [connectAccountOpen, setConnectAccountOpen] = useState(false);
+
+  // Axe 1 FIX — évite la page blanche en mode agence
+  // Un return null ici laisse un écran vide ; Navigate redirige proprement.
+  if (isAgencyView) return <Navigate to="/agence/dashboard" />;
+
+  // Show skeleton while auth state resolves — avoids blank white screen
+  if (authLoading) return <DashboardPageSkeleton />;
 
   const openCreatePost = (text?: string, channels?: string[]) => {
     setPrefillText(text);

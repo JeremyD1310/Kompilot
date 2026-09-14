@@ -135,7 +135,7 @@ export const DEFAULT_SECTOR_CONFIG: SectorConfig = {
   ],
   ctaText: 'Scanner mon établissement gratuitement',
   scanPlaceholder: 'Ex: Boulangerie Martin Paris 10...',
-  socialProof: '1 200+ établissements actifs sur Kompilot',
+  socialProof: 'Pilotage centralisé pour les établissements locaux',
 };
 
 /** Retourne la config du secteur détecté depuis utm_sector */

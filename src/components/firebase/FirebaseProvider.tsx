@@ -1,29 +1,31 @@
 /**
- * FirebaseProvider — initializes Firebase services on mount.
- * Place inside DashboardLayout to enable Analytics page-tracking,
- * FCM service worker registration, and Firestore connection.
+ * FirebaseProvider — initializes consent-approved Firebase services on mount.
+ * FCM is initialized only after the user explicitly enables notifications.
  */
-import { useEffect } from 'react';
-import { initFirebaseServiceWorker } from '../../firebase/swInit';
+import { useEffect, useState } from 'react';
 import { getFirebaseAnalytics, getFirebaseFirestore, isFirebaseConfigured } from '../../firebase/client';
+import { COOKIE_CONSENT_EVENT, hasAnalyticsConsent } from '../../lib/cookieConsent';
 
 interface FirebaseProviderProps {
   children: React.ReactNode;
 }
 
 export function FirebaseProvider({ children }: FirebaseProviderProps) {
+  const [analyticsAllowed, setAnalyticsAllowed] = useState(hasAnalyticsConsent);
+
   useEffect(() => {
-    if (!isFirebaseConfigured()) return;
-
-    // Initialize Analytics
-    getFirebaseAnalytics().catch(() => {});
-
-    // Initialize Firestore connection
-    getFirebaseFirestore();
-
-    // Register service worker for FCM
-    initFirebaseServiceWorker().catch(() => {});
+    const updateConsent = () => setAnalyticsAllowed(hasAnalyticsConsent());
+    window.addEventListener(COOKIE_CONSENT_EVENT, updateConsent);
+    return () => window.removeEventListener(COOKIE_CONSENT_EVENT, updateConsent);
   }, []);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured() || !analyticsAllowed) return;
+
+    // Firebase Analytics and Firestore are opt-in on the public consent banner.
+    getFirebaseAnalytics().catch(() => {});
+    getFirebaseFirestore();
+  }, [analyticsAllowed]);
 
   return <>{children}</>;
 }

@@ -1,27 +1,32 @@
 # Kompilot
 
-> Plateforme IA marketing tout-en-un pour commerçants locaux et agences. Gérez vos réseaux sociaux, avis Google et visibilité IA depuis un seul cockpit.
+> Kompilot est une plateforme SaaS B2B de marketing local pour contenus, avis clients et visibilité en ligne. Elle aide les commerces, entreprises, réseaux et agences à piloter leurs actions depuis un espace unifié.
 
 ## Pages principales
 
-- [Accueil](https://kompilot.blinkpowered.com/) — Présentation de la plateforme Kompilot et ses fonctionnalités IA
-- [Tarifs](https://kompilot.blinkpowered.com/pricing) — Plans Starter (69€/mois) et Agency (149€/mois)
-- [Connexion](https://kompilot.blinkpowered.com/login) — Espace client Kompilot
+- [Accueil](https://www.kompilot.fr/) — Présentation de Kompilot et de ses usages de marketing local
+- [Fonctionnalités](https://www.kompilot.fr/features) — Contenus, avis, inbox, visibilité et pilotage multi-établissements
+- [Tarifs](https://www.kompilot.fr/pricing) — Offres Starter et Agency, selon le périmètre publié
+- [Référentiel factuel](https://www.kompilot.fr/informations-kompilot) — Définition, tarifs, méthodologie bêta et FAQ
 
-## Fonctionnalités
+## Fonctionnalités publiées
 
-- **Creative Studio** — Génération automatique de posts pour Instagram, Facebook, LinkedIn avec IA
-- **Gestion des avis** — Réponses automatiques aux avis Google Maps en 1 clic
-- **AIO Sync** — Optimisation pour les moteurs de recherche IA (ChatGPT, Gemini, Perplexity)
-- **Calendrier éditorial** — Planification multi-canal avec suggestions IA
-- **Inbox unifié** — Messages, commentaires et DM centralisés
-- **Scanner GEO** — Analyse de visibilité locale en 30 secondes
+- **Contenus sociaux** — Préparation et planification assistées par IA, avec validation humaine
+- **Avis clients** — Centralisation et aide à la préparation des réponses
+- **Visibilité locale** — Suivi des informations, contenus et signaux de présence
+- **Calendrier éditorial** — Organisation des actions par canal et par établissement
+- **Inbox unifiée** — Messages et commentaires regroupés dans un espace de travail
+- **Reporting** — Vues de suivi pour équipes, réseaux et agences
 
 ## Secteurs cibles
 
-Restauration, Beauté & Coiffure, Clubs Sportifs & Fitness, Hôtellerie, Immobilier, Santé, Commerce de proximité, Artisanat, Automobile.
+Restauration, beauté, sport, hôtellerie, immobilier, santé, commerce de proximité, artisanat et agences marketing.
+
+## Conditions de lecture
+
+Kompilot ne garantit ni citation par un moteur de réponse, ni gain de visibilité, de chiffre d’affaires ou de note d’avis. Les résultats bêta ne sont publiés que lorsqu’ils sont accompagnés d’un protocole et de données vérifiables.
 
 ## Contact
 
-- Support : support@kompilot.com
-- Site web : https://kompilot.blinkpowered.com
+- Support : support@kompilot.app
+- Site web : https://www.kompilot.fr
