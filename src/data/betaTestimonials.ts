@@ -70,8 +70,8 @@ export const BETA_TESTIMONIALS: BetaTestimonial[] = [
   },
 ];
 
-export const getApprovedBetaTestimonials = () =>
-  BETA_TESTIMONIALS.filter(testimonial => testimonial.publicationApproved === true);
+export const getApprovedBetaTestimonials = (testimonials: BetaTestimonial[] = BETA_TESTIMONIALS) =>
+  testimonials.filter(testimonial => testimonial.publicationApproved === true);
 
 export const getBetaTestimonial = (id: string) =>
   BETA_TESTIMONIALS.find(testimonial => testimonial.id === id);
