@@ -21,8 +21,8 @@
  *      Formule  : A × B × 4 (semaines/mois)
  *      Résultat : "Temps libéré par l'IA : +X heures / mois"
  *
- *  Ancrage psychologique : "Ce module vous rapporte X€ pour un
- *  abonnement à seulement 99€/mois. Rentabilisé dès le 1er jour."
+ *  Les montants affichés sont des estimations indicatives, à mesurer avec
+ *  les données réelles de chaque entreprise.
  *
  *  CTA : "Créer mon propre espace Kompilot" → /signup
  *  + sessionStorage pour pré-configurer l'onboarding
@@ -83,14 +83,12 @@ const PERSONA_CONFIG = {
    ANCRAGE PSYCHOLOGIQUE
 ───────────────────────────────────────────────────────────── */
 function anchorText(persona: DemoPersona, result: number): string {
+  if (result <= 0) return 'Ajustez les curseurs pour visualiser une estimation indicative.';
   if (persona === 'agency') {
-    if (result <= 0) return 'Ajustez les curseurs pour voir le temps que l\'IA vous libère.';
-    const equiv = Math.round(result * 45); // valeur horaire estimée à 45€/h
-    return `${result} heures libérées ≈ ${equiv.toLocaleString('fr-FR')}€ de valeur temps. Abonnement à seulement 299€/mois — rentabilisé dès la première semaine.`;
+    const equiv = Math.round(result * 45);
+    return `${result} heures libérées · estimation indicative de ${equiv.toLocaleString('fr-FR')}€ de valeur temps, selon les données renseignées.`;
   }
-  if (result <= 0) return 'Ajustez les curseurs pour visualiser votre gain potentiel.';
-  const multiple = (result / 99).toFixed(1);
-  return `Ce module vous rapporte ${result.toLocaleString('fr-FR')}€ pour un abonnement à seulement 99€/mois. L'outil est rentabilisé dès le premier jour (×${multiple}).`;
+  return `${result.toLocaleString('fr-FR')}€ de potentiel estimé, selon les données renseignées. Résultat à mesurer dans votre activité.`;
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -195,7 +193,7 @@ export default function ROISimulatorWidget({ persona }: Props) {
         </div>
         <div>
           <h3 className="font-bold text-sm text-slate-900 dark:text-white leading-tight">
-            Calculez vos gains
+            Estimez un potentiel
           </h3>
           <p className={`text-xs mt-0.5 font-semibold ${clr.label}`}>
             {cfg.resultLabel}
@@ -293,7 +291,7 @@ export default function ROISimulatorWidget({ persona }: Props) {
           }`}
         >
           <p className="text-[10px] uppercase tracking-widest text-white/70 mb-2 leading-tight">
-            {cfg.resultLabel}
+            {cfg.resultLabel} · exemple de démonstration
           </p>
 
           <div className="flex items-baseline justify-center gap-1">
@@ -335,8 +333,8 @@ export default function ROISimulatorWidget({ persona }: Props) {
       </div>
 
       <p className="text-center text-[10px] text-slate-400 flex items-center justify-center gap-1.5">
-        <Sparkles className="w-3 h-3 text-emerald-400" />
-        7 jours gratuits · Sans carte bancaire
+      <Sparkles className="w-3 h-3 text-emerald-400" />
+      Exemple de démonstration · estimation indicative · 7 jours gratuits sans carte bancaire
       </p>
     </Card>
   );

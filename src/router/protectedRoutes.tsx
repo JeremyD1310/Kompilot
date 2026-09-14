@@ -145,6 +145,15 @@ export const clientMessagesRoute = createRoute({
   component: () => <Navigate to="/inbox" />,
 });
 
+// Canonical hubs keep the main navigation focused while preserving old bookmarks.
+export const calendarAliasRoute = createRoute({ getParentRoute: () => d, path: '/calendrier', component: () => <Navigate to="/calendar" /> });
+export const caisseAliasRoute = createRoute({ getParentRoute: () => d, path: '/caisse', component: () => <Navigate to="/caissier" /> });
+export const teamAliasRoute = createRoute({ getParentRoute: () => d, path: '/equipe', component: () => <Navigate to="/team" /> });
+export const creativeFactoryAliasRoute = createRoute({ getParentRoute: () => d, path: '/creative-studio', component: () => <Navigate to="/creative-studio-hub" /> });
+export const emailMarketingAliasRoute = createRoute({ getParentRoute: () => d, path: '/campagnes', component: () => <Navigate to="/email-marketing" /> });
+export const resultsAliasRoute = createRoute({ getParentRoute: () => d, path: '/resultats', component: () => <Navigate to="/performance" /> });
+export const seoAuthorityAliasRoute = createRoute({ getParentRoute: () => d, path: '/seo-et-geo', component: () => <Navigate to="/seo-local" /> });
+
 export const protectedChildRoutes = [
   setupRoute, dashboardRoute, calendarRoute, inboxRoute,
   settingsRoute, profileRoute, guideRoute, subscriptionRoute,
@@ -159,4 +168,6 @@ export const protectedChildRoutes = [
   aiCreativeStudioRoute, featuresShowcaseRoute, tunnelsRoute,
   aioRoute, roasRoute, emailMarketingRoute, websiteScanRoute, emailSequencesRoute,
   creativeStudioHubRoute, teamRoute, monEquipeRoute, engagementRoute, seoGapRoute,
+  calendarAliasRoute, caisseAliasRoute, teamAliasRoute, creativeFactoryAliasRoute,
+  emailMarketingAliasRoute, resultsAliasRoute, seoAuthorityAliasRoute,
 ];

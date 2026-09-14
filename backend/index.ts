@@ -136,14 +136,33 @@ const app = new Hono();
 // CORS — allow calls from the Kompilot frontend and custom domain
 app.use('*', cors({
   origin: [
-    'https://www.kompilot.com',
+    'https://kompilot.fr',
+    'https://www.kompilot.fr',
+    'https://demo.kompilot.fr',
     'https://kompilot.blinkpowered.com',
-    // Allow all *.blink.new origins (preview / sandbox)
-    /https:\/\/.+\.blink\.new$/,
+    // Allow the current Blink preview/backend origins only; never every blink.new origin.
+    /^https:\/\/3000-[a-z0-9-]+\.preview-blink\.com$/,
+    /^https:\/\/[a-z0-9-]+\.blink\.new$/,
   ],
   allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Kompilot-Internal-Secret'],
 }));
+
+const requireInternalSecret = async (c: any, next: any) => {
+  const expected = (c.env as Record<string, string | undefined>).KOMPILOT_INTERNAL_SECRET;
+  const provided = c.req.header('X-Kompilot-Internal-Secret');
+  if (!expected || !provided || provided !== expected) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+  await next();
+};
+
+// Sensitive RBAC checks must run before route modules are mounted.
+app.use('/api/billing/*', requireRole('admin'));
+app.use('/api/team/*', requireRole('admin'));
+app.use('/api/admin/*', requireRole('admin'));
+app.use('/api/queues/init', requireInternalSecret);
+app.use('/api/queue', requireInternalSecret);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (c) => c.json({ ok: true, ts: Date.now() }));
@@ -245,11 +264,9 @@ app.route('/', referralRewardsRouter);
 
 // ── RBAC enforcement on sensitive routes ─────────────────────────────────────
 // Billing: admin only (prevents members/guests from changing plans)
-app.use('/api/billing/*', requireRole('admin'));
 // Team management: admin only
-app.use('/api/team/*', requireRole('admin'));
 // Admin analytics: admin only
-app.use('/api/admin/*', requireRole('admin'));
+// These middleware are registered before route mounting above.
 
 // ── Blink Queue handler ──────────────────────────────────────────────────────
 app.post('/api/queue', async (c) => {
