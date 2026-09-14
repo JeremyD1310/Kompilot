@@ -8,7 +8,6 @@ import { LandingTestimonials } from '../components/landing/LandingTestimonials';
 import { LandingFooter } from '../components/landing/LandingFooter';
 import { AGENCY_REVIEWS, COMMERCE_REVIEWS } from '../data/testimonials';
 import { usePageSeo } from '../hooks/usePageSeo';
-import { createKompilotGraph } from '../lib/seoData';
 
 type Audience = 'commerce' | 'agency';
 
@@ -17,7 +16,7 @@ export default function TestimonialsPage() {
   const [audience, setAudience] = useState<Audience>('commerce');
   const revealRef = useRef<HTMLDivElement>(null);
 
-  usePageSeo('Retours utilisateurs Kompilot', 'Retrouvez les cas d’usage et retours documentés sur Kompilot, sans promesse de résultat généralisée.', '/temoignages', { structuredData: createKompilotGraph('/temoignages', 'Retours utilisateurs Kompilot') });
+  usePageSeo('Retours utilisateurs Kompilot', 'Retrouvez les cas d’usage et retours documentés sur Kompilot, sans promesse de résultat généralisée.', '/temoignages');
 
   const onCta = () => blink.auth.login(window.location.origin + '/dashboard');
   const reviews = audience === 'commerce' ? COMMERCE_REVIEWS : AGENCY_REVIEWS;

@@ -1,24 +1,22 @@
-import { useEffect } from 'react';
 import { blink } from '../blink/client';
 import { useAuth } from '../hooks/useAuth';
 import { PWABanner } from '../components/layout/PWABanner';
 import { LandingNav } from '../components/landing/LandingNav';
 import { LandingFooter } from '../components/landing/LandingFooter';
-import { FAQSection } from '../components/landing/FAQSection';
-import { setPageSeo } from '../lib/seo';
+import { FAQSection, FAQ_ITEMS } from '../components/landing/FAQSection';
+import { usePageSeo } from '../hooks/usePageSeo';
+import { createFaqGraph } from '../lib/seoData';
 
 type Audience = 'commerce' | 'agency';
 
 export default function FAQPage() {
   const { user } = useAuth();
-
-  useEffect(() => {
-    setPageSeo({
-      title: 'FAQ | Kompilot',
-      description: 'Retrouvez les réponses aux questions fréquentes sur Kompilot, ses fonctionnalités, ses offres et son accompagnement.',
-      path: '/faq',
-    });
-  }, []);
+  usePageSeo(
+    'FAQ Kompilot — Questions sur le marketing local par IA',
+    'Réponses aux questions fréquentes sur Kompilot, ses fonctionnalités, ses offres et le contrôle humain des contenus générés par IA.',
+    '/faq',
+    { structuredData: createFaqGraph('/faq', 'FAQ Kompilot', 'Réponses aux questions fréquentes sur Kompilot, ses fonctionnalités, ses offres et le contrôle humain des contenus générés par IA.', FAQ_ITEMS.map(item => ({ question: item.q, answer: item.a }))) },
+  );
 
   const handleCta = () => blink.auth.login(window.location.origin + '/dashboard');
   const setAudience = (_audience: Audience) => undefined;

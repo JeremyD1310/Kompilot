@@ -20,7 +20,16 @@
 
 ## Secteurs cibles
 
-Restauration, beauté, sport, hôtellerie, immobilier, santé, commerce de proximité, artisanat et agences marketing.
+Kompilot publie une page dédiée pour chaque secteur afin de décrire les cas d’usage sans dupliquer une promesse générique :
+
+- [Restaurants](https://www.kompilot.fr/secteurs/restaurants) — avis, menus, actualités et visibilité locale
+- [Boutiques](https://www.kompilot.fr/secteurs/boutiques) — nouveautés, promotions et réseau de points de vente
+- [Beauté](https://www.kompilot.fr/secteurs/beaute) — réalisations, rendez-vous et réputation
+- [Sport](https://www.kompilot.fr/secteurs/sport) — cours, événements et communauté locale
+- [Artisans](https://www.kompilot.fr/secteurs/artisans) — réalisations, zone d’intervention et demandes de devis
+- [Santé](https://www.kompilot.fr/secteurs/sante) — information locale claire et maîtrisée
+- [Immobilier](https://www.kompilot.fr/secteurs/immobilier) — expertise de quartier et génération de mandats
+- [Agences](https://www.kompilot.fr/secteurs/agences) — pilotage multi-clients, marque blanche et reporting
 
 ## Conditions de lecture
 

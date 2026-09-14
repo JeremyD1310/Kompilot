@@ -1,6 +1,7 @@
 import { Link, useParams } from '@tanstack/react-router';
 import { ArrowRight, CheckCircle2, MapPin, MessageSquareText, Share2, Sparkles } from 'lucide-react';
 import { usePageSeo } from '../hooks/usePageSeo';
+import { createSectorGraph } from '../lib/seoData';
 
 type Sector = {
   name: string;
@@ -24,8 +25,14 @@ const SECTORS: Record<string, Sector> = {
 export default function SectorPage() {
   const { sector: slug } = useParams({ strict: false }) as { sector: string };
   const sector = SECTORS[slug] ?? SECTORS.boutiques;
+  const isKnownSector = Boolean(SECTORS[slug]);
   const path = `/secteurs/${slug}`;
-  usePageSeo(`Kompilot pour les ${sector.name} | Marketing local par IA`, `Kompilot aide les ${sector.audience} à gérer réseaux sociaux, avis clients et visibilité locale depuis une seule plateforme.`, path);
+  const title = `Kompilot pour les ${sector.name} | Marketing local par IA`;
+  const description = `Kompilot aide les ${sector.audience} à gérer réseaux sociaux, avis clients et visibilité locale depuis une seule plateforme.`;
+  usePageSeo(title, description, path, {
+    robots: isKnownSector ? 'index, follow' : 'noindex, nofollow',
+    structuredData: isKnownSector ? createSectorGraph(path, title, sector.name, description) : undefined,
+  });
 
   return (
     <div className="min-h-screen bg-[#0B1120] text-slate-200">

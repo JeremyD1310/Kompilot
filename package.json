@@ -42,6 +42,7 @@
     "hono": "^4.12.23",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.8.0",
+    "openai": "^7.15.0",
     "postcss": "8.4.31",
     "react-hook-form": "^7.72.1",
     "react-hot-toast": "^2.6.0",

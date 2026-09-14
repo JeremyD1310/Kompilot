@@ -22,6 +22,8 @@ const DiagnosticPage       = React.lazy(() => import('../pages/DiagnosticPage'))
 const ReferralLandingPage  = React.lazy(() => import('../pages/ReferralLandingPage'));
 const ClientApprovalPage   = React.lazy(() => import('../pages/ClientApprovalPage'));
 const DemoPage             = React.lazy(() => import('../pages/DemoPage'));
+const TestimonialsPage      = React.lazy(() => import('../pages/TestimonialsPage'));
+const FAQPage              = React.lazy(() => import('../pages/FAQPage'));
 const TunnelReportPage        = React.lazy(() => import('../pages/TunnelReportPage'));
 const KompilotShowcasePage  = React.lazy(() => import('../pages/demo/KompilotShowcasePage'));
 const KompilotOnboardingPage = React.lazy(() => import('../pages/KompilotOnboardingPage'));
@@ -72,8 +74,8 @@ export const extendTrialRoute        = createRoute({ getParentRoute: () => rootR
 export const sectorRoute             = createRoute({ getParentRoute: () => rootRoute, path: '/secteurs/$sector', component: SectorPage });
 export const localRoute              = createRoute({ getParentRoute: () => rootRoute, path: '/local', component: MarketingInfoPage });
 export const featuresRoute           = createRoute({ getParentRoute: () => rootRoute, path: '/features', component: MarketingInfoPage });
-export const testimonialsRoute       = createRoute({ getParentRoute: () => rootRoute, path: '/temoignages', component: MarketingInfoPage });
-export const faqRoute                = createRoute({ getParentRoute: () => rootRoute, path: '/faq', component: MarketingInfoPage });
+export const testimonialsRoute       = createRoute({ getParentRoute: () => rootRoute, path: '/temoignages', component: TestimonialsPage });
+export const faqRoute                = createRoute({ getParentRoute: () => rootRoute, path: '/faq', component: FAQPage });
 
 export const publicRoutes = [
   indexRoute,

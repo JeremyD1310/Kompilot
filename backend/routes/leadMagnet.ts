@@ -127,6 +127,16 @@ Sois concret, chiffré, et orienté business. Réponds UNIQUEMENT avec le JSON.`
             </ul>
           </div>
           
+          <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #e2e8f0;">
+            <h4 style="margin-top: 0; color: #0f172a;">📋 Backlog priorisé — impact / effort</h4>
+            <ol style="margin: 8px 0; padding-left: 22px; color: #334155;">
+              <li><strong>Élevé / faible</strong> — Corriger les informations locales incohérentes et compléter les profils prioritaires.</li>
+              <li><strong>Élevé / moyen</strong> — Publier régulièrement des contenus utiles et répondre aux avis avec validation humaine.</li>
+              <li><strong>Moyen / moyen</strong> — Structurer les pages par secteur et renforcer les liens internes.</li>
+              <li><strong>Moyen / élevé</strong> — Mettre en place un suivi mensuel des recherches, citations et conversions.</li>
+            </ol>
+          </div>
+
           <p style="font-size: 18px; font-weight: bold; color: #0D9488;">${report.roi_summary}</p>
           
           <div style="margin-top: 24px; text-align: center;">

@@ -50,7 +50,7 @@ export default function LandingPage() {
     'Logiciel de visibilité locale et marketing IA | Kompilot',
     'Centralisez contenus, avis Google, réseaux sociaux, SEO local et visibilité dans les IA avec Kompilot. Essai gratuit pendant 7 jours.',
     '/',
-    { structuredData: createKompilotGraph('/', 'Logiciel de visibilité locale et marketing IA | Kompilot', true) },
+    { structuredData: createKompilotGraph('/', 'Logiciel de visibilité locale et marketing IA | Kompilot', false, 'Centralisez contenus, avis Google, réseaux sociaux, SEO local et visibilité dans les IA avec Kompilot.') },
   );
   const cta = () => {
     navigate({ to: user ? '/dashboard' : '/signup' });

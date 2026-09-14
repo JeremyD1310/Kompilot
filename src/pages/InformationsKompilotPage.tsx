@@ -7,7 +7,7 @@ const LAST_UPDATED = '14 septembre 2026';
 
 export default function InformationsKompilotPage() {
   const title = 'Informations Kompilot — Faits, tarifs et méthodologie';
-  usePageSeo(title, 'Référentiel factuel de Kompilot : définition, fonctionnalités, tarifs, méthodologie bêta, comparatif et FAQ.', '/informations-kompilot', { structuredData: createKompilotGraph('/informations-kompilot', title, true) });
+  usePageSeo(title, 'Référentiel factuel de Kompilot : définition, fonctionnalités, tarifs, méthodologie bêta, comparatif et FAQ.', '/informations-kompilot', { structuredData: createKompilotGraph('/informations-kompilot', title, true, KOMPILOT_IDENTITY.definition) });
 
   return (
     <div className="min-h-screen bg-[#0B1120] text-slate-200">

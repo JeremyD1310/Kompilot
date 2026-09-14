@@ -120,33 +120,37 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="X-Frame-Options" content="SAMEORIGIN" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <!-- JSON-LD: Organization + WebSite -->
+    <!-- JSON-LD: Organization + WebSite are site-level entities, emitted once. Route pages add only their own WebPage/FAQ/Product/Service schema. -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Kompilot",
-      "url": "https://www.kompilot.fr/",
-      "logo": "https://www.kompilot.fr/og-image.png",
-      "description": "Cockpit IA de visibilité locale pour centraliser contenus, avis Google, réseaux sociaux, SEO local et GEO.",
-      "foundingDate": "2025",
-      "sameAs": [
-        "https://x.com/kompilot_fr",
-        "https://www.linkedin.com/company/kompilot"
-      ],
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "contactType": "customer service",
-        "email": "support@kompilot.app"
-      }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Kompilot",
-      "url": "https://www.kompilot.fr/"
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://www.kompilot.fr/#organization",
+          "name": "KOMPILOT SAS",
+          "url": "https://www.kompilot.fr/",
+          "logo": "https://www.kompilot.fr/og-image.png",
+          "description": "Plateforme SaaS B2B de marketing local pour contenus, avis clients et visibilité en ligne.",
+          "sameAs": [
+            "https://x.com/kompilot_fr",
+            "https://www.linkedin.com/company/kompilot"
+          ],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "email": "support@kompilot.app"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://www.kompilot.fr/#website",
+          "name": "Kompilot",
+          "url": "https://www.kompilot.fr/",
+          "publisher": { "@id": "https://www.kompilot.fr/#organization" },
+          "inLanguage": "fr-FR"
+        }
+      ]
     }
     </script>
     <!-- ── Third-party chat widget relocation (CRITICAL — loaded before any widget script)

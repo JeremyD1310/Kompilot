@@ -12,7 +12,6 @@ import { Button } from '@blinkdotnew/ui';
 import { ArrowLeft, Zap } from 'lucide-react';
 import { KompilotLogo } from '../components/brand/KompilotLogo';
 import { usePageSeo } from '../hooks/usePageSeo';
-import { createKompilotGraph } from '../lib/seoData';
 import {
   getPlansForBilling,
   PlanCard,
@@ -29,7 +28,6 @@ export default function PricingPage() {
     'Tarifs Kompilot — Starter, Agency et Enterprise',
     'Comparez les tarifs et fonctionnalités de Kompilot pour les professionnels, équipes et agences : Starter, Agency et Enterprise.',
     '/pricing',
-    { structuredData: createKompilotGraph('/pricing', 'Tarifs Kompilot') },
   );
 
   const [checkoutPlanId, setCheckoutPlanId] = useState<KompilotPlanId | null>(null);

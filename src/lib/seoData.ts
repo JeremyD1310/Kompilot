@@ -32,6 +32,8 @@ export const USE_CASE_FAQS = [
   { question: 'Kompilot fournit-il des résultats garantis ?', answer: 'Non. Kompilot fournit des outils de pilotage et d’analyse. Aucun gain de visibilité, de chiffre d’affaires ou de note d’avis n’est garanti.' },
 ] as const;
 
+type GraphNode = Record<string, unknown>;
+
 export function createBreadcrumbList(path: string, title: string) {
   const items: Array<{ '@type': 'ListItem'; position: number; name: string; item: string }> = [
     { '@type': 'ListItem', position: 1, name: 'Kompilot', item: `${KOMPILOT_IDENTITY.domain}/` },
@@ -40,54 +42,93 @@ export function createBreadcrumbList(path: string, title: string) {
   return { '@type': 'BreadcrumbList', itemListElement: items };
 }
 
-export function createKompilotGraph(path: string, title: string, includeFaq = false) {
-  const organization = {
-    '@type': 'Organization',
-    '@id': `${KOMPILOT_IDENTITY.domain}/#organization`,
-    name: KOMPILOT_IDENTITY.legalName,
-    legalName: KOMPILOT_IDENTITY.legalName,
-    url: KOMPILOT_IDENTITY.domain,
-    description: KOMPILOT_IDENTITY.shortDefinition,
-    logo: `${KOMPILOT_IDENTITY.domain}/og-image.png`,
-    email: KOMPILOT_IDENTITY.supportEmail,
-    address: { '@type': 'PostalAddress', addressCountry: 'FR' },
-  };
-  const website = {
-    '@type': 'WebSite',
-    '@id': `${KOMPILOT_IDENTITY.domain}/#website`,
-    name: KOMPILOT_IDENTITY.name,
-    url: KOMPILOT_IDENTITY.domain,
-    publisher: { '@id': `${KOMPILOT_IDENTITY.domain}/#organization` },
+function createWebPage(path: string, title: string, description: string) {
+  return {
+    '@type': 'WebPage',
+    '@id': `${KOMPILOT_IDENTITY.domain}${path}#webpage`,
+    url: `${KOMPILOT_IDENTITY.domain}${path}`,
+    name: title,
+    description,
+    isPartOf: { '@id': `${KOMPILOT_IDENTITY.domain}/#website` },
+    about: { '@id': `${KOMPILOT_IDENTITY.domain}/#organization` },
     inLanguage: 'fr-FR',
   };
-  const software = {
-    '@type': 'SoftwareApplication',
-    '@id': `${KOMPILOT_IDENTITY.domain}/#software`,
-    name: KOMPILOT_IDENTITY.name,
-    applicationCategory: 'BusinessApplication',
-    operatingSystem: 'Web',
-    description: KOMPILOT_IDENTITY.definition,
-    url: KOMPILOT_IDENTITY.domain,
-    publisher: { '@id': `${KOMPILOT_IDENTITY.domain}/#organization` },
-  };
-  const product = {
-    '@type': 'Product',
-    '@id': `${KOMPILOT_IDENTITY.domain}/#product`,
-    name: 'Kompilot',
-    description: KOMPILOT_IDENTITY.definition,
-    brand: { '@type': 'Brand', name: 'Kompilot' },
-    category: 'Logiciel de marketing local',
-    offers: PUBLIC_PLANS.filter(plan => plan.name !== 'Enterprise').map(plan => ({
-      '@type': 'Offer',
-      name: plan.name,
-      description: plan.scope,
-      priceCurrency: 'EUR',
-      price: plan.name === 'Starter' ? '69' : '149',
-      url: `${KOMPILOT_IDENTITY.domain}/pricing`,
-      availability: 'https://schema.org/InStock',
-    })),
-  };
-  const graph: Record<string, unknown>[] = [organization, website, software, product, createBreadcrumbList(path, title)];
-  if (includeFaq) graph.push({ '@type': 'FAQPage', mainEntity: USE_CASE_FAQS.map(faq => ({ '@type': 'Question', name: faq.question, acceptedAnswer: { '@type': 'Answer', text: faq.answer } })) });
+}
+
+/**
+ * Page-specific structured data. Organization and WebSite are emitted once in
+ * index.html; this graph only adds the schema that belongs to the current route.
+ */
+export function createKompilotGraph(path: string, title: string, includeFaq = false, description = KOMPILOT_IDENTITY.shortDefinition) {
+  const graph: GraphNode[] = [createWebPage(path, title, description), createBreadcrumbList(path, title)];
+
+  if (path === '/pricing') {
+    graph.push({
+      '@type': 'Product',
+      '@id': `${KOMPILOT_IDENTITY.domain}/#product`,
+      name: 'Kompilot',
+      description: KOMPILOT_IDENTITY.definition,
+      brand: { '@type': 'Brand', name: 'Kompilot' },
+      category: 'Logiciel de marketing local',
+      offers: PUBLIC_PLANS.map(plan => ({
+        '@type': 'Offer',
+        name: plan.name,
+        description: plan.scope,
+        priceCurrency: 'EUR',
+        price: plan.name === 'Starter' ? '69' : '149',
+        url: `${KOMPILOT_IDENTITY.domain}/pricing`,
+        availability: 'https://schema.org/InStock',
+      })),
+    });
+  }
+
+  if (includeFaq) {
+    graph.push({
+      '@type': 'FAQPage',
+      mainEntity: USE_CASE_FAQS.map(faq => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+      })),
+    });
+  }
+
   return { '@context': 'https://schema.org', '@graph': graph };
+}
+
+export function createFaqGraph(path: string, title: string, description: string, faqs: Array<{ question: string; answer: string }>) {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      createWebPage(path, title, description),
+      createBreadcrumbList(path, title),
+      {
+        '@type': 'FAQPage',
+        mainEntity: faqs.map(faq => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+        })),
+      },
+    ],
+  };
+}
+
+export function createSectorGraph(path: string, title: string, sectorName: string, description: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      createWebPage(path, title, description),
+      createBreadcrumbList(path, title),
+      {
+        '@type': 'Service',
+        '@id': `${KOMPILOT_IDENTITY.domain}${path}#service`,
+        name: `Marketing local pour ${sectorName}`,
+        description,
+        serviceType: 'Marketing local et gestion de présence en ligne',
+        provider: { '@id': `${KOMPILOT_IDENTITY.domain}/#organization` },
+        areaServed: { '@type': 'Country', name: 'France' },
+      },
+    ],
+  };
 }
