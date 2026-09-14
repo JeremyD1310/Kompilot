@@ -26,8 +26,9 @@ export function isDemoRuntime(): boolean {
   if (typeof window === 'undefined') return false;
   if (isDemoDomain() || window.location.pathname === '/demo' || window.location.pathname.startsWith('/demo/')) return true;
   try {
-    return sessionStorage.getItem('kompilot_demo_active_session') === 'true' ||
-      Boolean(localStorage.getItem('kompilot_demo_session_v1'));
+    // A demo session is deliberately session-scoped. Never let a stale local
+    // marker turn a normal production route into a sandbox after navigation.
+    return sessionStorage.getItem('kompilot_demo_active_session') === 'true';
   } catch {
     return false;
   }
@@ -37,7 +38,23 @@ export function isDemoRuntime(): boolean {
 export const IS_DEMO_DOMAIN: boolean = isDemoDomain();
 export const IS_DEMO_RUNTIME: boolean = isDemoRuntime();
 
-// ── Storage keys (must match demoAccount.ts + DemoModeContext) ──────────────
+// ── Storage keys (shared by all demo adapters) ─────────────────────────────
+
+export const DEMO_STORAGE_KEYS = [
+  'kompilot_demo_data_v1',
+  'kompilot_demo_session_v1',
+  'kompilot_demo_active_session',
+  'kompilot_demo_profile_v2',
+  'kompilot_demo_view_role',
+  'kompilot_switcher_unlocked',
+  'kompilot_demo_sector',
+  'kompilot_demo_credits_v1',
+  'kompilot_demo_start_v1',
+  'kompilot_demo_onboarding_v1',
+  'kompilot_plan',
+  'blink_user_id',
+  'demo_exhausted_shown',
+] as const;
 
 const DEMO_SESSION_KEY  = 'kompilot_demo_session_v1';
 const DEMO_ACTIVE_KEY   = 'kompilot_demo_active_session';
@@ -101,4 +118,23 @@ export function bootstrapDemoSession(): void {
     localStorage.setItem(`onboarding_done_${DEMO_DOMAIN_USER.id}`, '1');
 
   } catch { /* noop — incognito / storage full */ }
+}
+
+/** Clear every known demo key without touching unrelated user data. */
+export function clearDemoStorage(options: { keepSession?: boolean } = {}): void {
+  const keep = new Set(options.keepSession ? [DEMO_SESSION_KEY, DEMO_ACTIVE_KEY, 'blink_user_id'] : []);
+  try {
+    for (const key of DEMO_STORAGE_KEYS) {
+      if (!keep.has(key)) localStorage.removeItem(key);
+    }
+    localStorage.removeItem(`onboarding_done_${DEMO_DOMAIN_USER.id}`);
+    if (!options.keepSession) {
+      localStorage.removeItem(DEMO_SESSION_KEY);
+      localStorage.removeItem('blink_user_id');
+      sessionStorage.removeItem(DEMO_ACTIVE_KEY);
+    }
+    sessionStorage.removeItem('demo_exhausted_shown');
+    sessionStorage.removeItem('mentor_payment_failed_shown');
+    sessionStorage.removeItem('mentor_cancelled_shown');
+  } catch { /* private browsing */ }
 }

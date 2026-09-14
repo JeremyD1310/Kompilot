@@ -25,6 +25,7 @@ import { DarkModeProvider, useDarkMode } from './context/DarkModeContext'
 import { ObsidianThemeProvider } from './context/ObsidianThemeContext'
 import { DemoModeProvider } from './context/DemoModeContext'
 import { DemoViewProvider } from './context/DemoViewContext'
+import { DemoDataProvider } from './context/DemoDataProvider'
 import { GuidedTourProvider } from './context/GuidedTourContext'
 import { NotificationsProvider } from './context/NotificationsContext'
 import { BrandSettingsProvider } from './context/BrandSettingsContext'
@@ -40,7 +41,11 @@ import { GoogleAnalyticsLoader } from './components/layout/GoogleAnalyticsLoader
 import App from './App'
 import { registerServiceWorker } from './lib/registerServiceWorker'
 import { installGlobalErrorHandlers } from './lib/errorLogger'
+import { installDemoFetchInterceptor } from './lib/demoDbProxy'
 import './index.css'
+
+// Install the demo network boundary before any provider or SDK hook mounts.
+installDemoFetchInterceptor()
 
 // Register SW for offline caching — after first paint
 registerServiceWorker()
@@ -66,12 +71,12 @@ function compose(...providers: ProviderComponent[]) {
   }
 }
 
-// Static providers — defined once at module level (don't depend on runtime state)
+// Static providers — defined once at module level (don't depend on runtime state).
+// DemoModeProvider is mounted explicitly below because it consumes DemoDataProvider.
 const StaticProviders = compose(
   AdminProvider,
   IntegrationStatusProvider,
   DemoViewProvider,
-  DemoModeProvider,
   UserProfileProviderWithAuth,
   SubscriptionProvider,
   EstablishmentProvider,
@@ -101,9 +106,13 @@ function ThemedApp() {
         <Toaster />
         <GoogleAnalyticsLoader />
         <PremiumActionGate />
-        <div className="flex w-full flex-1 flex-col min-h-0">
-          <App />
-        </div>
+        <DemoDataProvider>
+          <DemoModeProvider>
+            <div className="flex w-full flex-1 flex-col min-h-0">
+              <App />
+            </div>
+          </DemoModeProvider>
+        </DemoDataProvider>
         <CookieBanner />
         <HelpFeedbackButton />
         <SupportChatBubble />

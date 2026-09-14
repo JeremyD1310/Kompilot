@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useDemoData } from './DemoDataProvider';
+import { isDemoRuntime } from '../lib/demoDomain';
 
 // ── Demo data types ────────────────────────────────────────────────────────────
 
@@ -254,95 +256,52 @@ function resolveDemoSectorFromOnboarding(): DemoSector {
 }
 
 export function DemoModeProvider({ children }: { children: ReactNode }) {
-  const [demoSector, setDemoSector] = useState<DemoSector>(() => resolveDemoSectorFromOnboarding());
+  const demo = useDemoData();
+  const [demoTrialDaysRemaining, setDemoTrialDaysRemaining] = useState(DEMO_TRIAL_DAYS);
 
-  // Demo active flag — sessionStorage so anonymous visitors always start clean on each page load
-  const [isDemoActive, setIsDemoActive] = useState<boolean>(() => {
-    try {
-      // Use sessionStorage: resets automatically when the tab/session closes
-      const stored = sessionStorage.getItem(DEMO_STORAGE_KEY);
-      return stored === 'true';
-    } catch { return false; }
-  });
-
-  // Trial start date (set once on first activation)
-  const [startDate] = useState<string>(() => readOrInitStartDate());
-
-  // Demo credits pool
-  const [demoCreditsUsed, setDemoCreditsUsed] = useState<number>(() => readDemoCreditsUsed());
-
-  // Compute days remaining
-  const [demoTrialDaysRemaining, setDemoTrialDaysRemaining] = useState<number>(() => {
-    try {
-      const start = new Date(startDate);
-      const now = new Date();
-      const elapsedDays = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      return Math.max(0, DEMO_TRIAL_DAYS - elapsedDays);
-    } catch { return DEMO_TRIAL_DAYS; }
-  });
-
-  // Refresh days remaining daily
   useEffect(() => {
+    const startKey = 'kompilot_demo_start_v1';
+    const start = (() => {
+      try {
+        const stored = localStorage.getItem(startKey);
+        if (stored) return new Date(stored);
+        const now = new Date();
+        localStorage.setItem(startKey, now.toISOString());
+        return now;
+      } catch {
+        return new Date();
+      }
+    })();
     const tick = () => {
-      const start = new Date(startDate);
-      const now = new Date();
-      const elapsed = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      setDemoTrialDaysRemaining(Math.max(0, DEMO_TRIAL_DAYS - elapsed));
+      const elapsedDays = Math.floor((Date.now() - start.getTime()) / (1000 * 60 * 60 * 24));
+      setDemoTrialDaysRemaining(Math.max(0, DEMO_TRIAL_DAYS - elapsedDays));
     };
     tick();
-    const id = setInterval(tick, 60 * 60 * 1000); // re-check hourly
-    return () => clearInterval(id);
-  }, [startDate]);
-
-  const activateDemo = useCallback(() => {
-    setIsDemoActive(true);
-    try { sessionStorage.setItem(DEMO_STORAGE_KEY, 'true'); } catch { /* noop */ }
-    // Reset credits on re-activation
-    setDemoCreditsUsed(0);
-    saveDemoCreditsUsed(0);
+    const id = window.setInterval(tick, 60 * 60 * 1000);
+    return () => window.clearInterval(id);
   }, []);
 
-  const deactivateDemo = useCallback(() => {
-    setIsDemoActive(false);
-    try { sessionStorage.removeItem(DEMO_STORAGE_KEY); } catch { /* noop */ }
-  }, []);
-
-  const consumeDemoCredits = useCallback((n: number): boolean => {
-    setDemoCreditsUsed(prev => {
-      const remaining = DEMO_CREDIT_TOTAL - prev;
-      if (remaining < n) return prev; // not enough — no deduction
-      const next = prev + n;
-      saveDemoCreditsUsed(next);
-      return next;
-    });
-    // Return whether there were enough credits before deduction
-    return (DEMO_CREDIT_TOTAL - demoCreditsUsed) >= n;
-  }, [demoCreditsUsed]);
-
-  const resetDemoCredits = useCallback(() => {
-    setDemoCreditsUsed(0);
-    saveDemoCreditsUsed(0);
-  }, []);
-
-  const demoCreditsRemaining = Math.max(0, DEMO_CREDIT_TOTAL - demoCreditsUsed);
-  const isDemoCreditsExhausted = isDemoActive && demoCreditsUsed >= DEMO_CREDIT_TOTAL;
+  const activateDemo = useCallback(() => demo.activateDemo(), [demo]);
+  const deactivateDemo = useCallback(() => demo.deactivateDemo(), [demo]);
+  const consumeDemoCredits = useCallback((amount: number) => demo.consumeDemoCredits(amount), [demo]);
+  const resetDemoCredits = useCallback(() => demo.resetDemo(), [demo]);
 
   return (
     <DemoModeContext.Provider value={{
-      isDemoActive,
+      isDemoActive: demo.isDemoActive || isDemoRuntime(),
       demoData: DEMO_DATA,
       activateDemo,
       deactivateDemo,
       demoTrialDaysRemaining,
       demoTrialDaysTotal: DEMO_TRIAL_DAYS,
-      demoCreditTotal: DEMO_CREDIT_TOTAL,
-      demoCreditsUsed,
-      demoCreditsRemaining,
-      isDemoCreditsExhausted,
+      demoCreditTotal: demo.demoCreditTotal,
+      demoCreditsUsed: demo.demoCreditsUsed,
+      demoCreditsRemaining: demo.demoCreditsRemaining,
+      isDemoCreditsExhausted: demo.isDemoCreditsExhausted,
       consumeDemoCredits,
       resetDemoCredits,
-      demoSector,
-      setDemoSector,
+      demoSector: demo.demoSector,
+      setDemoSector: demo.setDemoSector,
     }}>
       {children}
     </DemoModeContext.Provider>
