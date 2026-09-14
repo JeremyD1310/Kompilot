@@ -16,6 +16,7 @@ const NAV_LINKS = [
   { label: 'Secteurs',    href: '#secteurs',       isAudience: null },
   { label: 'GEO',         href: '#geo',            isAudience: null },
   { label: 'Tarifs',      href: '#tarifs',          isAudience: null },
+  { label: 'Ressources',  href: '#faq',             isAudience: null },
 ] as const;
 
 type Audience = 'commerce' | 'agency';
@@ -81,8 +82,8 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
       <nav
         style={{
           position: 'sticky', top: 0, zIndex: 40,
-          borderBottom: '1px solid rgba(255,255,255,.06)',
-          backgroundColor: 'rgba(11,17,32,.92)',
+          borderBottom: '1px solid rgba(15,23,42,.08)',
+          backgroundColor: 'rgba(255,255,255,.94)',
           backdropFilter: 'blur(18px)',
         }}
       >
@@ -94,7 +95,7 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
         >
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-            <KompilotLogo variant="full" height={52} textColor="#F1F5F9" />
+            <KompilotLogo variant="full" height={52} textColor="#0F172A" />
           </div>
 
           {/* ── Desktop nav links ────────────────────────────────────────── */}
@@ -154,10 +155,10 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
               onClick={handleLogin}
               className={[
                 'flex items-center gap-1.5 whitespace-nowrap rounded-full cursor-pointer',
-                'text-[#E2E8F0] text-[.83rem] font-bold',
+                'text-[#0F172A] text-[.83rem] font-bold',
                 'border transition-all duration-200',
                 'px-[18px] py-[7px]',
-                'bg-[rgba(255,255,255,.07)] border-[rgba(255,255,255,.14)]',
+                'bg-[rgba(15,23,42,.04)] border-[rgba(15,23,42,.12)]',
                 'hover:bg-[rgba(13,148,136,.15)] hover:border-[rgba(13,148,136,.5)]',
               ].join(' ')}
             >
@@ -187,8 +188,8 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
             aria-expanded={mobileOpen}
           >
             {mobileOpen
-              ? <X size={18} color="#E2E8F0" />
-              : <Menu size={18} color="#E2E8F0" />
+              ? <X size={18} color="#0F172A" />
+              : <Menu size={18} color="#0F172A" />
             }
           </button>
         </div>
@@ -199,7 +200,7 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
             overflow: 'hidden',
             maxHeight: mobileOpen ? 480 : 0,
             transition: 'max-height .3s cubic-bezier(0.4, 0, 0.2, 1)',
-            borderTop: mobileOpen ? '1px solid rgba(255,255,255,.06)' : '1px solid transparent',
+            borderTop: mobileOpen ? '1px solid rgba(15,23,42,.08)' : '1px solid transparent',
           }}
         >
           <div style={{ padding: '12px 24px 20px' }}>
@@ -213,11 +214,11 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
                 const linkStyle = {
                   display: 'flex' as const, alignItems: 'center' as const, justifyContent: 'space-between' as const,
                   padding: '10px 14px', borderRadius: 10,
-                  color: isActive ? '#E2E8F0' : '#94A3B8',
+                  color: isActive ? '#0F172A' : '#64748B',
                   fontWeight: isActive ? 700 : 500,
                   fontSize: '.92rem',
                   textDecoration: 'none',
-                  background: isActive ? 'rgba(255,255,255,.05)' : 'transparent',
+                  background: isActive ? 'rgba(15,23,42,.04)' : 'transparent',
                   transition: 'background .15s, color .15s',
                 };
 
@@ -254,7 +255,7 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
             </div>
 
             {/* Divider */}
-            <div style={{ height: 1, background: 'rgba(255,255,255,.07)', marginBottom: 16 }} />
+            <div style={{ height: 1, background: 'rgba(15,23,42,.08)', marginBottom: 16 }} />
 
             {/* Mobile CTAs */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -263,8 +264,8 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
                 onClick={() => { setMobileOpen(false); handleLogin(); }}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  color: '#E2E8F0', fontSize: '.88rem', fontWeight: 700,
-                  background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.14)',
+                  color: '#0F172A', fontSize: '.88rem', fontWeight: 700,
+                  background: 'rgba(15,23,42,.04)', border: '1px solid rgba(15,23,42,.12)',
                   borderRadius: 12, padding: '11px 18px', cursor: 'pointer',
                   transition: 'background .2s',
                 }}

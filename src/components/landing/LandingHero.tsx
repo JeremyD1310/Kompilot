@@ -7,8 +7,8 @@ interface LandingHeroProps {
   onCta: () => void;
   /** Optional override for the main hero CTA button (adaptive behavior) */
   onHeroCta?: () => void;
-  heroSearch: string;
-  setHeroSearch: (v: string) => void;
+  heroSearch?: string;
+  setHeroSearch?: (v: string) => void;
   audience: 'commerce' | 'agency';
 }
 
@@ -330,161 +330,27 @@ export function HeroChatGPTSimulatorSection({ onCta }: { onCta: () => void }) {
   );
 }
 
-export function LandingHero({ onCta, onHeroCta, heroSearch, setHeroSearch, audience }: LandingHeroProps) {
+export function LandingHero({ onCta, onHeroCta, audience }: LandingHeroProps) {
   const copy = HERO_COPY[audience];
 
   return (
-    <section id="hero" style={{ position:'relative',overflow:'hidden',padding:'clamp(56px, 10vw, 88px) 16px clamp(48px, 8vw, 72px)',textAlign:'center',background:'radial-gradient(ellipse at 50% 0%, rgba(20,184,166,.18) 0%, rgba(139,92,246,.10) 35%, transparent 65%)' }}>
-      <div style={{ position:'absolute',inset:0,pointerEvents:'none',backgroundImage:'linear-gradient(rgba(13,148,136,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(13,148,136,.04) 1px, transparent 1px)',backgroundSize:'50px 50px' }} />
-      <div style={{ position:'absolute',top:-80,left:'50%',transform:'translateX(-50%)',width:900,height:500,background:'radial-gradient(ellipse, rgba(20,184,166,.20) 0%, rgba(13,148,136,.08) 40%, transparent 70%)',pointerEvents:'none' }} />
-      <div style={{ position:'absolute',bottom:-60,right:'5%',width:480,height:480,background:'radial-gradient(ellipse, rgba(139,92,246,.12) 0%, transparent 65%)',pointerEvents:'none' }} />
-
-      <div style={{ maxWidth:820,margin:'0 auto',position:'relative' }}>
-        {/* Badge */}
-        <div className="sr" style={{ display:'flex',justifyContent:'center',marginBottom:24 }}>
-          <span style={{ display:'inline-flex',alignItems:'center',gap:8,background:'rgba(13,148,136,.08)',backdropFilter:'blur(12px)',border:'1px solid rgba(45,212,191,.35)',color:'#2DD4BF',borderRadius:9999,padding:'8px 20px',fontSize:'.77rem',fontWeight:700,letterSpacing:'.04em',boxShadow:'0 0 20px rgba(13,148,136,.15)' }}>
-            <span className="nc-star-spin">✦</span>
-            {copy.badge}
-          </span>
+    <section id="hero" style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(64px, 9vw, 118px) 20px clamp(72px, 9vw, 120px)', background: 'linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)' }}>
+      <div style={{ position: 'absolute', top: -180, right: -120, width: 520, height: 520, borderRadius: '50%', background: 'radial-gradient(circle, rgba(13,148,136,.10), transparent 68%)', pointerEvents: 'none' }} />
+      <div style={{ maxWidth: 1180, margin: '0 auto', position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, .84fr) minmax(0, 1.16fr)', gap: 'clamp(36px, 7vw, 92px)', alignItems: 'center' }} className="landing-hero-grid">
+        <div className="sr" style={{ textAlign: 'left' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1px solid #99F6E4', color: '#0F766E', background: '#F0FDFA', borderRadius: 9999, padding: '8px 14px', fontSize: '.75rem', fontWeight: 800, letterSpacing: '.04em', marginBottom: 24 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#0D9488' }} />{copy.badge.replace('✦ ', '')}</div>
+          <h1 style={{ fontSize: 'clamp(2.45rem, 5.5vw, 5rem)', fontWeight: 900, lineHeight: 1.02, letterSpacing: '-.055em', color: '#0F172A', margin: '0 0 24px', maxWidth: 680 }}>{copy.h1Main}{' '}<span style={{ color: '#0D9488' }}>{copy.h1Gradient}</span></h1>
+          <p style={{ fontSize: 'clamp(1rem, 1.6vw, 1.15rem)', color: '#475569', lineHeight: 1.75, maxWidth: 560, margin: '0 0 28px' }}>{copy.sub}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 18 }}><button type="button" aria-label="Créer mon espace gratuitement" data-testid="home-signup-cta" className="nc-pill" style={{ background: '#0D9488', color: '#FFFFFF', padding: '16px 25px', fontSize: '.98rem', boxShadow: '0 12px 26px rgba(13,148,136,.20)' }} onClick={onHeroCta ?? onCta}><Zap size={17} /> {copy.cta} <ArrowRight size={16} /></button><a href="/showcase" className="nc-btn-outline" style={{ color: '#0F172A', borderColor: '#CBD5E1', background: '#FFFFFF', padding: '15px 20px' }}>Voir en action <ArrowRight size={15} /></a></div>
+          <p style={{ color: '#64748B', fontSize: '.78rem', lineHeight: 1.7, margin: 0 }}>7 jours gratuits · Sans carte bancaire · Validation humaine avant publication</p>
         </div>
-
-        {/* H1 — conditionnel selon l'audience */}
-        <h1 className="sr d1" style={{ fontSize:'clamp(2rem, 5.5vw, 3.8rem)',fontWeight:900,lineHeight:1.10,letterSpacing:'-0.032em',color:'#F8FAFC',margin:'0 auto 1.6rem',maxWidth:820 }}>
-          {copy.h1Main}{' '}
-          <span style={{ background:'linear-gradient(90deg, #FFFFFF 0%, #2DD4BF 60%, #06B6D4 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text' }}>
-            {copy.h1Gradient}
-          </span>
-        </h1>
-
-        {/* Subline */}
-        {copy.sub && (
-          <p className="sr d2" style={{ fontSize:'1.08rem',color:'#94A3B8',lineHeight:1.78,maxWidth:620,margin:'0 auto 2rem' }}>
-            {copy.sub}
-          </p>
-        )}
-
-        {/* ── 3-step blocks for commerce audience ── */}
-        {audience === 'commerce' && (
-          <>
-            <p className="sr d2" style={{ fontSize: '.88rem', color: '#64748B', marginBottom: '1.2rem', letterSpacing: '.01em' }}>
-              3 étapes pour augmenter votre présence locale
-            </p>
-            <div className="sr d2" style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: '2rem', flexWrap: 'wrap', maxWidth: 760, margin: '0 auto 2rem' }}>
-              {COMMERCE_STEPS.map((step, i) => (
-                <div key={i} style={{
-                  background: 'rgba(255,255,255,.03)',
-                  border: '1px solid rgba(255,255,255,.08)',
-                  borderRadius: 16,
-                  padding: '20px 18px',
-                  flex: '1 1 180px',
-                  maxWidth: 230,
-                  textAlign: 'left',
-                  position: 'relative',
-                }}>
-                  <div style={{ fontSize: '2rem', fontWeight: 900, color: 'rgba(13,148,136,.18)', lineHeight: 1, marginBottom: 10 }}>{step.num}</div>
-                  <div style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(45,212,191,.10)', color: '#2DD4BF', marginBottom: 12 }}>
-                    <step.icon size={17} strokeWidth={2.2} aria-hidden="true" />
-                  </div>
-                  <h3 style={{ color: '#F1F5F9', fontWeight: 700, fontSize: '.9rem', margin: '0 0 6px' }}>{step.title}</h3>
-                  <p style={{ color: '#64748B', fontSize: '.78rem', margin: 0, lineHeight: 1.55 }}>{step.desc}</p>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* ── Primary CTA block ── */}
-        <div className="sr d3" style={{ marginBottom:'2rem',display:'flex',flexDirection:'column',alignItems:'center',gap:12,width:'100%' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap', width: '100%' }}>
-            <button
-              type="button"
-              aria-label="Créer mon espace gratuitement"
-              data-testid="home-signup-cta"
-              className="nc-pill nc-pill-shimmer"
-              style={{
-                fontSize: 'clamp(.95rem,2.8vw,1.08rem)',
-                padding: 'clamp(18px,4vw,16px) clamp(28px,5vw,44px)',
-                width: 'min(92vw, 420px)',
-                justifyContent: 'center',
-                minHeight: 56,
-              }}
-              onClick={onHeroCta ?? onCta}
-            >
-              <Zap size={18} />
-              {copy.cta}
-              <ArrowRight size={16} />
-            </button>
-            <a
-              href="/showcase"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 56,
-                padding: '0 22px', borderRadius: 9999,
-                border: '1px solid rgba(148,163,184,.35)', color: '#CBD5E1',
-                fontSize: '.9rem', fontWeight: 700, textDecoration: 'none',
-                background: 'rgba(255,255,255,.04)', transition: 'border-color .2s, color .2s, background .2s',
-              }}
-              onMouseEnter={(e) => { const el = e.currentTarget; el.style.borderColor = '#2DD4BF'; el.style.color = '#F8FAFC'; el.style.background = 'rgba(13,148,136,.12)'; }}
-              onMouseLeave={(e) => { const el = e.currentTarget; el.style.borderColor = 'rgba(148,163,184,.35)'; el.style.color = '#CBD5E1'; el.style.background = 'rgba(255,255,255,.04)'; }}
-            >
-              Voir Kompilot en action <ArrowRight size={15} />
-            </a>
-          </div>
-
-          {/* AIO Checker secondary CTA */}
-          <a
-            href="/aio-checker"
-            style={{
-              fontSize: '.82rem',
-              color: '#0D9488',
-              fontWeight: 700,
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: '6px 0',
-              transition: 'color .15s',
-            }}
-            onMouseEnter={(e) => { (e.target as HTMLElement).style.color = '#0F766E'; }}
-            onMouseLeave={(e) => { (e.target as HTMLElement).style.color = '#0D9488'; }}
-          >
-            Vérifier ma visibilité IA gratuitement →
-          </a>
-
-          {/* Trust subtext */}
-          <div style={{ display:'flex',flexDirection:'column',alignItems:'center',gap:4 }}>
-            <p style={{ fontSize:'.82rem',color:'#475569',fontWeight:600,margin:0,textAlign:'center' }}>
-              7 jours gratuits · Sans carte bancaire · Validation humaine avant publication
-            </p>
-            <div style={{ display:'flex',flexWrap:'wrap',justifyContent:'center',gap:'4px 10px' }}>
-              {['✓ Contenus et avis centralisés', '✓ SEO local et GEO', '✓ Vous gardez le contrôle'].map((item) => (
-                <span key={item} style={{ fontSize:'clamp(.72rem, 1.8vw, .78rem)',color:'#64748B',fontWeight:600,whiteSpace:'nowrap' }}>
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <p className="sr d4" style={{ color:'#64748B',fontSize:'.78rem',margin:'0 0 2rem' }}>
-          Plateforme française · Bêta testée par des professionnels · Conçue pour une utilisation conforme au RGPD
-        </p>
-
-        {/* ── Dashboard mockup ── */}
-        <div className="sr d5" style={{ marginTop:24,position:'relative',overflowX:'hidden',width:'100%' }}>
-          <div style={{ perspective:'1200px',perspectiveOrigin:'50% 0%' }}>
-            <div style={{ transform:'rotateX(12deg) scale(0.96)',transformOrigin:'50% 0%',borderRadius:16,overflow:'hidden',border:'1px solid rgba(255,255,255,.10)',boxShadow:'0 40px 80px -20px rgba(0,0,0,.7), 0 0 0 1px rgba(13,148,136,.15)',maxWidth:'min(100%, 760px)',width:'100%',margin:'0 auto' }}>
-              <div style={{ background:'#111827',padding:'10px 16px',display:'flex',alignItems:'center',gap:8,borderBottom:'1px solid rgba(255,255,255,.06)' }}>
-                <div style={{ display:'flex',gap:6 }}>
-                  {['#EF4444','#FBBF24','#22C55E'].map(c => <div key={c} style={{ width:10,height:10,borderRadius:'50%',background:c }} />)}
-                </div>
-                <div style={{ flex:1,background:'rgba(255,255,255,.06)',borderRadius:6,padding:'4px 12px',fontSize:'.72rem',color:'#64748B',textAlign:'center' }}>app.kompilot.io/dashboard</div>
-              </div>
-              <HeroDashboardMockup />
-            </div>
-          </div>
-          <div style={{ position:'absolute',bottom:0,left:0,right:0,height:80,background:'linear-gradient(to bottom, transparent, #0B1120)',pointerEvents:'none' }} />
+        <div className="sr d2" style={{ minWidth: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, padding: '0 4px' }}><div><p style={{ margin: 0, color: '#0F172A', fontSize: '.86rem', fontWeight: 800 }}>Votre cockpit Kompilot</p><p style={{ margin: '3px 0 0', color: '#64748B', fontSize: '.72rem' }}>Aperçu produit · données de démonstration</p></div><span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#0F766E', fontSize: '.7rem', fontWeight: 700 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#14B8A6' }} /> En activité</span></div>
+          <div style={{ perspective: '1400px' }}><div style={{ transform: 'rotateX(5deg)', transformOrigin: '50% 0%', borderRadius: 20, overflow: 'hidden', border: '1px solid #D7E3E5', background: '#FFFFFF', boxShadow: '0 28px 70px rgba(15,23,42,.16), 0 4px 12px rgba(15,23,42,.06)' }}><div style={{ background: '#F8FAFC', padding: '11px 15px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #E2E8F0' }}><div style={{ display: 'flex', gap: 6 }}>{['#F87171', '#FBBF24', '#34D399'].map(color => <span key={color} style={{ width: 9, height: 9, borderRadius: '50%', background: color }} />)}</div><div style={{ flex: 1, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '4px 12px', fontSize: '.68rem', color: '#94A3B8', textAlign: 'center' }}>app.kompilot.fr / cockpit</div></div><HeroDashboardMockup /></div></div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8, marginTop: 14 }} className="landing-hero-kpis">{[['3', 'avis à traiter'], ['4', 'contenus programmés'], ['+18%', 'visibilité Google'], ['72', 'score GEO']].map(([value, label]) => <div key={label} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 12, padding: '11px 12px' }}><strong style={{ display: 'block', color: '#0F172A', fontSize: '1rem' }}>{value}</strong><span style={{ display: 'block', marginTop: 3, color: '#64748B', fontSize: '.66rem', lineHeight: 1.35 }}>{label}</span></div>)}</div>
         </div>
       </div>
+      <style>{`@media (max-width: 860px) { .landing-hero-grid { grid-template-columns: 1fr !important; gap: 42px !important; } .landing-hero-grid > div:first-child { text-align: center !important; } .landing-hero-grid > div:first-child p { margin-left: auto !important; margin-right: auto !important; } .landing-hero-grid > div:first-child > div:nth-child(2) { justify-content: center !important; } } @media (max-width: 520px) { .landing-hero-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }`}</style>
     </section>
   );
 }

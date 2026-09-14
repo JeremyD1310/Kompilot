@@ -15,15 +15,14 @@ import { KOMPILOT_PLANS, type KompilotPlan } from './pricing/PricingData';
 
 // ── Constantes de style ───────────────────────────────────────────────────────
 
-const BG    = '#0F172A';
-const BG1   = '#11182B';
-const BG2   = '#161E32';
-const BORD  = 'rgba(255,255,255,0.07)';
-const BORD2 = 'rgba(255,255,255,0.12)';
-const TEXT  = '#F1F5F9';
+const BG    = '#F8FAFC';
+const BG2   = '#FFFFFF';
+const BORD  = '#E2E8F0';
+const BORD2 = '#CBD5E1';
+const TEXT  = '#0F172A';
 const MUTED = '#64748B';
 const TEAL  = '#0D9488';
-const INDIGO = '#818CF8';
+const INDIGO = '#0D9488';
 
 // ── Carte de plan ─────────────────────────────────────────────────────────────
 
@@ -34,12 +33,13 @@ function PlanCard({
   plan: KompilotPlan;
   onCta: (planId: string) => void;
 }) {
-  const isAgency     = plan.popular;
+  const isAgency     = plan.id === 'agency';
   const isEnterprise = plan.id === 'enterprise';
+  const displayName = plan.id === 'starter' ? 'Pro' : plan.name;
 
   const cardStyle: React.CSSProperties = {
-    background:    isAgency ? 'linear-gradient(160deg, #13193a 0%, #181E35 60%, #0f162e 100%)' : BG2,
-    border:        isAgency ? `1.5px solid ${INDIGO}55` : `1px solid ${BORD}`,
+    background:    isAgency ? '#F0FDFA' : BG2,
+    border:        isAgency ? `1.5px solid ${INDIGO}66` : `1px solid ${BORD}`,
     borderRadius:  20,
     padding:       isAgency ? '0 0 28px' : '28px 28px',
     display:       'flex',
@@ -48,8 +48,8 @@ function PlanCard({
     position:      'relative' as const,
     overflow:      'hidden',
     boxShadow:     isAgency
-      ? '0 0 0 1px rgba(129,140,248,0.25), 0 24px 80px rgba(129,140,248,0.12), 0 4px 24px rgba(0,0,0,0.5)'
-      : '0 4px 24px rgba(0,0,0,0.3)',
+      ? '0 18px 48px rgba(13,148,136,0.12)'
+      : '0 8px 24px rgba(15,23,42,0.05)',
     flex: '1 1 300px',
     maxWidth: 440,
     transform: isAgency ? 'scale(1.025)' : 'scale(1)',
@@ -61,7 +61,7 @@ function PlanCard({
       {/* Badge "Formule Phare" (Agency uniquement) */}
       {isAgency && (
         <div style={{
-          background: `linear-gradient(90deg, ${INDIGO}, #a78bfa)`,
+          background: INDIGO,
           padding: '10px 24px',
           textAlign: 'center',
           fontSize: 11,
@@ -91,7 +91,7 @@ function PlanCard({
                 ? <Star size={15} color={INDIGO} />
                 : <Zap size={15} color={TEAL} />}
             </div>
-            <span style={{ fontSize: 20, fontWeight: 800, color: TEXT }}>{plan.name}</span>
+            <span style={{ fontSize: 20, fontWeight: 800, color: TEXT }}>{displayName}</span>
           </div>
           <p style={{ fontSize: 13, color: MUTED, lineHeight: 1.55, marginBottom: 0 }}>
             {plan.tagline}
@@ -140,9 +140,7 @@ function PlanCard({
             style={{
               display: 'block', width: '100%',
               padding: '14px 0', borderRadius: 12, fontSize: 14, fontWeight: 800,
-              background: isAgency
-                ? `linear-gradient(135deg, ${INDIGO}, #a78bfa)`
-                : `linear-gradient(135deg, ${TEAL}, #0f9d91)`,
+              background: isAgency ? INDIGO : TEAL,
               border: 'none', color: '#fff', marginBottom: 24,
               cursor: 'pointer', letterSpacing: '0.01em',
               boxShadow: isAgency
@@ -157,7 +155,7 @@ function PlanCard({
 
         {/* Liste de features */}
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 11 }}>
-          {plan.features.map((f, i) => (
+          {plan.features.slice(0, 6).map((f, i) => (
             <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
               <span style={{
                 flexShrink: 0, marginTop: 1,
@@ -167,7 +165,7 @@ function PlanCard({
               }}>
                 <Check size={11} color={isAgency ? INDIGO : TEAL} strokeWidth={3} />
               </span>
-              <span style={{ fontSize: 13, color: '#CBD5E1', lineHeight: 1.5 }}>{f}</span>
+              <span style={{ fontSize: 13, color: '#334155', lineHeight: 1.5 }}>{f}</span>
             </li>
           ))}
         </ul>
@@ -188,8 +186,8 @@ export function PricingSection({ cta, audience }: PricingSectionProps) {
   const filteredPlans = audience === 'commerce'
     ? KOMPILOT_PLANS.filter(p => p.id === 'starter')
     : audience === 'agency'
-      ? KOMPILOT_PLANS.filter(p => p.id === 'agency' || p.id === 'enterprise')
-      : KOMPILOT_PLANS;
+      ? KOMPILOT_PLANS.filter(p => p.id === 'agency')
+      : KOMPILOT_PLANS.filter(p => p.id === 'starter' || p.id === 'agency');
 
   return (
     <section
