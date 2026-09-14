@@ -1,8 +1,8 @@
 /**
  * PricingData — Source unique de vérité pour la grille tarifaire Kompilot.
  *
- * 3 forfaits canoniques :
- *   • Starter   — 69 € HT/mois  → planId = 'starter'
+ * 3 offres canoniques :
+ *   • Pro       — 69 € HT/mois  → planId = 'starter' (identifiant historique conservé)
  *   • Agency    — 149 € HT/mois → planId = 'agency'   (formule phare)
  *   • Enterprise — Sur devis    → planId = 'enterprise'
  *
@@ -89,7 +89,7 @@ function buildPlans(billing: BillingInterval): KompilotPlan[] {
     // ── Starter ─────────────────────────────────────────────────────────────
     {
       id: 'starter',
-      name: 'Starter',
+      name: 'Pro',
       tagline: "L'essentiel pour les consultants solos, freelances et commerçants qui automatisent leur présence.",
       monthlyPrice: STARTER_MONTHLY,
       yearlyTotal: STARTER_YEARLY_TOTAL,
@@ -97,7 +97,7 @@ function buildPlans(billing: BillingInterval): KompilotPlan[] {
       billingNote: isYearly ? 'Facturation annuelle · 1 mois offert' : '',
       period: '€ HT / mois',
       popular: false,
-      ctaLabel: 'Commencer avec Starter',
+      ctaLabel: 'Commencer avec Pro',
       highlightColor: '#0D9488',
       metadata: { plan: 'starter', billing },
       features: [

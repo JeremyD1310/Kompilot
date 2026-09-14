@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 const demoRoutes = [
-  ['/demo/workspace', 'Bonjour, voici votre cockpit'],
+  ['/demo/workspace', 'Aujourd’hui'],
   ['/demo/workspace/approvals', 'À valider'],
   ['/demo/workspace/calendar', 'Calendrier'],
   ['/demo/workspace/presence', 'Présence locale'],

@@ -33,7 +33,7 @@ const B2C_PLANS = KOMPILOT_PLANS_MONTHLY.map(plan => ({
   gradient: plan.id === 'agency' ? 'from-violet-600 to-indigo-500' : plan.id === 'enterprise' ? 'from-slate-700 to-slate-500' : 'from-teal-600 to-emerald-500',
   popular: plan.popular,
   features: plan.features,
-  ctaLabel: plan.id === 'starter' ? 'Choisir Starter' : plan.id === 'agency' ? 'Choisir Agency' : 'Nous contacter',
+  ctaLabel: plan.id === 'starter' ? 'Choisir Pro' : plan.id === 'agency' ? 'Choisir Agency' : 'Nous contacter',
   ctaVariant: plan.id === 'agency' ? 'default' as const : 'outline' as const,
   ctaNote: null,
   isFree: false,
