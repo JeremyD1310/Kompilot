@@ -6,7 +6,7 @@
  *   trackEvent('post_scheduled', { channel: 'instagram', establishment_id: '...' })
  *
  * To activate GA4, replace the VITE_GA_MEASUREMENT_ID value in .env.local
- * with your own Google Analytics 4 Measurement ID (e.g. G-XXXXXXXXXX).
+ * with your Google Analytics 4 Measurement ID (e.g. G-XXXXXXXXXX).
  */
 
 import { hasAnalyticsConsent } from '../lib/cookieConsent'
@@ -18,6 +18,11 @@ declare global {
   }
 }
 
+const ALLOWED_EVENT_PARAMS = new Set([
+  'page_path', 'page_title', 'send_to', 'value', 'currency',
+  'content_category', 'user_type', 'channel', 'source', 'medium', 'campaign',
+])
+
 function gtag(...args: unknown[]) {
   if (typeof window === 'undefined') return
   if (!hasAnalyticsConsent()) return
@@ -25,6 +30,14 @@ function gtag(...args: unknown[]) {
   if (typeof window.gtag === 'function') {
     window.gtag(...args)
   }
+}
+
+function safeParams(params?: Record<string, string | number | boolean | undefined>) {
+  return Object.fromEntries(
+    Object.entries(params || {}).filter(([key, value]) =>
+      ALLOWED_EVENT_PARAMS.has(key) && value !== undefined && typeof value !== 'object'
+    )
+  )
 }
 
 export function trackPageView(path: string, title?: string) {
@@ -46,17 +59,21 @@ export function trackEvent(
   if (!measurementId) return
 
   gtag('event', eventName, {
-    ...params,
+    ...safeParams(params),
     send_to: measurementId,
   })
 }
 
-export function setUserProperties(userId: string, properties?: Record<string, string>) {
+export function setUserProperties(_userId: string, properties?: Record<string, string>) {
   const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID
   if (!measurementId) return
 
-  gtag('set', 'user_properties', properties || {})
-  gtag('config', measurementId, { user_id: userId })
+  const safeProperties = Object.fromEntries(
+    Object.entries(properties || {}).filter(([key, value]) =>
+      ALLOWED_EVENT_PARAMS.has(key) && typeof value === 'string'
+    )
+  )
+  gtag('set', 'user_properties', safeProperties)
 }
 
 /** Convenience hook — returns pre-bound tracking functions */

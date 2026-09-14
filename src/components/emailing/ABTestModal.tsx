@@ -217,7 +217,7 @@ export function ABTestModal({
       const res = await apiFetch<{ sentA: number; sentB: number }>('/api/ab-tests/send', {
         method: 'POST',
         token,
-        body: JSON.stringify({ testId, sendgridApiKey: sendgridKey }),
+        body: JSON.stringify({ testId }),
       });
       setResults(res as any);
       setStep('done');

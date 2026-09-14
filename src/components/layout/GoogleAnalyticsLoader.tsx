@@ -12,8 +12,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
-import { trackPageView, setUserProperties } from '../../hooks/useAnalytics'
-import { useAuth } from '../../hooks/useAuth'
+import { trackPageView } from '../../hooks/useAnalytics'
 import { COOKIE_CONSENT_EVENT, hasAnalyticsConsent } from '../../lib/cookieConsent'
 
 export function GoogleAnalyticsLoader() {
@@ -87,13 +86,7 @@ export function GoogleAnalyticsLoader() {
   }, [measurementId, analyticsAllowed])
 
   // ── 3. Identify user when they log in ───────────────────────────────────
-  useEffect(() => {
-    if (!measurementId || !analyticsAllowed || !user) return
-    const domain = typeof user.email === 'string'
-      ? user.email.split('@')[1] || 'unknown'
-      : 'unknown'
-    setUserProperties(user.id, { email_domain: domain })
-  }, [measurementId, analyticsAllowed, user?.id])
+  // User identity and email-derived properties are intentionally not sent to GA4.
 
   return null
 }

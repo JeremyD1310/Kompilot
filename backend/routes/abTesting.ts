@@ -100,8 +100,9 @@ router.post('/api/ab-tests/send', async (c) => {
   if (!auth) return c.json({ error: 'Unauthorized' }, 401);
 
   try {
-    const { testId, sendgridApiKey } = await c.req.json();
-    if (!testId || !sendgridApiKey) return c.json({ error: 'testId and sendgridApiKey required' }, 400);
+    const { testId } = await c.req.json();
+    const sendgridApiKey = (c.env as Record<string, string | undefined>).SENDGRID_API_KEY;
+    if (!testId || !sendgridApiKey) return c.json({ error: 'testId required and SendGrid is not configured' }, 400);
 
     const blink = getBlink(c.env as Record<string, string>);
     const rows = await blink.db.abEmailTests.list({ where: { id: testId, userId: auth.userId } });
