@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page introuvable — Kompilot</title>
+  <meta name="description" content="La page que vous cherchez n'existe pas ou a été déplacée. Retournez à l'accueil de Kompilot.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/favicon.webp" type="image/webp">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #0B1120;
+      color: #E2E8F0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .container {
+      text-align: center;
+      max-width: 480px;
+    }
+    h1 {
+      font-size: 5rem;
+      font-weight: 800;
+      color: #0D9488;
+      line-height: 1;
+      margin-bottom: 1rem;
+    }
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: #F1F5F9;
+    }
+    p {
+      color: #94A3B8;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+    a {
+      display: inline-block;
+      background: linear-gradient(135deg, #0D9488, #0f766e);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border-radius: 12px;
+      padding: 13px 28px;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    a:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 28px rgba(13,148,136,.55);
+    }
+    .links {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .links a {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.1);
+      color: #94A3B8;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 10px 20px;
+    }
+    .links a:hover {
+      color: #E2E8F0;
+      border-color: rgba(255,255,255,.2);
+      box-shadow: none;
+      transform: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>404</h1>
+    <h2>Page introuvable</h2>
+    <p>La page que vous cherchez n'existe pas ou a été déplacée. Retournez à l'accueil pour continuer.</p>
+    <a href="/">Retour à l'accueil</a>
+    <div class="links">
+      <a href="/pricing">Tarifs</a>
+      <a href="/login">Connexion</a>
+      <a href="/scan/fast">Scanner GEO</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "kompilot-backend",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@google-analytics/data": "^6.1.0",
+    "openai": "^7.3.0"
+  }
+}

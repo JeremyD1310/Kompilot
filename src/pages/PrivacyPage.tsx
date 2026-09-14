@@ -1,9 +1,18 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowLeft, Shield, Lock, Database, Eye, Trash2, Download, Mail } from 'lucide-react';
+import { usePageSeo } from '../hooks/usePageSeo';
+import { createKompilotGraph, KOMPILOT_IDENTITY } from '../lib/seoData';
 
 const LAST_UPDATED = 'Septembre 2026';
 
 export default function PrivacyPage() {
+  usePageSeo(
+    'Politique de confidentialité Kompilot — RGPD',
+    'Politique de confidentialité de Kompilot : données collectées, finalités, conservation, sous-traitants et droits RGPD.',
+    '/privacy',
+    { structuredData: createKompilotGraph('/privacy', 'Politique de confidentialité Kompilot') },
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/95 backdrop-blur-sm sticky top-0 z-10">
@@ -31,6 +40,7 @@ export default function PrivacyPage() {
             </div>
           </div>
           <div className="rounded-xl border border-primary/20 bg-primary/5 px-5 py-4">
+            <p className="mb-2 text-sm font-semibold text-foreground">{KOMPILOT_IDENTITY.shortDefinition}</p>
             <p className="text-sm text-foreground leading-relaxed">
               <strong>KOMPILOT</strong> (ci-après « la Société ») accorde une importance primordiale à la protection des données personnelles
               de ses utilisateurs. La présente politique détaille de manière transparente comment nous collectons, traitons et sécurisons

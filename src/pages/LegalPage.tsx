@@ -1,9 +1,18 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowLeft, Building2, Globe, Mail, Phone, Shield } from 'lucide-react';
+import { usePageSeo } from '../hooks/usePageSeo';
+import { createKompilotGraph, KOMPILOT_IDENTITY } from '../lib/seoData';
 
-const LAST_UPDATED = 'Juin 2026';
+const LAST_UPDATED = '14 septembre 2026';
 
 export default function LegalPage() {
+  usePageSeo(
+    'Mentions légales Kompilot — KOMPILOT SAS',
+    'Mentions légales de Kompilot : éditeur du site, hébergement, propriété intellectuelle, services tiers et contacts.',
+    '/legal',
+    { structuredData: createKompilotGraph('/legal', 'Mentions légales Kompilot') },
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/95 backdrop-blur-sm sticky top-0 z-10">
@@ -28,6 +37,7 @@ export default function LegalPage() {
               <p className="text-xs text-muted-foreground">Dernière mise à jour : {LAST_UPDATED}</p>
             </div>
           </div>
+          <p className="text-sm font-semibold text-foreground">{KOMPILOT_IDENTITY.shortDefinition}</p>
           <p className="text-sm text-muted-foreground leading-relaxed">
             Conformément aux dispositions de la loi n° 2004-575 du 21 juin 2004 pour la Confiance dans l'Économie Numérique (LCEN),
             les informations suivantes sont mises à disposition des utilisateurs du site et de l'application Kompilot.
@@ -38,13 +48,13 @@ export default function LegalPage() {
           <InfoBlock>
             <Row label="Dénomination sociale" value="KOMPILOT SAS" />
             <Row label="Statut juridique" value="Société par Actions Simplifiée (SAS)" />
-            <Row label="Capital social" value="1 000 €" />
-            <Row label="Siège social" value="France" />
-            <Row label="Email de contact" value="contact@kompilot.app" link="mailto:contact@kompilot.app" />
-            <Row label="Support" value="support@kompilot.app" link="mailto:support@kompilot.app" />
+            <Row label="Capital social" value="Information non publiée sur ce référentiel" />
+            <Row label="Siège social" value={KOMPILOT_IDENTITY.address} />
+            <Row label="Email de contact" value={KOMPILOT_IDENTITY.supportEmail} link={`mailto:${KOMPILOT_IDENTITY.supportEmail}`} />
+            <Row label="Support" value={KOMPILOT_IDENTITY.supportEmail} link={`mailto:${KOMPILOT_IDENTITY.supportEmail}`} />
           </InfoBlock>
           <p className="text-xs text-muted-foreground">
-            Directeur de la publication : L'équipe fondatrice de Kompilot.
+            {KOMPILOT_IDENTITY.leadership}
           </p>
         </Section>
 
@@ -140,9 +150,9 @@ export default function LegalPage() {
 
         <Section title="6. Contact et médiation" icon={<Mail size={16} />}>
           <InfoBlock>
-            <Row label="Email général" value="contact@kompilot.app" link="mailto:contact@kompilot.app" />
+            <Row label="Email général" value={KOMPILOT_IDENTITY.supportEmail} link={`mailto:${KOMPILOT_IDENTITY.supportEmail}`} />
             <Row label="Email DPO / RGPD" value="privacy@kompilot.app" link="mailto:privacy@kompilot.app" />
-            <Row label="Support technique" value="support@kompilot.app" link="mailto:support@kompilot.app" />
+            <Row label="Support technique" value={KOMPILOT_IDENTITY.supportEmail} link={`mailto:${KOMPILOT_IDENTITY.supportEmail}`} />
           </InfoBlock>
           <p className="text-xs text-muted-foreground">
             En cas de litige, vous pouvez recourir à la médiation du e-commerce. Conformément à l'ordonnance n° 2015-1033

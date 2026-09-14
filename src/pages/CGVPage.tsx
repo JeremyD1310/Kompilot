@@ -1,9 +1,18 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowLeft, FileText, CreditCard, RefreshCw, AlertTriangle, Shield, Users } from 'lucide-react';
+import { usePageSeo } from '../hooks/usePageSeo';
+import { createKompilotGraph, KOMPILOT_IDENTITY } from '../lib/seoData';
 
-const LAST_UPDATED = '29 Juin 2026 — v2.1 (Starter/Agency, engagement annuel, clauses IA)';
+const LAST_UPDATED = '14 septembre 2026 — version publique';
 
 export default function CGVPage() {
+  usePageSeo(
+    'CGV / CGU Kompilot — Conditions de vente et d’utilisation',
+    'Consultez les conditions générales de vente et d’utilisation de Kompilot : abonnement, tarifs, paiements, responsabilités et résiliation.',
+    '/cgv',
+    { structuredData: createKompilotGraph('/cgv', 'CGV / CGU Kompilot') },
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/95 backdrop-blur-sm sticky top-0 z-10">
@@ -31,7 +40,8 @@ export default function CGVPage() {
             </div>
           </div>
           <div className="rounded-xl border border-border bg-muted/20 px-5 py-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-sm font-semibold text-foreground">{KOMPILOT_IDENTITY.shortDefinition}</p>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
               Les présentes Conditions Générales de Vente et d'Utilisation (CGV/CGU) régissent l'accès et l'utilisation
               de l'application <strong className="text-foreground">Kompilot</strong>, éditée par KOMPILOT SAS.
               En créant un compte ou en utilisant nos services, vous acceptez sans réserve les présentes conditions.
@@ -44,7 +54,7 @@ export default function CGVPage() {
             {[
               { term: 'Service / Application', def: 'L\'application SaaS Kompilot, accessible sur web et mobile, permettant la gestion de la présence en ligne.' },
               { term: 'Utilisateur / Client', def: 'Toute personne physique ou morale ayant créé un compte sur Kompilot.' },
-              { term: 'Abonnement', def: 'Accès payant à une formule de service Kompilot (Gratuit, Pro, Business, Agence), renouvelable selon la périodicité choisie.' },
+              { term: 'Abonnement', def: 'Accès payant à une formule de service Kompilot, notamment Starter ou Agency, renouvelable selon la périodicité choisie.' },
               { term: 'Crédits IA', def: 'Unités de consommation des fonctionnalités d\'Intelligence Artificielle intégrées à l\'application.' },
               { term: 'Établissement', def: 'L\'entreprise ou le commerce du Client pour lequel les services Kompilot sont utilisés.' },
               { term: 'Données d\'Établissement', def: 'L\'ensemble des informations, contenus et paramètres relatifs à l\'établissement du Client saisis dans l\'application.' },
@@ -60,14 +70,14 @@ export default function CGVPage() {
         <Section title="2. Objet du service" icon={<FileText size={16} />}>
           <p>
             Kompilot est une plateforme SaaS (Software as a Service) de gestion de la présence en ligne pour les professionnels
-            et petites entreprises. L'application propose notamment :
+            et petites entreprises. L'application propose notamment les fonctionnalités publiées dans le référentiel Kompilot :
           </p>
           <ul>
             <li>Gestion et planification de publications sur les réseaux sociaux</li>
             <li>Centralisation des messages et avis clients dans un Inbox Unique</li>
-            <li>Génération de contenu marketing assistée par Intelligence Artificielle (OpenAI GPT-4)</li>
+            <li>Génération de contenu marketing assistée par des fonctionnalités d'intelligence artificielle</li>
             <li>Monitoring de la visibilité locale et des avis Google</li>
-            <li>Outils de croissance, de référencement local et d'optimisation G.E.O.</li>
+            <li>Outils de référencement local et d'analyse de visibilité, selon le périmètre souscrit</li>
             <li>Tableaux de bord analytiques et rapports de performance</li>
           </ul>
         </Section>
@@ -111,9 +121,9 @@ export default function CGVPage() {
               </thead>
               <tbody>
                 {[
-                  { plan: 'Starter', monthly: '69 € HT / mois', yearly: '759 € HT / an (soit ~63,25 €/mois)', features: '1 compte Meta, 20 générations IA/mois, calendrier standard, AIO Sync 5 mots-clés' },
-                  { plan: 'Agency', monthly: '149 € HT / mois', yearly: '1 639 € HT / an (soit ~136,58 €/mois)', features: `IA illimitée (Fair Use), marque blanche, multi-comptes (jusqu'à 30 fiches), Radar Concurrentiel, GA4, support prioritaire 24h/7j` },
-                  { plan: 'Enterprise', monthly: 'Sur devis', yearly: 'Sur devis', features: 'Volume illimité, API dédiées, SLA garanti, ingénieur dédié' },
+                  { plan: 'Starter', monthly: '69 € HT / mois', yearly: '759 € HT / an', features: 'Périmètre fonctionnel publié sur le référentiel Kompilot ; disponibilité selon les canaux et réglages du compte.' },
+                  { plan: 'Agency', monthly: '149 € HT / mois', yearly: '1 639 € HT / an', features: 'Fonctionnalités pour équipes et agences, avec options de marque blanche et de reporting selon le périmètre souscrit.' },
+                  { plan: 'Enterprise', monthly: 'Sur devis', yearly: 'Sur devis', features: 'Périmètre, volumes, support et conditions définis au cas par cas.' },
                 ].map(p => (
                   <tr key={p.plan} className="hover:bg-muted/10">
                     <td className="p-2 border border-border font-semibold text-foreground">{p.plan}</td>
@@ -372,9 +382,9 @@ export default function CGVPage() {
         <Section title="9. Disponibilité et niveau de service (SLA)" icon={<AlertTriangle size={16} />}>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-3">
             {[
-              { metric: 'Disponibilité cible', value: '99,5% / mois', note: 'Hors maintenance planifiée' },
-              { metric: 'Maintenance planifiée', value: 'Avec préavis 48h', note: 'Par email et notification in-app' },
-              { metric: 'Support technique', value: 'Email — délai 48h', note: 'Priorité Pro & Business < 4h' },
+              { metric: 'Disponibilité cible', value: 'Non garantie', note: 'Les interruptions et dépendances tierces sont détaillées ci-dessous' },
+              { metric: 'Maintenance planifiée', value: 'Selon besoin', note: 'Information communiquée lorsque cela est possible' },
+              { metric: 'Support technique', value: 'Email', note: 'Délai variable selon la formule et la demande' },
             ].map(s => (
               <div key={s.metric} className="rounded-lg border border-border bg-muted/20 p-3 text-center">
                 <p className="text-xs font-bold text-foreground">{s.metric}</p>

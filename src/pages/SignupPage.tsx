@@ -16,6 +16,8 @@ import { SignupLogo } from '../components/auth/SignupLogo';
 import { SiretSection } from '../components/auth/SiretSection';
 import { SIGNUP_CSS } from '../components/auth/signupStyles';
 import { trackEvent } from '../hooks/useAnalytics';
+import { usePageSeo } from '../hooks/usePageSeo';
+import { KOMPILOT_IDENTITY } from '../lib/seoData';
 
 /* ── Schema ─────────────────────────────────────────────────────────────────── */
 const schema = z.object({
@@ -108,6 +110,13 @@ export default function SignupPage() {
   const { isAuthenticated, isLoading } = useAuth();
   const { setProfile } = useUserProfile();
   const navigate = useNavigate();
+
+  usePageSeo(
+    'Créer un compte Kompilot — Essai B2B',
+    `${KOMPILOT_IDENTITY.name} est une ${KOMPILOT_IDENTITY.shortDefinition.toLowerCase()} Créez votre espace utilisateur.`,
+    '/signup',
+    { robots: 'noindex, follow' },
+  );
 
   const [honeypot, setHoneypot]           = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -204,7 +213,7 @@ export default function SignupPage() {
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}><SignupLogo size={48} /></div>
           <h1 style={{ color: '#F8FAFC', fontSize: '1.45rem', fontWeight: 800, letterSpacing: '-0.025em', marginBottom: 6 }}>Créer votre compte</h1>
-          <p style={{ color: 'var(--muted-foreground, #64748B)', fontSize: '.875rem', lineHeight: 1.55 }}>Déployez votre moteur de croissance en quelques minutes.</p>
+          <p style={{ color: 'var(--muted-foreground, #64748B)', fontSize: '.875rem', lineHeight: 1.55 }}>Kompilot est une plateforme SaaS B2B de marketing local pour contenus, avis clients et visibilité en ligne.</p>
         </div>
 
         {/* Google OAuth */}

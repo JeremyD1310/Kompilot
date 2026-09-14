@@ -11,6 +11,8 @@ import { motion } from 'framer-motion';
 import { Button } from '@blinkdotnew/ui';
 import { ArrowLeft, Zap } from 'lucide-react';
 import { KompilotLogo } from '../components/brand/KompilotLogo';
+import { usePageSeo } from '../hooks/usePageSeo';
+import { createKompilotGraph } from '../lib/seoData';
 import {
   getPlansForBilling,
   PlanCard,
@@ -23,6 +25,13 @@ import {
 import type { KompilotPlanId } from '../components/landing/pricing/PricingData';
 
 export default function PricingPage() {
+  usePageSeo(
+    'Tarifs Kompilot — Starter, Agency et Enterprise',
+    'Comparez les tarifs et fonctionnalités de Kompilot pour les professionnels, équipes et agences : Starter, Agency et Enterprise.',
+    '/pricing',
+    { structuredData: createKompilotGraph('/pricing', 'Tarifs Kompilot') },
+  );
+
   const [checkoutPlanId, setCheckoutPlanId] = useState<KompilotPlanId | null>(null);
   const [billing, setBilling] = useState<BillingInterval>('monthly');
   const plans = useMemo(() => getPlansForBilling(billing), [billing]);
@@ -87,6 +96,9 @@ export default function PricingPage() {
 
         <p className="text-base max-w-lg mx-auto leading-relaxed" style={{ color: '#64748B' }}>
           3 formules B2B · Essai 7 jours inclus · Résiliation sans frais à tout moment
+        </p>
+        <p className="mx-auto mt-5 max-w-2xl text-sm leading-6" style={{ color: '#94A3B8' }}>
+          <strong style={{ color: '#CBD5E1' }}>Kompilot</strong> est une plateforme SaaS B2B de marketing local pour contenus, avis clients et visibilité en ligne. Les tarifs et le périmètre affichés sont ceux publiés dans cette page ; aucun résultat commercial n’est garanti.
         </p>
       </motion.div>
 

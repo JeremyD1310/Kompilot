@@ -35,6 +35,7 @@ const AIOCheckerPage           = React.lazy(() => import('../pages/AIOCheckerPag
 const ExtendTrialPage          = React.lazy(() => import('../pages/ExtendTrialPage'));
 const SectorPage               = React.lazy(() => import('../pages/SectorPage'));
 const MarketingInfoPage        = React.lazy(() => import('../pages/MarketingInfoPage'));
+const InformationsKompilotPage = React.lazy(() => import('../pages/InformationsKompilotPage'));
 
 export const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: LandingPage });
 export const loginRoute = createRoute({ getParentRoute: () => rootRoute, path: '/login', component: LoginPage });
@@ -42,6 +43,7 @@ export const signupRoute = createRoute({ getParentRoute: () => rootRoute, path: 
 export const privacyRoute = createRoute({ getParentRoute: () => rootRoute, path: '/privacy', component: PrivacyPage });
 export const legalRoute = createRoute({ getParentRoute: () => rootRoute, path: '/legal', component: LegalPage });
 export const cgvRoute = createRoute({ getParentRoute: () => rootRoute, path: '/cgv', component: CGVPage });
+export const informationsKompilotRoute = createRoute({ getParentRoute: () => rootRoute, path: '/informations-kompilot', component: InformationsKompilotPage });
 // Alias routes for Stripe/payment compliance
 export const confidentialiteRoute = createRoute({ getParentRoute: () => rootRoute, path: '/confidentialite', component: PrivacyPage });
 export const politiqueConfidentialiteRoute = createRoute({ getParentRoute: () => rootRoute, path: '/politique-de-confidentialite', component: PrivacyPage });
@@ -80,6 +82,7 @@ export const publicRoutes = [
   privacyRoute,
   legalRoute,
   cgvRoute,
+  informationsKompilotRoute,
   cguAliasRoute,
   confidentialiteRoute,
   politiqueConfidentialiteRoute,

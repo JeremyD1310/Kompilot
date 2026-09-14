@@ -1,0 +1,83 @@
+// Social-to-SEO Database Schema
+// Supports onboarding state, caching, and insight management
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Onboarding State ───────────────────────────────────────────────────────
+
+model SocialSeoOnboarding {
+  id                       String   @id @default(cuid())
+  userId                   String   @unique @map("user_id")
+  hasCompletedOnboarding   Boolean  @default(false) @map("has_completed_onboarding")
+  currentStep              Int      @default(0) @map("current_step")
+  connectedPlatforms       String   @default("[]") @map("connected_platforms") // JSON array
+  gscConnected             Boolean  @default(false) @map("gsc_connected")
+  completedAt              DateTime? @map("completed_at")
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  @@map("social_seo_onboarding")
+}
+
+// ─── Dashboard Cache (24h TTL) ──────────────────────────────────────────────
+
+model SocialSeoCache {
+  id          String   @id
+  userId      String   @map("user_id")
+  cacheKey    String   @map("cache_key")
+  cacheData   String   @map("cache_data") // JSON string
+  expiresAt   DateTime @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, cacheKey])
+  @@index([userId, cacheKey, expiresAt])
+  @@map("social_seo_cache")
+}
+
+// ─── Dismissed Insights ─────────────────────────────────────────────────────
+
+model SocialSeoInsight {
+  id              String   @id
+  userId          String   @map("user_id")
+  insightType     String   @map("insight_type")
+  severity        String   @default("low")
+  sourcePlatform  String   @map("source_platform")
+  targetPlatform  String   @map("target_platform")
+  title           String
+  description     String
+  recommendation  String
+  isDismissed     Boolean  @default(false) @map("is_dismissed")
+  dismissedAt     DateTime? @map("dismissed_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([userId, isDismissed])
+  @@map("social_seo_insights")
+}
+
+// ─── Grader Scans (Lead Magnet) ─────────────────────────────────────────────
+
+model SocialSeoGraderScan {
+  id              String   @id @default(cuid())
+  domain          String
+  score           Int
+  grade           String
+  impressions     Int
+  estimatedClicks Int
+  platformsDetected String // JSON array
+  topQueryCount   Int
+  opportunitiesDetected Int
+  isConverted     Boolean  @default(false) // user signed up after scan
+  convertedAt     DateTime? @map("converted_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([domain])
+  @@index([createdAt])
+  @@map("social_seo_grader_scans")
+}

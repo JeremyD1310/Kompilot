@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FileDown, 
-  Lock, 
-  ChevronDown, 
-  ChevronUp, 
-  Utensils, 
-  HardHat, 
-  Briefcase, 
+import {
+  FileDown,
+  Lock,
+  ChevronDown,
+  ChevronUp,
+  Utensils,
+  HardHat,
+  Briefcase,
   Store,
   CheckCircle2,
   AlertCircle,
@@ -24,6 +24,8 @@ import { useEstablishment } from '../../context/EstablishmentContext';
 import { toast } from '@blinkdotnew/ui';
 
 // ── Sector data ───────────────────────────────────────────────────────────────
+// These templates are internal/demo material. Do not use them as public proof or testimonials
+// until the sample, period, methodology and source are recorded.
 
 interface SectorStat { value: string; label: string; }
 interface SectorData {
@@ -36,76 +38,67 @@ interface SectorData {
 }
 
 const SECTOR_REPORTS: Record<string, SectorData> = {
-  restauration: { 
-    label: 'Restauration & Food', 
-    headline: 'Un commerce de restauration actif sur Kompilot double ses interactions clients en 30 jours.',
-    winRate: '78%',
-    roiMonths: '< 3 mois',
-    testimonial: '"En 6 semaines, nous avons récupéré 11 no-show pour 480 € de revenus sauvegardés."',
+  restauration: {
+    label: 'Restauration & Food',
+    headline: 'Les résultats sectoriels seront publiés après validation d’une étude documentée.',
+    winRate: 'Non publié',
+    roiMonths: 'Non publié',
+    testimonial: 'Témoignage client nominatif non publié : ce bloc sera activé uniquement avec accord et source vérifiable.',
     stats: [
-      { value: '480 €', label: 'No-show bloqués / mois' }, 
-      { value: '×2,3', label: 'Interactions clients en 30 j.' }, 
-      { value: '12 avis', label: 'Collectés / mois' }, 
-      { value: '67%', label: 'Taux rétention J+90' }
-    ] 
+      { value: 'Non publié', label: 'Résultat no-show' },
+      { value: 'Non publié', label: 'Interactions clients' },
+      { value: 'Non publié', label: 'Avis collectés' },
+      { value: 'Non publié', label: 'Taux de rétention' }
+    ]
   },
-  btp: { 
-    label: 'BTP & Artisans', 
-    headline: 'Les artisans Kompilot récupèrent en moyenne 620 € de no-show par mois.',
-    winRate: '85%',
-    roiMonths: '< 2 mois',
-    testimonial: '"Nos devis IA sont signés à 85%. On a arrêté de perdre des déplacements non rémunérés."',
+  btp: {
+    label: 'BTP & Artisans',
+    headline: 'Les résultats sectoriels seront publiés après validation d’une étude documentée.',
+    winRate: 'Non publié',
+    roiMonths: 'Non publié',
+    testimonial: 'Témoignage client nominatif non publié : ce bloc sera activé uniquement avec accord et source vérifiable.',
     stats: [
-      { value: '620 €', label: 'Acomptes sécurisés / mois' }, 
-      { value: '×3,2', label: 'Visibilité Google Maps' }, 
-      { value: '85%', label: 'Devis IA signés' }, 
-      { value: '-42%', label: 'Churn vs. sans plateforme' }
-    ] 
+      { value: 'Non publié', label: 'Résultat no-show' },
+      { value: 'Non publié', label: 'Visibilité locale' },
+      { value: 'Non publié', label: 'Taux de signature' },
+      { value: 'Non publié', label: 'Rétention' }
+    ]
   },
-  services: { 
-    label: 'Services & B2B', 
-    headline: 'Les prestataires B2B convertissent 40 % de leads supplémentaires.',
-    winRate: '72%',
-    roiMonths: '< 4 mois',
-    testimonial: '"Notre taux de conversion est passé de 18% à 28% en 60 jours grâce aux relances automatiques."',
+  services: {
+    label: 'Services & B2B',
+    headline: 'Les résultats sectoriels seront publiés après validation d’une étude documentée.',
+    winRate: 'Non publié',
+    roiMonths: 'Non publié',
+    testimonial: 'Témoignage client nominatif non publié : ce bloc sera activé uniquement avec accord et source vérifiable.',
     stats: [
-      { value: '2 100 €', label: 'CA sécurisé mensuel' }, 
-      { value: '+40%', label: 'Taux conversion leads' }, 
-      { value: '28 leads', label: 'DMs qualifiés / mois' }, 
-      { value: '+143%', label: 'Croissance CA à 6 mois' }
-    ] 
+      { value: 'Non publié', label: 'CA sécurisé mensuel' },
+      { value: 'Non publié', label: 'Taux conversion leads' },
+      { value: 'Non publié', label: 'DMs qualifiés / mois' },
+      { value: 'Non publié', label: 'Croissance CA à 6 mois' }
+    ]
   },
-  commerce: { 
-    label: 'Commerce de Proximité', 
-    headline: 'En moyenne, un commerce de proximité double ses interactions clients en 30 jours avec Kompilot.',
-    winRate: '81%',
-    roiMonths: '< 3 mois',
-    testimonial: '"Notre panier moyen a augmenté de 18% grâce aux coupons flash automatisés par l\'IA."',
+  commerce: {
+    label: 'Commerce de Proximité',
+    headline: 'Les résultats sectoriels seront publiés après validation d’une étude documentée.',
+    winRate: 'Non publié',
+    roiMonths: 'Non publié',
+    testimonial: 'Témoignage client nominatif non publié : ce bloc sera activé uniquement avec accord et source vérifiable.',
     stats: [
-      { value: '1 240 €', label: 'CA sécurisé mensuel' }, 
-      { value: '52 leads', label: 'DMs convertis / mois' }, 
-      { value: '×2', label: 'Interactions clients J+30' }, 
-      { value: '+164%', label: 'Croissance à 6 mois' }
-    ] 
+      { value: 'Non publié', label: 'CA sécurisé mensuel' },
+      { value: 'Non publié', label: 'DMs convertis / mois' },
+      { value: 'Non publié', label: 'Interactions clients J+30' },
+      { value: 'Non publié', label: 'Croissance à 6 mois' }
+    ]
   }
 };
 
 // ── HTML report template ──────────────────────────────────────────────────────
 
-function estimateCaLoss(sector: SectorData): { monthly: string; annual: string; vsCompetitor: string } {
-  // Estimate based on sector data — average loss when not using Kompilot vs. sector median
-  const map: Record<string, { monthly: number; vsComp: string }> = {
-    restauration: { monthly: 1240, vsComp: '61%' },
-    btp:          { monthly: 1580, vsComp: '73%' },
-    services:     { monthly: 2100, vsComp: '58%' },
-    commerce:     { monthly: 980,  vsComp: '54%' },
-  };
-  const key = Object.keys(map).find(k => sector.label.toLowerCase().includes(k)) ?? 'commerce';
-  const base = map[key];
+function estimateCaLoss(_sector: SectorData): { monthly: string; annual: string; vsCompetitor: string } {
   return {
-    monthly: `${base.monthly.toLocaleString('fr-FR')} €`,
-    annual: `${(base.monthly * 12).toLocaleString('fr-FR')} €`,
-    vsCompetitor: base.vsComp,
+    monthly: 'Non publié',
+    annual: 'Non publié',
+    vsCompetitor: 'Non publié',
   };
 }
 
@@ -177,7 +170,7 @@ function buildHTMLReport(sector: SectorData, agencyName: string, prospectName: s
     <div class="hook-question">
       Vous avez des followers, des vues, peut-être même de bonnes notes Google. <strong style="color:#FECACA">Et pourtant : à la fin du mois, combien de ces interactions se sont converties en euros dans votre compte ?</strong><br/><br/>
       La vérité inconfortable du secteur ${sector.label} : <strong style="color:#F87171">la visibilité sans conversion est un coût, pas un investissement.</strong>
-      Pendant que votre présence en ligne stagne, vos concurrents actifs sur les moteurs d'IA (Google AI Overview, ChatGPT, Bing) captent ${caLoss.vsCompetitor} de votre clientèle potentielle locale.
+      Les écarts de visibilité et de conversion doivent être mesurés sur vos données propres ; aucune part de clientèle captée par des concurrents n'est publiée sans étude vérifiable.
     </div>
     <div class="ca-loss-grid">
       <div class="ca-loss-card">
@@ -194,8 +187,7 @@ function buildHTMLReport(sector: SectorData, agencyName: string, prospectName: s
       </div>
     </div>
     <div class="hook-cta">
-      Ces chiffres sont calculés à partir des médianes anonymisées Kompilot pour le secteur ${sector.label}.
-      Chaque mois sans solution = ces euros restent chez vos concurrents.
+      Les valeurs quantitatives restent non publiées tant qu'une étude datée, sourcée et documentée n'est pas disponible pour le secteur ${sector.label}.
     </div>
   </div>
 
@@ -221,8 +213,7 @@ function buildHTMLReport(sector: SectorData, agencyName: string, prospectName: s
   </div>
   <div class="testimonial">${sector.testimonial}</div>
   <div class="rgpd">
-    NOTE RGPD : Ce rapport présente des agrégats sectoriels anonymisés. Aucune donnée individuelle d'établissement n'est partagée. 
-    Chaque établissement opère dans un espace chiffré et isolé. La "Perte de CA estimée" est calculée à partir de médianes sectorielles anonymisées et ne représente pas une valeur garantie.
+    NOTE MÉTHODOLOGIQUE : Ce rapport de démonstration n'est pas un benchmark indépendant. Aucune donnée individuelle d'établissement n'est partagée et aucune valeur quantitative n'est publiée sans échantillon, période, source et protocole documentés.
     Conformément au RGPD, ce document est destiné à un usage interne de démonstration commerciale uniquement.
   </div>
 </div>
@@ -250,7 +241,7 @@ export function SectorTrendReportExporter() {
           <div className="space-y-2">
             <h3 className="text-xl font-semibold text-white">Réservé aux comptes Agency</h3>
             <p className="text-slate-400 text-sm max-w-sm">
-              L'outil d\'export de rapports sectoriels est un avantage exclusif Kompilot Agency.
+              L'outil d'export de rapports sectoriels est un avantage exclusif Kompilot Agency.
               Utilisez ces données pour closer vos prospects plus rapidement.
             </p>
           </div>
@@ -421,8 +412,8 @@ export function SectorTrendReportExporter() {
                     key={item.id}
                     onClick={() => setSelectedSector(item.id as any)}
                     className={`p-3 rounded-lg border transition-all flex flex-col items-center gap-2 ${
-                      selectedSector === item.id 
-                        ? 'border-violet-500 bg-violet-500/10 text-white' 
+                      selectedSector === item.id
+                        ? 'border-violet-500 bg-violet-500/10 text-white'
                         : 'border-slate-700 bg-slate-800/50 text-slate-400 hover:border-slate-600'
                     }`}
                   >
@@ -436,8 +427,8 @@ export function SectorTrendReportExporter() {
             {/* Prospect name */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">Nom du prospect (optionnel)</label>
-              <Input 
-                placeholder="Ex: Boulangerie Durand" 
+              <Input
+                placeholder="Ex: Boulangerie Durand"
                 value={prospectName}
                 onChange={(e) => setProspectName(e.target.value)}
                 className="bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600"
@@ -524,7 +515,7 @@ export function SectorTrendReportExporter() {
 
             {/* Action buttons */}
             <div className="flex flex-col gap-3 pt-1">
-              <Button 
+              <Button
                 onClick={
                   exportMode === 'pdf'
                     ? handleDownloadPDF
@@ -547,7 +538,7 @@ export function SectorTrendReportExporter() {
                   : 'Télécharger TXT'
                 }
               </Button>
-              
+
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   variant="outline"
@@ -564,12 +555,12 @@ export function SectorTrendReportExporter() {
                   <MessageCircle className="h-3.5 w-3.5" /> Envoyer WA
                 </Button>
               </div>
-              
+
               <div className="flex items-start gap-2 px-1 pt-1">
                 <AlertCircle className="h-3.5 w-3.5 text-slate-500 shrink-0 mt-0.5" />
                 <p className="text-[10px] text-slate-500 leading-relaxed">
-                  NOTE RGPD : Données agrégées et anonymisées. Ce rapport ne contient aucune donnée 
-                  personnelle identifiable. Usage réservé à la démonstration commerciale. 
+                  NOTE RGPD : Données agrégées et anonymisées. Ce rapport ne contient aucune donnée
+                  personnelle identifiable. Usage réservé à la démonstration commerciale.
                   Vos données financières ne sont jamais partagées avec vos concurrents.
                 </p>
               </div>

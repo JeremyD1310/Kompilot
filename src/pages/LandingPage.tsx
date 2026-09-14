@@ -19,6 +19,7 @@ import { captureUtmParams, getUtmSector, track } from '../lib/tracking';
 import { getSectorConfig } from '../components/landing/UTMSectorAdapter';
 import { VisibilityLandingSections } from '../components/landing/VisibilityLandingSections';
 import { usePageSeo } from '../hooks/usePageSeo';
+import { createKompilotGraph } from '../lib/seoData';
 
 function useScrollReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -48,6 +49,7 @@ export default function LandingPage() {
     'Logiciel de visibilité locale et marketing IA | Kompilot',
     'Centralisez contenus, avis Google, réseaux sociaux, SEO local et visibilité dans les IA avec Kompilot. Essai gratuit pendant 7 jours.',
     '/',
+    { structuredData: createKompilotGraph('/', 'Logiciel de visibilité locale et marketing IA | Kompilot', true) },
   );
   const cta = () => blink.auth.login(window.location.origin + '/dashboard');
 
@@ -124,6 +126,9 @@ export default function LandingPage() {
       </header>
 
       <main>
+      <section aria-label="Définition de Kompilot" style={{ maxWidth: 900, margin: '0 auto', padding: '14px 24px 0', color: '#94A3B8', fontSize: '.84rem', lineHeight: 1.6 }}>
+        <p style={{ margin: 0 }}><strong style={{ color: '#CBD5E1' }}>Kompilot</strong> est une plateforme SaaS B2B de marketing local pour contenus, avis clients et visibilité en ligne.</p>
+      </section>
       <LandingHero onCta={cta} onHeroCta={heroCtaOverride} heroSearch={heroSearch} setHeroSearch={setHeroSearch} audience={audience} />
 
       <VisibilityLandingSections onCta={cta} />

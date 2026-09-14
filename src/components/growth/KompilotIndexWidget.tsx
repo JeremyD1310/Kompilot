@@ -22,6 +22,8 @@ import { usePlan } from '../../hooks/usePlan';
 import { Link } from '@tanstack/react-router';
 
 // ── Sector benchmark data (anonymised aggregates) ────────────────────────────
+// Public marketing surfaces must not present these internal demo values as verified results.
+// Keep benchmark figures inside the authenticated product experience until a dated study is published.
 
 interface BenchmarkData {
   sectorLabel: string;
@@ -41,71 +43,71 @@ interface BenchmarkData {
 const BENCHMARKS: Record<string, BenchmarkData> = {
   flux: { 
     sectorLabel: 'Commerces & Restaurants', 
-    noShowSaved: 480, 
-    dmsConverted: 34, 
-    reviewsGained: 12, 
-    revenueSecured: 1240, 
-    growthRate: 127,
+    noShowSaved: 0, 
+    dmsConverted: 0, 
+    reviewsGained: 0, 
+    revenueSecured: 0, 
+    growthRate: 0,
     maieuticTips: {
-      noShow: "Les commerces de votre zone récupèrent en moyenne 480 € de no-show/mois via l'empreinte bancaire Stripe. Voulez-vous déployer ce bouclier sur votre agenda dès ce matin ?",
-      dms: "Le marché local capte plus de valeur via les DMs Instagram. Souhaitez-vous que l'IA active votre campagne automatique Comment-to-DM ce matin ?",
-      reviews: "Vos confrères collectent 12 avis Google/mois en automatique grâce aux relances post-passage. L'IA peut programmer votre première relance en 2 minutes — maintenant ?"
+      noShow: "Les données comparatives de votre secteur seront affichées ici lorsqu'une étude datée et documentée sera disponible. Voulez-vous configurer ce levier sur votre agenda ?",
+      dms: "Les données comparatives de conversion seront affichées ici lorsqu'une étude datée et documentée sera disponible. Souhaitez-vous configurer ce levier ?",
+      reviews: "Les données comparatives de collecte d'avis seront affichées ici lorsqu'une étude datée et documentée sera disponible. Souhaitez-vous configurer ce levier ?"
     },
     deepLinks: { noShow: '/calendar', dms: '/growth', reviews: '/dashboard' }
   },
   chantier: { 
     sectorLabel: 'BTP & Artisans', 
-    noShowSaved: 620, 
-    dmsConverted: 18, 
-    reviewsGained: 8, 
-    revenueSecured: 1850, 
-    growthRate: 98,
+    noShowSaved: 0, 
+    dmsConverted: 0, 
+    reviewsGained: 0, 
+    revenueSecured: 0, 
+    growthRate: 0,
     maieuticTips: {
-      noShow: "Les artisans de votre zone récupèrent en moyenne 620 € d'acomptes/mois via l'empreinte Stripe. Voulez-vous déployer ce bouclier sur votre agenda dès aujourd'hui ?",
-      dms: "Vos concurrents BTP convertissent 18 leads/mois via le Comment-to-DM (DEVIS automatique). Votre campagne est-elle configurée ?",
-      reviews: "Les artisans avec 4,8★+ gagnent 32% de devis supplémentaires. L'IA peut envoyer une relance photo-avis après chaque chantier — activons-la maintenant ?"
+      noShow: "Les données comparatives de votre secteur seront affichées ici lorsqu'une étude datée et documentée sera disponible. Voulez-vous configurer ce levier sur votre agenda ?",
+      dms: "Les données comparatives de conversion BTP seront affichées ici lorsqu'une étude datée et documentée sera disponible. Votre campagne est-elle configurée ?",
+      reviews: "Les données comparatives BTP seront affichées ici lorsqu'une étude datée et documentée sera disponible. L'IA peut préparer une relance après chaque chantier."
     },
     deepLinks: { noShow: '/calendar', dms: '/growth', reviews: '/dashboard' }
   },
   services_b2b: { 
     sectorLabel: 'Services B2B & Freelances', 
-    noShowSaved: 290, 
-    dmsConverted: 28, 
-    reviewsGained: 6, 
-    revenueSecured: 2100, 
-    growthRate: 143,
+    noShowSaved: 0, 
+    dmsConverted: 0, 
+    reviewsGained: 0, 
+    revenueSecured: 0, 
+    growthRate: 0,
     maieuticTips: {
-      noShow: "Les prestataires B2B sécurisent en moyenne 290 € de no-show/mois grâce aux acomptes découverte. Votre tunnel de réservation intègre-t-il cette protection ?",
-      dms: "Les prestataires B2B convertissent 40% de leads supplémentaires via les relances automatiques. Votre séquence CRM est-elle configurée pour les 48h post-contact ?",
-      reviews: "Un profil Google avec 4,7★+ reçoit 60% de demandes entrantes supplémentaires. L'IA peut générer votre séquence de collecte d'avis LinkedIn — activons-la ?"
+      noShow: "Aucune moyenne sectorielle vérifiée n'est publiée ici. Vous pouvez configurer les acomptes et rappels adaptés à votre activité depuis votre espace Kompilot.",
+      dms: "Les données comparatives de conversion B2B seront affichées ici lorsqu'une étude datée et documentée sera disponible. Votre séquence CRM est-elle configurée ?",
+      reviews: "Les données comparatives de demandes entrantes seront affichées ici lorsqu'une étude datée et documentée sera disponible. L'IA peut préparer votre séquence de collecte d'avis."
     },
     deepLinks: { noShow: '/calendar', dms: '/inbox', reviews: '/dashboard' }
   },
   produits: { 
     sectorLabel: 'E-commerce & Vente Produits', 
-    noShowSaved: 180, 
-    dmsConverted: 52, 
-    reviewsGained: 24, 
-    revenueSecured: 980, 
-    growthRate: 164,
+    noShowSaved: 0, 
+    dmsConverted: 0, 
+    reviewsGained: 0, 
+    revenueSecured: 0, 
+    growthRate: 0,
     maieuticTips: {
-      noShow: "Les boutiques e-commerce sécurisent 180 €/mois d'abandons panier via les relances SMS. Votre tunnel de récupération est-il actif ?",
-      dms: "Le marché local capte plus de valeur via les coupons flash synchronisés avec vos réseaux. L'IA peut programmer une campagne anti-surstock ce week-end — le souhaitez-vous ?",
-      reviews: "Les avis produits sont le levier de conversion #1 (impact +26% sur le taux de réachat). L'IA peut automatiser les demandes d'avis post-livraison — activons-la ?"
+      noShow: "Les données comparatives e-commerce seront affichées ici lorsqu'une étude datée et documentée sera disponible. Votre tunnel de récupération est-il actif ?",
+      dms: "Les données comparatives de coupons et campagnes seront affichées ici lorsqu'une étude datée et documentée sera disponible. Souhaitez-vous configurer ce levier ?",
+      reviews: "Les données comparatives d'avis produits seront affichées ici lorsqu'une étude datée et documentée sera disponible. L'IA peut préparer vos demandes post-livraison."
     },
     deepLinks: { noShow: '/inbox', dms: '/cockpit', reviews: '/dashboard' }
   },
   agence: { 
     sectorLabel: 'Agences Digitales', 
     noShowSaved: 0, 
-    dmsConverted: 65, 
-    reviewsGained: 18, 
-    revenueSecured: 4800, 
-    growthRate: 189,
+    dmsConverted: 0, 
+    reviewsGained: 0, 
+    revenueSecured: 0, 
+    growthRate: 0,
     maieuticTips: {
-      noShow: "Vos prospects perdent en moyenne 800–1 500 € de no-show/mois sans automatisation. Avez-vous préparé une démo Live Cloning Engine pour vos 3 prochains rendez-vous ?",
-      dms: "Les agences top-performers génèrent 60% de leur chiffre de prospection via le Live Cloning Engine. Avez-vous préparé vos 3 prochaines démos prospects ?",
-      reviews: "Un portefeuille clients bien noté (4,8★ moyen) augmente le LTV de 40%. Le rapport de tendance sectorielle peut documenter cette preuve — l'avez-vous exporté ?"
+      noShow: "Les données comparatives des agences seront affichées ici lorsqu'une étude datée et documentée sera disponible. Avez-vous préparé vos prochains rendez-vous ?",
+      dms: "Les données comparatives de prospection des agences seront affichées ici lorsqu'une étude datée et documentée sera disponible. Avez-vous préparé vos prochaines démos ?",
+      reviews: "Les données comparatives de réputation des portefeuilles seront affichées ici lorsqu'une étude datée et documentée sera disponible. Souhaitez-vous exporter un rapport ?"
     },
     deepLinks: { noShow: '/agency', dms: '/agency', reviews: '/agency' }
   }

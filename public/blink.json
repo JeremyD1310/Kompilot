@@ -1,0 +1,8 @@
+{
+  "redirects": [
+    { "source": "/cgu", "destination": "/cgv" },
+    { "source": "/legal", "destination": "/mentions-legales" },
+    { "source": "/privacy", "destination": "/confidentialite" },
+    { "source": "/politique-de-confidentialite", "destination": "/confidentialite" }
+  ]
+}
