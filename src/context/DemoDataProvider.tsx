@@ -175,9 +175,19 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
       persist(APPROVALS_KEY, JSON.stringify(next));
       return next;
     });
+    persistData({
+      ...demoData,
+      recentActivity: [`${id} → ${status}`, ...demoData.recentActivity].slice(0, 12),
+    });
     setLastAction(`Simulation locale : ${status.toLowerCase()} (${id})`);
-  }, []);
-  const simulateAction = useCallback((action: string) => setLastAction(`Simulation locale : ${action}`), []);
+  }, [demoData, persistData]);
+  const simulateAction = useCallback((action: string) => {
+    persistData({
+      ...demoData,
+      recentActivity: [`Action simulée : ${action}`, ...demoData.recentActivity].slice(0, 12),
+    });
+    setLastAction(`Simulation locale : ${action}`);
+  }, [demoData, persistData]);
   const consumeDemoCredits = useCallback((amount: number) => { if (amount <= 0 || demoCreditsUsed + amount > DEMO_CREDIT_TOTAL) return false; const next = demoCreditsUsed + amount; setDemoCreditsUsed(next); persist(CREDITS_KEY, String(next)); setLastAction(`${DEMO_ACTION_MESSAGE} ${amount} crédit(s) consommé(s).`); return true; }, [demoCreditsUsed]);
   const activateDemo = useCallback(() => { try { sessionStorage.setItem(ACTIVE_KEY, 'true'); } catch { /* noop */ } setDemoActive(true); }, []);
   const deactivateDemo = useCallback(() => { clearDemoStorage(); setDemoActive(false); }, []);

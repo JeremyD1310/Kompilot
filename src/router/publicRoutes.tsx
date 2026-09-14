@@ -47,6 +47,7 @@ export const privacyRoute = createRoute({ getParentRoute: () => rootRoute, path:
 export const legalRoute = createRoute({ getParentRoute: () => rootRoute, path: '/legal', component: LegalPage });
 export const cgvRoute = createRoute({ getParentRoute: () => rootRoute, path: '/cgv', component: CGVPage });
 export const informationsKompilotRoute = createRoute({ getParentRoute: () => rootRoute, path: '/informations-kompilot', component: InformationsKompilotPage });
+export const aProposRoute = createRoute({ getParentRoute: () => rootRoute, path: '/a-propos', component: InformationsKompilotPage });
 // Alias routes for Stripe/payment compliance
 export const confidentialiteRoute = createRoute({ getParentRoute: () => rootRoute, path: '/confidentialite', component: PrivacyPage });
 export const politiqueConfidentialiteRoute = createRoute({ getParentRoute: () => rootRoute, path: '/politique-de-confidentialite', component: PrivacyPage });
@@ -99,6 +100,7 @@ export const publicRoutes = [
   legalRoute,
   cgvRoute,
   informationsKompilotRoute,
+  aProposRoute,
   cguAliasRoute,
   confidentialiteRoute,
   politiqueConfidentialiteRoute,

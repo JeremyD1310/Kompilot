@@ -13,10 +13,10 @@ export const KOMPILOT_IDENTITY = {
 /** Public commercial facts. Keep this list aligned with the pricing source of truth. */
 import { KOMPILOT_PLANS_MONTHLY } from '../components/landing/pricing/PricingData';
 
-export const PUBLIC_PLANS = KOMPILOT_PLANS_MONTHLY.filter(plan => plan.id !== 'enterprise').map(plan => ({
+export const PUBLIC_PLANS = KOMPILOT_PLANS_MONTHLY.map(plan => ({
   name: plan.name,
-  monthly: `${plan.monthlyPrice} € HT / mois`,
-  annual: `${plan.yearlyTotal} € HT / an`,
+  monthly: plan.monthlyPrice === null ? 'Sur devis' : `${plan.monthlyPrice} € HT / mois`,
+  annual: plan.yearlyTotal === null ? 'Sur devis' : `${plan.yearlyTotal} € HT / an`,
   scope: plan.tagline,
 }));
 

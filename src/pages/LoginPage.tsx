@@ -7,6 +7,7 @@ import { readSessionMemory, clearSessionMemory } from '../hooks/useOnboardingPro
 import { useAdmin } from '../context/AdminContext';
 import { useDemoMode } from '../context/DemoModeContext';
 import { useDemoView } from '../context/DemoViewContext';
+import { usePageSeo } from '../hooks/usePageSeo';
 import { isDemoCredentials, saveDemoSession, DEMO_EMAIL, DEMO_PASSWORD } from '../lib/demoAccount';
 import { analyticsTrackLogin, analyticsTrackSignup } from '../firebase/analytics';
 
@@ -68,6 +69,7 @@ export default function LoginPage() {
   const { enterAdminMode } = useAdmin();
   const { activateDemo } = useDemoMode();
   const { activateSwitcher } = useDemoView();
+  usePageSeo('Se connecter à Kompilot — Cockpit marketing local', 'Connectez-vous à votre espace Kompilot pour retrouver vos actions marketing, validations et résultats.', '/login', { robots: 'index, follow' });
   const [showPw, setShowPw] = useState(false);
   const [email, setEmail] = useState(() => {
     try { return localStorage.getItem(REMEMBER_ME_KEY) ?? ''; } catch { return ''; }

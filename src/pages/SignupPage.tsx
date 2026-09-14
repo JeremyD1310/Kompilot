@@ -129,6 +129,9 @@ export default function SignupPage() {
   const [siretChecking, setSiretChecking] = useState(false);
   const [siretValid, setSiretValid]       = useState(false);
 
+  useEffect(() => {
+    trackEvent('sign_up_started', { source_page: 'signup_page' });
+  }, []);
   useEffect(() => { if (isAuthenticated) navigate({ to: '/dashboard' }); }, [isAuthenticated, navigate]);
 
   useEffect(() => {
@@ -179,7 +182,9 @@ export default function SignupPage() {
       });
       analyticsTrackSignup('email');
       trackEvent('sign_up', { method: 'email', profile_type: data.profileType });
+      trackEvent('sign_up_completed', { method: 'email', profile_type: data.profileType });
       trackEvent('trial_start', { method: 'email', trial_days: 7 });
+      trackEvent('trial_started', { method: 'email', trial_days: 7 });
       navigate({ to: '/email-unverified' });
     } catch (err: any) {
       const code = err?.code ?? '';
