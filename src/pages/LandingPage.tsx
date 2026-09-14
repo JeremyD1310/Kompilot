@@ -47,10 +47,10 @@ export default function LandingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   usePageSeo(
-    'Logiciel de visibilité locale et marketing IA | Kompilot',
-    'Centralisez contenus, avis Google, réseaux sociaux, SEO local et visibilité dans les IA avec Kompilot. Essai gratuit pendant 7 jours.',
+    'Kompilot — Le cockpit de votre visibilité locale',
+    'Pilotez votre visibilité locale depuis un seul cockpit IA : contenus, avis Google, Google, ChatGPT, Gemini et réseaux sociaux. Essayez gratuitement.',
     '/',
-    { structuredData: createKompilotGraph('/', 'Logiciel de visibilité locale et marketing IA | Kompilot', false, 'Centralisez contenus, avis Google, réseaux sociaux, SEO local et visibilité dans les IA avec Kompilot.') },
+    { structuredData: createKompilotGraph('/', 'Kompilot — Le cockpit de votre visibilité locale', false, 'Pilotez votre visibilité locale depuis un seul cockpit IA : contenus, avis Google, Google, ChatGPT, Gemini et réseaux sociaux. Essayez gratuitement.') },
   );
   const cta = () => {
     navigate({ to: user ? '/dashboard' : '/signup' });
@@ -136,9 +136,6 @@ export default function LandingPage() {
       </header>
 
       <main>
-      <section aria-label="Définition de Kompilot" style={{ maxWidth: 900, margin: '0 auto', padding: '14px 24px 0', color: '#94A3B8', fontSize: '.84rem', lineHeight: 1.6 }}>
-        <p style={{ margin: 0 }}><strong style={{ color: '#CBD5E1' }}>Kompilot</strong> est une plateforme SaaS B2B de marketing local pour contenus, avis clients et visibilité en ligne.</p>
-      </section>
       <LandingHero onCta={cta} onHeroCta={heroCtaOverride} heroSearch={heroSearch} setHeroSearch={setHeroSearch} audience={audience} />
 
       <VisibilityLandingSections onCta={cta} />

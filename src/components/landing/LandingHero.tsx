@@ -15,10 +15,10 @@ interface LandingHeroProps {
 // ── Hero copy per audience ────────────────────────────────────────────────────
 const HERO_COPY = {
   commerce: {
-    badge: '✦ Le cockpit IA des commerces et entreprises locales',
+    badge: '✦ Le cockpit de votre visibilité locale',
     h1Main: 'Pilotez toute votre visibilité locale',
     h1Gradient: 'depuis un seul cockpit IA.',
-    sub: 'Kompilot vous aide à créer vos contenus, gérer vos avis et améliorer votre présence sur Google, les réseaux sociaux et dans les réponses des IA.',
+    sub: 'Kompilot aide les commerces, PME et agences à créer leurs contenus, gérer leurs avis et améliorer leur présence sur Google, ChatGPT, Gemini et les réseaux sociaux.',
     cta: 'Essayer gratuitement',
   },
   agency: {
@@ -32,9 +32,9 @@ const HERO_COPY = {
 
 // ── 3-step blocks for commerce hero ──────────────────────────────────────────
 const COMMERCE_STEPS = [
-  { num: '01', emoji: '📝', title: 'Décrivez votre activité', desc: 'L\'IA apprend votre secteur, votre ton et vos objectifs en moins de 3 minutes.' },
-  { num: '02', emoji: '⚡', title: 'Kompilot prépare vos actions', desc: 'Contenus, réponses et recommandations sont organisés selon vos priorités.' },
-  { num: '03', emoji: '📈', title: 'Vous suivez les résultats', desc: 'Score de visibilité, nouveaux avis, reach — tout en temps réel sur votre tableau de bord.' },
+  { num: '01', icon: Search, title: 'Décrivez votre activité', desc: 'L\'IA apprend votre secteur, votre ton et vos objectifs en moins de 3 minutes.' },
+  { num: '02', icon: Zap, title: 'Kompilot prépare vos actions', desc: 'Contenus, réponses et recommandations sont organisés selon vos priorités.' },
+  { num: '03', icon: ArrowRight, title: 'Vous suivez les résultats', desc: 'Score de visibilité, nouveaux avis, reach — tout en temps réel sur votre tableau de bord.' },
 ];
 
 // ── ChatGPT Simulator ────────────────────────────────────────────────────────
@@ -382,7 +382,9 @@ export function LandingHero({ onCta, onHeroCta, heroSearch, setHeroSearch, audie
                   position: 'relative',
                 }}>
                   <div style={{ fontSize: '2rem', fontWeight: 900, color: 'rgba(13,148,136,.18)', lineHeight: 1, marginBottom: 10 }}>{step.num}</div>
-                  <div style={{ fontSize: '1.6rem', marginBottom: 8 }}>{step.emoji}</div>
+                  <div style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(45,212,191,.10)', color: '#2DD4BF', marginBottom: 12 }}>
+                    <step.icon size={17} strokeWidth={2.2} aria-hidden="true" />
+                  </div>
                   <h3 style={{ color: '#F1F5F9', fontWeight: 700, fontSize: '.9rem', margin: '0 0 6px' }}>{step.title}</h3>
                   <p style={{ color: '#64748B', fontSize: '.78rem', margin: 0, lineHeight: 1.55 }}>{step.desc}</p>
                 </div>
@@ -393,24 +395,40 @@ export function LandingHero({ onCta, onHeroCta, heroSearch, setHeroSearch, audie
 
         {/* ── Primary CTA block ── */}
         <div className="sr d3" style={{ marginBottom:'2rem',display:'flex',flexDirection:'column',alignItems:'center',gap:12,width:'100%' }}>
-          <button
-            type="button"
-            aria-label="Créer mon espace gratuitement"
-            data-testid="home-signup-cta"
-            className="nc-pill nc-pill-shimmer"
-            style={{
-              fontSize: 'clamp(.95rem,2.8vw,1.08rem)',
-              padding: 'clamp(18px,4vw,16px) clamp(28px,5vw,44px)',
-              width: 'min(92vw, 420px)',
-              justifyContent: 'center',
-              minHeight: 56,
-            }}
-            onClick={onHeroCta ?? onCta}
-          >
-            <Zap size={18} />
-            {onHeroCta ? 'Créer ton espace' : copy.cta}
-            <ArrowRight size={16} />
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap', width: '100%' }}>
+            <button
+              type="button"
+              aria-label="Créer mon espace gratuitement"
+              data-testid="home-signup-cta"
+              className="nc-pill nc-pill-shimmer"
+              style={{
+                fontSize: 'clamp(.95rem,2.8vw,1.08rem)',
+                padding: 'clamp(18px,4vw,16px) clamp(28px,5vw,44px)',
+                width: 'min(92vw, 420px)',
+                justifyContent: 'center',
+                minHeight: 56,
+              }}
+              onClick={onHeroCta ?? onCta}
+            >
+              <Zap size={18} />
+              {copy.cta}
+              <ArrowRight size={16} />
+            </button>
+            <a
+              href="/showcase"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 56,
+                padding: '0 22px', borderRadius: 9999,
+                border: '1px solid rgba(148,163,184,.35)', color: '#CBD5E1',
+                fontSize: '.9rem', fontWeight: 700, textDecoration: 'none',
+                background: 'rgba(255,255,255,.04)', transition: 'border-color .2s, color .2s, background .2s',
+              }}
+              onMouseEnter={(e) => { const el = e.currentTarget; el.style.borderColor = '#2DD4BF'; el.style.color = '#F8FAFC'; el.style.background = 'rgba(13,148,136,.12)'; }}
+              onMouseLeave={(e) => { const el = e.currentTarget; el.style.borderColor = 'rgba(148,163,184,.35)'; el.style.color = '#CBD5E1'; el.style.background = 'rgba(255,255,255,.04)'; }}
+            >
+              Voir Kompilot en action <ArrowRight size={15} />
+            </a>
+          </div>
 
           {/* AIO Checker secondary CTA */}
           <a
@@ -429,7 +447,7 @@ export function LandingHero({ onCta, onHeroCta, heroSearch, setHeroSearch, audie
             onMouseEnter={(e) => { (e.target as HTMLElement).style.color = '#0F766E'; }}
             onMouseLeave={(e) => { (e.target as HTMLElement).style.color = '#0D9488'; }}
           >
-            🔍 Vérifier ma visibilité IA gratuitement →
+            Vérifier ma visibilité IA gratuitement →
           </a>
 
           {/* Trust subtext */}
