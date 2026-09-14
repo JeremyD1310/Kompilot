@@ -149,6 +149,25 @@ test.describe('public interactive demo', () => {
     await expect(page.getByText('Client fictif sélectionné localement.')).toBeVisible();
   });
 
+  test('supports keyboard escape and close controls', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/demo/workspace/content');
+    await page.getByRole('button', { name: 'Créer un brouillon' }).click();
+    await expect(page.getByRole('dialog', { name: 'Créer un brouillon' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'Créer un brouillon' })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Ouvrir Plus' }).click();
+    await expect(page.getByRole('dialog', { name: 'Plus' })).toBeVisible();
+    await page.getByRole('button', { name: 'Fermer Plus' }).click();
+    await expect(page.getByRole('dialog', { name: 'Plus' })).toHaveCount(0);
+  });
+
+  test('contains only canonical demo pricing language', async ({ page }) => {
+    await page.goto('/demo');
+    await expect(page.getByText(/69 € HT|149 € HT|7 jours gratuits/).first()).toBeVisible();
+    await expect(page.getByText(/30 €|39 €|59 €|99 €|299 €|599 €/)).toHaveCount(0);
+  });
+
   test('has no horizontal overflow in compact portrait and landscape sizes', async ({ page }) => {
     for (const viewport of [{ width: 320, height: 568 }, { width: 375, height: 812 }, { width: 390, height: 844 }, { width: 412, height: 915 }, { width: 768, height: 1024 }, { width: 915, height: 412 }]) {
       await page.setViewportSize(viewport);
