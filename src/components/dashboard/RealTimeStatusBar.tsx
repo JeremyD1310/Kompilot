@@ -226,7 +226,7 @@ export function RealTimeStatusBar() {
             icon={<Activity size={13} className="text-primary" />}
             label="Posts planifiés"
             value={<AnimatedNumber target={scheduledCount} />}
-            onClick={() => navigate({ to: '/calendar' })}
+            onClick={() => navigate({ to: '/calendrier' })}
           />
 
           {/* Trend badge - oscillates */}

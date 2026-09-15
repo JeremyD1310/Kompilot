@@ -45,7 +45,7 @@ const STEPS: GuideStep[] = [
     icon: <CalendarDays size={16} />,
     title: 'Planifiez votre premier post',
     description: "L'IA génère un post optimisé pour votre secteur. Validez en 1 clic.",
-    href: '/calendar',
+    href: '/calendrier',
     actionLabel: 'Créer un post',
     color: 'bg-blue-500',
   },

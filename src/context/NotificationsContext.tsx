@@ -51,7 +51,7 @@ const SIMULATED_EVENTS: Omit<AppNotification, 'id' | 'time' | 'read'>[] = [
     title: 'Post publié',
     body: 'Votre publication Instagram "Brunch du dimanche" est en ligne.',
     actionLabel: 'Voir le post',
-    actionHref: '/calendar',
+    actionHref: '/calendrier',
   },
   {
     category: 'review',
@@ -99,7 +99,7 @@ const SIMULATED_EVENTS: Omit<AppNotification, 'id' | 'time' | 'read'>[] = [
     title: 'Post planifié dans 1h',
     body: 'Rappel : "Offre spéciale lundi" sera publié à 18h00 sur Instagram + Facebook.',
     actionLabel: 'Modifier',
-    actionHref: '/calendar',
+    actionHref: '/calendrier',
   },
   {
     category: 'ai',

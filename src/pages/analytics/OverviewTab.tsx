@@ -190,7 +190,7 @@ export function OverviewTab() {
 
           {/* CTA */}
           <button
-            onClick={() => navigate({ to: '/calendar' })}
+            onClick={() => navigate({ to: '/calendrier' })}
             className={cn(
               "inline-flex items-center gap-1.5 text-xs font-bold",
               "text-amber-700 dark:text-amber-400",

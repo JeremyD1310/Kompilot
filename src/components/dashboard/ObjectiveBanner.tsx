@@ -80,7 +80,7 @@ export function ObjectiveBanner() {
           </p>
         </div>
         <Link
-          to="/calendar"
+          to="/calendrier"
           className="flex items-center gap-1.5 text-xs font-bold text-violet-700 hover:text-violet-900 transition-colors shrink-0 rounded-xl bg-violet-100 hover:bg-violet-200 px-3 py-1.5"
         >
           Créer un post <ArrowRight size={12} />

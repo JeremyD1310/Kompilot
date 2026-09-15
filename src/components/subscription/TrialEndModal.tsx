@@ -5,7 +5,7 @@
  * Instead of a generic pricing grid, shows a personalised VALUE RECAP:
  *   "En {N} jours, votre Kompilot a travaillé pour vous :"
  *   – posts generated, reviews answered, leads captured
- * Then a single CTA: "Activer mon Copilote — 59€/mois"
+ * Then a single CTA for the canonical Pro offer at 69€ HT/month.
  * Opens Stripe Checkout in a new tab (pre-filled with user data).
  * On payment confirmed: emerald confetti + instant Pro status, no logout.
  */
@@ -190,7 +190,7 @@ export function TrialEndModal({ open, onClose }: TrialEndModalProps) {
     setScreen('processing');
     // Simulate payment confirmation (replace with real webhook / polling in production)
     setTimeout(() => {
-      setPlan('pro');
+      setPlan('starter');
       deactivateDemo();
       setScreen('success');
       launchEmeraldConfetti();
@@ -374,7 +374,7 @@ export function TrialEndModal({ open, onClose }: TrialEndModalProps) {
                         style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 60%, #34D399 100%)' }}
                       >
                         <Zap size={18} className="fill-white" />
-                        Activer mon Copilote — 59€/mois
+                        Activer mon Copilote — 69€/mois HT
                         <ExternalLink size={14} className="opacity-70" />
                       </motion.button>
 

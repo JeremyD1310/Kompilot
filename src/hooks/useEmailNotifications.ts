@@ -128,7 +128,7 @@ export function useEmailNotifications() {
 
     const fullParams: UpcomingPostEmailParams = {
       ...params,
-      calendarUrl: `${window.location.origin}/calendar`,
+      calendarUrl: `${window.location.origin}/calendrier`,
     };
 
     try {
@@ -227,8 +227,8 @@ export function useEmailNotifications() {
           await blink.notifications.email({
             to: user.email,
             subject: getUpcomingPostEmailSubject('demain', '14:00'),
-            html: getUpcomingPostEmailHtml({ postTitle: 'Publication test', postPreview: 'Découvrez nos nouvelles offres du printemps ! 🌸 Réservez dès maintenant et bénéficiez de -20% sur toutes nos prestations.', scheduledDate: 'demain', scheduledTime: '14:00', channels: ['instagram', 'facebook'], calendarUrl: `${origin}/calendar` }),
-            text: getUpcomingPostEmailText({ postTitle: 'Test', postPreview: 'Contenu test', scheduledDate: 'demain', scheduledTime: '14:00', channels: ['instagram'], calendarUrl: `${origin}/calendar` }),
+            html: getUpcomingPostEmailHtml({ postTitle: 'Publication test', postPreview: 'Découvrez nos nouvelles offres du printemps ! 🌸 Réservez dès maintenant et bénéficiez de -20% sur toutes nos prestations.', scheduledDate: 'demain', scheduledTime: '14:00', channels: ['instagram', 'facebook'], calendarUrl: `${origin}/calendrier` }),
+            text: getUpcomingPostEmailText({ postTitle: 'Test', postPreview: 'Contenu test', scheduledDate: 'demain', scheduledTime: '14:00', channels: ['instagram'], calendarUrl: `${origin}/calendrier` }),
           });
           break;
         case 'review':

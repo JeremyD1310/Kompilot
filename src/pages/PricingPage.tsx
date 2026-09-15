@@ -1,8 +1,8 @@
 /**
  * PricingPage — Page publique /pricing de Kompilot
  *
- * Grille 3 plans uniquement : Pro (69€) · Agency (149€, phare) · Enterprise (devis)
- * Les anciens plans free/pro 39€/expert 59€/franchise sont supprimés.
+ * Grille 3 plans uniquement : Pro (69 € HT) · Agency (149 € HT) · Enterprise (sur devis)
+ * La grille tarifaire conserve uniquement les offres canoniques publiées.
  */
 
 import { useState, useMemo } from 'react';
@@ -25,8 +25,8 @@ import type { KompilotPlanId } from '../components/landing/pricing/PricingData';
 
 export default function PricingPage() {
   usePageSeo(
-    'Tarifs Kompilot — Starter, Agency et Enterprise',
-    'Comparez les tarifs et fonctionnalités de Kompilot pour les professionnels, équipes et agences : Starter, Agency et Enterprise.',
+    'Tarifs Kompilot — Pro, Agency et Enterprise',
+    'Comparez les tarifs et fonctionnalités de Kompilot pour les professionnels, équipes et agences : Pro, Agency et Enterprise.',
     '/pricing',
   );
 

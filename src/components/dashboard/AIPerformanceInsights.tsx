@@ -464,7 +464,7 @@ Maximum 280 mots. Sois direct, quantifié et axé résultats business.`;
                   <ArrowRight size={10} />
                 </a>
                 <a
-                  href="/calendar"
+                  href="/calendrier"
                   className="flex items-center gap-1.5 text-[11px] font-bold text-primary bg-primary/8 hover:bg-primary/15 border border-primary/20 rounded-lg px-3 py-1.5 transition-colors"
                 >
                   <ArrowRight size={11} /> Aller au calendrier

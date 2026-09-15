@@ -35,7 +35,7 @@ export function ProactiveNotificationBanner() {
         icon: '🤖',
         message: `Aucune publication depuis ${daysSincePost >= 5 ? '+4' : daysSincePost} jours ! Vos futurs clients vous cherchent sur ChatGPT et Google Maps.`,
         cta: 'Créer un post maintenant',
-        ctaHref: '/calendar',
+        ctaHref: '/calendrier',
         severity: 'warning',
       });
     }

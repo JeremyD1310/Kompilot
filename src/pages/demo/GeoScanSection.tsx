@@ -19,7 +19,7 @@ export function GeoScanSection() {
         </h2>
         <p className="text-sm text-slate-500 max-w-2xl mx-auto">
           Découvrez comment Kompilot optimise votre présence dans ChatGPT, Gemini et Perplexity,
-          tout en publiant automatiquement sur vos réseaux sociaux.
+          tout en préparant vos publications pour validation.
         </p>
       </div>
 
@@ -40,9 +40,9 @@ export function GeoScanSection() {
                 <span className="text-lg">📱</span>
               </div>
               <div>
-                <h3 className="text-sm font-extrabold text-white">Publication Automatique</h3>
+                <h3 className="text-sm font-extrabold text-white">Publication préparée par l’IA, puis validée par vous</h3>
                 <p className="text-white/65 text-xs mt-0.5">
-                  Kompilot publie sur tous vos réseaux en temps réel
+                  Relisez chaque contenu avant toute diffusion
                 </p>
               </div>
             </div>

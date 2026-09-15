@@ -75,7 +75,7 @@ const BASE_CARDS: FeedCard[] = [
     title: 'Planifie ta semaine en 1 clic',
     description: 'Ton calendrier est vide pour les 7 prochains jours. L\'IA peut générer 5 posts adaptés à ta saison, ton secteur et tes mots-clés G.E.O. en moins de 30 secondes.',
     cta: 'Générer le planning',
-    href: '/calendar',
+    href: '/calendrier',
     icon: CalendarDays,
   },
   {

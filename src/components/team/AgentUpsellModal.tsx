@@ -24,8 +24,8 @@ export function AgentUpsellModal({
   open,
   onClose,
   agentName,
-  price = '29€/mois',
-  feature = 'la publication automatique et la génération de visuels personnalisés',
+  price = 'Disponible selon l’offre Agency',
+  feature = 'la préparation de publications validées et la génération de visuels personnalisés',
   onConfirm,
 }: AgentUpsellModalProps) {
   return (

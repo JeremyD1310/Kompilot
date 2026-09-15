@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactDOM from 'react-dom/client'
+import ReactDOM, { type Root } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BlinkUIProvider, Toaster } from '@blinkdotnew/ui'
 import { SubscriptionProvider } from './context/SubscriptionContext'
@@ -57,6 +57,15 @@ installGlobalErrorHandlers(
 )
 
 const queryClient = new QueryClient()
+const rootContainer = document.getElementById('root') as (HTMLElement & { __kompilotRoot?: Root }) | null
+if (!rootContainer) throw new Error('Kompilot root container is missing')
+// Keep the root in both places: the DOM marker handles a re-evaluated entry
+// module, while the global fallback handles HMR when Vite replaces #root.
+const rootStore = globalThis as typeof globalThis & { __kompilotRoot?: Root }
+const appRoot = rootContainer.__kompilotRoot
+  ?? rootStore.__kompilotRoot
+  ?? (rootStore.__kompilotRoot = ReactDOM.createRoot(rootContainer))
+rootContainer.__kompilotRoot = appRoot
 
 // ── Provider composer ────────────────────────────────────────────────────────
 // Composes an array of providers to avoid deep nesting ("provider hell").
@@ -71,22 +80,12 @@ function compose(...providers: ProviderComponent[]) {
   }
 }
 
-// Keep dependent demo contexts explicit. DemoModeProvider consumes DemoDataProvider,
-// so this relationship must remain visible instead of relying on list ordering.
-function DemoProviders({ children }: { children: React.ReactNode }) {
-  return (
-    <DemoDataProvider>
-      <DemoModeProvider>{children}</DemoModeProvider>
-    </DemoDataProvider>
-  )
-}
-
-// Static providers — defined once at module level (don't depend on runtime state)
+// Static providers — defined once at module level (don't depend on runtime state).
+// DemoModeProvider is mounted explicitly below because it consumes DemoDataProvider.
 const StaticProviders = compose(
   AdminProvider,
   IntegrationStatusProvider,
   DemoViewProvider,
-  DemoProviders,
   UserProfileProviderWithAuth,
   SubscriptionProvider,
   EstablishmentProvider,
@@ -116,9 +115,13 @@ function ThemedApp() {
         <Toaster />
         <GoogleAnalyticsLoader />
         <PremiumActionGate />
-        <div className="flex w-full flex-1 flex-col min-h-0">
-          <App />
-        </div>
+        <DemoDataProvider>
+          <DemoModeProvider>
+            <div className="flex w-full flex-1 flex-col min-h-0">
+              <App />
+            </div>
+          </DemoModeProvider>
+        </DemoDataProvider>
         <CookieBanner />
         <HelpFeedbackButton />
         <SupportChatBubble />
@@ -127,7 +130,7 @@ function ThemedApp() {
   )
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+appRoot.render(
   <React.StrictMode>
     <ObsidianThemeProvider>
       <DarkModeProvider>

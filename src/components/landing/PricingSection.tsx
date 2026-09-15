@@ -1,8 +1,8 @@
 /**
  * PricingSection — Grille tarifaire B2B Kompilot
  *
- * 3 forfaits uniquement : Pro (69€) · Agency (149€, formule phare) · Enterprise (devis)
- * Supprime définitivement les anciens plans 49€/99€/299€/599€.
+ * 3 forfaits uniquement : Starter (69€) · Agency (149€, formule phare) · Enterprise (devis)
+ * La grille tarifaire est limitée aux offres Pro, Agency et Enterprise.
  *
  * Design :
  *   • Fond dark navy (#0F172A) — cohérent avec le reste de la landing
@@ -35,7 +35,7 @@ function PlanCard({
 }) {
   const isAgency     = plan.id === 'agency';
   const isEnterprise = plan.id === 'enterprise';
-  const displayName = plan.id === 'starter' ? 'Pro' : plan.name;
+  const displayName = plan.name;
 
   const cardStyle: React.CSSProperties = {
     background:    isAgency ? '#F0FDFA' : BG2,
@@ -187,7 +187,7 @@ export function PricingSection({ cta, audience }: PricingSectionProps) {
     ? KOMPILOT_PLANS.filter(p => p.id === 'starter')
     : audience === 'agency'
       ? KOMPILOT_PLANS.filter(p => p.id === 'agency')
-      : KOMPILOT_PLANS.filter(p => p.id === 'starter' || p.id === 'agency');
+      : KOMPILOT_PLANS.filter(p => p.id === 'starter' || p.id === 'agency' || p.id === 'enterprise');
 
   return (
     <section

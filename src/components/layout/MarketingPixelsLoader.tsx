@@ -20,6 +20,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { injectPixelScripts } from '../../lib/tracking';
+import { isDemoRuntime } from '../../lib/demoDomain';
 
 const CONSENT_KEY = 'kompilot_cookie_consent';
 const PREFS_KEY = 'kompilot_cookie_prefs';
@@ -92,7 +93,13 @@ export function MarketingPixelsLoader() {
   const hasConsent = useRef(false);
 
   const sync = useCallback(() => {
-    if (!hasAnyPixelId) return;
+    if (!hasAnyPixelId || isDemoRuntime()) {
+      if (hasConsent.current) {
+        removeAllMarketingPixels();
+        hasConsent.current = false;
+      }
+      return;
+    }
 
     const allowed = hasMarketingConsent();
     if (allowed && !hasConsent.current) {

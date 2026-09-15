@@ -22,7 +22,7 @@ export function AgencyView() {
         <div className="flex items-center gap-3">
           <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white">Agence Réseaux Pro</h1>
-            <p className="text-slate-500 text-sm">Plan Pro Agence (599€/mois)</p>
+            <p className="text-slate-500 text-sm">Portefeuille fictif · résultats présentés à titre indicatif</p>
           </div>
           <div className="hidden md:flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
             <Globe className="w-3 h-3 text-slate-400" />
