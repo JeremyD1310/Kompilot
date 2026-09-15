@@ -101,8 +101,8 @@ export function UsageProgressBar() {
       ) : currentPlan.id !== 'expert' ? (
         <p className="mt-2 text-[11px] text-muted-foreground/70 leading-snug">
           {currentPlan.id === 'free'
-            ? 'Passez à Pro (19€/mois) pour 15 posts/mois, ou Expert (39€/mois) pour 30 contenus + Stories.'
-            : 'Passez à Expert (39€/mois) pour 30 contenus/mois incluant les Stories Instagram & Facebook.'
+            ? 'Passez à Pro (69€/mois HT) pour piloter votre présence locale, ou Agency (149€/mois HT) pour les équipes et multi-établissements.'
+            : 'Passez à Agency (149€/mois HT) pour les équipes, multi-établissements et contenus préparés par l’IA.'
           }
         </p>
       ) : (

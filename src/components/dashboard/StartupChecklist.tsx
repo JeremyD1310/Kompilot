@@ -251,7 +251,7 @@ export function StartupChecklist({ userId }: StartupChecklistProps) {
       label: 'Inviter votre équipe',
       description: 'Ajoutez un collaborateur (éditeur, admin) dans l\'espace Équipe pour travailler ensemble.',
       done: readBool(`team_member_invited_${userId}`),
-      href: '/team',
+      href: '/mon-equipe',
     },
     {
       emoji: '🤖',

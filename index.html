@@ -116,9 +116,10 @@
     <meta name="twitter:site" content="@kompilot_fr" />
     <!-- WhatsApp / iMessage prefer absolute URLs — fallback via CDN -->
     <link rel="preload" as="image" href="/og-image.png" />
-    <!-- Security headers (complement server-side headers) -->
+    <!-- Security headers are enforced by the hosting layer; only document-safe
+         metadata belongs here. X-Frame-Options is an HTTP response header and
+         is intentionally not emitted as a <meta> tag. -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <!-- JSON-LD: Organization + WebSite are site-level entities, emitted once. Route pages add only their own WebPage/FAQ/Product/Service schema. -->
     <script type="application/ld+json">

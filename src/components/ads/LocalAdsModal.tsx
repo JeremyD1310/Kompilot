@@ -21,9 +21,9 @@ type ModalTab = 'config' | 'analytics' | 'abtest';
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const BUDGETS = [
-  { value: 30,  label: '30 €',  desc: 'Portée estimée : ~1 200 personnes' },
-  { value: 50,  label: '50 €',  desc: 'Portée estimée : ~2 500 personnes', popular: true },
-  { value: 100, label: '100 €', desc: 'Portée estimée : ~6 000 personnes' },
+  { value: 50,  label: '50 €',  desc: 'Portée indicative : ~1 200 personnes' },
+  { value: 100, label: '100 €', desc: 'Portée indicative : ~2 500 personnes', popular: true },
+  { value: 200, label: '200 €', desc: 'Portée indicative : ~6 000 personnes' },
 ];
 
 const PLATFORM_CHIPS = [

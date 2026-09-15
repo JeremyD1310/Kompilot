@@ -12,7 +12,7 @@ import {
 
 const NAV_ITEMS = [
   { to: '/command-center', icon: LayoutDashboard, label: 'Accueil' },
-  { to: '/calendar', icon: Calendar, label: 'Calendrier' },
+  { to: '/calendrier', icon: Calendar, label: 'Calendrier' },
   { to: '/inbox', icon: MessageSquare, label: 'Messages' },
   { to: '/analytics', icon: BarChart3, label: 'Stats' },
   { to: '/settings', icon: Settings, label: 'Réglages' },

@@ -27,7 +27,8 @@ export type TrackingEvent =
   | 'White_Label_Activated'
   | 'Agency_Purchase'
   | 'ViewContent'
-  | 'InitiateCheckout';
+  | 'InitiateCheckout'
+  | 'testimonial_cta_click';
 
 export interface TrackingOptions {
   email?: string;
@@ -108,6 +109,7 @@ const META_MAP: Record<TrackingEvent, string> = {
   Agency_Purchase: 'Purchase',
   ViewContent: 'ViewContent',
   InitiateCheckout: 'InitiateCheckout',
+  testimonial_cta_click: 'CustomEvent',
 };
 
 const GA4_MAP: Record<TrackingEvent, string> = {
@@ -123,6 +125,7 @@ const GA4_MAP: Record<TrackingEvent, string> = {
   Agency_Purchase: 'agency_purchase',
   ViewContent: 'view_item',
   InitiateCheckout: 'begin_checkout',
+  testimonial_cta_click: 'testimonial_cta_click',
 };
 
 const TIKTOK_MAP: Record<TrackingEvent, string> = {
@@ -138,6 +141,7 @@ const TIKTOK_MAP: Record<TrackingEvent, string> = {
   Agency_Purchase: 'PlaceAnOrder',
   ViewContent: 'ViewContent',
   InitiateCheckout: 'InitiateCheckout',
+  testimonial_cta_click: 'CustomEvent',
 };
 
 // ── Fonction principale ───────────────────────────────────────────────────────

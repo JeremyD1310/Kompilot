@@ -27,7 +27,7 @@ export function FreelanceView() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Menuiserie Durand & Fils</h1>
-          <p className="text-slate-500 text-sm">Artisan menuisier — Bretagne (Plan Pro 99€/mois)</p>
+          <p className="text-slate-500 text-sm">Artisan menuisier — Bretagne · estimation indicative</p>
         </div>
         <Badge className="bg-amber-100 text-amber-700 border-none dark:bg-amber-900/30 dark:text-amber-400">
           📍 Rayon 35 km

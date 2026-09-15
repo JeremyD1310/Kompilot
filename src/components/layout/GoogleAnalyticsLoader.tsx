@@ -17,7 +17,7 @@ import { COOKIE_CONSENT_EVENT, hasAnalyticsConsent } from '../../lib/cookieConse
 import { isDemoRuntime } from '../../lib/demoDomain'
 
 export function GoogleAnalyticsLoader() {
-  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined
+  const measurementId = (import.meta.env.VITE_GA_MEASUREMENT_ID || import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-58L48L66DD') as string
   const lastPath = useRef<string>('')
   const [analyticsAllowed, setAnalyticsAllowed] = useState(hasAnalyticsConsent)
 

@@ -66,7 +66,7 @@ export const TOUR_STEPS: TourStep[] = [
     placement: 'right',
     icon: '📅',
     nextLabel: 'Activer la publication automatique →',
-    route: '/calendar',
+    route: '/calendrier',
   },
   {
     id: 'team-collaboration',
@@ -76,7 +76,7 @@ export const TOUR_STEPS: TourStep[] = [
     placement: 'right',
     icon: '👥',
     nextLabel: 'Configurer mon équipe →',
-    route: '/team',
+    route: '/mon-equipe',
   },
   {
     id: 'ai-agents-cowork',

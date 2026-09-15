@@ -439,7 +439,7 @@ function UpgradeSection() {
             <div className="rounded-xl bg-primary/5 border border-primary/20 px-4 py-3 flex items-start gap-3">
               <ArrowUpCircle size={16} className="text-primary shrink-0 mt-0.5" />
               <p className="text-xs text-foreground/80 leading-relaxed">
-                <span className="font-semibold text-primary">Passez à Pro pour 19€/mois</span> — connectez 3 réseaux, planifiez 15 posts par mois et accédez à la génération IA.
+                <span className="font-semibold text-primary">Passez à Pro pour 69€/mois HT</span> — connectez 3 réseaux, planifiez 15 posts par mois et accédez à la génération IA.
               </p>
             </div>
           )}

@@ -54,7 +54,7 @@ export function URLToVideoSection({ userId }: URLToVideoSectionProps) {
     if (!scrapedData) return;
     const { hook, body, cta } = scrapedData.marketingContext;
     const script = `${hook}\n\n${body.join('\n')}\n\n${cta}`;
-    navigate({ to: `/calendar?prefill=${encodeURIComponent(script)}&source=url_to_video` });
+    navigate({ to: `/calendrier?prefill=${encodeURIComponent(script)}&source=url_to_video` });
   };
 
   const isVideoReady = videoStatus?.status === 'completed' && videoStatus?.videoUrl;

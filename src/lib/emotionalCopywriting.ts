@@ -48,7 +48,7 @@ export function getEmotionalContext(pathname: string): EmotionalContext {
   if (
     pathname.startsWith('/settings') ||
     pathname.startsWith('/onboarding') ||
-    pathname.startsWith('/calendar') ||
+    pathname.startsWith('/calendrier') ||
     pathname.startsWith('/cockpit') ||
     pathname.startsWith('/academy')
   ) return 'config';

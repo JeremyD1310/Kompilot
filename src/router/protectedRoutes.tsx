@@ -88,7 +88,7 @@ const ra = (path: string, AdminComponent: React.ComponentType) =>
 
 export const setupRoute            = r('/setup',               ProfileSetupPage);
 export const dashboardRoute        = r('/dashboard',           DashboardPage);
-export const calendarRoute         = r('/calendar',            CalendarPage);
+export const calendarRoute         = r('/calendrier',          CalendarPage);
 export const inboxRoute            = r('/inbox',               InboxPage);
 export const settingsRoute         = r('/settings',            SettingsPage);
 export const profileRoute          = r('/profile',             ProfilePage);
@@ -122,7 +122,7 @@ export const claudeCoworkRoute     = r('/agence/cowork',        ClaudeCoworkPage
 export const leadGenRoute          = r('/lead-gen',            LeadGenPage);
 export const sentimentRoute        = r('/semantic',            SentimentAnalysisPage);
 export const qrCodeRoute           = r('/qrcode',              SmartQRCodePage);
-export const caisseRoute           = r('/caissier',            CaissePage);
+export const caisseRoute           = r('/caisse',              CaissePage);
 export const brandRoute            = r('/brand',               BrandManagementPage);
 export const creativeFactoryRoute  = r('/creative-factory',    CreativeFactoryPage);
 export const aiCreativeStudioRoute = r('/ai-creative-studio',  AICreativeStudioPage);
@@ -134,7 +134,6 @@ export const emailMarketingRoute      = r('/email-marketing',      EmailMarketin
 export const creativeStudioHubRoute   = r('/creative-studio-hub',  CreativeStudioHubPage);
 export const websiteScanRoute      = r('/website-scan',         WebsiteScanPage);
 export const emailSequencesRoute   = r('/email-sequences',      EmailSequencesPage);
-export const teamRoute             = r('/team',                 TeamPage);
 export const monEquipeRoute        = r('/mon-equipe',           MonEquipePage);
 export const engagementRoute       = r('/engagement',           EngagementPage);
 export const seoGapRoute           = r('/espion',               SeoGapPage);
@@ -146,9 +145,10 @@ export const clientMessagesRoute = createRoute({
 });
 
 // Canonical hubs keep the main navigation focused while preserving old bookmarks.
-export const calendarAliasRoute = createRoute({ getParentRoute: () => d, path: '/calendrier', component: () => <Navigate to="/calendar" /> });
-export const caisseAliasRoute = createRoute({ getParentRoute: () => d, path: '/caisse', component: () => <Navigate to="/caissier" /> });
-export const teamAliasRoute = createRoute({ getParentRoute: () => d, path: '/equipe', component: () => <Navigate to="/team" /> });
+export const calendarAliasRoute = createRoute({ getParentRoute: () => d, path: '/calendar', component: () => <Navigate to="/calendrier" /> });
+export const caisseAliasRoute = createRoute({ getParentRoute: () => d, path: '/caissier', component: () => <Navigate to="/caisse" /> });
+export const teamAliasRoute = createRoute({ getParentRoute: () => d, path: '/equipe', component: () => <Navigate to="/mon-equipe" /> });
+export const teamEnglishAliasRoute = createRoute({ getParentRoute: () => d, path: '/team', component: () => <Navigate to="/mon-equipe" /> });
 export const creativeFactoryAliasRoute = createRoute({ getParentRoute: () => d, path: '/creative-studio', component: () => <Navigate to="/creative-studio-hub" /> });
 export const emailMarketingAliasRoute = createRoute({ getParentRoute: () => d, path: '/campagnes', component: () => <Navigate to="/email-marketing" /> });
 export const resultsAliasRoute = createRoute({ getParentRoute: () => d, path: '/resultats', component: () => <Navigate to="/performance" /> });
@@ -167,7 +167,7 @@ export const protectedChildRoutes = [
   qrCodeRoute, caisseRoute, brandRoute, creativeFactoryRoute,
   aiCreativeStudioRoute, featuresShowcaseRoute, tunnelsRoute,
   aioRoute, roasRoute, emailMarketingRoute, websiteScanRoute, emailSequencesRoute,
-  creativeStudioHubRoute, teamRoute, monEquipeRoute, engagementRoute, seoGapRoute,
-  calendarAliasRoute, caisseAliasRoute, teamAliasRoute, creativeFactoryAliasRoute,
+  creativeStudioHubRoute, monEquipeRoute, engagementRoute, seoGapRoute,
+  calendarAliasRoute, caisseAliasRoute, teamAliasRoute, teamEnglishAliasRoute, creativeFactoryAliasRoute,
   emailMarketingAliasRoute, resultsAliasRoute, seoAuthorityAliasRoute,
 ];

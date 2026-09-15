@@ -42,7 +42,7 @@ function RangeSlider({ label, min, max, step, value, onChange, fmt }: {
 export function InlineROISimulator() {
   const [noShows, setNoShows] = useState(8);
   const [basket, setBasket] = useState(65);
-  const PLAN_COST = 99;
+  const PLAN_COST = 69;
 
   const { recovered, netGain, roi } = useMemo(() => {
     const recovered = noShows * basket;
@@ -88,7 +88,7 @@ export function InlineROISimulator() {
             fmt={v => `${v} €`}
           />
           <p style={{ fontSize: '.72rem', color: '#334155', lineHeight: 1.5, margin: 0 }}>
-            Plan Pro Commerce inclus à {PLAN_COST} €/mois — Coût déduit du calcul.
+            Plan Starter inclus à {PLAN_COST} €/mois — Coût déduit du calcul.
           </p>
         </div>
 

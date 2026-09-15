@@ -38,7 +38,7 @@ const ADDON_DISPLAY: Record<AddonId, {
 }> = {
   creative_premium: {
     label: 'Creative Studio Hyper-Automation',
-    price: '+39€ HT/mois',
+    price: 'Inclus selon le périmètre Agency',
     badge: '🎬 Hyper-Automation',
     color: '#818CF8',
     borderColor: 'rgba(129,140,248,.3)',

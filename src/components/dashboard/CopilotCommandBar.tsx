@@ -63,7 +63,7 @@ const AGENCY_SUGGESTIONS: QuickSuggestion[] = [
   {
     emoji: '📝',
     label: 'Planifier 15 contenus',
-    route: '/calendar',
+    route: '/calendrier',
     prompt: 'Génère un plan éditorial de 15 posts premium pour le mois prochain — valorise le savoir-faire de mes clients.',
   },
 ];

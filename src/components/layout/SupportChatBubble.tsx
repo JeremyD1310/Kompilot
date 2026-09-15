@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { MessageCircle, X, Send } from 'lucide-react';
 import { toast } from '@blinkdotnew/ui';
+import { isDemoRuntime } from '../../lib/demoDomain';
 
 export function SupportChatBubble() {
   const [open, setOpen] = useState(false);
@@ -15,7 +16,7 @@ export function SupportChatBubble() {
     if (!message.trim()) return;
     setSent(true);
     setMessage('');
-    toast.success('✅ Message envoyé ! L\'équipe Kompilot vous répond en moins de 10 min.');
+    toast.success(isDemoRuntime() ? 'Mode démo : message simulé, aucun envoi réel.' : 'Message envoyé ! L\'équipe Kompilot vous répond en moins de 10 min.');
     setTimeout(() => { setSent(false); setOpen(false); }, 2500);
   };
 
@@ -53,8 +54,8 @@ export function SupportChatBubble() {
             {sent ? (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div style={{ fontSize: '2rem', marginBottom: 8 }}>✅</div>
-                <p style={{ fontSize: '.88rem', color: 'hsl(var(--foreground))', fontWeight: 600 }}>Message envoyé !</p>
-                <p style={{ fontSize: '.78rem', color: 'hsl(var(--muted-foreground))', marginTop: 4 }}>Nous vous répondons en moins de 10 min.</p>
+                <p style={{ fontSize: '.88rem', color: 'hsl(var(--foreground))', fontWeight: 600 }}>{isDemoRuntime() ? 'Message simulé' : 'Message envoyé !'}</p>
+                <p style={{ fontSize: '.78rem', color: 'hsl(var(--muted-foreground))', marginTop: 4 }}>{isDemoRuntime() ? 'Aucun message réel n’a été envoyé.' : 'Nous vous répondons en moins de 10 min.'}</p>
               </div>
             ) : (
               <>

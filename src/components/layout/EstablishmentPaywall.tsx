@@ -34,11 +34,11 @@ export const EstablishmentPaywall: React.FC<EstablishmentPaywallProps> = ({ open
   const { establishments, setActiveEstablishment } = useEstablishment();
 
   const handleUpgrade = () => {
-    setPlan('expert');
+    setPlan('agency');
     const lockedEst = establishments.find(e => e.isLocked);
     if (lockedEst) setActiveEstablishment(lockedEst.id);
     onClose();
-    toast.success('🎉 Offre Expert activée ! Vos établissements sont maintenant débloqués.');
+    toast.success('🎉 Offre Agency activée ! Vos établissements sont maintenant débloqués.');
     if (onUpgrade) onUpgrade();
   };
 
@@ -106,10 +106,10 @@ export const EstablishmentPaywall: React.FC<EstablishmentPaywallProps> = ({ open
           <div className="rounded-2xl bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/20 border border-teal-200/60 dark:border-teal-800/40 p-4 flex items-center justify-between">
             <div>
               <div className="text-[11px] font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-widest mb-0.5">
-                Offre Expert
+                Offre Agency
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-extrabold text-foreground tracking-tight">39€</span>
+                <span className="text-3xl font-extrabold text-foreground tracking-tight">149€</span>
                 <span className="text-sm text-muted-foreground">/mois</span>
               </div>
               <p className="text-[10px] text-muted-foreground mt-1">
@@ -128,7 +128,7 @@ export const EstablishmentPaywall: React.FC<EstablishmentPaywallProps> = ({ open
             className="w-full h-12 text-base font-semibold rounded-xl transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-teal-500/20"
             onClick={handleUpgrade}
           >
-            🚀 Passer à l'offre Expert en 1 clic
+            🚀 Passer à l'offre Agency en 1 clic
           </Button>
           <Button
             variant="ghost"

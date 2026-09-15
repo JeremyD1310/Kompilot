@@ -26,7 +26,7 @@ export function AgentsBillingPanel({ isTrial, isAgency, aiOptionActivated, setAi
   const [legalChecked2, setLegalChecked2] = useState(false);
   const [confirmed, setConfirmed]         = useState(false);
 
-  const addonPrice = isAgency ? '+50 € HT / mois' : '+30 € HT / mois';
+  const addonPrice = isAgency ? 'Inclus dans Agency' : 'Disponible dans Agency';
   const canSubmit  = legalChecked1 && legalChecked2;
 
   function handleValidate() {
@@ -58,7 +58,7 @@ export function AgentsBillingPanel({ isTrial, isAgency, aiOptionActivated, setAi
             <Lock size={18} className="text-slate-600 mx-auto mb-2" />
             <span className="text-xs font-bold text-slate-400 block">Option Agents IA Masquée</span>
             <p className="text-[10px] text-slate-500 mt-1">
-              Disponible à la souscription ({isAgency ? '+50€' : '+30€'}/mois).
+              Disponible selon le périmètre Agency souscrit.
             </p>
           </div>
         </div>
