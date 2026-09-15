@@ -2,7 +2,6 @@ import {
   ONE_TIME_PRODUCTS as SHARED_ONE_TIME_PRODUCTS,
   SUBSCRIPTION_PLANS,
   getOneTimePriceEnvKey,
-  getSubscriptionPriceEnvKey,
   resolveOneTimeProduct as resolveSharedOneTimeProduct,
   resolveSubscriptionPlan,
   type BillingInterval,
@@ -39,7 +38,7 @@ export function resolveNewPlan(planId: unknown, billing: unknown) {
   return resolved ? {
     planId: resolved.plan.id,
     billing: resolved.billing,
-    envKey: `PRICE_${resolved.plan.id.toUpperCase()}_${resolved.billing.toUpperCase()}_ID`,
+    lookupKey: resolved.lookupKey,
   } : null
 }
 
@@ -56,14 +55,14 @@ export function resolveOneTimeProduct(productId: unknown) {
       amount: product.amountEurHt === null ? 0 : product.amountEurHt * 100,
       currency: 'eur',
       productType: product.productType,
-      pilotDays: product.pilotDays,
-      creditEligible: product.creditEligible,
-      creditType: product.creditType,
-      creditAmount: product.creditAmount,
-      recurring: product.recurring,
+      ...(product.pilotDays === undefined ? {} : { pilotDays: product.pilotDays }),
+      ...(product.creditEligible === undefined ? {} : { creditEligible: product.creditEligible }),
+      ...(product.creditType === undefined ? {} : { creditType: product.creditType }),
+      ...(product.creditAmount === undefined ? {} : { creditAmount: product.creditAmount }),
+      ...(product.recurring === undefined ? {} : { recurring: product.recurring }),
       lookupKey: product.lookupKey,
       name: product.name,
     },
-    envKey: getOneTimePriceEnvKey(product.id),
+    lookupKey: getOneTimePriceEnvKey(product.id),
   } : null
 }

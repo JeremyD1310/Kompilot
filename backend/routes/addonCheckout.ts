@@ -87,7 +87,7 @@ router.post('/api/billing/addon/checkout', async (c) => {
   // 7. Resolve addon price ID
   const canonicalAddon = resolveOneTimeProduct(body?.addonId)
   const priceId = canonicalAddon?.definition.productType === 'addon' ? await (async () => {
-    const r = await fetch(`https://api.stripe.com/v1/prices?${new URLSearchParams({ lookup_keys: canonicalAddon.envKey ?? '', active: 'true', limit: '1' })}`, { headers: { Authorization: `Bearer ${stripeKey}` } });
+    const r = await fetch(`https://api.stripe.com/v1/prices?${new URLSearchParams({ lookup_keys: canonicalAddon.lookupKey ?? '', active: 'true', limit: '1' })}`, { headers: { Authorization: `Bearer ${stripeKey}` } });
     const d = await r.json() as { data?: Array<{ id: string }> }; return d.data?.[0]?.id ?? null
   })() : getAddonPriceId(rawEnv, addonId);
   if (!priceId) {

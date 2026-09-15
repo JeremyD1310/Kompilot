@@ -7,9 +7,9 @@ describe('canonical Kompilot pricing catalog', () => {
     expect(resolveNewPlan('starter', 'monthly')).toBeNull()
     expect(resolveNewPlan('pro-plus', 'monthly')).toBeNull()
   })
-  it('maps only monthly/yearly canonical prices', () => {
-    expect(resolveNewPlan('pro', 'monthly')?.envKey).toBe('PRICE_PRO_MONTHLY_ID')
-    expect(resolveNewPlan('multi', 'yearly')?.envKey).toBe('PRICE_MULTI_YEARLY_ID')
+  it('maps only monthly/yearly canonical Stripe lookup keys', () => {
+    expect(resolveNewPlan('pro', 'monthly')?.lookupKey).toBe('kompilot_pro_monthly')
+    expect(resolveNewPlan('multi', 'yearly')?.lookupKey).toBe('kompilot_multi_annual')
     expect(resolveNewPlan('agency', 'weekly')).toBeNull()
   })
   it('validates one-time products and pilot metadata', () => {

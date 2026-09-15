@@ -52,9 +52,19 @@ jobs:
         with:
           bun-version: latest
       - run: bun install --frozen-lockfile
-      - run: bun test tests/backend/*.test.ts
-      - run: bunx playwright install --with-deps chromium
+      - run: bun test tests/backend/*.test.ts tests/unit/*.test.ts
+      - run: npx playwright install --with-deps chromium
       - run: bun run test:e2e
+      - name: Upload Playwright evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-evidence-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
 
   production-build:
     name: Production build

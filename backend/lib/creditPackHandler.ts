@@ -33,9 +33,12 @@ export async function handleCreditPackGrant(
 
     // credit_transactions is the canonical ledger. Do not mutate establishments
     // here: legacy counters are not a source of truth for generic AI credits.
-    const now = new Date().toISOString();
+    const nowDate = new Date();
+    const now = nowDate.toISOString();
     const periodKey = now.slice(0, 7);
-    const expiresAt = new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000).toISOString();
+    const expiresDate = new Date(nowDate);
+    expiresDate.setUTCMonth(expiresDate.getUTCMonth() + 12);
+    const expiresAt = expiresDate.toISOString();
     await blink.db.batch([{
       sql: `INSERT INTO credit_transactions
         (id, user_id, type, action_type, credits_delta, balance_after, description, reference_id, metadata, created_at, credit_type, source_type, expires_at, period_key)

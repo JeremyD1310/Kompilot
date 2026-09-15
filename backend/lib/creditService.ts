@@ -140,7 +140,7 @@ export async function consumeCredits(
   const inserted = Number((result.results?.[0] as { affectedRows?: number } | undefined)?.affectedRows ?? 0);
   if (inserted !== 1) {
     const existing = await blink.db.table<CreditTransaction>('credit_transactions').list({
-      where: { userId, type: 'consumption', referenceId, creditType },
+      where: { userId, type: 'consumption', referenceId: safeReferenceId, creditType },
       limit: 1,
     });
     if (existing.length > 0) {
