@@ -11,6 +11,7 @@ import { createClient } from '@blinkdotnew/sdk';
 import { checkUserQuota } from '../lib/quotaMiddleware';
 import type { Env } from '../lib/types';
 import { generateAIResponse } from '../lib/aiRouter';
+import { consumeExecuteRefund } from '../lib/creditService';
 
 export const router = new Hono<{ Bindings: Env }>();
 
@@ -381,8 +382,11 @@ router.post('/api/url-to-video/generate', checkUserQuota('luma_videos', 1), asyn
 
   // ── Synchronous mode (fallback / default) ───────────────────────────
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
     const res = await fetch('https://api.lumalabs.ai/dream-machine/v1/generations', {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'Authorization': `Bearer ${lumaKey}`,
         'Content-Type': 'application/json',
@@ -392,6 +396,7 @@ router.post('/api/url-to-video/generate', checkUserQuota('luma_videos', 1), asyn
         aspect_ratio: aspectRatio,
       }),
     });
+    clearTimeout(timeout);
 
     if (!res.ok) {
       const errText = await res.text();

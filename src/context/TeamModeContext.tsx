@@ -118,8 +118,8 @@ export function TeamModeProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const validatePost = (id: string) => {
-    const ok = deductCredit();
+  const validatePost = async (id: string) => {
+    const ok = await deductCredit();
     if (!ok) {
       toast.error('Solde insuffisant pour publier.');
       return;

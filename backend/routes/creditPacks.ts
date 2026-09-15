@@ -13,6 +13,7 @@ import { Hono } from 'hono';
 import type { Env } from '../lib/types';
 import { getBlink, getUserMeta, patchUserMeta } from '../lib/stripeHelpers';
 import { fetchWithTimeout } from '../lib/http';
+import { ONE_TIME_PRODUCTS, getOneTimePriceEnvKey, resolveOneTimeProduct } from '../../shared/pricingCatalog';
 
 export const router = new Hono();
 
@@ -77,15 +78,12 @@ router.post('/api/billing/credit-packs', async (c) => {
   const body = await c.req.json<{ packId?: string }>();
   const packId = body?.packId;
 
-  if (!packId || !CREDIT_PACKS[packId]) {
-    return c.json({
-      error: 'Invalid packId. Choose: small, medium, or large.',
-      availablePacks: Object.keys(CREDIT_PACKS),
-    }, 400);
+  const product = resolveOneTimeProduct(packId);
+  if (!product || product.productType !== 'topup' || product.creditType !== 'ai') {
+    return c.json({ error: 'Invalid AI top-up product.', availablePacks: ONE_TIME_PRODUCTS.filter(p => p.productType === 'topup' && p.creditType === 'ai').map(p => p.id) }, 400);
   }
-
-  const pack = CREDIT_PACKS[packId];
-  const priceId = rawEnv[PACK_PRICE_KEYS[packId]] as string | undefined;
+  const pack: PackDef = { credits: product.creditAmount ?? 0, priceCents: (product.amountEurHt ?? 0) * 100, priceHT: product.amountEurHt ?? 0, label: product.name, description: product.description };
+  const priceId = rawEnv[getOneTimePriceEnvKey(product.id)] as string | undefined;
   if (!priceId) return c.json({ error: 'Credit pack price is not configured.', code: 'MISSING_PRICE' }, 503);
 
   // 4. Get or create Stripe customer

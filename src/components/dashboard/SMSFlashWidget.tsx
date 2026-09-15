@@ -56,7 +56,7 @@ function buildWhatsAppText(code: string, discount: string, bookingUrl?: string):
 
 export function SMSFlashWidget() {
   const { isTrialActive, openPaywall } = useTrial();
-  const { grantWelcomePack, consume } = useSmsCredits();
+  const { consume } = useSmsCredits();
   const [phase,    setPhase]    = useState<Phase>(0);
   const [code,     setCode]     = useState('FLASH');
   const [discount, setDiscount] = useState<Discount>('-20%');
@@ -68,9 +68,6 @@ export function SMSFlashWidget() {
   const smsText         = useMemo(() => channel === 'whatsapp' ? buildWhatsAppText(code || 'FLASH', discount) : buildSmsText(code || 'FLASH', discount), [code, discount, channel]);
   const charCount       = smsText.length;
   const selectedSegment = SEGMENTS.find(s => s.id === segment)!;
-
-  // Grant welcome pack on first render (idempotent)
-  useMemo(() => { grantWelcomePack(); }, [grantWelcomePack]);
 
   function handleSend() {
     // Consume 1 credit per send (non-blocking — simulation still proceeds if credits empty)
