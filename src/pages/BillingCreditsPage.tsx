@@ -48,7 +48,17 @@ async function fetchBalance(): Promise<CreditBalance> {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error('Erreur lors du chargement du solde');
-  return res.json();
+  const data = await res.json() as Partial<CreditBalance> & { data?: Partial<CreditBalance>; balance?: number };
+  const normalized = data.data ?? data;
+  if (typeof normalized.balance !== 'number') throw new Error('Réponse de solde invalide');
+  return {
+    balance: normalized.balance,
+    planName: normalized.planName ?? 'Plan actuel',
+    monthlyQuota: normalized.monthlyQuota ?? normalized.monthlyLimit ?? 0,
+    usedThisMonth: normalized.usedThisMonth ?? normalized.monthlyUsed ?? 0,
+    remaining: normalized.remaining ?? normalized.balance,
+    percentage: normalized.percentage ?? 0,
+  };
 }
 
 interface HistoryResponse {
@@ -104,12 +114,13 @@ export default function BillingCreditsPage() {
     toast.error('Impossible de charger les données de crédits');
   }
 
-  const planName = balance?.planName ?? 'Pro';
+  const planName = balance?.planName ?? '—';
   const currentBalance = balance?.balance ?? 0;
   const monthlyQuota = balance?.monthlyQuota ?? 0;
   const usedThisMonth = balance?.usedThisMonth ?? 0;
-  const remaining = balance?.remaining ?? currentBalance;
-  const percentage = balance?.percentage ?? (monthlyQuota > 0 ? Math.round((usedThisMonth / monthlyQuota) * 100) : 0);
+  const remaining = balance?.remaining ?? 0;
+  const percentage = balance?.percentage ?? 0;
+  const balanceUnavailable = Boolean(balanceError);
 
   return (
     <Page>
@@ -135,7 +146,14 @@ export default function BillingCreditsPage() {
 
       <PageBody>
         {/* ── Stats row ── */}
-        {balanceLoading ? (
+        {balanceUnavailable ? (
+          <Card className="mb-6 border-destructive/30">
+            <CardContent className="py-6 flex items-center justify-between gap-4">
+              <div><p className="font-semibold text-foreground">Solde indisponible</p><p className="text-sm text-muted-foreground">Nous n’avons pas pu charger vos crédits. Aucun solde nul n’est affiché.</p></div>
+              <Button variant="outline" onClick={() => refetchBalance()} className="gap-2"><RefreshCw size={14} /> Réessayer</Button>
+            </CardContent>
+          </Card>
+        ) : balanceLoading ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>

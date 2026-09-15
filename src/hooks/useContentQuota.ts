@@ -19,7 +19,7 @@ const EMPTY: ContentQuota = { monthlyLimit: 30, additionalCredits: 0, currentUsa
 export function useContentQuota() {
   const queryClient = useQueryClient();
   const query = useQuery<ContentQuota>({
-    queryKey: ['content-quota'],
+    queryKey: ['content-quota', blink.auth.isAuthenticated() ? 'authenticated' : 'anonymous'],
     staleTime: 30_000,
     refetchOnWindowFocus: true,
     queryFn: async () => {
@@ -39,7 +39,7 @@ export function useContentQuota() {
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(payload.error === 'CONTENT_QUOTA_EXCEEDED' ? 'Plafond de contenu atteint. Ajoutez des crédits pour continuer.' : payload.error || 'Impossible de vérifier le quota.');
-    queryClient.setQueryData(['content-quota'], payload);
+    queryClient.setQueryData(['content-quota', 'authenticated'], payload);
     return payload as ContentQuota;
   };
 
@@ -50,7 +50,7 @@ export function useContentQuota() {
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount }),
     });
-    await queryClient.invalidateQueries({ queryKey: ['content-quota'] });
+    await queryClient.invalidateQueries({ queryKey: ['content-quota', 'authenticated'] });
   };
 
   return { ...EMPTY, ...(query.data ?? {}), isLoading: query.isLoading, isError: query.isError, refetch: query.refetch, consume, release };

@@ -18,30 +18,36 @@ export async function handleCreditPackGrant(
   blink: BlinkClient,
   userId: string,
   credits: number,
+  purchaseReference = `credit-pack:${userId}:${Date.now()}`,
+  creditType: 'ai' | 'sms' = 'ai',
 ): Promise<{ success: boolean; newLimit?: number; error?: string }> {
   if (credits <= 0) {
     return { success: false, error: 'Invalid credit amount' };
   }
 
   try {
-    const establishments = await blink.db.establishments.list({ where: { userId }, limit: 1 });
-    const est = establishments[0] as any;
-
-    if (!est?.id) {
-      console.warn(`[credit-pack] No establishment found for user ${userId}, credits pending`);
-      return { success: false, error: 'No establishment found' };
-    }
-
-    const currentLimit = Number(est.aiCreditsLimit) || 50;
-    const newLimit = currentLimit + credits;
-
-    await blink.db.establishments.update(est.id, {
-      aiCreditsLimit: newLimit,
-      updatedAt: new Date().toISOString(),
+    const existingGrant = await blink.db.table<any>('credit_transactions').list({
+      where: { userId, type: 'grant', referenceId: purchaseReference }, limit: 1,
     });
+    if (existingGrant.length > 0) return { success: true };
 
-    console.warn(`[credit-pack] User ${userId} +${credits} credits (new limit: ${newLimit})`);
-    return { success: true, newLimit };
+    // credit_transactions is the canonical ledger. Do not mutate establishments
+    // here: legacy counters are not a source of truth for generic AI credits.
+    const now = new Date().toISOString();
+    const periodKey = now.slice(0, 7);
+    const expiresAt = new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000).toISOString();
+    await blink.db.batch([{
+      sql: `INSERT INTO credit_transactions
+        (id, user_id, type, action_type, credits_delta, balance_after, description, reference_id, metadata, created_at, credit_type, source_type, expires_at, period_key)
+        SELECT ?, ?, 'grant', 'credit_pack', ?,
+          ?, ?, ?, '{}', ?, '${creditType}', 'purchased', ?, ?
+        WHERE NOT EXISTS (SELECT 1 FROM credit_transactions WHERE user_id = ? AND type = 'grant' AND reference_id = ?)`,
+      args: [`grant:${purchaseReference}`.slice(0, 255), userId, credits, credits,
+        `Purchased ${creditType} credit pack (+${credits})`, purchaseReference, now, expiresAt, periodKey, userId, purchaseReference],
+    }], 'write');
+
+    console.warn(`[credit-pack] User ${userId} +${credits} credits`);
+    return { success: true };
   } catch (err) {
     console.error('[credit-pack] Grant failed:', err);
     return { success: false, error: String(err) };

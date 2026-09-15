@@ -3,6 +3,7 @@
  * Calls the deployed Hono backend (/api/billing/*) with Blink auth.
  */
 import { blink } from '../blink/client';
+import type { BillingInterval, PricingProductId, SubscriptionPlanId } from '../../shared/pricingCatalog';
 
 const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
 
@@ -33,6 +34,20 @@ export type PortalError =
 export interface PortalResult {
   url: string | null;
   error: PortalError | null;
+}
+
+export interface CreditBalance {
+  balance: number;
+  monthlyIncluded?: number;
+  monthlyUsed?: number;
+  monthlyLimit?: number;
+}
+
+export interface CreditHistoryEntry {
+  id: string;
+  amount: number;
+  action: string;
+  createdAt: string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -87,7 +102,8 @@ export interface CheckoutLegalConsent {
  * Returns the checkout URL or null on error.
  */
 export async function createCheckoutSession(
-  planId: string,
+  planId: SubscriptionPlanId,
+  billing: BillingInterval,
   legalConsent: CheckoutLegalConsent,
 ): Promise<{ url: string | null; fallback?: boolean; error?: string; code?: string }> {
   try {
@@ -95,11 +111,31 @@ export async function createCheckoutSession(
     const res = await fetch(`${BACKEND_URL}/api/billing/checkout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...headers },
-      body: JSON.stringify({ planId, legalConsent }),
+      body: JSON.stringify({ planId, billing, legalConsent }),
     });
     const data = await res.json() as { url?: string; fallback?: boolean; error?: string; code?: string };
     if (!res.ok) return { url: null, error: data.error || 'UNKNOWN', code: data.code };
     return { url: data.url ?? null, fallback: data.fallback };
+  } catch {
+    return { url: null, error: 'NETWORK_ERROR' };
+  }
+}
+
+/** Create a one-time Stripe Checkout session for a catalog product. */
+export async function createOneTimeCheckout(
+  productId: Exclude<PricingProductId, 'starter' | 'agency' | 'enterprise'>,
+  legalConsent: CheckoutLegalConsent,
+): Promise<{ url: string | null; error?: string; code?: string }> {
+  try {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${BACKEND_URL}/api/billing/one-time-checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify({ productId, legalConsent }),
+    });
+    const data = await res.json() as { url?: string; error?: string; code?: string };
+    if (!res.ok) return { url: null, error: data.error || 'UNKNOWN', code: data.code };
+    return { url: data.url ?? null };
   } catch {
     return { url: null, error: 'NETWORK_ERROR' };
   }
@@ -111,7 +147,7 @@ export async function createCheckoutSession(
  */
 export async function fetchBillingStatus(): Promise<BillingStatus> {
   const fallback: BillingStatus = {
-    status: 'active',
+    status: 'unpaid',
     gracePeriodEnd: null,
     hasStripeCustomer: false,
     planId: null,
@@ -130,6 +166,50 @@ export async function fetchBillingStatus(): Promise<BillingStatus> {
   } catch {
     return fallback;
   }
+}
+
+/**
+ * Fetch the current credit balance from the backend.
+ */
+export async function fetchCreditBalance(): Promise<CreditBalance> {
+  const token = await blink.auth.getValidToken().catch(() => null);
+  if (!token) {
+    // No production fallback, as per instruction.
+    // This will throw an error if token is null.
+    throw new Error('Authentication token not available.');
+  }
+
+  const res = await fetch(`${BACKEND_URL}/api/credits/balance`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    // No production fallback, as per instruction.
+    // This will throw an error if the response is not ok.
+    throw new Error(`Failed to fetch credit balance: ${res.statusText}`);
+  }
+  return await res.json() as CreditBalance;
+}
+
+/**
+ * Fetch the credit history from the backend.
+ */
+export async function fetchCreditHistory(): Promise<CreditHistoryEntry[]> {
+  const token = await blink.auth.getValidToken().catch(() => null);
+  if (!token) {
+    // No production fallback, as per instruction.
+    // This will throw an error if token is null.
+    throw new Error('Authentication token not available.');
+  }
+
+  const res = await fetch(`${BACKEND_URL}/api/credits/history`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    // No production fallback, as per instruction.
+    // This will throw an error if the response is not ok.
+    throw new Error(`Failed to fetch credit history: ${res.statusText}`);
+  }
+  return await res.json() as CreditHistoryEntry[];
 }
 
 // ── Human-readable portal error messages ─────────────────────────────────────

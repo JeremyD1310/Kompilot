@@ -11,6 +11,7 @@ import { createClient } from '@blinkdotnew/sdk';
 import { checkUserQuota } from '../lib/quotaMiddleware';
 import type { Env } from '../lib/types';
 import { generateAIResponse } from '../lib/aiRouter';
+import { consumeExecuteRefund } from '../lib/creditService';
 
 export const router = new Hono<{ Bindings: Env }>();
 
@@ -168,37 +169,17 @@ router.post('/api/url-to-video/scrape', async (c) => {
     return c.json({ error: 'Invalid URL format' }, 400);
   }
 
+  const referenceId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || `url-scrape:${userId}:${crypto.randomUUID()}`;
   try {
-    // 1. Deduct 1 credit
-    const establishments = await blink.db.establishments.list({ where: { userId }, limit: 1 });
-    const est = (establishments[0] as any) ?? {};
-    const creditsUsed = Number(est.aiCreditsUsed) || 0;
-    const creditsLimit = Number(est.aiCreditsLimit) || 50;
-    const creditsLeft = Math.max(0, creditsLimit - creditsUsed);
-
-    if (creditsLeft <= 0) {
-      return c.json({
-        error: 'NO_CREDITS',
-        message: 'Crédits épuisés.',
-        creditsLeft: 0,
-      }, 402);
-    }
-
-    // Deduct credit
-    try {
-      await blink.db.establishments.update(est.id, {
-        aiCreditsUsed: creditsUsed + 1,
-        updatedAt: new Date().toISOString(),
-      });
-    } catch (creditErr) {
-      console.warn('[UrlToVideo] credit deduction failed:', creditErr);
-    }
-
-    // 2. Scrape URL
-    const extractedData = await scrapeUrl(validUrl.href);
-
-    // 3. Use AI to generate marketing context
-    const systemContext = `Tu es un expert en marketing vidéo et copywriting pour des TPE/PME françaises.
+    const charged = await consumeExecuteRefund(
+      blink,
+      userId,
+      'text_generation',
+      'URL-to-video website analysis',
+      referenceId,
+      async () => {
+        const extractedData = await scrapeUrl(validUrl.href);
+        const systemContext = `Tu es un expert en marketing vidéo et copywriting pour des TPE/PME françaises.
 Analyse les données d'un site web et génère un script vidéo marketing structuré.
 
 RÈGLES:
@@ -207,8 +188,7 @@ RÈGLES:
 - Le body doit contenir 3-5 arguments de vente percutants
 - Le CTA doit être clair et orienté action
 - Le ton suggéré doit correspondre au produit/service`;
-
-    const userPrompt = `Analyse ce contenu web et génère un contexte marketing pour une vidéo:
+        const userPrompt = `Analyse ce contenu web et génère un contexte marketing pour une vidéo:
 
 Titre: ${extractedData.title}
 Description: ${extractedData.description}
@@ -225,59 +205,29 @@ Retourne un JSON avec cette structure:
   "tone": "expert|energetic|seducer",
   "targetAudience": "description de la cible"
 }`;
-
-    let marketingContext: MarketingContext = {
-      hook: `Découvrez ${extractedData.productName}`,
-      body: [extractedData.description || 'Un produit/service exceptionnel'],
-      cta: 'En savoir plus dès maintenant !',
-      tone: 'expert',
-      targetAudience: 'Grand public',
-    };
-
-    if (env.OPENAI_API_KEY || env.ANTHROPIC_API_KEY) {
-      try {
-        const aiResult = await generateAIResponse(
-          {
-            taskType: 'CREATIVE_CONTENT',
-            prompt: userPrompt,
-            systemContext,
-            forceJson: true,
-            maxTokens: 1000,
-          },
-          { OPENAI_API_KEY: env.OPENAI_API_KEY, ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY },
-          userId,
-        );
-
-        const raw = aiResult.content.trim().replace(/^```json?\n?/, '').replace(/\n?```$/, '');
-        let parsed: any;
-        try {
-          parsed = JSON.parse(raw);
-        } catch {
-          const match = raw.match(/\{[\s\S]*\}/);
-          parsed = match ? JSON.parse(match[0]) : null;
+        let marketingContext: MarketingContext = {
+          hook: `Découvrez ${extractedData.productName}`,
+          body: [extractedData.description || 'Un produit/service exceptionnel'],
+          cta: 'En savoir plus dès maintenant !',
+          tone: 'expert',
+          targetAudience: 'Grand public',
+        };
+        if (env.OPENAI_API_KEY || env.ANTHROPIC_API_KEY) {
+          try {
+            const aiResult = await generateAIResponse({ taskType: 'CREATIVE_CONTENT', prompt: userPrompt, systemContext, forceJson: true, maxTokens: 1000 }, { OPENAI_API_KEY: env.OPENAI_API_KEY, ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY }, userId);
+            const raw = aiResult.content.trim().replace(/^```json?\n?/, '').replace(/\n?```$/, '');
+            let parsed: any;
+            try { parsed = JSON.parse(raw); } catch { const match = raw.match(/\{[\s\S]*\}/); parsed = match ? JSON.parse(match[0]) : null; }
+            if (parsed) marketingContext = { hook: parsed.hook ?? marketingContext.hook, body: Array.isArray(parsed.body) ? parsed.body : marketingContext.body, cta: parsed.cta ?? marketingContext.cta, tone: parsed.tone ?? marketingContext.tone, targetAudience: parsed.targetAudience ?? marketingContext.targetAudience };
+          } catch (aiErr) { console.warn('[UrlToVideo] AI marketing context failed, using defaults:', aiErr); }
         }
-
-        if (parsed) {
-          marketingContext = {
-            hook: parsed.hook ?? marketingContext.hook,
-            body: Array.isArray(parsed.body) ? parsed.body : marketingContext.body,
-            cta: parsed.cta ?? marketingContext.cta,
-            tone: parsed.tone ?? marketingContext.tone,
-            targetAudience: parsed.targetAudience ?? marketingContext.targetAudience,
-          };
-        }
-      } catch (aiErr) {
-        console.warn('[UrlToVideo] AI marketing context failed, using defaults:', aiErr);
-      }
-    }
-
-    return c.json({
-      extractedData,
-      marketingContext,
-      creditsLeft: creditsLeft - 1,
-    });
+        return { extractedData, marketingContext };
+      },
+    );
+    return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
   } catch (err: any) {
     console.error('[UrlToVideo] scrape error:', err);
+    if (err?.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Crédits épuisés.' }, 402);
     return c.json({ error: err.message ?? 'Scraping failed' }, 500);
   }
 });
@@ -308,122 +258,54 @@ router.post('/api/url-to-video/generate', checkUserQuota('luma_videos', 1), asyn
     return c.json({ error: 'marketingContext is required (use /scrape first)' }, 400);
   }
 
-  // Check and deduct 3 credits (video generation is expensive)
   const blink = getBlink(env);
-  const establishments = await blink.db.establishments.list({ where: { userId }, limit: 1 });
-  const est = (establishments[0] as any) ?? {};
-  const creditsUsed = Number(est.aiCreditsUsed) || 0;
-  const creditsLimit = Number(est.aiCreditsLimit) || 50;
-  const creditsLeft = Math.max(0, creditsLimit - creditsUsed);
-  if (creditsLeft < 3) {
-    return c.json({ error: 'NO_CREDITS', message: 'Génération vidéo nécessite 3 crédits.', creditsLeft }, 402);
-  }
-  try {
-    await blink.db.establishments.update(est.id, { aiCreditsUsed: creditsUsed + 3, updatedAt: new Date().toISOString() });
-  } catch { /* non-critical */ }
-
   const mc = body.marketingContext;
-  const aspectRatio = (['9:16', '16:9', '1:1'].includes(body.aspectRatio ?? ''))
-    ? body.aspectRatio as string
-    : '9:16';
-
-  // Build a cinematic video prompt from the marketing context
+  const aspectRatio = (['9:16', '16:9', '1:1'].includes(body.aspectRatio ?? '')) ? body.aspectRatio as string : '9:16';
   const videoPrompt = [
     `Cinematic product video, ${mc.tone} tone.`,
     `Opening hook: ${mc.hook}`,
     `Key points: ${mc.body.join('. ')}.`,
     `Call to action: ${mc.cta}`,
     body.extractedData?.productName ? `Product: ${body.extractedData.productName}.` : '',
-    `Professional lighting, smooth transitions, modern marketing style, text overlays.`,
+    'Professional lighting, smooth transitions, modern marketing style, text overlays.',
   ].filter(Boolean).join(' ');
-
-  // Pre-create the generation record in DB
   const generationId = crypto.randomUUID();
+  const referenceId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || `url-video:${userId}:${generationId}`;
+
   try {
-    await blink.db.luma_generations.create({
-      id: generationId,
+    const charged = await consumeExecuteRefund(
+      blink,
       userId,
-      prompt: videoPrompt,
-      optimizedPrompt: '',
-      imageUrl: body.extractedData?.ogImage ?? '',
-      videoUrl: '',
-      status: 'processing',
-      aspectRatio,
-      isAiGenerated: 1,
-    });
-  } catch (dbErr) {
-    console.warn('[UrlToVideo] DB store failed (non-critical):', dbErr);
-  }
-
-  // ── Async queue mode: enqueue and return immediately ────────────────
-  if (body.async) {
-    try {
-      const queueFn = (blink as any).queue;
-      if (queueFn?.enqueue) {
-        await queueFn.enqueue('generate-video', {
-          userId,
-          videoPrompt,
-          aspectRatio,
-          extractedData: body.extractedData,
-          generationId,
-        });
-        return c.json({
-          mode: 'async',
-          generationId,
-          status: 'queued',
-          message: 'Video generation queued. Poll /status/:generationId for updates.',
-        });
-      }
-    } catch (queueErr) {
-      console.warn('[UrlToVideo] Queue enqueue failed, falling back to sync:', queueErr);
-    }
-  }
-
-  // ── Synchronous mode (fallback / default) ───────────────────────────
-  try {
-    const res = await fetch('https://api.lumalabs.ai/dream-machine/v1/generations', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lumaKey}`,
-        'Content-Type': 'application/json',
+      'video_generation',
+      'URL-to-video Luma generation',
+      referenceId,
+      async () => {
+        try {
+          await blink.db.luma_generations.create({ id: generationId, userId, prompt: videoPrompt, optimizedPrompt: '', imageUrl: body.extractedData?.ogImage ?? '', videoUrl: '', status: 'processing', aspectRatio, isAiGenerated: 1 });
+        } catch (dbErr) { console.warn('[UrlToVideo] DB store failed (non-critical):', dbErr); }
+        if (body.async) {
+          const queueFn = (blink as any).queue;
+          if (queueFn?.enqueue) {
+            await queueFn.enqueue('generate-video', { userId, videoPrompt, aspectRatio, extractedData: body.extractedData, generationId });
+            return { mode: 'async', generationId, status: 'queued', message: 'Video generation queued. Poll /status/:generationId for updates.' };
+          }
+        }
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30_000);
+        try {
+          const res = await fetch('https://api.lumalabs.ai/dream-machine/v1/generations', { method: 'POST', signal: controller.signal, headers: { Authorization: `Bearer ${lumaKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: videoPrompt, aspect_ratio: aspectRatio }) });
+          if (!res.ok) throw new Error(`Luma AI error: ${await res.text()}`);
+          const data = await res.json() as { id: string; state: string; video?: { url: string } };
+          try { await blink.db.luma_generations.update(generationId, { videoUrl: data.video?.url ?? '', status: data.state ?? 'processing' }); } catch (dbErr) { console.warn('[UrlToVideo] DB update failed (non-critical):', dbErr); }
+          return { generationId: data.id, status: data.state ?? 'processing', videoUrl: data.video?.url ?? null };
+        } finally { clearTimeout(timeout); }
       },
-      body: JSON.stringify({
-        prompt: videoPrompt,
-        aspect_ratio: aspectRatio,
-      }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error(`[UrlToVideo] Luma AI error ${res.status}: ${errText}`);
-      await blink.db.luma_generations.update(generationId, { status: 'failed' });
-      return c.json({ error: `Luma AI error: ${errText}` }, 502);
-    }
-
-    const data = (await res.json()) as {
-      id: string;
-      state: string;
-      video?: { url: string };
-    };
-
-    // Update the generation record
-    try {
-      await blink.db.luma_generations.update(generationId, {
-        videoUrl: data.video?.url ?? '',
-        status: data.state ?? 'processing',
-      });
-    } catch (dbErr) {
-      console.warn('[UrlToVideo] DB update failed (non-critical):', dbErr);
-    }
-
-    return c.json({
-      generationId: data.id,
-      status: data.state ?? 'processing',
-      videoUrl: data.video?.url ?? null,
-    });
+    );
+    return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
   } catch (err: any) {
     console.error('[UrlToVideo] generate error:', err);
-    await blink.db.luma_generations.update(generationId, { status: 'failed' });
+    if (err?.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Génération vidéo nécessite 3 crédits.' }, 402);
+    try { await blink.db.luma_generations.update(generationId, { status: 'failed' }); } catch { /* best effort */ }
     return c.json({ error: err.message ?? 'Video generation failed' }, 500);
   }
 });
