@@ -21,6 +21,8 @@ declare global {
 const ALLOWED_EVENT_PARAMS = new Set([
   'page_path', 'page_title', 'send_to', 'value', 'currency',
   'content_category', 'user_type', 'channel', 'source', 'medium', 'campaign',
+  'method', 'trial_days', 'profile_type', 'plan', 'billing_interval', 'source_page',
+  'cta_type', 'testimonial_section', 'destination',
 ])
 
 function gtag(...args: unknown[]) {
@@ -40,8 +42,10 @@ function safeParams(params?: Record<string, string | number | boolean | undefine
   )
 }
 
+const MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-58L48L66DD';
+
 export function trackPageView(path: string, title?: string) {
-  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID
+  const measurementId = MEASUREMENT_ID
   if (!measurementId) return
 
   gtag('event', 'page_view', {
@@ -55,7 +59,7 @@ export function trackEvent(
   eventName: string,
   params?: Record<string, string | number | boolean | undefined>
 ) {
-  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID
+  const measurementId = MEASUREMENT_ID
   if (!measurementId) return
 
   gtag('event', eventName, {
@@ -65,7 +69,7 @@ export function trackEvent(
 }
 
 export function setUserProperties(_userId: string, properties?: Record<string, string>) {
-  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID
+  const measurementId = MEASUREMENT_ID
   if (!measurementId) return
 
   const safeProperties = Object.fromEntries(

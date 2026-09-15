@@ -50,7 +50,7 @@ const FEATURES: FeatureCard[] = [
     title: 'Calendrier',
     description: 'Planifiez et automatisez vos publications sur tous vos réseaux',
     color: 'from-purple-500 to-pink-500',
-    route: '/calendar',
+    route: '/calendrier',
   },
   {
     id: 'inbox',

@@ -30,6 +30,7 @@
 import { Hono } from 'hono';
 import { router as portalRouter }    from './portal';
 import { router as checkoutRouter }  from './checkout';
+import { router as oneTimeCheckoutRouter } from './oneTimeCheckout';
 import { router as vatRouter }       from './vat';
 import { router as invoicesRouter }  from './invoices';
 import { router as refundRouter }    from './refund';
@@ -41,6 +42,7 @@ export const router = new Hono();
 
 router.route('/', portalRouter);
 router.route('/', checkoutRouter);
+router.route('/', oneTimeCheckoutRouter);
 router.route('/', vatRouter);
 router.route('/', invoicesRouter);
 router.route('/', refundRouter);

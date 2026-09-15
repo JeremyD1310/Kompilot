@@ -158,7 +158,7 @@ const V2V3_QUESTIONS = [
   },
   {
     q: "Comment l'écran caissier aide mes employés à comprendre l'impact de leur travail ?",
-    a: "L'écran caissier Terminal (accessible sur /caissier) est conçu pour être utilisé par les équipes en contact direct avec les clients. Chaque coupon validé déclenche un retour visuel immédiat : animation dorée + message de valorisation avec le montant exact. Cela crée un ancrage positif : l'employé comprend en temps réel que son action a un impact financier mesurable. La configuration (panier moyen, taux de conversion) est paramétrable par le gérant dans l'onglet ⚙️ du terminal.",
+    a: "L'écran caissier Terminal (accessible sur /caisse) est conçu pour être utilisé par les équipes en contact direct avec les clients. Chaque coupon validé déclenche un retour visuel immédiat : animation dorée + message de valorisation avec le montant exact. Cela crée un ancrage positif : l'employé comprend en temps réel que son action a un impact financier mesurable. La configuration (panier moyen, taux de conversion) est paramétrable par le gérant dans l'onglet ⚙️ du terminal.",
   },
   {
     q: "Comment lancer un test A/B sur une offre flash depuis Kompilot ?",

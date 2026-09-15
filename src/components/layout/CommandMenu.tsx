@@ -82,7 +82,7 @@ export function CommandMenu() {
       label: 'Ouvrir le calendrier',
       shortcut: 'C',
       category: 'Contenu',
-      action: () => navigate({ to: '/calendar' }),
+      action: () => navigate({ to: '/calendrier' }),
     },
     {
       id: 'inbox',
@@ -139,7 +139,7 @@ export function CommandMenu() {
       label: 'Espace Équipe',
       shortcut: 'T',
       category: 'Collaboration',
-      action: () => navigate({ to: '/team' }),
+      action: () => navigate({ to: '/mon-equipe' }),
     },
     {
       id: 'team-chat',
@@ -147,7 +147,7 @@ export function CommandMenu() {
       label: 'Chat équipe',
       shortcut: '',
       category: 'Collaboration',
-      action: () => navigate({ to: '/team' }),
+      action: () => navigate({ to: '/mon-equipe' }),
     },
     {
       id: 'agents-cowork',

@@ -20,7 +20,9 @@ interface TrialGateState {
   daysRemaining: number;
 }
 
-const TRIAL_DURATION_DAYS = 7;
+import { TRIAL_DAYS } from '../../shared/pricingCatalog';
+
+const TRIAL_DURATION_DAYS = TRIAL_DAYS;
 
 export function useTrialGate(
   userId?: string | null,

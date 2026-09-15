@@ -1,8 +1,8 @@
 /**
  * PricingSection — Grille tarifaire B2B Kompilot
  *
- * 3 forfaits uniquement : Pro (69€) · Agency (149€, formule phare) · Enterprise (devis)
- * Supprime définitivement les anciens plans 49€/99€/299€/599€.
+ * Catalogue public : Pro, Multi, Agency et Enterprise sur devis.
+ * Les montants et périmètres proviennent du catalogue partagé.
  *
  * Design :
  *   • Fond dark navy (#0F172A) — cohérent avec le reste de la landing
@@ -33,9 +33,9 @@ function PlanCard({
   plan: KompilotPlan;
   onCta: (planId: string) => void;
 }) {
-  const isAgency     = plan.id === 'agency';
+  const isAgency     = plan.id === 'agency' || plan.id === 'multi';
   const isEnterprise = plan.id === 'enterprise';
-  const displayName = plan.id === 'starter' ? 'Pro' : plan.name;
+  const displayName = plan.name;
 
   const cardStyle: React.CSSProperties = {
     background:    isAgency ? '#F0FDFA' : BG2,
@@ -100,16 +100,15 @@ function PlanCard({
 
         {/* Prix */}
         <div style={{ marginBottom: 22, paddingBottom: 20, borderBottom: `1px solid ${BORD}` }}>
-          {plan.price !== null ? (
+          {plan.monthlyPrice !== null ? (
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4 }}>
               <span style={{
                 fontSize: 48, fontWeight: 900, lineHeight: 1,
                 color: isAgency ? INDIGO : TEXT,
                 letterSpacing: '-0.03em',
               }}>
-                {plan.priceLabel}€
+                {plan.priceLabel}
               </span>
-              <span style={{ fontSize: 13, color: MUTED, marginBottom: 6 }}>HT / mois</span>
             </div>
           ) : (
             <span style={{
@@ -184,10 +183,10 @@ interface PricingSectionProps {
 
 export function PricingSection({ cta, audience }: PricingSectionProps) {
   const filteredPlans = audience === 'commerce'
-    ? KOMPILOT_PLANS.filter(p => p.id === 'starter')
+    ? KOMPILOT_PLANS.filter(p => p.id === 'pro' || p.id === 'multi')
     : audience === 'agency'
       ? KOMPILOT_PLANS.filter(p => p.id === 'agency')
-      : KOMPILOT_PLANS.filter(p => p.id === 'starter' || p.id === 'agency');
+      : KOMPILOT_PLANS.filter(p => p.id === 'pro' || p.id === 'multi' || p.id === 'agency');
 
   return (
     <section
@@ -220,7 +219,7 @@ export function PricingSection({ cta, audience }: PricingSectionProps) {
               : <>L'IA qui gère votre présence,<br />pendant que vous gérez votre business.</>}
           </h2>
           <p style={{ fontSize: '1rem', color: MUTED, maxWidth: 520, margin: '0 auto', lineHeight: 1.6 }}>
-            Prix HT · Facturation mensuelle · Résiliation sans frais à tout moment · Essai 7 jours inclus
+            Prix HT · Mensuel ou annuel · Résiliation sans frais à tout moment · Essai 14 jours sans carte bancaire
           </p>
         </div>
 

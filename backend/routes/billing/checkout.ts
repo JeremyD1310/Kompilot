@@ -6,6 +6,7 @@
 import { Hono } from 'hono';
 import type { Env } from '../../lib/types';
 import { getBlink, getUserMeta, patchUserMeta } from '../../lib/stripeHelpers';
+import { resolveNewPlan } from '../../lib/pricingCatalog';
 
 export const router = new Hono();
 
@@ -43,9 +44,12 @@ router.post('/api/billing/checkout', async (c) => {
     };
   }>();
   const planId = body?.planId;
-  const billing: 'monthly' | 'yearly' = body?.billing === 'yearly' ? 'yearly' : 'monthly';
+  const billing = body?.billing;
+  const resolvedPlan = resolveNewPlan(planId, billing);
 
-  if (!planId || !['starter', 'agency'].includes(planId)) {
+  // This endpoint intentionally accepts only the canonical new catalog IDs.
+  // Legacy subscriptions and legacy price secrets remain untouched and are handled by webhooks/status.
+  if (!resolvedPlan) {
     return c.json({ error: 'Offre invalide', code: 'INVALID_PLAN' }, 400);
   }
 
@@ -66,35 +70,21 @@ router.post('/api/billing/checkout', async (c) => {
 
   // ── Map planId + billing → Stripe price IDs ──────────────────────────────────
   // Price IDs are read dynamically from env to avoid deploy-tool static analysis false positives.
-  // The keys below match env vars: PRICE_STARTER_MONTHLY_ID, PRICE_STARTER_YEARLY_ID, etc.
-  const _env = rawEnv as Record<string, string | undefined>;
-  const _get = (key: string) => _env[key];
-  const _plans = ['STARTER', 'AGENCY'];
-  const _billings = ['MONTHLY', 'YEARLY'];
-
-  // Build priceMap dynamically
-  const priceMap: Record<string, string | undefined> = {};
-  for (const p of _plans) {
-    for (const b of _billings) {
-      priceMap[`${p.toLowerCase()}_${b.toLowerCase()}`] = _get(`PRICE_${p}_${b}_ID`);
-    }
-  }
-  // Legacy planId without billing → assume monthly
-  priceMap['starter'] = _get(`PRICE_${_plans[0]}_${_billings[0]}_ID`) || _get(['PRICE',_plans[0],'ID'].join('_'));
-  priceMap['agency']  = _get(`PRICE_${_plans[1]}_${_billings[0]}_ID`) || _get(['PRICE',_plans[1],'ID'].join('_'));
-  // Legacy aliases (concat to avoid deploy-scanner false positives)
-  const _L = ['STRIPE','PRICE','PRO','EXPERT','SOLO','COMMERCE','MONTHLY'];
-  priceMap['pro']          = priceMap['starter'] || _get(`${_L[0]}_${_L[1]}_${_L[2]}`) || _get(`${_L[0]}_${_L[1]}_${_L[4]}`);
-  priceMap['expert']       = priceMap['agency']  || _get(`${_L[0]}_${_L[1]}_${_L[3]}`) || _get(`${_L[0]}_${_L[1]}_${_L[2]}_${_L[5]}`);
-  priceMap['solo']         = priceMap['starter'] || _get(`${_L[0]}_${_L[1]}_${_L[4]}`);
-  priceMap['pro-commerce'] = priceMap['agency']  || _get(`${_L[0]}_${_L[1]}_${_L[2]}_${_L[5]}`);
-
-  // Try billing-aware key first (e.g. 'starter_yearly'), fall back to bare planId
-  const priceId = priceMap[`${planId}_${billing}`] ?? priceMap[planId];
+  // Canonical keys are PRICE_PRO/MULTI/AGENCY_{MONTHLY|YEARLY}_ID; legacy PRICE_STARTER_* remains supported only by webhook/status compatibility paths.
+  const priceId = (rawEnv as Record<string, string | undefined>)[resolvedPlan.envKey];
   if (!priceId) {
     console.warn(`[billing/checkout] Aucun price Stripe configuré pour planId="${planId}". Ajoutez les PRICE_ secrets.`);
-    return c.json({ url: 'https://kompilot.fr/#tarifs', fallback: true, missingPrice: true });
+    return c.json({ error: 'Prix Stripe non configuré côté serveur.', code: 'PRICE_NOT_CONFIGURED' }, 503);
   }
+
+  // Persist the legal consent before any Stripe customer/session side effect.
+  // The immutable audit row below is retained as a second, detailed audit record.
+  const consentAt = new Date().toISOString();
+  await patchUserMeta(blink, auth.userId, {
+    legal_consent_at: consentAt,
+    legal_consent_version: consent.cgvVersion,
+    legal_consent_log: JSON.stringify({ cgvVersion: consent.cgvVersion, acceptedAt: consentAt, planId, cgvAccepted: true, retractionWaived: true, renouncedTrial: consent.renouncedTrial === true }),
+  });
 
   // 4. Get or create Stripe customer
   const meta = await getUserMeta(blink, auth.userId);
@@ -135,20 +125,29 @@ router.post('/api/billing/checkout', async (c) => {
     mode: 'subscription',
     'line_items[0][price]': priceId,
     'line_items[0][quantity]': '1',
+    // Canonical catalog trials do not collect a card; Stripe will request one only when required.
+    ...(renouncedTrial ? {} : { payment_method_collection: 'if_required' }),
+    'metadata[user_id]': auth.userId,
+    'metadata[planId]': planId,
+    'metadata[billing]': billing,
+    'metadata[product_type]': 'subscription',
     success_url: `${baseUrl}/dashboard?checkout=success&plan=${planId}${renouncedTrial ? '&trial_skipped=1' : ''}`,
     cancel_url:  `${baseUrl}/account?tab=billing`,
     'allow_promotion_codes': 'true',
     'subscription_data[metadata][planId]': planId,
     'subscription_data[metadata][billing]': billing,
+    'subscription_data[metadata][product_type]': 'subscription',
+    'subscription_data[metadata][legal_consent_version]': consent!.cgvVersion,
+    'subscription_data[metadata][legal_consent]': 'accepted',
   });
 
   // If user renounces trial → no trial period (immediate billing from first minute).
-  // Otherwise apply the standard 7-day trial.
+  // Otherwise apply the new catalog's standard 14-day trial.
   if (renouncedTrial) {
     // Do NOT set trial_period_days → Stripe bills immediately
     sessionParams.set('subscription_data[metadata][trial_renounced]', 'true');
   } else {
-    sessionParams.set('subscription_data[trial_period_days]', '7');
+    sessionParams.set('subscription_data[trial_period_days]', '14');
   }
 
   // Enable Stripe Tax if customer exists and VAT info is available

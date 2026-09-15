@@ -3,11 +3,11 @@ import { ArrowRight, ChevronDown } from 'lucide-react';
 
 export const FAQ_ITEMS = [
   { q: "Qu'est-ce qu'un logiciel de visibilité locale ?", a: "Un logiciel de visibilité locale centralise les actions qui aident une entreprise à être trouvée près de ses clients : informations locales, contenus, avis, réseaux sociaux et suivi des performances." },
-  { q: "Comment répondre aux avis Google avec l'IA ?", a: "Kompilot rassemble vos avis et prépare une réponse adaptée au message et au ton de votre établissement. Vous relisez et validez chaque proposition avant son envoi." },
+  { q: "Comment fonctionne la validation humaine des réponses aux avis ?", a: "Kompilot rassemble vos avis et prépare une réponse adaptée au message et au ton de votre établissement. Une personne de votre équipe relit et valide chaque proposition avant son envoi." },
   { q: "Comment améliorer la visibilité d'un commerce sur Google ?", a: "Commencez par maintenir des informations cohérentes, répondre aux avis, publier des contenus utiles et suivre les recherches qui génèrent des visites. Kompilot regroupe ces signaux et aide à prioriser les prochaines actions." },
   { q: "Qu'est-ce que le GEO ?", a: "Le GEO, ou Generative Engine Optimization, vise à rendre une organisation et ses contenus plus faciles à comprendre, sélectionner et citer par les moteurs de réponse comme ChatGPT, Gemini ou Perplexity." },
   { q: "Comment apparaître dans ChatGPT ou Gemini ?", a: "Aucune plateforme ne peut garantir une citation. Kompilot aide toutefois à vérifier la cohérence des informations locales, les contenus et les signaux qui rendent votre activité plus compréhensible." },
-  { q: "Kompilot publie-t-il automatiquement ?", a: "Vous gardez le contrôle. Les contenus, réponses et actions préparés par Kompilot restent soumis à la validation définie par votre équipe avant publication ou envoi." },
+  { q: "Qui valide les contenus et les réponses ?", a: "Vous gardez le contrôle : Kompilot prépare des suggestions, puis une validation humaine de votre équipe est requise avant toute publication ou réponse envoyée." },
   { q: "Kompilot convient-il aux entreprises multi-établissements ?", a: "Oui. L'offre Agency est conçue pour piloter plusieurs établissements ou clients, personnaliser les rapports et centraliser les actions depuis une seule interface." },
   { q: "Quelle différence entre Kompilot et ChatGPT ?", a: "ChatGPT est un assistant généraliste. Kompilot est un cockpit métier qui organise les données, canaux, validations et indicateurs nécessaires au pilotage continu de la visibilité locale." },
 ];

@@ -1,8 +1,8 @@
 /**
  * PricingPage — Page publique /pricing de Kompilot
  *
- * Grille 3 plans uniquement : Pro (69€) · Agency (149€, phare) · Enterprise (devis)
- * Les anciens plans free/pro 39€/expert 59€/franchise sont supprimés.
+ * Catalogue public : Pro, Multi, Agency et Enterprise sur devis.
+ * Les prix, volumes et services sont issus du catalogue partagé.
  */
 
 import { useState, useMemo } from 'react';
@@ -22,12 +22,30 @@ import {
   type BillingInterval,
 } from '../components/pricing/PricingPageParts';
 import type { KompilotPlanId } from '../components/landing/pricing/PricingData';
+import { CommercialOffers } from '../components/pricing/CommercialOffers';
+import { PILOT_OFFER, KOMPILOT_PLANS_MONTHLY, ENTERPRISE_PLAN } from '../components/landing/pricing/PricingData';
+
+const PRICING_STRUCTURED_DATA = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    ...[...KOMPILOT_PLANS_MONTHLY, ENTERPRISE_PLAN].map(plan => ({ '@type': 'Offer', name: `Kompilot ${plan.name}`, price: plan.monthlyPrice ?? undefined, priceCurrency: 'EUR', description: plan.tagline, availability: 'https://schema.org/InStock' })),
+    { '@type': 'Offer', name: PILOT_OFFER.name, price: 99, priceCurrency: 'EUR', description: PILOT_OFFER.description },
+    { '@type': 'FAQPage', mainEntity: [
+      ['L’essai nécessite-t-il une carte bancaire ?', 'Non. L’essai gratuit dure 14 jours, sans carte bancaire et sans prélèvement automatique.'],
+      ['Qui valide les contenus, publications et réponses ?', 'Rien n’envoie, ne publie, ne répond ou n’invite automatiquement sans validation humaine explicite.'],
+      ['Les résultats sont-ils garantis ?', 'Non. Aucun résultat commercial, de référencement ou de visibilité n’est garanti.'],
+      ['Comment fonctionne le pilote guidé à 99 € HT ?', 'Le pilote dure 30 jours, est payé une seule fois et ses 99 € HT sont créditables sur le premier abonnement annuel.'],
+      ['Quels services ponctuels proposez-vous ?', 'Onboarding 199 € HT, audit SEO local et GEO 390 € HT, analytics 390 € HT, formation 490 € HT, lancement éditorial 490 € HT ou devis personnalisé.'],
+    ].map(([name, text]) => ({ '@type': 'Question', name, acceptedAnswer: { '@type': 'Answer', text } })) },
+  ],
+};
 
 export default function PricingPage() {
   usePageSeo(
-    'Tarifs Kompilot — Starter, Agency et Enterprise',
-    'Comparez les tarifs et fonctionnalités de Kompilot pour les professionnels, équipes et agences : Starter, Agency et Enterprise.',
+    'Tarifs Kompilot — Pro, Multi, Agency et Enterprise',
+    'Découvrez les offres Kompilot : essai gratuit de 14 jours sans carte, Pro, Multi, Agency et Enterprise sur devis, avec validation humaine avant diffusion.',
     '/pricing',
+    { structuredData: PRICING_STRUCTURED_DATA },
   );
 
   const [checkoutPlanId, setCheckoutPlanId] = useState<KompilotPlanId | null>(null);
@@ -44,7 +62,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: '#0F172A', color: '#F1F5F9' }}>
+    <div className="min-h-screen overflow-x-hidden pb-20" style={{ background: '#0F172A', color: '#F1F5F9' }}>
 
       {/* ── Nav ───────────────────────────────────────────────────── */}
       <nav
@@ -93,7 +111,7 @@ export default function PricingPage() {
         </h1>
 
         <p className="text-base max-w-lg mx-auto leading-relaxed" style={{ color: '#64748B' }}>
-          3 formules B2B · Essai 7 jours inclus · Résiliation sans frais à tout moment
+          3 formules B2B · Essai gratuit de 14 jours · Sans carte bancaire
         </p>
         <p className="mx-auto mt-5 max-w-2xl text-sm leading-6" style={{ color: '#94A3B8' }}>
           <strong style={{ color: '#CBD5E1' }}>Kompilot</strong> est une plateforme SaaS B2B de marketing local pour contenus, avis clients et visibilité en ligne. Les tarifs et le périmètre affichés sont ceux publiés dans cette page ; aucun résultat commercial n’est garanti.
@@ -104,11 +122,11 @@ export default function PricingPage() {
       <BillingToggle billing={billing} onChange={setBilling} />
 
       {/* ── Grille des plans ──────────────────────────────────────── */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+      <div id="tarifs" className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
         <div
           className="grid gap-5 items-start"
           style={{
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
           }}
         >
           {plans.map((plan, i) => (
@@ -125,7 +143,18 @@ export default function PricingPage() {
 
         <TrustStrip />
         <PricingFAQ />
+      </div>
 
+      <CommercialOffers billing={billing} />
+
+      <a
+        href="#tarifs"
+        className="fixed bottom-4 left-4 right-4 z-20 rounded-xl bg-teal-600 px-4 py-3 text-center text-sm font-bold text-primary-foreground shadow-lg shadow-teal-950/40 transition-transform hover:scale-[1.01] sm:hidden"
+      >
+        Voir les offres · Essai 14 jours sans carte
+      </a>
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Note légale */}
         <p className="text-center mt-12 text-xs" style={{ color: '#334155' }}>
           Tous les prix sont indiqués hors taxes (HT). TVA applicable selon votre pays.

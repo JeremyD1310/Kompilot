@@ -43,7 +43,7 @@ export default function LandingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const title = 'Logiciel de visibilité locale et marketing IA | Kompilot';
-  const description = 'Centralisez contenus, avis Google, réseaux sociaux, SEO local et visibilité dans les IA avec Kompilot. Essai gratuit pendant 7 jours.';
+  const description = 'Centralisez contenus, avis Google, réseaux sociaux, SEO local et visibilité dans les IA avec Kompilot. Essai gratuit pendant 14 jours, sans carte bancaire.';
 
   usePageSeo(title, description, '/', {
     structuredData: createKompilotGraph('/', title, false, description),

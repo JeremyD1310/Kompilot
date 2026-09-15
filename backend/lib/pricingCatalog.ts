@@ -1,0 +1,53 @@
+import {
+  ONE_TIME_PRODUCTS as SHARED_ONE_TIME_PRODUCTS,
+  SUBSCRIPTION_PLANS,
+  getOneTimePriceEnvKey,
+  getSubscriptionPriceEnvKey,
+  resolveOneTimeProduct as resolveSharedOneTimeProduct,
+  resolveSubscriptionPlan,
+  type BillingInterval,
+  type SubscriptionPlanId,
+} from '../../shared/pricingCatalog'
+
+export type NewPlanId = SubscriptionPlanId
+export { BillingInterval }
+
+export const NEW_PLAN_PRICES: Record<NewPlanId, Record<BillingInterval, number>> = Object.fromEntries(
+  SUBSCRIPTION_PLANS.map(plan => [plan.id, { monthly: plan.monthlyPriceEurHt * 100, yearly: plan.annualPriceEurHt * 100 }]),
+) as Record<NewPlanId, Record<BillingInterval, number>>
+
+export const ONE_TIME_PRODUCTS = Object.fromEntries(
+  SHARED_ONE_TIME_PRODUCTS.map(product => [product.id, {
+    amount: product.amountEurHt === null ? 0 : product.amountEurHt * 100,
+    currency: 'eur',
+    productType: product.productType,
+    pilotDays: product.pilotDays,
+    creditEligible: product.creditEligible,
+    name: product.name,
+  }]),
+) as Record<string, { amount: number; currency: string; productType: string; pilotDays?: number; creditEligible?: boolean; name: string }>
+
+export function resolveNewPlan(planId: unknown, billing: unknown) {
+  const resolved = resolveSubscriptionPlan(planId, billing)
+  return resolved ? {
+    planId: resolved.plan.id,
+    billing: resolved.billing,
+    envKey: getSubscriptionPriceEnvKey(resolved.plan.id, resolved.billing),
+  } : null
+}
+
+export function resolveOneTimeProduct(productId: unknown) {
+  const product = resolveSharedOneTimeProduct(productId)
+  return product ? {
+    productId: product.id,
+    definition: {
+      amount: product.amountEurHt === null ? 0 : product.amountEurHt * 100,
+      currency: 'eur',
+      productType: product.productType,
+      pilotDays: product.pilotDays,
+      creditEligible: product.creditEligible,
+      name: product.name,
+    },
+    envKey: getOneTimePriceEnvKey(product.id),
+  } : null
+}

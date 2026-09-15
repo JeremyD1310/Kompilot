@@ -391,7 +391,7 @@ export default function UnifiedCommandCenterPage() {
                 icon={<Users size={16} />}
               />
             </button>
-            <button onClick={() => navigate({ to: '/calendar' })} className="text-left w-full">
+            <button onClick={() => navigate({ to: '/calendrier' })} className="text-left w-full">
               <Stat
                 label="Posts Publiés"
                 value={String(d.postsThisWeek)}

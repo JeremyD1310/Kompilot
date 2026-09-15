@@ -53,7 +53,7 @@ const BENCHMARKS: Record<string, BenchmarkData> = {
       dms: "Les données comparatives de conversion seront affichées ici lorsqu'une étude datée et documentée sera disponible. Souhaitez-vous configurer ce levier ?",
       reviews: "Les données comparatives de collecte d'avis seront affichées ici lorsqu'une étude datée et documentée sera disponible. Souhaitez-vous configurer ce levier ?"
     },
-    deepLinks: { noShow: '/calendar', dms: '/growth', reviews: '/dashboard' }
+    deepLinks: { noShow: '/calendrier', dms: '/growth', reviews: '/dashboard' }
   },
   chantier: { 
     sectorLabel: 'BTP & Artisans', 
@@ -67,7 +67,7 @@ const BENCHMARKS: Record<string, BenchmarkData> = {
       dms: "Les données comparatives de conversion BTP seront affichées ici lorsqu'une étude datée et documentée sera disponible. Votre campagne est-elle configurée ?",
       reviews: "Les données comparatives BTP seront affichées ici lorsqu'une étude datée et documentée sera disponible. L'IA peut préparer une relance après chaque chantier."
     },
-    deepLinks: { noShow: '/calendar', dms: '/growth', reviews: '/dashboard' }
+    deepLinks: { noShow: '/calendrier', dms: '/growth', reviews: '/dashboard' }
   },
   services_b2b: { 
     sectorLabel: 'Services B2B & Freelances', 
@@ -81,7 +81,7 @@ const BENCHMARKS: Record<string, BenchmarkData> = {
       dms: "Les données comparatives de conversion B2B seront affichées ici lorsqu'une étude datée et documentée sera disponible. Votre séquence CRM est-elle configurée ?",
       reviews: "Les données comparatives de demandes entrantes seront affichées ici lorsqu'une étude datée et documentée sera disponible. L'IA peut préparer votre séquence de collecte d'avis."
     },
-    deepLinks: { noShow: '/calendar', dms: '/inbox', reviews: '/dashboard' }
+    deepLinks: { noShow: '/calendrier', dms: '/inbox', reviews: '/dashboard' }
   },
   produits: { 
     sectorLabel: 'E-commerce & Vente Produits', 

@@ -175,7 +175,7 @@ function MemoryPanel({ conversations, onClear, onClose }: MemoryPanelProps) {
 interface ContextChip { label: string; query: string; icon: React.ElementType; }
 
 function getContextChips(pathname: string): ContextChip[] {
-  if (pathname.startsWith('/calendar')) return [
+  if (pathname.startsWith('/calendrier')) return [
     { label: '💡 Idée de post', query: "Génère une idée de post engageante pour cette semaine", icon: Sparkles },
     { label: '📅 Meilleur moment', query: "Quel est le meilleur moment pour publier sur Instagram cette semaine ?", icon: Calendar },
     { label: '📸 Idée visuel', query: "Propose-moi un concept photo ou vidéo percutant pour mon activité", icon: Sparkles },
@@ -209,7 +209,7 @@ function getContextChips(pathname: string): ContextChip[] {
 }
 
 function getPageLabel(pathname: string): string {
-  if (pathname.startsWith('/calendar')) return 'Calendrier';
+  if (pathname.startsWith('/calendrier')) return 'Calendrier';
   if (pathname.startsWith('/inbox')) return 'Messagerie';
   if (pathname.startsWith('/performance')) return 'Performance';
   if (pathname.startsWith('/settings')) return 'Paramètres';

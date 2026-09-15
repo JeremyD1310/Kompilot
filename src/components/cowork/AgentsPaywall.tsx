@@ -41,7 +41,7 @@ export function AgentsPaywall({ planName }: Props) {
                 <Crown size={14} className="text-indigo-400" />
                 <span className="text-sm font-bold text-white">Forfait Pro</span>
               </div>
-              <span className="text-sm font-black text-indigo-300">+30€/HT/mois</span>
+              <span className="text-sm font-black text-indigo-300">Inclus selon l’offre souscrite</span>
             </div>
             <div className={cn(
               'flex items-center justify-between rounded-xl border px-4 py-2.5',

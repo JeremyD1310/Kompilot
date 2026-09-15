@@ -42,7 +42,7 @@ const METRIC_CONTEXT: Record<string, {
     description: 'Publications effectivement publiées cette semaine sur vos réseaux.',
     advice: 'Le meilleur moment pour publier est le mardi entre 10h et 14h.',
     actionLabel: 'Voir le calendrier',
-    actionRoute: '/calendar',
+    actionRoute: '/calendrier',
   },
   reviews: {
     description: 'Avis Google en attente de réponse.',

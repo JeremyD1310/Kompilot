@@ -1,11 +1,8 @@
 /**
  * PricingPageParts — Composants de la page /pricing
  *
- * Grille 3 plans uniquement (anciens plans free/pro 39€/expert 59€/franchise supprimés) :
- *   Pro (69€) · Agency (149€, phare) · Enterprise (devis)
- *
- * Les boutons Starter → planId='starter', Agency → planId='agency'
- * qui correspondent à PRICE_STARTER_ID et PRICE_AGENCY_ID côté Stripe backend.
+ * Grille tarifaire publique : Pro, Multi, Agency et Enterprise sur devis.
+ * Les identifiants et prix sont dérivés du catalogue partagé.
  */
 
 import { useState } from 'react';
@@ -68,7 +65,7 @@ export function BillingToggle({ billing, onChange }: BillingToggleProps) {
             color: isYearly ? '#34d399' : '#94a3b8',
             border: isYearly ? '1px solid rgba(16,185,129,0.3)' : '1px solid transparent',
           }}>
-          <Gift size={10} /> 1 mois offert
+          <Gift size={10} /> 2 mois offerts
         </span>
       </button>
     </div>
@@ -91,7 +88,7 @@ interface PlanCardProps {
 }
 
 export function PlanCard({ plan, index, checkoutPlanId, onCta, onCancelCheckout }: PlanCardProps) {
-  const isAgency     = plan.popular;
+  const isAgency     = plan.id === 'agency';
   const isEnterprise = plan.id === 'enterprise';
   const isCheckedOut = checkoutPlanId === plan.id;
 
@@ -149,9 +146,8 @@ export function PlanCard({ plan, index, checkoutPlanId, onCta, onCancelCheckout 
                 <span className="font-black leading-none" style={{
                   fontSize: 52, color: isAgency ? INDIGO : '#F1F5F9', letterSpacing: '-0.04em',
                 }}>
-                  {plan.priceLabel}€
+                  {plan.priceLabel}
                 </span>
-                <span className="text-sm pb-2" style={{ color: '#64748B' }}>HT / mois</span>
               </div>
               {plan.billingNote && (
                 <p className="text-xs mt-1.5" style={{ color: '#94a3b8' }}>
@@ -206,7 +202,7 @@ export function PlanCard({ plan, index, checkoutPlanId, onCta, onCancelCheckout 
               className="mb-5 overflow-hidden"
             >
               <SubscriptionCheckoutPanel
-                planId={plan.id as 'starter' | 'agency'}
+                planId={plan.id as 'pro' | 'multi' | 'agency'}
                 planName={plan.name}
                 onCancel={onCancelCheckout}
               />
@@ -238,12 +234,15 @@ export function CreditPacksSection() { return null; }
 // ── FAQ ───────────────────────────────────────────────────────────────────────
 
 const FAQ_ITEMS = [
-  { q: 'Puis-je changer de plan à tout moment ?', a: "Oui, montez en Agency ou descendez en Pro à tout moment depuis vos paramètres. La facturation est ajustée au prorata." },
-  { q: 'Les prix sont-ils HT ou TTC ?', a: "Tous les prix affichés sont Hors Taxes (HT). La TVA applicable sera affichée lors du paiement Stripe selon votre pays." },
-  { q: "Qu'est-ce que la Marque Blanche Totale (Agency) ?", a: "Votre logo + domaine personnalisé sur toute l'interface client. Vos clients voient votre marque, pas Kompilot." },
-  { q: 'Puis-je résilier à tout moment ?', a: "Absolument, sans engagement ni frais de résiliation. Un clic depuis vos paramètres suffit." },
-  { q: 'Que sont les crédits IA ?', a: "Unités pour les générations IA avancées (visuels, analyses…). Illimités sur Agency sous réserve d'usage équitable." },
-  { q: 'Comment fonctionne le plan Enterprise ?', a: "Contactez notre équipe sales@kompilot.fr pour un devis personnalisé selon votre volume de fiches, vos besoins d'API et votre SLA." },
+  { q: 'L’essai nécessite-t-il une carte bancaire ?', a: "Non. L’essai gratuit dure 14 jours, sans carte bancaire et sans prélèvement automatique." },
+  { q: 'Qui valide les contenus, publications et réponses ?', a: "Vous ou votre équipe. Rien n’envoie, ne publie, ne répond ou n’invite automatiquement sans validation humaine explicite." },
+  { q: 'Les résultats sont-ils garantis ?', a: "Non. Kompilot fournit des outils, des recommandations et un cadre de pilotage ; aucun résultat commercial, de référencement ou de visibilité n’est garanti." },
+  { q: 'Comment fonctionne le pilote guidé à 99 € HT ?', a: "Le pilote dure 30 jours, est payé une seule fois et n’est pas renouvelé automatiquement. Ses 99 € HT sont créditables sur le premier abonnement annuel." },
+  { q: 'Puis-je choisir ou résilier mon abonnement à tout moment ?', a: "Oui. Vous pouvez choisir ou changer d’abonnement à tout moment. Les conditions de résiliation sont précisées avant confirmation." },
+  { q: 'Les prix sont-ils HT ou TTC ?', a: "Tous les prix affichés sont Hors Taxes (HT). La TVA applicable sera affichée lors du paiement selon votre pays." },
+  { q: 'Quels services ponctuels proposez-vous ?', a: "Onboarding 199 € HT, audit SEO local et GEO 390 € HT, configuration analytics 390 € HT, formation d’équipe 490 € HT, lancement éditorial 490 € HT ou devis personnalisé." },
+  { q: "Qu'est-ce que la marque blanche Agency ?", a: "Agency ajoute la gestion multi-clients, les rôles et permissions, les rapports en marque blanche et les exports personnalisés." },
+  { q: 'Comment fonctionne Enterprise ?', a: "Contactez sales@kompilot.fr pour un devis selon vos volumes, intégrations, gouvernance, SLA et besoins d’accompagnement." },
 ];
 
 function FAQItem({ q, a, i }: { q: string; a: string; i: number }) {

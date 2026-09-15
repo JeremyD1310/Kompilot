@@ -117,7 +117,7 @@ export function useScheduledPostNotification(
                 </div>` : ''}
 
                 <!-- CTA -->
-                <a href="${appUrl}/calendar" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;letter-spacing:-0.2px;">
+                <a href="${appUrl}/calendrier" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;letter-spacing:-0.2px;">
                   Voir le calendrier →
                 </a>
               </div>
@@ -131,7 +131,7 @@ export function useScheduledPostNotification(
               </div>
             </div>
           `,
-          text: `Publication planifiée !\n\nDate : ${dateFormatted} à ${post.time}\nStatut : ${statusLabel}\nCanaux : ${channelList}\n\nAperçu :\n${post.text.slice(0, 300)}${post.text.length > 300 ? '…' : ''}\n\nVoir le calendrier : ${appUrl}/calendar`,
+          text: `Publication planifiée !\n\nDate : ${dateFormatted} à ${post.time}\nStatut : ${statusLabel}\nCanaux : ${channelList}\n\nAperçu :\n${post.text.slice(0, 300)}${post.text.length > 300 ? '…' : ''}\n\nVoir le calendrier : ${appUrl}/calendrier`,
         });
       } catch (err) {
         console.warn('[Kompilot] Scheduled post email notification failed:', err);

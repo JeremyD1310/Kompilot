@@ -23,7 +23,7 @@ export function useStripeCheckout() {
   const recordSignature = useRecordLegalSignature();
 
   const startCheckout = async (
-    planId: 'pro' | 'expert' | 'starter' | 'agency',
+    planId: 'pro' | 'multi' | 'agency',
     consent: Pick<CheckoutLegalConsent, 'cgvAccepted' | 'retractionWaived' | 'renouncedTrial'>,
   ) => {
     if (loading) return;

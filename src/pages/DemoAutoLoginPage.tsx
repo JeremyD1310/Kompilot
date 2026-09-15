@@ -192,13 +192,13 @@ export default function DemoAutoLoginPage() {
             <div className="rounded-2xl border border-teal-500/20 bg-teal-500/[0.06] p-4">
               <p className="text-[10px] uppercase tracking-wider font-bold text-teal-300">Starter</p>
               <p className="mt-1 text-lg font-extrabold text-white">69€ <span className="text-xs font-medium text-slate-400">HT / mois</span></p>
-              <p className="mt-1 text-xs text-slate-400">759€ HT / an · 1 mois offert</p>
+              <p className="mt-1 text-xs text-slate-400">Facturation annuelle disponible · 1 mois offert</p>
               <button onClick={() => navigate({ to: '/pricing-pro' })} className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-teal-500/30 px-3 py-2 text-xs font-bold text-teal-300 transition hover:bg-teal-500/10">Découvrir Starter <ArrowRight size={13} /></button>
             </div>
             <div className="rounded-2xl border border-violet-400/30 bg-violet-500/[0.08] p-4 md:scale-[1.02]">
               <div className="flex items-center justify-between gap-2"><p className="text-[10px] uppercase tracking-wider font-bold text-violet-300">Agency</p><span className="rounded-full border border-violet-300/20 bg-violet-300/10 px-2 py-0.5 text-[9px] font-bold text-violet-200">RECOMMANDÉ</span></div>
               <p className="mt-1 text-lg font-extrabold text-white">149€ <span className="text-xs font-medium text-slate-400">HT / mois</span></p>
-              <p className="mt-1 text-xs text-slate-400">1 639€ HT / an · 1 mois offert</p>
+              <p className="mt-1 text-xs text-slate-400">Facturation annuelle disponible · 1 mois offert</p>
               <button onClick={() => navigate({ to: '/pricing-agency' })} className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-violet-400 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-violet-300">Découvrir Agency <ArrowRight size={13} /></button>
             </div>
             <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4">

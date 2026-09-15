@@ -12,7 +12,9 @@ import {
 } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
-const TRIAL_DURATION_DAYS = 7;
+import { TRIAL_DAYS } from '../../shared/pricingCatalog';
+
+const TRIAL_DURATION_DAYS = TRIAL_DAYS;
 
 // ── Trial quotas ────────────────────────────────────────────────────────────
 export const TRIAL_QUOTA = {

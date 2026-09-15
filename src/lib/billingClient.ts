@@ -89,17 +89,37 @@ export interface CheckoutLegalConsent {
 export async function createCheckoutSession(
   planId: string,
   legalConsent: CheckoutLegalConsent,
+  billing: 'monthly' | 'yearly' = 'monthly',
 ): Promise<{ url: string | null; fallback?: boolean; error?: string; code?: string }> {
   try {
     const headers = await getAuthHeader();
     const res = await fetch(`${BACKEND_URL}/api/billing/checkout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...headers },
-      body: JSON.stringify({ planId, legalConsent }),
+      body: JSON.stringify({ planId, billing, legalConsent }),
     });
     const data = await res.json() as { url?: string; fallback?: boolean; error?: string; code?: string };
     if (!res.ok) return { url: null, error: data.error || 'UNKNOWN', code: data.code };
     return { url: data.url ?? null, fallback: data.fallback };
+  } catch {
+    return { url: null, error: 'NETWORK_ERROR' };
+  }
+}
+
+export async function createOneTimeCheckout(
+  productId: string,
+  legalConsent: CheckoutLegalConsent,
+): Promise<{ url: string | null; error?: string; code?: string }> {
+  try {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${BACKEND_URL}/api/billing/one-time-checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify({ productId, legalConsent }),
+    });
+    const data = await res.json() as { url?: string; error?: string; code?: string };
+    if (!res.ok) return { url: null, error: data.error || 'UNKNOWN', code: data.code };
+    return { url: data.url ?? null };
   } catch {
     return { url: null, error: 'NETWORK_ERROR' };
   }

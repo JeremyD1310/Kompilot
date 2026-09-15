@@ -16,7 +16,7 @@ import {
 import { useStripeCheckout } from '../../hooks/useStripeCheckout';
 
 interface SubscriptionCheckoutPanelProps {
-  planId: 'pro' | 'expert' | 'starter' | 'agency';
+  planId: 'pro' | 'multi' | 'agency';
   planName: string;
   onCancel: () => void;
   onCheckoutOpened?: () => void;
