@@ -57,15 +57,10 @@ installGlobalErrorHandlers(
 )
 
 const queryClient = new QueryClient()
-const rootContainer = document.getElementById('root') as (HTMLElement & { __kompilotRoot?: Root }) | null
+const rootContainer = document.getElementById('root')
 if (!rootContainer) throw new Error('Kompilot root container is missing')
-// Keep the root in both places: the DOM marker handles a re-evaluated entry
-// module, while the global fallback handles HMR when Vite replaces #root.
 const rootStore = globalThis as typeof globalThis & { __kompilotRoot?: Root }
-const appRoot = rootContainer.__kompilotRoot
-  ?? rootStore.__kompilotRoot
-  ?? (rootStore.__kompilotRoot = ReactDOM.createRoot(rootContainer))
-rootContainer.__kompilotRoot = appRoot
+const appRoot = rootStore.__kompilotRoot ?? (rootStore.__kompilotRoot = ReactDOM.createRoot(rootContainer))
 
 // ── Provider composer ────────────────────────────────────────────────────────
 // Composes an array of providers to avoid deep nesting ("provider hell").

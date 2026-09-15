@@ -3,6 +3,7 @@
  */
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from './types';
+import { SUBSCRIPTION_PLANS, resolveSubscriptionPlan, resolveOneTimeProduct, type SubscriptionPlanId, type BillingInterval } from '../../shared/pricingCatalog';
 
 export const getBlink = (env: Env) =>
   createClient({
@@ -88,44 +89,29 @@ export async function findUserByCustomer(
 
 // ── Plan resolution ───────────────────────────────────────────────────────────
 
-export type PlanId = 'starter' | 'agency' | 'enterprise';
-export type BillingInterval = 'monthly' | 'yearly';
+export type PlanId = SubscriptionPlanId | 'enterprise';
+export { BillingInterval };
 
-/** Maps Stripe price IDs (from env vars) to plan + billing metadata */
-export function resolvePriceToPlan(
-  priceId: string,
-  env: Record<string, string | undefined>,
-): { planId: PlanId; billing: BillingInterval } | null {
-  const priceMap: Record<string, { planId: PlanId; billing: BillingInterval }> = {};
-  // Build reverse lookup from env — keys built dynamically to pass deploy scanner
-  const add = (key: string, planId: PlanId, billing: BillingInterval) => {
-    const pid = env[key];
-    if (pid) priceMap[pid] = { planId, billing };
-  };
-  // Billing-aware price IDs
-  for (const plan of ['STARTER', 'AGENCY'] as const) {
-    for (const int of ['MONTHLY', 'YEARLY'] as const) {
-      const p = plan.toLowerCase() as PlanId;
-      const b = int.toLowerCase() as BillingInterval;
-      add(`PRICE_${plan}_${int}_ID`, p, b);
-    }
+/** Resolve a canonical Stripe lookup key (never compare a Stripe price ID to a lookup key). */
+export function resolvePriceToPlan(lookupKey: string | undefined, _env?: Record<string, string | undefined>): { planId: PlanId; billing: BillingInterval } | null {
+  if (!lookupKey) return null;
+  for (const plan of SUBSCRIPTION_PLANS) for (const billing of ['monthly', 'yearly'] as const) {
+    if (lookupKey === plan.stripeLookupKeys[billing]) return { planId: plan.id, billing };
   }
-  // Legacy alias keys (built with concat to avoid deploy-scanner detection)
-  const L = ['PRICE','STRIPE','MONTHLY','YEARLY','STARTER','AGENCY','PRO','EXPERT','SOLO','COMMERCE'];
-  add([L[0],L[4],'ID'].join('_'),  'starter', 'monthly');
-  add([L[0],L[5],'ID'].join('_'),  'agency',  'monthly');
-  add(`${L[1]}_${L[2]}_${L[6]}`,     'starter', 'monthly');
-  add(`${L[1]}_${L[2]}_${L[7]}`,     'agency',  'monthly');
-  add(`${L[1]}_${L[2]}_${L[8]}`,     'starter', 'monthly');
-  add(`${L[1]}_${L[2]}_${L[6]}_${L[9]}`, 'agency', 'monthly');
-  return priceMap[priceId] ?? null;
+  return null;
 }
+
+export function canonicalPlan(planId: unknown, billing: unknown) {
+  return resolveSubscriptionPlan(planId, billing);
+}
+export function canonicalOneTime(productId: unknown) { return resolveOneTimeProduct(productId); }
 
 /** Map planId to its allowed feature tier (hierarchical: agency > starter) */
 const PLAN_TIER: Record<PlanId, number> = {
-  starter: 1,
-  agency: 2,
-  enterprise: 3,
+  pro: 1,
+  multi: 2,
+  agency: 3,
+  enterprise: 4,
 };
 
 /** Returns true if `planId` grants access to at least `requiredPlan` tier */

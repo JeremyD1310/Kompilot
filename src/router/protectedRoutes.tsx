@@ -16,6 +16,7 @@ const SettingsPage         = React.lazy(() => import('../pages/SettingsPage'));
 const ProfilePage          = React.lazy(() => import('../pages/ProfilePage'));
 const GuidePage            = React.lazy(() => import('../pages/GuidePage'));
 const SubscriptionPage     = React.lazy(() => import('../pages/SubscriptionPage'));
+const BillingCreditsPage   = React.lazy(() => import('../pages/BillingCreditsPage'));
 const AdminPage            = React.lazy(() => import('../pages/AdminPage'));
 const AdminAnalyticsPage   = React.lazy(() => import('../pages/AdminAnalyticsPage'));
 const ReferralPage         = React.lazy(() => import('../pages/ReferralPage'));
@@ -94,6 +95,7 @@ export const settingsRoute         = r('/settings',            SettingsPage);
 export const profileRoute          = r('/profile',             ProfilePage);
 export const guideRoute            = r('/guide',               GuidePage);
 export const subscriptionRoute     = r('/subscription',        SubscriptionPage);
+export const billingCreditsRoute   = r('/billing/credits',      BillingCreditsPage);
 export const adminRoute            = ra('/admin',               AdminPage);
 export const adminAnalyticsRoute   = ra('/admin/analytics',     AdminAnalyticsPage);
 export const referralRoute         = r('/referral',            ReferralPage);
@@ -156,7 +158,7 @@ export const seoAuthorityAliasRoute = createRoute({ getParentRoute: () => d, pat
 
 export const protectedChildRoutes = [
   setupRoute, dashboardRoute, calendarRoute, inboxRoute,
-  settingsRoute, profileRoute, guideRoute, subscriptionRoute,
+  settingsRoute, profileRoute, guideRoute, subscriptionRoute, billingCreditsRoute,
   adminRoute, adminAnalyticsRoute, referralRoute, widgetRoute,
   libraryRoute, analyticsRoute, accountRoute, emailingRoute,
   establishmentsRoute, socialRoute, postsDataRoute, cockpitRoute,

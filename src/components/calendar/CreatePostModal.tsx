@@ -464,7 +464,7 @@ Réponds uniquement avec l'objet JSON demandé, sans commentaires.`,
     if (!effectiveDate) { toast.error('Sélectionnez une date.'); return; }
 
     // Deduct 1 credit — blocks if balance is 0
-    const ok = deductCredit();
+    const ok = await deductCredit();
     if (!ok) { setInsufficientOpen(true); return; }
 
     setSaving(true);

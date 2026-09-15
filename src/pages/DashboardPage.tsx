@@ -25,6 +25,7 @@ import { LaMinuteCopilot } from '../components/dashboard/LaMinuteCopilot';
 import { MilestoneCelebrationModal } from '../components/dashboard/MilestoneCelebrationModal';
 import { OnboardingChecklist } from '../components/dashboard/OnboardingChecklist';
 import { ConnectAccountModal } from '../components/dashboard/ConnectAccountModal';
+import { B2BExecutiveDashboard } from '../components/dashboard/B2BExecutiveDashboard';
 
 // One shared cockpit model. Profile changes copy and priorities, not the page architecture.
 type CockpitProfile = 'merchant' | 'artisan' | 'agency' | 'network';
@@ -153,6 +154,8 @@ export default function DashboardPage() {
       </div>
       <PageBody className="space-y-6 px-4 pb-12 pt-5 sm:px-6 sm:pt-7">
         <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5"><div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"><div><div className="flex flex-wrap items-center gap-2 text-xs font-bold text-primary"><Building2 size={14} />{isDemoActive ? demo.data.establishment : activeEstablishment?.name ?? 'Votre établissement'}<span className="text-muted-foreground">·</span><span className="text-muted-foreground">Aujourd’hui</span></div><p className="mt-2 max-w-3xl text-sm leading-6 text-foreground">{copy.summary}</p><p className="mt-2 text-xs font-semibold text-muted-foreground">{actions.length} action{actions.length > 1 ? 's' : ''} nécessite{actions.length > 1 ? 'nt' : ''} votre validation humaine.</p></div><Button onClick={() => document.getElementById('priority-actions')?.scrollIntoView({ behavior: 'smooth' })} className="w-full gap-2 sm:w-auto">Voir mes actions prioritaires <ArrowRight size={15} /></Button></div></section>
+
+        <B2BExecutiveDashboard establishmentName={isDemoActive ? demo.data.establishment : activeEstablishment?.name ?? 'Votre établissement'} isDemo={isDemoActive} />
 
         <div id="priority-actions" className="grid gap-4 xl:grid-cols-2">
           <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible"><ActionSection title="À faire aujourd’hui" description="Les prochaines actions utiles, triées par priorité." actions={todayActions} emptyLabel="Tout est à jour pour le moment." onPrimary={openAction} onRemove={removeAction} /></motion.div>

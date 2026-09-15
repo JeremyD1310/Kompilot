@@ -36,6 +36,7 @@ import { router as refundRouter }    from './refund';
 import { router as retentionRouter } from './retention';
 import { router as seatsRouter }     from './seats';
 import { router as changePlanRouter } from './changePlan';
+import { router as oneTimeCheckoutRouter } from './oneTimeCheckout';
 
 export const router = new Hono();
 
@@ -47,3 +48,4 @@ router.route('/', refundRouter);
 router.route('/', retentionRouter);
 router.route('/', seatsRouter);
 router.route('/', changePlanRouter);
+router.route('/', oneTimeCheckoutRouter);

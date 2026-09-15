@@ -112,7 +112,5 @@ export function seedDemoHistory() {
       ];
     }),
   ];
-  try {
-    localStorage.setItem('kompilot_credit_history_v1', JSON.stringify(entries));
-  } catch { /* noop */ }
+  return entries;
 }
