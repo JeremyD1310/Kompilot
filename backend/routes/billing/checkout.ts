@@ -26,6 +26,9 @@ router.post('/api/billing/checkout', async (c) => {
   if (!stripeKey) {
     return c.json({ error: 'Stripe not configured', code: 'NO_STRIPE_KEY' }, 503);
   }
+  if (rawEnv.KOMPILOT_DEMO_MODE === 'true') {
+    return c.json({ error: 'Les achats sont désactivés dans le mode démo.', code: 'DEMO_BILLING_BLOCKED' }, 403);
+  }
 
   // 3. Parse body
   const body = await c.req.json<{
@@ -69,8 +72,7 @@ router.post('/api/billing/checkout', async (c) => {
   }
 
   // ── Map planId + billing → Stripe price IDs ──────────────────────────────────
-  // Price IDs are read dynamically from env to avoid deploy-tool static analysis false positives.
-  // Canonical keys are PRICE_PRO/MULTI/AGENCY_{MONTHLY|YEARLY}_ID; legacy PRICE_STARTER_* remains supported only by webhook/status compatibility paths.
+  // Price IDs are read dynamically from env and are never accepted from the browser.
   const priceId = (rawEnv as Record<string, string | undefined>)[resolvedPlan.envKey];
   if (!priceId) {
     console.warn(`[billing/checkout] Aucun price Stripe configuré pour planId="${planId}". Ajoutez les PRICE_ secrets.`);
@@ -246,10 +248,9 @@ router.post('/api/billing/checkout', async (c) => {
 // ── Credit Pack Checkout (one-time payment) ─────────────────────────────────
 
 const CREDIT_PACK_PRICES: Record<number, { credits: number; label: string }> = {
-  20:  { credits: 100,  label: 'Pack Starter — 100 crédits' },
-  50:  { credits: 250,  label: 'Pack Boost — 250 crédits' },
-  100: { credits: 500,  label: 'Pack Pro — 500 crédits' },
-  200: { credits: 1250, label: 'Pack Enterprise — 1250 crédits' },
+  19: { credits: 250, label: 'Recharge — 250 crédits IA' },
+  49: { credits: 750, label: 'Recharge — 750 crédits IA' },
+  99: { credits: 2000, label: 'Recharge — 2 000 crédits IA' },
 };
 
 router.post('/api/billing/credit-pack', async (c) => {
@@ -265,6 +266,9 @@ router.post('/api/billing/credit-pack', async (c) => {
   // 2. Stripe configured?
   if (!stripeKey) {
     return c.json({ error: 'Stripe not configured', code: 'NO_STRIPE_KEY' }, 503);
+  }
+  if (rawEnv.KOMPILOT_DEMO_MODE === 'true') {
+    return c.json({ error: 'Les achats sont désactivés dans le mode démo.', code: 'DEMO_BILLING_BLOCKED' }, 403);
   }
 
   // 3. Parse body

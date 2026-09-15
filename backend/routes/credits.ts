@@ -10,6 +10,8 @@
 import { Hono } from 'hono';
 import type { Env } from '../lib/types';
 import { getBlink, getUserMeta } from '../lib/stripeHelpers';
+import { consumeCredits as consumeCreditsAtomically, consumeSms, estimateCredits, getCreditCost, getPlanIncludedCredits, getCurrentBalances, getCurrentBalance as getLedgerBalance, refundCredits as refundCreditsAtomically } from '../lib/creditService';
+import { SUBSCRIPTION_PLANS, type SubscriptionPlanId } from '../../shared/pricingCatalog';
 
 export const router = new Hono();
 
@@ -28,32 +30,7 @@ interface CreditTransaction {
   createdAt: string;
 }
 
-// ── Plan → initial balance mapping ─────────────────────────────────────────────
-
-const PLAN_INITIAL_CREDITS: Record<string, number> = {
-  starter: 500,
-  pro: 500,
-  agency: 5000,
-  expert: 5000,
-  enterprise: 5000,
-};
-
-const PLAN_MONTHLY_QUOTA: Record<string, number> = {
-  starter: 500,
-  pro: 500,
-  agency: 5000,
-  expert: 5000,
-  enterprise: 5000,
-};
-
-// ── Credit costs per action type ───────────────────────────────────────────────
-
-const CREDIT_COSTS: Record<string, number> = {
-  text_generation: 1,
-  ai_analysis: 3,
-  multi_channel_automation: 5,
-  video_generation: 10,
-};
+// Plan limits and action costs are intentionally imported from the shared catalog/service.
 
 // ── Helper: compute current balance ────────────────────────────────────────────
 
@@ -85,12 +62,11 @@ async function getPlanInitialCredits(
 ): Promise<{ planName: string; initialCredits: number }> {
   try {
     const meta = await getUserMeta(blink, userId);
-    const planId = (meta.plan_id as string) || 'free';
-    const planName = planId.charAt(0).toUpperCase() + planId.slice(1);
-    const initialCredits = PLAN_INITIAL_CREDITS[planId] ?? 100;
-    return { planName, initialCredits };
+    const planId = (meta.plan_id as SubscriptionPlanId) || 'pro';
+    const plan = SUBSCRIPTION_PLANS.find(item => item.id === planId);
+    return { planName: plan?.name ?? 'Kompilot Pro', initialCredits: getPlanIncludedCredits(planId) };
   } catch {
-    return { planName: 'Free', initialCredits: 100 };
+    return { planName: 'Kompilot Pro', initialCredits: getPlanIncludedCredits('pro') };
   }
 }
 
@@ -138,10 +114,11 @@ router.get('/api/credits/balance', async (c) => {
 
   try {
     const { planName, initialCredits } = await getPlanInitialCredits(blink, auth.userId);
-    const monthlyQuota = PLAN_MONTHLY_QUOTA[planName.toLowerCase()] ?? initialCredits;
+    const monthlyQuota = initialCredits;
 
-    const rawBalance = await getCurrentBalance(blink, auth.userId);
-    const balance = rawBalance === -1 ? initialCredits : rawBalance;
+    const balances = await getCurrentBalances(blink, auth.userId);
+    const balance = balances.ai;
+    const smsBalance = balances.sms;
     const usedThisMonth = await getUsedThisMonth(blink, auth.userId);
     const remaining = Math.max(0, balance);
     const percentage = monthlyQuota > 0
@@ -150,6 +127,9 @@ router.get('/api/credits/balance', async (c) => {
 
     return c.json({
       balance,
+      aiBalance: balance,
+      smsBalance,
+      resetAt: balances.account.periodEndsAt,
       planName,
       monthlyQuota,
       usedThisMonth,
@@ -160,6 +140,17 @@ router.get('/api/credits/balance', async (c) => {
     console.error('[credits/balance] Error:', err.message);
     return c.json({ error: 'Failed to fetch balance' }, 500);
   }
+});
+
+router.get('/api/credits/estimate', async (c) => {
+  const estimate = estimateCredits(c.req.query('actionType') || '', Number(c.req.query('quantity') || 1));
+  return estimate ? c.json(estimate) : c.json({ error: 'Unknown action or invalid quantity' }, 400);
+});
+
+router.post('/api/credits/estimate', async (c) => {
+  const body = await c.req.json<{ actionType?: string; quantity?: number }>();
+  const estimate = estimateCredits(body.actionType || '', body.quantity || 1);
+  return estimate ? c.json(estimate) : c.json({ error: 'Unknown action or invalid quantity' }, 400);
 });
 
 // ── GET /api/credits/history ───────────────────────────────────────────────────
@@ -215,55 +206,37 @@ router.post('/api/credits/consume', async (c) => {
     return c.json({ error: 'actionType is required' }, 400);
   }
 
-  const cost = CREDIT_COSTS[actionType];
-  if (cost === undefined) {
-    return c.json({
-      error: `Unknown action type: ${actionType}`,
-      validTypes: Object.keys(CREDIT_COSTS),
-    }, 400);
+  const cost = getCreditCost(actionType);
+  if (cost === null) {
+    return c.json({ error: `Unknown action type: ${actionType}` }, 400);
   }
 
   try {
-    // 1. Get current balance
-    const rawBalance = await getCurrentBalance(blink, auth.userId);
-    const { initialCredits } = await getPlanInitialCredits(blink, auth.userId);
-    const currentBalance = rawBalance === -1 ? initialCredits : rawBalance;
-
-    // 2. Check sufficient balance
-    if (currentBalance < cost) {
-      return c.json({
-        error: 'Insufficient credits',
-        currentBalance,
-        required: cost,
-      }, 402);
-    }
-
-    // 3. Create consumption transaction
-    const balanceAfter = currentBalance - cost;
-    const txId = `ctx_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const txTable = blink.db.table<CreditTransaction>('credit_transactions');
-
-    await txTable.create({
-      id: txId,
-      userId: auth.userId,
-      type: 'consumption',
+    const result = await consumeCreditsAtomically(
+      blink,
+      auth.userId,
       actionType,
-      creditsDelta: -cost,
-      balanceAfter,
-      description: description || `Consumed ${cost} credit(s) for ${actionType}`,
-      referenceId: referenceId || '',
-      metadata: '{}',
-    });
-
-    return c.json({
-      success: true,
-      creditsCharged: cost,
-      balanceAfter,
-    });
+      description || `Consommation de ${cost} crédit(s) pour ${actionType}`,
+      referenceId || crypto.randomUUID(),
+    );
+    if (!result.success) {
+      return c.json({ error: result.error || 'Insufficient credits', currentBalance: result.balanceAfter, required: cost }, 402);
+    }
+    return c.json({ success: true, creditsCharged: result.cost, balanceAfter: result.balanceAfter });
   } catch (err: any) {
     console.error('[credits/consume] Error:', err.message);
     return c.json({ error: 'Failed to consume credits' }, 500);
   }
+});
+
+router.post('/api/credits/sms/consume', async (c) => {
+  const env = c.env as unknown as Env;
+  const blink = getBlink(env);
+  const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
+  if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
+  const body = await c.req.json<{ referenceId?: string; humanValidated?: boolean }>();
+  const result = await consumeSms(blink, auth.userId, body.referenceId || crypto.randomUUID(), body.humanValidated === true);
+  return result.success ? c.json(result) : c.json({ error: result.error }, result.status as 400 | 402);
 });
 
 // ── POST /api/credits/refund ───────────────────────────────────────────────────
@@ -272,62 +245,34 @@ router.post('/api/credits/refund', async (c) => {
   const env   = c.env as unknown as Env;
   const blink = getBlink(env);
 
-  const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
-  if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
+  const trusted = c.req.header('X-Internal-Credit-Refund') === env.BLINK_SECRET_KEY;
+  if (!trusted) return c.json({ error: 'Server-only endpoint' }, 403);
 
   const body = await c.req.json<{
     transactionId: string;
+    userId: string;
     reason: string;
   }>();
 
-  const { transactionId, reason } = body;
+  const { transactionId, userId, reason } = body;
   if (!transactionId || !reason) {
     return c.json({ error: 'transactionId and reason are required' }, 400);
   }
 
   try {
     const txTable = blink.db.table<CreditTransaction>('credit_transactions');
-
-    // 1. Find the original transaction
     const original = await txTable.get(transactionId);
-    if (!original) {
-      return c.json({ error: 'Transaction not found' }, 404);
-    }
-    if (original.userId !== auth.userId) {
-      return c.json({ error: 'Transaction does not belong to this user' }, 403);
-    }
+    if (!original) return c.json({ error: 'Transaction not found' }, 404);
+    if (original.userId !== userId) return c.json({ error: 'Transaction does not belong to this user' }, 403);
+    if (original.type !== 'consumption' || Number(original.creditsDelta) >= 0) return c.json({ error: 'Only consumption transactions can be refunded' }, 400);
 
-    // 2. Calculate refund amount (positive delta — reverse the consumption)
     const refundAmount = Math.abs(Number(original.creditsDelta) || 0);
-    if (refundAmount === 0) {
-      return c.json({ error: 'Nothing to refund — zero delta' }, 400);
-    }
+    const alreadyRefunded = await txTable.list({ where: { userId, type: 'refund', referenceId: transactionId }, limit: 1 });
+    if (alreadyRefunded.length > 0) return c.json({ success: true, refundAmount: 0, balanceAfter: Number(alreadyRefunded[0].balanceAfter) || 0, alreadyRefunded: true });
 
-    // 3. Compute new balance
-    const rawBalance = await getCurrentBalance(blink, auth.userId);
-    const { initialCredits } = await getPlanInitialCredits(blink, auth.userId);
-    const currentBalance = rawBalance === -1 ? initialCredits : rawBalance;
-    const balanceAfter = currentBalance + refundAmount;
-
-    // 4. Create refund transaction
-    const refundId = `crefund_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    await txTable.create({
-      id: refundId,
-      userId: auth.userId,
-      type: 'refund',
-      actionType: original.actionType,
-      creditsDelta: refundAmount,
-      balanceAfter,
-      description: `Refund for ${transactionId}: ${reason}`,
-      referenceId: transactionId,
-      metadata: JSON.stringify({ reason, originalDelta: original.creditsDelta }),
-    });
-
-    return c.json({
-      success: true,
-      refundAmount,
-      balanceAfter,
-    });
+    await refundCreditsAtomically(blink, userId, refundAmount, reason, transactionId);
+    const balanceAfter = await getLedgerBalance(blink, userId);
+    return c.json({ success: true, refundAmount, balanceAfter });
   } catch (err: any) {
     console.error('[credits/refund] Error:', err.message);
     return c.json({ error: 'Failed to process refund' }, 500);

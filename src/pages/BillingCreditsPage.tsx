@@ -18,6 +18,7 @@ import {
   Loader2, FileText, ExternalLink,
 } from 'lucide-react';
 import { blink } from '../blink/client';
+import { AI_CREDIT_COSTS } from '../../shared/pricingCatalog';
 
 // ── Sub-components ──────────────────────────────────────────────────────────
 import { CreditBalanceCard } from '../components/billing/CreditBalanceCard';
@@ -68,10 +69,10 @@ async function fetchHistory(limit = 50, offset = 0): Promise<Transaction[]> {
 // ── Quick action buttons ────────────────────────────────────────────────────
 
 const QUICK_ACTIONS = [
-  { icon: PenLine, label: 'Générer un post', cost: 1, color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400' },
-  { icon: Brain, label: 'Analyse IA', cost: 3, color: 'bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400' },
-  { icon: Share2, label: 'Multi-canal', cost: 5, color: 'bg-violet-50 text-violet-700 dark:bg-violet-950/30 dark:text-violet-400' },
-  { icon: VideoIcon, label: 'Vidéo IA', cost: 10, color: 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400' },
+  { icon: PenLine, label: 'Générer un post', cost: AI_CREDIT_COSTS.full_post, color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400' },
+  { icon: Brain, label: 'Analyse IA', cost: AI_CREDIT_COSTS.full_ai_report, color: 'bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400' },
+  { icon: Share2, label: 'Multi-canal', cost: AI_CREDIT_COSTS.message_reply, color: 'bg-violet-50 text-violet-700 dark:bg-violet-950/30 dark:text-violet-400' },
+  { icon: VideoIcon, label: 'Vidéo IA', cost: AI_CREDIT_COSTS.short_video, color: 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400' },
 ];
 
 // ── Page ────────────────────────────────────────────────────────────────────

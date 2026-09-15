@@ -744,6 +744,19 @@ export type ComplianceConsentLogRow = {
   trialRenouncedAt: string | null
 }
 
+export type ContentSuggestionsRow = {
+  id: string
+  userId: string
+  title: string
+  suggestion: string
+  rationale: string
+  platform: string
+  sourceMetric: string
+  sourceValue: string
+  status: string
+  createdAt: string
+}
+
 export type ConversionEventsRow = {
   id: string
   userId: string
@@ -788,6 +801,37 @@ export type CreativeReportsRow = {
   createdAt: string | null
 }
 
+export type CreditAccountsRow = {
+  id: string
+  userId: string
+  planId: string
+  periodKey: string
+  periodEndsAt: string
+  aiIncluded: number | string
+  aiRemaining: number | string
+  aiUsed: number | string
+  aiPurchasedRemaining: number | string
+  smsIncluded: number | string
+  smsRemaining: number | string
+  smsUsed: number | string
+  smsPurchasedRemaining: number | string
+  createdAt: string
+  updatedAt: string
+}
+
+export type CreditPurchasesRow = {
+  id: string
+  userId: string
+  creditType: string
+  credits: number | string
+  remaining: number | string
+  expiresAt: string
+  stripeSessionId: string
+  productId: string
+  createdAt: string
+  updatedAt: string
+}
+
 export type CreditTransactionsRow = {
   id: string
   userId: string
@@ -799,6 +843,10 @@ export type CreditTransactionsRow = {
   referenceId: string | null
   metadata: string
   createdAt: string
+  creditType: string
+  sourceType: string
+  expiresAt: string | null
+  periodKey: string
 }
 
 export type CrmContactsRow = {
@@ -940,6 +988,22 @@ export type DetectedThreadsRow = {
   recommendedAction: string
   scoringVersion: string
   scoringProvider: string
+}
+
+export type DraftApprovalRequestsRow = {
+  id: string
+  userId: string
+  postId: string
+  title: string
+  collaboratorEmail: string
+  collaboratorName: string
+  token: string
+  status: string
+  feedback: string
+  expiresAt: string
+  decidedAt: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 export type EmailNotificationLogRow = {
@@ -1673,6 +1737,22 @@ export type PostEngagementMetricsRow = {
   utmMedium: string
   utmCampaign: string
   recordedAt: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type PostTemplatesRow = {
+  id: string
+  userId: string
+  name: string
+  description: string
+  platform: string
+  category: string
+  hook: string
+  body: string
+  callToAction: string
+  hashtags: string
+  usageCount: number | string
   createdAt: string
   updatedAt: string
 }

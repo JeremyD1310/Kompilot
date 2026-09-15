@@ -11,13 +11,10 @@ import {
 import { fetchBillingStatus } from '../lib/billingClient';
 import { blink } from '../blink/client';
 import { isDemoRuntime } from '../lib/demoDomain';
+import { SUBSCRIPTION_PLANS, type SubscriptionPlanId } from '../../shared/pricingCatalog';
 
-/**
- * PlanId — Nouveaux planId 2026 + aliases legacy pour rétrocompatibilité.
- * 'starter' = Starter 69€, 'agency' = Agency 149€
- * 'pro'/'expert' sont maintenus comme alias techniques pour les abonnements existants.
- */
-export type PlanId = 'free' | 'starter' | 'agency' | 'pro' | 'expert';
+/** Canonical commercial plans, with legacy aliases accepted only at the boundary. */
+export type PlanId = 'free' | SubscriptionPlanId | 'starter' | 'expert';
 
 export interface Plan {
   id: PlanId;
@@ -34,81 +31,23 @@ export interface Plan {
   unlimited: boolean;
 }
 
+const catalogPlan = (id: SubscriptionPlanId): Plan => {
+  const definition = SUBSCRIPTION_PLANS.find(plan => plan.id === id)!;
+  return {
+    id, name: definition.name, price: definition.monthlyPriceEurHt,
+    maxNetworks: definition.entitlements.establishments ?? 1,
+    maxSites: definition.entitlements.establishments ?? 1,
+    maxPosts: Infinity, hasInbox: true, hasAI: true,
+    hasPDF: id !== 'pro', hasMultiUser: (definition.entitlements.users ?? 1) > 1,
+    hasStories: true, unlimited: id === 'agency',
+  };
+};
+
 export const PLANS: Plan[] = [
-  {
-    id: 'free',
-    name: 'Gratuit',
-    price: 0,
-    maxNetworks: 1,
-    maxSites: 1,
-    maxPosts: 3,
-    hasInbox: false,
-    hasAI: false,
-    hasPDF: false,
-    hasMultiUser: false,
-    hasStories: false,
-    unlimited: false,
-  },
-  // ── Starter 69€ ───────────────────────────────────────────────────────────
-  {
-    id: 'starter',
-    name: 'Starter',
-    price: 69,
-    maxNetworks: 5,
-    maxSites: 5,
-    maxPosts: 50,
-    hasInbox: true,
-    hasAI: true,
-    hasPDF: false,
-    hasMultiUser: false,
-    hasStories: true,
-    unlimited: false,
-  },
-  // ── Agency 149€ (nouveau planId 'agency') ─────────────────────────────────
-  {
-    id: 'agency',
-    name: 'Agency',
-    price: 149,
-    maxNetworks: Infinity,
-    maxSites: 30,
-    maxPosts: Infinity,
-    hasInbox: true,
-    hasAI: true,
-    hasPDF: true,
-    hasMultiUser: true,
-    hasStories: true,
-    unlimited: true,
-  },
-  // Technical aliases kept only for existing subscriptions and feature gates.
-  // They intentionally use the canonical display names and prices.
-  {
-    id: 'pro',
-    name: 'Starter',
-    price: 69,
-    maxNetworks: 5,
-    maxSites: 5,
-    maxPosts: 50,
-    hasInbox: true,
-    hasAI: true,
-    hasPDF: false,
-    hasMultiUser: false,
-    hasStories: true,
-    unlimited: false,
-  },
-  {
-    id: 'expert',
-    name: 'Agency',
-    price: 149,
-    maxNetworks: Infinity,
-    maxSites: 30,
-    maxPosts: Infinity,
-    hasInbox: true,
-    hasAI: true,
-    hasPDF: true,
-    hasMultiUser: true,
-    hasStories: true,
-    unlimited: true,
-  },
+  { id: 'free', name: 'Gratuit', price: 0, maxNetworks: 1, maxSites: 1, maxPosts: 3, hasInbox: false, hasAI: false, hasPDF: false, hasMultiUser: false, hasStories: false, unlimited: false },
+  ...SUBSCRIPTION_PLANS.map(plan => catalogPlan(plan.id)),
+  { ...catalogPlan('pro'), id: 'starter' },
+  { ...catalogPlan('agency'), id: 'expert' },
 ];
 
 const PLAN_STORAGE_KEY = 'kompilot_plan';
@@ -128,13 +67,9 @@ const SubscriptionContext = createContext<SubscriptionContextValue | null>(null)
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   // Restore plan from localStorage so it survives logout/login
-  const [planId, setPlanId] = useState<PlanId>(() => {
-    try {
-      const stored = localStorage.getItem(PLAN_STORAGE_KEY) as PlanId | null;
-      if (stored && PLANS.find(p => p.id === stored)) return stored;
-    } catch { /* noop */ }
-    return 'free';
-  });
+  // Paid entitlements are restored only from the authenticated backend status.
+  // Local storage may not grant a plan after reload or logout.
+  const [planId, setPlanId] = useState<PlanId>('free');
 
   // ── Scope all billing storage keys to the authenticated user ────────────────
   useEffect(() => {
@@ -152,8 +87,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const currentPlan = PLANS.find(p => p.id === planId)!;
 
   const setPlan = (id: PlanId) => {
+    // Client code may not self-grant paid entitlements. Backend-confirmed plans are
+    // applied by refreshBillingStatus; this method remains for old callers only.
+    if (id !== 'free' && !isDemoRuntime()) return;
     setPlanId(id);
-    try { localStorage.setItem(PLAN_STORAGE_KEY, id); } catch { /* noop */ }
+    if (id === 'free') { try { localStorage.removeItem(PLAN_STORAGE_KEY); } catch { /* noop */ } }
   };
 
   // ── Subscription status ────────────────────────────────────────────────────
@@ -179,13 +117,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       setAgentEnabled(computeAgentEnabled());
 
       // If Stripe confirmed a plan upgrade, update local plan state
-      if (data.planId && ['starter', 'agency', 'pro', 'expert'].includes(data.planId)) {
-        const backendPlanId = data.planId === 'pro' ? 'starter' : data.planId === 'expert' ? 'agency' : data.planId;
-        const canonicalPlanId = backendPlanId as PlanId;
-        if (PLANS.find(p => p.id === canonicalPlanId)) {
-          setPlanId(canonicalPlanId);
-          try { localStorage.setItem(PLAN_STORAGE_KEY, canonicalPlanId); } catch { /* noop */ }
-        }
+      if (data.planId && ['pro', 'multi', 'agency'].includes(data.planId)) {
+        const canonicalPlanId = data.planId as PlanId;
+        setPlanId(canonicalPlanId);
+        try { localStorage.setItem(PLAN_STORAGE_KEY, canonicalPlanId); } catch { /* noop */ }
       }
     } catch (e) {
       // Network failure or Stripe unavailable — keep cached state, no crash

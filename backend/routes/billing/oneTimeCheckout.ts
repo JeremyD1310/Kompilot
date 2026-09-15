@@ -12,6 +12,7 @@ router.post('/api/billing/one-time-checkout', async (c) => {
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'))
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401)
   if (!env.STRIPE_SECRET_KEY) return c.json({ error: 'Stripe not configured', code: 'NO_STRIPE_KEY' }, 503)
+  if (env.KOMPILOT_DEMO_MODE === 'true') return c.json({ error: 'Les achats sont désactivés dans le mode démo.', code: 'DEMO_BILLING_BLOCKED' }, 403)
 
   const body = await c.req.json<{ productId?: string; legalConsent?: { cgvAccepted?: boolean; retractionWaived?: boolean; cgvVersion?: string } }>()
   const product = resolveOneTimeProduct(body?.productId)

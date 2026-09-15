@@ -9,6 +9,7 @@ import { toast } from '@blinkdotnew/ui';
 import { Zap, X, Star, CheckCircle2, ExternalLink, RefreshCw, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCredits } from '../../context/CreditsContext';
+import { createOneTimeCheckout, type CheckoutLegalConsent } from '../../lib/billingClient';
 
 // ── Pack definitions ──────────────────────────────────────────────────────────
 
