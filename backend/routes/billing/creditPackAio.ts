@@ -45,6 +45,10 @@ router.post('/api/billing/credit-pack-aio', async (c) => {
     return c.json({ error: 'Stripe not configured', code: 'NO_STRIPE_KEY' }, 503);
   }
 
+  // Retired: this legacy pack has no canonical catalog lookup key. Do not create
+  // ad-hoc Stripe prices; migrate it to an existing canonical top-up first.
+  return c.json({ error: 'Pack AIO retiré pendant la migration de facturation', code: 'AIO_PACK_MIGRATION_REQUIRED' }, 410);
+
   // 3. Get or create Stripe customer
   const meta = await getUserMeta(blink, auth.userId);
   let customerId = meta.stripe_customer_id as string | undefined;

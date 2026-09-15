@@ -9,6 +9,7 @@
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
+import { consumeCredits, refundCredits } from '../lib/creditService';
 
 export const router = new Hono<{ Bindings: Env }>();
 
@@ -23,19 +24,6 @@ function getUserId(h: string | undefined): string | null {
   }
 }
 
-async function checkAndDeductCredit(env: Env, userId: string): Promise<{ ok: true; creditsLeft: number } | { ok: false; error: string; status: number }> {
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
-  const establishments = await blink.db.establishments.list({ where: { userId }, limit: 1 });
-  const est = (establishments[0] as any) ?? {};
-  const creditsUsed = Number(est.aiCreditsUsed) || 0;
-  const creditsLimit = Number(est.aiCreditsLimit) || 50;
-  const creditsLeft = Math.max(0, creditsLimit - creditsUsed);
-  if (creditsLeft <= 0) return { ok: false, error: 'NO_CREDITS', status: 402 };
-  try {
-    await blink.db.establishments.update(est.id, { aiCreditsUsed: creditsUsed + 1, updatedAt: new Date().toISOString() });
-  } catch { /* non-critical */ }
-  return { ok: true, creditsLeft: creditsLeft - 1 };
-}
 
 // Voice presets mapped to OpenAI TTS voices
 const VOICE_PRESETS: Record<string, { voice: string; speed: number; label: string }> = {
@@ -68,6 +56,7 @@ router.post('/api/voiceover/generate', async (c) => {
     voice?: string;
     speed?: number;
     format?: 'mp3' | 'opus' | 'aac' | 'flac';
+    requestId?: string;
   } = {};
   try { body = await c.req.json(); } catch { /* empty */ }
 
@@ -75,24 +64,18 @@ router.post('/api/voiceover/generate', async (c) => {
     return c.json({ error: 'Le texte est requis' }, 400);
   }
 
-  // Check and deduct 1 credit
-  const creditResult = await checkAndDeductCredit(env, userId);
-  if (!creditResult.ok) {
-    return c.json({ error: creditResult.error, message: 'Crédits épuisés.', creditsLeft: 0 }, creditResult.status);
-  }
-
   const text = body.text.trim();
+  // Validate provider limits before charging.
+  if (text.length > 4096) return c.json({ error: 'TEXT_TOO_LONG', message: `Le texte fait ${text.length} caractères. Maximum : 4096.` }, 400);
+
+  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const referenceId = `voiceover:${userId}:${body.requestId?.trim() || crypto.randomUUID()}`;
+  const creditResult = await consumeCredits(blink, userId, 'text_generation', 'Voiceover TTS', referenceId);
+  if (!creditResult.success) return c.json({ error: 'NO_CREDITS', message: 'Crédits épuisés.', creditsLeft: creditResult.balanceAfter }, 402);
+
   const voicePreset = VOICE_PRESETS[body.voice ?? 'nova'] ?? VOICE_PRESETS['nova'];
   const speed = body.speed ?? voicePreset.speed;
   const format = body.format ?? 'mp3';
-
-  // OpenAI TTS has a 4096 character limit
-  if (text.length > 4096) {
-    return c.json({
-      error: 'TEXT_TOO_LONG',
-      message: `Le texte fait ${text.length} caractères. Maximum : 4096.`,
-    }, 400);
-  }
 
   try {
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
@@ -113,6 +96,7 @@ router.post('/api/voiceover/generate', async (c) => {
     if (!response.ok) {
       const errText = await response.text();
       console.error(`[Voiceover] OpenAI TTS error ${response.status}: ${errText}`);
+      await refundCredits(blink, userId, creditResult.cost, 'Voiceover provider failure', referenceId);
       return c.json({ error: `TTS generation failed: ${response.status}` }, 502);
     }
 
@@ -132,10 +116,11 @@ router.post('/api/voiceover/generate', async (c) => {
       speed,
       format,
       charactersUsed: text.length,
-      creditsLeft: creditResult.creditsLeft,
+      creditsLeft: creditResult.balanceAfter,
     });
   } catch (err: any) {
     console.error('[Voiceover] generate error:', err);
+    await refundCredits(blink, userId, creditResult.cost, 'Voiceover execution failure', referenceId);
     return c.json({ error: err.message ?? 'Voice generation failed' }, 500);
   }
 });

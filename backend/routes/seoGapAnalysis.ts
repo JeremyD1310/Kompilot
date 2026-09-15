@@ -16,6 +16,7 @@ import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { generateAIResponse } from '../lib/aiRouter';
+import { consumeCredits, getCurrentBalance, refundCredits } from '../lib/creditService';
 import {
   fetchKeywordData,
   fetchSERPResults,
@@ -139,12 +140,11 @@ router.get('/api/seo-gap/status', async (c) => {
     const onboarding = await blink.db.user_onboarding_v2.list({ where: { userId }, limit: 1 });
     const isOnboarding = onboarding.length > 0 && !Number(onboarding[0].hasCompletedOnboarding);
 
-    // Get credits from establishments
     const establishments = await blink.db.establishments.list({ where: { userId }, limit: 1 });
     const est = (establishments[0] as any) ?? {};
-    const creditsUsed = Number(est.aiCreditsUsed) || 0;
     const creditsLimit = Number(est.aiCreditsLimit) || 50;
-    const creditsLeft = Math.max(0, creditsLimit - creditsUsed);
+    const ledgerBalance = await getCurrentBalance(blink, userId, 'ai');
+    const creditsLeft = ledgerBalance < 0 ? 0 : ledgerBalance;
 
     return c.json({
       hasCredits: creditsLeft > 0,
@@ -180,15 +180,27 @@ router.post('/api/seo-gap/analyze', async (c) => {
   let body: { competitorUrl?: string; keywords?: string[] } = {};
   try { body = await c.req.json(); } catch { /* empty body OK */ }
 
+  const referenceId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || `seo-gap:${userId}:${crypto.randomUUID()}`;
+  let chargedCost = 0;
+  let charged = false;
   try {
-    // 1. Check credits
+    // 1. Reserve the canonical AI ledger charge before any paid provider work.
     const establishments = await blink.db.establishments.list({ where: { userId }, limit: 1 });
     const est = (establishments[0] as any) ?? {};
-    const creditsUsed = Number(est.aiCreditsUsed) || 0;
-    const creditsLimit = Number(est.aiCreditsLimit) || 50;
-    const creditsLeft = Math.max(0, creditsLimit - creditsUsed);
+    const consumed = await consumeCredits(
+      blink,
+      userId,
+      'local_seo_analysis',
+      'SEO gap analysis',
+      referenceId,
+      'ai',
+      { provider: 'openai-or-anthropic', route: 'seoGapAnalysis' },
+    );
+    charged = consumed.success;
+    chargedCost = consumed.cost;
+    const creditsLeft = consumed.balanceAfter;
 
-    if (creditsLeft <= 0) {
+    if (!consumed.success) {
       return c.json({
         error: 'NO_CREDITS',
         message: 'Crédits épuisés. Rechargez votre compte pour continuer.',
@@ -359,17 +371,8 @@ Retourne un JSON avec cette structure exacte:
       }));
     }
 
-    // 7. Deduct 1 credit
-    try {
-      await blink.db.establishments.update(est.id, {
-        aiCreditsUsed: creditsUsed + 1,
-        updatedAt: new Date().toISOString(),
-      });
-    } catch (creditErr) {
-      console.warn('[SeoGap] credit deduction failed:', creditErr);
-    }
+    // 7. Log the analysis (the credit ledger is the source of truth).
 
-    // 8. Log the analysis
     try {
       await blink.db.observability_logs.create({
         id: `espion_${Date.now()}`,
@@ -402,6 +405,10 @@ Retourne un JSON avec cette structure exacte:
       },
     });
   } catch (err: any) {
+    if (charged && referenceId) {
+      try { await refundCredits(blink, userId, chargedCost, 'Refund: SEO gap analysis failed', referenceId); }
+      catch (refundErr) { console.error('[SeoGap] durable refund failed:', refundErr); }
+    }
     console.error('[SeoGap] analyze error:', err);
     return c.json({ error: err.message ?? 'Analysis failed' }, 500);
   }

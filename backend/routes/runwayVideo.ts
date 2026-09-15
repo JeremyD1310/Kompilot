@@ -2,10 +2,11 @@ import { Hono } from 'hono';
 import type { Env } from '../lib/types';
 import { getBlink } from '../lib/stripeHelpers';
 import { consumeCredits, refundCredits } from '../lib/creditService';
+import { AI_CREDIT_COSTS } from '../../shared/pricingCatalog';
 
 export const router = new Hono();
 
-const RUNWAY_COST = 5;
+const RUNWAY_COST = AI_CREDIT_COSTS.runway_video_generation;
 const RUNWAY_MODEL = 'gen4.5';
 const RUNWAY_VERSION = '2024-11-06';
 const MAX_PROMPT_LENGTH = 1000;
@@ -92,6 +93,8 @@ router.post('/api/runway/generate', async (c) => {
     'runway_video_generation',
     'Runway generative video',
     generationId,
+    'ai',
+    { provider: 'runway', model: RUNWAY_MODEL, ratio, duration },
   );
   if (!creditResult.success) return c.json({ error: creditResult.error || 'Insufficient credits' }, 402);
 

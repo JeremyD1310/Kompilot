@@ -11,7 +11,7 @@ import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { generateAIResponse } from '../lib/aiRouter';
-import { consumeCredits } from '../lib/creditService';
+import { consumeCredits, refundCredits } from '../lib/creditService';
 
 export const router = new Hono<{ Bindings: Env }>();
 
@@ -84,11 +84,17 @@ router.post('/api/ugc-video-ad/analyze', async (c) => {
 
   const blink = getBlink(env);
 
+  const projectId = crypto.randomUUID();
+  const productName = body.productName || 'Produit';
+  const creditReferenceId = `ugc-analyze:${userId}:${projectId}`;
+
   // Deduct 1 credit
   const creditResult = await consumeCredits(
     blink, userId, 'text_generation',
     'UGC Video Ad script analysis',
-    '',
+    creditReferenceId,
+    'ai',
+    { provider: 'openai-or-anthropic', phase: 'analysis' },
   );
   if (!creditResult.success) {
     return c.json({
@@ -97,9 +103,6 @@ router.post('/api/ugc-video-ad/analyze', async (c) => {
       creditsLeft: creditResult.balanceAfter,
     }, 402);
   }
-
-  const projectId = crypto.randomUUID();
-  const productName = body.productName || 'Produit';
 
   try {
     // Build system prompt for multi-angle UGC script generation
@@ -295,9 +298,10 @@ Retourne un tableau JSON de scripts avec cette structure EXACTE:
         latencyMs: aiResult.latencyMs,
       },
     });
-  } catch (err: any) {
-    console.error('[UgcVideoAd] analyze error:', err);
-    return c.json({ error: err.message ?? 'Script analysis failed' }, 500);
+  } catch (error: any) {
+    console.error('[UgcVideoAd] analyze error:', error);
+    await refundCredits(blink, userId, creditResult.cost, 'UGC script analysis failed', creditReferenceId);
+    throw error;
   }
 });
 
@@ -353,11 +357,15 @@ router.post('/api/ugc-video-ad/generate', async (c) => {
   const visualPrompt = script.visualDescription ||
     `UGC style video of ${project.productName}, ${script.hook.text}, natural lighting, authentic feel`;
 
+  const generationId = crypto.randomUUID();
+  const creditReferenceId = `ugc-video:${body.projectId}:${variantIndex}`;
   // Deduct 10 credits
   const creditResult = await consumeCredits(
-    blink, userId, 'video_generation',
+    blink, userId, 'ugc_video_generation',
     `UGC Video Ad generation: ${project.productName} - ${script.angle}`,
-    body.projectId,
+    creditReferenceId,
+    'ai',
+    { provider: 'luma', projectId: body.projectId, variantIndex },
   );
   if (!creditResult.success) {
     return c.json({
@@ -367,34 +375,33 @@ router.post('/api/ugc-video-ad/generate', async (c) => {
     }, 402);
   }
 
-  // Update the variant status
-  const generationId = crypto.randomUUID();
-  if (!videoVariants[variantIndex]) {
-    videoVariants[variantIndex] = {
-      index: variantIndex,
-      status: 'queued',
-      generationId: '',
-      videoUrl: '',
-      aspectRatio,
-      visualPrompt: '',
-      errorMessage: '',
-    };
-  }
-  videoVariants[variantIndex].status = 'queued';
-  videoVariants[variantIndex].generationId = generationId;
-  videoVariants[variantIndex].aspectRatio = aspectRatio;
-  videoVariants[variantIndex].visualPrompt = visualPrompt;
-  videoVariants[variantIndex].errorMessage = '';
-
-  // Update project
-  await projectTable.update(body.projectId, {
-    status: 'generating',
-    videoVariants: JSON.stringify(videoVariants),
-    updatedAt: new Date().toISOString(),
-  });
-
-  // Enqueue async task
   try {
+    // Update the variant status
+    if (!videoVariants[variantIndex]) {
+      videoVariants[variantIndex] = {
+        index: variantIndex,
+        status: 'queued',
+        generationId: '',
+        videoUrl: '',
+        aspectRatio,
+        visualPrompt: '',
+        errorMessage: '',
+      };
+    }
+    videoVariants[variantIndex].status = 'queued';
+    videoVariants[variantIndex].generationId = generationId;
+    videoVariants[variantIndex].aspectRatio = aspectRatio;
+    videoVariants[variantIndex].visualPrompt = visualPrompt;
+    videoVariants[variantIndex].errorMessage = '';
+
+    // Update project
+    await projectTable.update(body.projectId, {
+      status: 'generating',
+      videoVariants: JSON.stringify(videoVariants),
+      updatedAt: new Date().toISOString(),
+    });
+
+    // Enqueue async task
     const queueFn = (blink as any).queue;
     if (queueFn?.enqueue) {
       await queueFn.enqueue('ugc-video-generate', {
@@ -445,16 +452,17 @@ router.post('/api/ugc-video-ad/generate', async (c) => {
       generationId,
       creditsLeft: creditResult.balanceAfter,
     });
-  } catch (queueErr: any) {
-    console.error('[UgcVideoAd] Queue enqueue failed:', queueErr);
+  } catch (error: any) {
+    console.error('[UgcVideoAd] Queue enqueue failed:', error);
     videoVariants[variantIndex].status = 'failed';
-    videoVariants[variantIndex].errorMessage = queueErr.message ?? 'Queue enqueue failed';
+    videoVariants[variantIndex].errorMessage = error.message ?? 'Queue enqueue failed';
     await projectTable.update(body.projectId, {
       status: 'failed',
       videoVariants: JSON.stringify(videoVariants),
       updatedAt: new Date().toISOString(),
     });
-    return c.json({ error: queueErr.message ?? 'Failed to enqueue generation' }, 500);
+    await refundCredits(blink, userId, creditResult.cost, 'UGC video generation failed', creditReferenceId);
+    throw error;
   }
 });
 

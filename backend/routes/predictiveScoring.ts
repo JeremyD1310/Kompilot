@@ -370,24 +370,19 @@ router.get('/api/predictive-scoring/churn-risk', async (c) => {
         // Best-effort
       }
 
-      // 5. AI credits unused
+      // 5. AI credits unused — read the canonical ledger, never establishments.aiCreditsUsed.
       try {
-        const establishments = await blink.db.table('establishments').list({
-          where: { userId: user.id },
-          limit: 1,
-        });
-        const est = Array.isArray(establishments) && establishments.length > 0
-          ? (establishments[0] as any)
-          : null;
-        if (est) {
-          const used = Number(est.aiCreditsUsed) || 0;
-          const limit = Number(est.aiCreditsLimit) || 50;
-          // If 0% used and limit > 0
-          // eslint-disable-next-line eqeqeq
-          if (limit > 0 && used == 0) {
-            riskScore += 15;
-            riskFactors.push('Crédits IA inutilisés');
-          }
+        const ledger = await blink.db.sql<{ total: number; count: number }>(
+          `SELECT COALESCE(SUM(credits_delta), 0) AS total, COUNT(*) AS count
+           FROM credit_transactions
+           WHERE user_id = ? AND COALESCE(credit_type, 'ai') = 'ai'`,
+          [user.id],
+        );
+        const hasAiActivity = Number(ledger.rows[0]?.count ?? 0) > 0;
+        const balance = Number(ledger.rows[0]?.total ?? 0);
+        if (hasAiActivity && balance > 0) {
+          riskScore += 15;
+          riskFactors.push('Crédits IA disponibles mais inutilisés récemment');
         }
       } catch {
         // Best-effort

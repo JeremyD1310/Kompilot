@@ -11,6 +11,7 @@ import { Hono } from 'hono';
 import type { Env } from '../lib/types';
 import { getBlink, getUserMeta } from '../lib/stripeHelpers';
 import { consumeCredits, refundCredits } from '../lib/creditService';
+import { AI_CREDIT_COSTS } from '../../shared/pricingCatalog';
 
 export const router = new Hono();
 
@@ -47,7 +48,7 @@ interface CreditTransaction {
   createdAt: string;
 }
 
-const VIDEO_GENERATION_COST = 10;
+const VIDEO_GENERATION_COST = AI_CREDIT_COSTS.tavus_video_generation;
 const MAX_SCRIPT_LENGTH = 300; // ~30 seconds of speech
 
 // ── POST /api/videos/generate ──────────────────────────────────────────────────
@@ -95,9 +96,11 @@ router.post('/api/videos/generate', async (c) => {
   const creditResult = await consumeCredits(
     blink,
     auth.userId,
-    'video_generation',
+    'tavus_video_generation',
     'Tavus video generation',
     creditReferenceId,
+    'ai',
+    { provider: 'tavus', replicaId },
   );
   if (!creditResult.success) {
     return c.json({ error: creditResult.error }, 402);
