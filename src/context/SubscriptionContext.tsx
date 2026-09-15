@@ -1,24 +1,10 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import {
-  getSubscriptionStatus,
-  setSubscriptionStatus,
-  getGracePeriodEnd,
-  setGracePeriodEnd,
-  isAgentEnabled as computeAgentEnabled,
-  setActiveUserId,
-  type SubscriptionStatus,
-} from '../lib/billingStorage';
 import { fetchBillingStatus } from '../lib/billingClient';
 import { blink } from '../blink/client';
 import { isDemoRuntime } from '../lib/demoDomain';
+import { SUBSCRIPTION_PLANS, type SubscriptionPlanId } from '../../shared/pricingCatalog';
 
-/**
- * PlanId — Nouveaux planId 2026 + aliases legacy pour rétrocompatibilité.
- * 'starter' = Starter 69€, 'agency' = Agency 149€
- * 'pro'/'expert' sont maintenus comme alias techniques pour les abonnements existants.
- */
-export type PlanId = 'free' | 'starter' | 'agency' | 'pro' | 'expert';
-
+export type PlanId = SubscriptionPlanId;
 export interface Plan {
   id: PlanId;
   name: string;
@@ -34,218 +20,75 @@ export interface Plan {
   unlimited: boolean;
 }
 
-export const PLANS: Plan[] = [
-  {
-    id: 'free',
-    name: 'Gratuit',
-    price: 0,
-    maxNetworks: 1,
-    maxSites: 1,
-    maxPosts: 3,
-    hasInbox: false,
-    hasAI: false,
-    hasPDF: false,
-    hasMultiUser: false,
-    hasStories: false,
-    unlimited: false,
-  },
-  // ── Starter 69€ ───────────────────────────────────────────────────────────
-  {
-    id: 'starter',
-    name: 'Starter',
-    price: 69,
-    maxNetworks: 5,
-    maxSites: 5,
-    maxPosts: 50,
-    hasInbox: true,
-    hasAI: true,
-    hasPDF: false,
-    hasMultiUser: false,
-    hasStories: true,
-    unlimited: false,
-  },
-  // ── Agency 149€ (nouveau planId 'agency') ─────────────────────────────────
-  {
-    id: 'agency',
-    name: 'Agency',
-    price: 149,
-    maxNetworks: Infinity,
-    maxSites: 30,
-    maxPosts: Infinity,
-    hasInbox: true,
-    hasAI: true,
-    hasPDF: true,
-    hasMultiUser: true,
-    hasStories: true,
-    unlimited: true,
-  },
-  // Technical aliases kept only for existing subscriptions and feature gates.
-  // They intentionally use the canonical display names and prices.
-  {
-    id: 'pro',
-    name: 'Starter',
-    price: 69,
-    maxNetworks: 5,
-    maxSites: 5,
-    maxPosts: 50,
-    hasInbox: true,
-    hasAI: true,
-    hasPDF: false,
-    hasMultiUser: false,
-    hasStories: true,
-    unlimited: false,
-  },
-  {
-    id: 'expert',
-    name: 'Agency',
-    price: 149,
-    maxNetworks: Infinity,
-    maxSites: 30,
-    maxPosts: Infinity,
-    hasInbox: true,
-    hasAI: true,
-    hasPDF: true,
-    hasMultiUser: true,
-    hasStories: true,
-    unlimited: true,
-  },
-];
+export const PLANS: Plan[] = SUBSCRIPTION_PLANS.map((plan) => ({
+  id: plan.id,
+  name: plan.name,
+  price: plan.monthlyPriceEurHt,
+  maxNetworks: plan.entitlements.establishments ?? 0,
+  maxSites: plan.entitlements.establishments ?? 0,
+  maxPosts: Infinity,
+  hasInbox: true,
+  hasAI: (plan.entitlements.aiCredits ?? 0) > 0,
+  hasPDF: plan.id === 'agency',
+  hasMultiUser: plan.entitlements.users > 1,
+  hasStories: true,
+  unlimited: plan.id === 'agency',
+}));
 
-const PLAN_STORAGE_KEY = 'kompilot_plan';
-
+type SubscriptionStatus = 'active' | 'payment_failed' | 'grace' | 'cancelled' | 'unpaid';
 interface SubscriptionContextValue {
   currentPlan: Plan;
   setPlan: (id: PlanId) => void;
-  /** Current billing/subscription status (synced from Stripe via backend) */
   subscriptionStatus: SubscriptionStatus;
-  /** False when subscription is cancelled/unpaid past grace → disables background AI tasks */
   isAgentEnabled: boolean;
-  /** Re-fetch billing status from backend and update localStorage cache */
   refreshBillingStatus: () => Promise<void>;
 }
-
 const SubscriptionContext = createContext<SubscriptionContextValue | null>(null);
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
-  // Restore plan from localStorage so it survives logout/login
-  const [planId, setPlanId] = useState<PlanId>(() => {
-    try {
-      const stored = localStorage.getItem(PLAN_STORAGE_KEY) as PlanId | null;
-      if (stored && PLANS.find(p => p.id === stored)) return stored;
-    } catch { /* noop */ }
-    return 'free';
-  });
-
-  // ── Scope all billing storage keys to the authenticated user ────────────────
-  useEffect(() => {
-    const unsub = blink.auth.onAuthStateChanged((state) => {
-      setHasAuthenticatedUser(Boolean(state.user));
-      setActiveUserId(state.user?.id ?? null);
-      if (!state.user) {
-        // Reset plan to free on logout to avoid stale data showing
-        setPlanId('free');
-      }
-    });
-    return unsub;
-  }, []);
-
-  const currentPlan = PLANS.find(p => p.id === planId)!;
-
-  const setPlan = (id: PlanId) => {
-    setPlanId(id);
-    try { localStorage.setItem(PLAN_STORAGE_KEY, id); } catch { /* noop */ }
-  };
-
-  // ── Subscription status ────────────────────────────────────────────────────
-  // Public pages mount this provider too, but billing is a protected endpoint.
-  // Track auth state before refreshing so anonymous visitors never hit /api/billing/status.
+  const [planId, setPlanId] = useState<PlanId>('starter');
   const [hasAuthenticatedUser, setHasAuthenticatedUser] = useState(() => blink.auth.isAuthenticated());
-  const [subscriptionStatus, setStatusState] = useState<SubscriptionStatus>(
-    () => getSubscriptionStatus(),
-  );
-  const [agentEnabled, setAgentEnabled] = useState<boolean>(() => computeAgentEnabled());
+  const [subscriptionStatus, setStatusState] = useState<SubscriptionStatus>('unpaid');
+  const [gracePeriodEnd, setGracePeriodEnd] = useState<Date | null>(null);
 
-  /** Sync from backend and cache locally. Also syncs planId when Stripe confirms payment.
-   * RESILIENCE FIX: wrapped in try/catch — network failures don't crash the context.
-   */
+  useEffect(() => blink.auth.onAuthStateChanged((state) => {
+    setHasAuthenticatedUser(Boolean(state.user));
+    if (!state.user) setPlanId('starter');
+  }), []);
+
   const refreshBillingStatus = useCallback(async () => {
     try {
       const data = await fetchBillingStatus();
-      const status = data.status as SubscriptionStatus;
-      setSubscriptionStatus(status);
-      if (data.gracePeriodEnd) setGracePeriodEnd(new Date(data.gracePeriodEnd));
-      else setGracePeriodEnd(null);
-      setStatusState(status);
-      setAgentEnabled(computeAgentEnabled());
-
-      // If Stripe confirmed a plan upgrade, update local plan state
-      if (data.planId && ['starter', 'agency', 'pro', 'expert'].includes(data.planId)) {
-        const backendPlanId = data.planId === 'pro' ? 'starter' : data.planId === 'expert' ? 'agency' : data.planId;
-        const canonicalPlanId = backendPlanId as PlanId;
-        if (PLANS.find(p => p.id === canonicalPlanId)) {
-          setPlanId(canonicalPlanId);
-          try { localStorage.setItem(PLAN_STORAGE_KEY, canonicalPlanId); } catch { /* noop */ }
-        }
-      }
-    } catch (e) {
-      // Network failure or Stripe unavailable — keep cached state, no crash
-      console.warn('[SubscriptionContext] refreshBillingStatus failed (network?):', e);
-    }
+      setStatusState(data.status);
+      setGracePeriodEnd(data.gracePeriodEnd ? new Date(data.gracePeriodEnd) : null);
+      if (data.planId === 'starter' || data.planId === 'agency') setPlanId(data.planId);
+    } catch { /* backend remains the source of truth; keep safe state */ }
   }, []);
 
-  // Refresh only for authenticated users (non-blocking, best-effort).
-  // Anonymous landing pages must not request the protected billing endpoint.
   useEffect(() => {
-    // The public demo is a local-only sandbox: never probe billing or Stripe.
-    if (isDemoRuntime() || !hasAuthenticatedUser) return;
-    refreshBillingStatus().catch(() => { /* noop */ });
+    if (!isDemoRuntime() && hasAuthenticatedUser) refreshBillingStatus();
   }, [hasAuthenticatedUser, refreshBillingStatus]);
 
-  // Keep storage in sync when plan changes externally (e.g. tab sync)
-  useEffect(() => {
-    const handler = (e: StorageEvent) => {
-      if (e.key === PLAN_STORAGE_KEY && e.newValue) {
-        const next = e.newValue as PlanId;
-        if (PLANS.find(p => p.id === next)) setPlanId(next);
-      }
-      // Sync subscription status changes from other tabs
-      if (e.key === 'kompilot_subscription_status' && e.newValue) {
-        setStatusState(e.newValue as SubscriptionStatus);
-        setAgentEnabled(computeAgentEnabled());
-      }
-    };
-    window.addEventListener('storage', handler);
-    return () => window.removeEventListener('storage', handler);
-  }, []);
+  const currentPlan = PLANS.find((plan) => plan.id === planId) ?? PLANS[0];
+  const isAgentEnabled = subscriptionStatus === 'active' || subscriptionStatus === 'payment_failed' || subscriptionStatus === 'grace'
+    || (!!gracePeriodEnd && gracePeriodEnd > new Date());
 
-  return (
-    <SubscriptionContext.Provider
-      value={{
-        currentPlan,
-        setPlan,
-        subscriptionStatus,
-        isAgentEnabled: agentEnabled,
-        refreshBillingStatus,
-      }}
-    >
-      {children}
-    </SubscriptionContext.Provider>
-  );
+  return <SubscriptionContext.Provider value={{
+    currentPlan,
+    setPlan: () => { /* checkout/webhook owns plan changes */ },
+    subscriptionStatus,
+    isAgentEnabled,
+    refreshBillingStatus,
+  }}>{children}</SubscriptionContext.Provider>;
 }
 
-const SUBSCRIPTION_FALLBACK: SubscriptionContextValue = {
-  currentPlan: PLANS.find(p => p.id === 'free')!,
-  setPlan: () => { /* noop — no provider */ },
-  subscriptionStatus: 'free',
+const FALLBACK: SubscriptionContextValue = {
+  currentPlan: PLANS[0],
+  setPlan: () => undefined,
+  subscriptionStatus: 'unpaid',
   isAgentEnabled: false,
-  refreshBillingStatus: async () => { /* noop — no provider */ },
+  refreshBillingStatus: async () => undefined,
 };
-
 export function useSubscription() {
-  const ctx = useContext(SubscriptionContext);
-  if (!ctx) {
-    console.warn('useSubscription must be used within SubscriptionProvider — context missing, returning safe fallback');
-    return SUBSCRIPTION_FALLBACK;
-  }
-  return ctx;
+  return useContext(SubscriptionContext) ?? FALLBACK;
 }

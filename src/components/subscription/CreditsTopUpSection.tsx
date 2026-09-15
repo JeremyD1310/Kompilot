@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, toast } from '@blinkdotnew/ui';
-import { Zap, Sparkles, Rocket, Film, Wand2, X, Loader2 } from 'lucide-react';
+import { Zap, Sparkles, X, Loader2 } from 'lucide-react';
 import { useCredits } from '../../context/CreditsContext';
 import { LegalConsentBlock, isLegalConsentValid, type LegalConsentState, CGV_VERSION } from './LegalConsentBlock';
-import { createCheckoutSession } from '../../lib/billingClient';
+import { createOneTimeCheckout } from '../../lib/billingClient';
 
 const CREDIT_PACKS = [
-  { id: 'pack10', credits: 10, price: 3, priceHT: 2.5, label: 'Starter', emoji: '🌱', desc: 'Idéal pour tester' },
-  { id: 'pack30', credits: 30, price: 7, priceHT: 5.83, label: 'Boost', emoji: '🚀', desc: 'Le plus populaire', popular: true },
-  { id: 'pack100', credits: 100, price: 19, priceHT: 15.83, label: 'Power', emoji: '⚡', desc: 'Meilleur rapport' },
+  { id: 'ai_topup_250', credits: 250, price: 19, priceHT: 15.83, label: 'Starter', emoji: '🌱', desc: 'Idéal pour tester' },
+  { id: 'ai_topup_750', credits: 750, price: 49, priceHT: 40.83, label: 'Boost', emoji: '🚀', desc: 'Le plus populaire', popular: true },
+  { id: 'ai_topup_2000', credits: 2000, price: 99, priceHT: 82.5, label: 'Power', emoji: '⚡', desc: 'Meilleur rapport' },
 ];
 
 type SelectedPack = { credits: number; price: number; priceHT: number; label: string; id: string } | null;
 
 export function CreditsTopUpSection() {
-  const { credits, limit, usage, addCredits } = useCredits();
+  const { credits, limit, usage, refresh } = useCredits();
   const [selectedPack, setSelectedPack] = useState<SelectedPack>(null);
   const [consent, setConsent] = useState<LegalConsentState>({ cgvAccepted: false, retractionWaived: false });
   const [loading, setLoading] = useState(false);
@@ -32,24 +32,13 @@ export function CreditsTopUpSection() {
     if (!selectedPack || !isLegalConsentValid(consent) || loading) return;
     setLoading(true);
     try {
-      const legalConsent = {
-        cgvAccepted:      true,
-        retractionWaived: true,
-        cgvVersion:       CGV_VERSION,
-        acceptedAt:       new Date().toISOString(),
-        userAgent:        navigator.userAgent,
-      };
-      // Credit packs map to 'pro' plan ID for now (backend will handle one-time via price ID)
-      const result = await createCheckoutSession(selectedPack.id as 'pro' | 'expert', legalConsent);
-      if (result.url && !result.fallback) {
-        window.open(result.url, '_blank', 'noopener,noreferrer');
-        setSelectedPack(null);
-      } else if (result.fallback) {
-        // Stripe not configured: simulate locally
-        addCredits(selectedPack.credits);
-        toast.success(`${selectedPack.credits} crédits IA ajoutés ! 🎉`, {
-          description: 'Ils sont disponibles immédiatement dans votre Cockpit.',
-        });
+      const result = await createOneTimeCheckout(selectedPack.id as 'ai_topup_250' | 'ai_topup_750' | 'ai_topup_2000', {
+        ...consent, cgvVersion: CGV_VERSION, acceptedAt: new Date().toISOString(), userAgent: navigator.userAgent,
+      });
+      if (result.url) {
+        const paymentWindow = window.open(result.url, '_blank', 'noopener,noreferrer');
+        if (!paymentWindow) throw new Error('Autorisez les fenêtres pop-up puis réessayez.');
+        await refresh();
         setSelectedPack(null);
       } else {
         toast.error('Erreur lors du paiement', { description: result.error || 'Réessayez ou contactez le support.' });
@@ -171,49 +160,6 @@ export function CreditsTopUpSection() {
               </div>
             </div>
           )}
-
-          {/* ── Pack Booster Événementiel ── */}
-          <div className="relative rounded-2xl border-2 border-transparent bg-gradient-to-br from-violet-600 via-violet-500 to-emerald-500 p-[2px] shadow-lg shadow-violet-500/20">
-            <div className="rounded-[14px] bg-gradient-to-br from-[#1a0533] via-[#0f1f18] to-[#0b1a14] px-4 py-4 space-y-3">
-              {/* Badge édition limitée */}
-              <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500 to-emerald-400 px-2.5 py-0.5 text-[10px] font-extrabold text-white uppercase tracking-wide shadow">
-                  ⚡ Édition limitée
-                </span>
-                <span className="text-xl font-extrabold text-white">49 €</span>
-              </div>
-
-              {/* Title */}
-              <div>
-                <p className="text-sm font-extrabold text-white leading-tight">Pack Booster Événementiel ⚡</p>
-                <p className="text-[10px] text-violet-300 mt-0.5">Achat unique · Sans abonnement</p>
-              </div>
-
-              {/* Features */}
-              <ul className="space-y-1.5">
-                {[
-                  { icon: <Zap size={11} />, text: '10 crédits publications valables à vie' },
-                  { icon: <Wand2 size={11} />, text: 'Modèle IA spécial Ouverture / Événement / Promo Flash' },
-                  { icon: <Film size={11} />, text: 'Script de Reel d\'inauguration guidé pas à pas' },
-                ].map((f, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5 text-emerald-400">
-                      {f.icon}
-                    </span>
-                    <span className="text-[11px] text-violet-100 leading-snug">{f.text}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA */}
-              <button
-                onClick={() => handleSelectPack({ id: 'pack_booster', credits: 10, price: 49, priceHT: 40.83, label: 'Booster Événementiel', emoji: '⚡', desc: 'Édition limitée' })}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-emerald-500 hover:from-violet-600 hover:to-emerald-600 px-4 py-2.5 text-sm font-extrabold text-white shadow-md transition-all active:scale-95"
-              >
-                <Rocket size={14} /> Booster mon activité 🚀
-              </button>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </>

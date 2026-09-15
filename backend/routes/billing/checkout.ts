@@ -6,6 +6,7 @@
 import { Hono } from 'hono';
 import type { Env } from '../../lib/types';
 import { getBlink, getUserMeta, patchUserMeta } from '../../lib/stripeHelpers';
+import { resolveSubscriptionPlan, TRIAL_DAYS } from '../../../shared/pricingCatalog';
 
 export const router = new Hono();
 
@@ -45,9 +46,8 @@ router.post('/api/billing/checkout', async (c) => {
   const planId = body?.planId;
   const billing: 'monthly' | 'yearly' = body?.billing === 'yearly' ? 'yearly' : 'monthly';
 
-  if (!planId || !['starter', 'agency'].includes(planId)) {
-    return c.json({ error: 'Offre invalide', code: 'INVALID_PLAN' }, 400);
-  }
+  const resolvedPlan = resolveSubscriptionPlan(planId, billing);
+  if (!resolvedPlan) return c.json({ error: 'Offre invalide', code: 'INVALID_PLAN' }, 400);
 
   // 3b. Enforce clickwrap — both boxes must be ticked
   const consent = body?.legalConsent;
@@ -80,8 +80,9 @@ router.post('/api/billing/checkout', async (c) => {
     }
   }
   // Legacy planId without billing → assume monthly
-  priceMap['starter'] = _get(`PRICE_${_plans[0]}_${_billings[0]}_ID`) || _get(['PRICE',_plans[0],'ID'].join('_'));
-  priceMap['agency']  = _get(`PRICE_${_plans[1]}_${_billings[0]}_ID`) || _get(['PRICE',_plans[1],'ID'].join('_'));
+  priceMap['pro'] = _get('PRICE_PRO_MONTHLY_ID');
+  priceMap['multi'] = _get('PRICE_MULTI_MONTHLY_ID');
+  priceMap['agency'] = _get('PRICE_AGENCY_MONTHLY_ID');
   // Legacy aliases (concat to avoid deploy-scanner false positives)
   const _L = ['STRIPE','PRICE','PRO','EXPERT','SOLO','COMMERCE','MONTHLY'];
   priceMap['pro']          = priceMap['starter'] || _get(`${_L[0]}_${_L[1]}_${_L[2]}`) || _get(`${_L[0]}_${_L[1]}_${_L[4]}`);
@@ -138,8 +139,13 @@ router.post('/api/billing/checkout', async (c) => {
     success_url: `${baseUrl}/dashboard?checkout=success&plan=${planId}${renouncedTrial ? '&trial_skipped=1' : ''}`,
     cancel_url:  `${baseUrl}/account?tab=billing`,
     'allow_promotion_codes': 'true',
-    'subscription_data[metadata][planId]': planId,
-    'subscription_data[metadata][billing]': billing,
+    'metadata[user_id]': auth.userId,
+    'metadata[plan_id]': planId,
+    'metadata[billing_interval]': billing,
+    'metadata[checkout_type]': 'subscription',
+    'subscription_data[metadata][user_id]': auth.userId,
+    'subscription_data[metadata][plan_id]': planId,
+    'subscription_data[metadata][billing_interval]': billing,
   });
 
   // If user renounces trial → no trial period (immediate billing from first minute).
@@ -148,7 +154,7 @@ router.post('/api/billing/checkout', async (c) => {
     // Do NOT set trial_period_days → Stripe bills immediately
     sessionParams.set('subscription_data[metadata][trial_renounced]', 'true');
   } else {
-    sessionParams.set('subscription_data[trial_period_days]', '7');
+    sessionParams.set('subscription_data[trial_period_days]', String(TRIAL_DAYS));
   }
 
   // Enable Stripe Tax if customer exists and VAT info is available

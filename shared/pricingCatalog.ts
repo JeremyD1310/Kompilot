@@ -1,7 +1,7 @@
 export type BillingInterval = 'monthly' | 'yearly'
-export type SubscriptionPlanId = 'pro' | 'multi' | 'agency'
+export type SubscriptionPlanId = 'starter' | 'agency'
 export type CommercialPlanId = 'trial' | 'pilot' | SubscriptionPlanId | 'enterprise'
-export type PricingProductId = SubscriptionPlanId | 'enterprise' | 'pilot_guided_99' | 'ai_topup_250' | 'ai_topup_750' | 'ai_topup_2000' | 'sms_topup_100' | 'sms_topup_500' | 'sms_topup_1500' | 'addon_user_pro' | 'addon_user_multi' | 'addon_user_agency' | 'addon_establishment_multi' | 'addon_establishment_agency' | 'service_onboarding' | 'service_local_audit' | 'service_analytics_setup' | 'service_team_training' | 'service_editorial_launch' | 'service_custom_quote'
+export type PricingProductId = SubscriptionPlanId | 'enterprise' | 'pilot_guided_99' | 'ai_topup_250' | 'ai_topup_750' | 'ai_topup_2000' | 'sms_topup_100' | 'sms_topup_500' | 'sms_topup_1500' | 'addon_user_starter' | 'addon_user_agency' | 'addon_establishment_agency' | 'service_onboarding' | 'service_local_audit' | 'service_analytics_setup' | 'service_team_training' | 'service_editorial_launch' | 'service_custom_quote'
 
 export const PRICING_CATALOG_VERSION = 'pricing-2026-09-15-v2'
 export const TRIAL_DAYS = 14
@@ -47,8 +47,7 @@ export const TRIAL_AND_PILOT_PLANS: readonly TrialPlanDefinition[] = [
 export const COMMERCIAL_PLAN_ENTITLEMENTS: Readonly<Record<CommercialPlanId, PlanEntitlements | null>> = {
   trial: TRIAL_AND_PILOT_PLANS[0].entitlements,
   pilot: TRIAL_AND_PILOT_PLANS[1].entitlements,
-  pro: { users: 2, aiCredits: 500, smsCredits: 50, establishments: 1 },
-  multi: { users: 5, aiCredits: 1500, smsCredits: 200, establishments: 3 },
+  starter: { users: 2, aiCredits: 500, smsCredits: 50, establishments: 1 },
   agency: { users: 15, aiCredits: 5000, smsCredits: 500, establishments: 10 },
   enterprise: null,
 }
@@ -88,21 +87,14 @@ export const CREDIT_ALERT_THRESHOLDS = [50, 80, 100] as const
 
 export const SUBSCRIPTION_PLANS: readonly SubscriptionPlanDefinition[] = [
   {
-    id: 'pro', name: 'Kompilot Pro', monthlyPriceEurHt: 69, annualPriceEurHt: 690,
+    id: 'starter', name: 'Kompilot Starter', monthlyPriceEurHt: 69, annualPriceEurHt: 690,
     entitlements: { users: 2, aiCredits: 500, smsCredits: 50, establishments: 1 },
     target: 'TPE, indépendants et commerçants avec un établissement.', tagline: 'Le cockpit essentiel pour piloter votre présence locale.',
     features: ['2 utilisateurs nominatifs', '500 crédits IA / mois', '50 crédits SMS / mois', '1 établissement', 'Validation humaine avant diffusion', 'Rôles propriétaire, administrateur et membre', 'Support standard'],
     comparison: { establishments: '1', users: '2', ai: '500 / mois', sms: '50 / mois', content: 'Inclus', reviews: 'Inclus', messages: 'Inclus', geo: 'Inclus', reports: 'Standards', whiteLabel: '—', multiClient: '—', support: 'Standard', onboarding: 'Guides produit' },
   },
   {
-    id: 'multi', name: 'Kompilot Multi', monthlyPriceEurHt: 129, annualPriceEurHt: 1290,
-    entitlements: { users: 5, aiCredits: 1500, smsCredits: 200, establishments: 3 },
-    target: 'PME et réseaux locaux gérant plusieurs établissements.', tagline: 'Une vision consolidée pour coordonner plusieurs établissements.',
-    features: ['5 utilisateurs nominatifs', '1 500 crédits IA / mois', '200 crédits SMS / mois', '3 établissements inclus', '29 € HT / établissement supplémentaire jusqu’à 5', 'Rapports consolidés', 'Support prioritaire'],
-    comparison: { establishments: '3 inclus · 5 max', users: '5', ai: '1 500 / mois', sms: '200 / mois', content: 'Inclus', reviews: 'Centralisés', messages: 'Centralisés', geo: 'Inclus', reports: 'Consolidés', whiteLabel: '—', multiClient: '—', support: 'Prioritaire', onboarding: 'Guidé' },
-  },
-  {
-    id: 'agency', name: 'Kompilot Agency', monthlyPriceEurHt: 229, annualPriceEurHt: 2290,
+    id: 'agency', name: 'Kompilot Agency', monthlyPriceEurHt: 149, annualPriceEurHt: 1490,
     entitlements: { users: 15, aiCredits: 5000, smsCredits: 500, establishments: 10 },
     target: 'Agences, consultants multi-clients et réseaux.', tagline: 'La vue multi-clients et la marque blanche pour les équipes qui déploient.',
     features: ['15 utilisateurs nominatifs', '5 000 crédits IA / mois', '500 crédits SMS / mois', '10 établissements inclus', '15 € HT / établissement supplémentaire de 11 à 25', 'Marque blanche, multi-clients et validation', 'Support prioritaire et onboarding initial'],
@@ -124,10 +116,8 @@ export const ONE_TIME_PRODUCTS: readonly OneTimeProductDefinition[] = [
   { id: 'sms_topup_100', name: 'Recharge 100 crédits SMS', amountEurHt: 15, productType: 'topup', creditType: 'sms', creditAmount: 100, creditEligible: true, description: 'Recharge ponctuelle valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement automatique' },
   { id: 'sms_topup_500', name: 'Recharge 500 crédits SMS', amountEurHt: 59, productType: 'topup', creditType: 'sms', creditAmount: 500, creditEligible: true, description: 'Recharge ponctuelle valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement automatique' },
   { id: 'sms_topup_1500', name: 'Recharge 1 500 crédits SMS', amountEurHt: 149, productType: 'topup', creditType: 'sms', creditAmount: 1500, creditEligible: true, description: 'Recharge ponctuelle valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement automatique' },
-  { id: 'addon_user_pro', name: 'Utilisateur supplémentaire — Pro', amountEurHt: 9, productType: 'addon', recurring: true, description: 'Un accès nominatif supplémentaire par mois.', paymentRule: 'Renouvellement mensuel avec l’abonnement' },
-  { id: 'addon_user_multi', name: 'Utilisateur supplémentaire — Multi', amountEurHt: 8, productType: 'addon', recurring: true, description: 'Un accès nominatif supplémentaire par mois.', paymentRule: 'Renouvellement mensuel avec l’abonnement' },
+  { id: 'addon_user_starter', name: 'Utilisateur supplémentaire — Starter', amountEurHt: 9, productType: 'addon', recurring: true, description: 'Un accès nominatif supplémentaire par mois.', paymentRule: 'Renouvellement mensuel avec l’abonnement' },
   { id: 'addon_user_agency', name: 'Utilisateur supplémentaire — Agency', amountEurHt: 6, productType: 'addon', recurring: true, description: 'Un accès nominatif supplémentaire par mois.', paymentRule: 'Renouvellement mensuel avec l’abonnement' },
-  { id: 'addon_establishment_multi', name: 'Établissement supplémentaire — Multi', amountEurHt: 29, productType: 'addon', recurring: true, description: 'Un établissement supplémentaire, dans la limite de cinq.', paymentRule: 'Renouvellement mensuel avec l’abonnement' },
   { id: 'addon_establishment_agency', name: 'Établissement supplémentaire — Agency', amountEurHt: 15, productType: 'addon', recurring: true, description: 'Un établissement supplémentaire entre 11 et 25.', paymentRule: 'Renouvellement mensuel avec l’abonnement' },
   { id: 'service_onboarding', name: 'Paramétrage et onboarding complet', amountEurHt: 199, productType: 'service', description: 'Mise en place guidée de votre espace.', paymentRule: 'Paiement intégral à la commande' },
   { id: 'service_local_audit', name: 'Audit SEO local et GEO', amountEurHt: 390, productType: 'service', description: 'Analyse documentée de votre visibilité.', paymentRule: 'Paiement intégral à la commande' },

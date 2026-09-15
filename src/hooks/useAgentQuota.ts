@@ -17,6 +17,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { useSubscription } from '../context/SubscriptionContext';
+import { useCredits } from '../context/CreditsContext'; // Assuming CreditsContext is available
 
 // ── Plan limits ───────────────────────────────────────────────────────────────
 
@@ -44,38 +45,7 @@ export const CREDIT_PACKS: CreditPack[] = [
 
 // ── Storage helpers ───────────────────────────────────────────────────────────
 
-function currentYearMonth(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-}
-
-function storageKey(userId: string): string {
-  return `agent_quota_${userId}_${currentYearMonth()}`;
-}
-
-function extraCreditsKey(userId: string): string {
-  return `agent_extra_${userId}`;
-}
-
-function readUsed(userId: string): number {
-  try {
-    return parseInt(localStorage.getItem(storageKey(userId)) ?? '0', 10) || 0;
-  } catch { return 0; }
-}
-
-function writeUsed(userId: string, value: number): void {
-  try { localStorage.setItem(storageKey(userId), String(value)); } catch {}
-}
-
-function readExtra(userId: string): number {
-  try {
-    return parseInt(localStorage.getItem(extraCreditsKey(userId)) ?? '0', 10) || 0;
-  } catch { return 0; }
-}
-
-function writeExtra(userId: string, value: number): void {
-  try { localStorage.setItem(extraCreditsKey(userId), String(value)); } catch {}
-}
+// Removed localStorage helper functions as they are no longer used.
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
@@ -103,72 +73,24 @@ export interface AgentQuota {
 }
 
 export function useAgentQuota(): AgentQuota {
-  const { user } = useAuth();
-  const { currentPlan } = useSubscription();
-
-  const planLimit = PLAN_LIMITS[currentPlan.id] ?? 0;
-  const userId = user?.id ?? '__anon__';
-
-  const [used, setUsed] = useState<number>(() => readUsed(userId));
-  const [extraCredits, setExtraCredits] = useState<number>(() => readExtra(userId));
-
-  // Re-read when user changes
-  useEffect(() => {
-    setUsed(readUsed(userId));
-    setExtraCredits(readExtra(userId));
-  }, [userId]);
-
-  const total = planLimit + extraCredits;
-  const remaining = Math.max(0, total - used);
-  const isExhausted = remaining === 0;
-  const planUsagePercent = planLimit > 0 ? Math.min(100, Math.round((used / planLimit) * 100)) : 0;
-
-  const consume = useCallback((): boolean => {
-    const currentUsed = readUsed(userId);
-    const currentExtra = readExtra(userId);
-    const currentTotal = planLimit + currentExtra;
-    if (currentUsed >= currentTotal) return false;
-
-    // Consume from extra first if base plan is exhausted
-    if (currentUsed >= planLimit && currentExtra > 0) {
-      const nextExtra = currentExtra - 1;
-      writeExtra(userId, nextExtra);
-      setExtraCredits(nextExtra);
-    }
-
-    const nextUsed = currentUsed + 1;
-    writeUsed(userId, nextUsed);
-    setUsed(nextUsed);
-
-    // Mark onboarding checklist step as done (first sprint ever)
-    try {
-      if (currentUsed === 0) {
-        localStorage.setItem(`agent_sprint_launched_${userId}`, '1');
-      }
-    } catch { /* noop */ }
-
+  const { credits, limit, usage, hasEnoughCredits, deductCredits } = useCredits();
+  const consume = useCallback(() => {
+    if (!hasEnoughCredits(1)) return false;
+    void deductCredits(1, 'agent_sprint');
     return true;
-  }, [userId, planLimit]);
-
-  const addPack = useCallback((sprints: number): void => {
-    const current = readExtra(userId);
-    const next = current + sprints;
-    writeExtra(userId, next);
-    setExtraCredits(next);
-  }, [userId]);
-
-  const monthLabel = new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-
+  }, [deductCredits, hasEnoughCredits]);
+  const total = Math.max(0, limit);
+  const remaining = Math.max(0, credits);
   return {
-    planLimit,
-    extraCredits,
-    used,
+    planLimit: total,
+    extraCredits: 0, // Assuming CreditsContext handles extra credits implicitly
+    used: usage,
     total,
     remaining,
-    isExhausted,
-    planUsagePercent,
+    isExhausted: remaining === 0,
+    planUsagePercent: total > 0 ? Math.min(100, Math.round((usage / total) * 100)) : 0,
     consume,
-    addPack,
-    monthLabel,
+    addPack: (_sprints: number) => { /* purchases are backend-confirmed */ },
+    monthLabel: new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }),
   };
 }

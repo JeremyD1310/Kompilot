@@ -1,12 +1,12 @@
 import { blink } from '../blink/client';
 import { backendFetch } from './backend';
 
-export async function consumeContentQuotaClient(action: string, amount = 1) {
+export async function consumeContentQuotaClient(action: string, amount = 1, idempotencyKey = `content:${action}:${crypto.randomUUID()}`) {
   const token = await blink.auth.getValidToken();
   const response = await backendFetch('/api/content-credits/consume', {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount, action }),
+    body: JSON.stringify({ amount, action, idempotencyKey }),
   }, 10000);
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {

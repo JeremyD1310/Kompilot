@@ -47,6 +47,8 @@ router.post('/api/billing/one-time-checkout', async (c) => {
     'metadata[product_type]': product.definition.productType,
     'metadata[pilot_days]': String(product.definition.pilotDays ?? ''),
     'metadata[credit_eligible]': String(product.definition.creditEligible === true),
+    'metadata[credit_type]': String(product.definition.creditType ?? ''),
+    'metadata[credit_amount]': String(product.definition.creditAmount ?? ''),
     'metadata[legal_consent]': 'accepted',
     'metadata[legal_consent_version]': CGV_VERSION,
     'payment_intent_data[metadata][product_id]': product.productId,

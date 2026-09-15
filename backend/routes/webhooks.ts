@@ -356,8 +356,9 @@ router.post('/api/webhooks/stripe', async (c) => {
       console.warn(`[webhook] checkout.completed → user ${userId} subscribed${finalPlanId ? ` to plan: ${finalPlanId}` : ''} [${finalBilling}]`);
     }
 
-    // credit-pack one-time payment → grant AI credits to establishment
-    if (userId && session.mode === 'payment' && session.metadata?.creditPack === 'true') {
+    // Canonical one-time products only. Legacy creditPack metadata is ignored so
+    // old checkout flows cannot mint generic AI balance outside the ledger.
+    if (userId && session.mode === 'payment' && session.metadata?.credit_eligible === 'true' && session.metadata?.product_id) {
       // AIO + Creative Studio pack (29€) → grant Luma AI + SerpApi credits
       if (session.metadata?.packType === 'aio_creative') {
         const lumaCredits = Number(session.metadata?.lumaCredits) || 50;
@@ -365,8 +366,8 @@ router.post('/api/webhooks/stripe', async (c) => {
         await handleAioCreditPackGrant(blink, userId, lumaCredits, serpapiCredits);
       } else {
         // Legacy credit pack → grant generic AI credits
-        const creditsToAdd = Number(session.metadata?.credits) || 0;
-        await handleCreditPackGrant(blink, userId, creditsToAdd);
+        const creditsToAdd = Number(session.metadata?.credit_amount ?? session.metadata?.credits) || 0;
+        await handleCreditPackGrant(blink, userId, creditsToAdd, `stripe:${event.data.object.id}`);
       }
     }
   }
