@@ -88,7 +88,7 @@ export async function findUserByCustomer(
 
 // ── Plan resolution ───────────────────────────────────────────────────────────
 
-export type PlanId = 'pro' | 'multi' | 'agency' | 'starter' | 'enterprise';
+export type PlanId = 'starter' | 'agency' | 'enterprise';
 export type BillingInterval = 'monthly' | 'yearly';
 
 /** Maps Stripe price IDs (from env vars) to plan + billing metadata */
@@ -102,13 +102,7 @@ export function resolvePriceToPlan(
     const pid = env[key];
     if (pid) priceMap[pid] = { planId, billing };
   };
-  // Canonical 2026 prices. Legacy aliases below remain intentionally supported.
-  for (const plan of ['PRO', 'MULTI', 'AGENCY'] as const) {
-    for (const int of ['MONTHLY', 'YEARLY'] as const) {
-      add(`PRICE_${plan}_${int}_ID`, plan.toLowerCase() as PlanId, int.toLowerCase() as BillingInterval);
-    }
-  }
-  // Legacy billing-aware price IDs
+  // Billing-aware price IDs
   for (const plan of ['STARTER', 'AGENCY'] as const) {
     for (const int of ['MONTHLY', 'YEARLY'] as const) {
       const p = plan.toLowerCase() as PlanId;
@@ -130,8 +124,6 @@ export function resolvePriceToPlan(
 /** Map planId to its allowed feature tier (hierarchical: agency > starter) */
 const PLAN_TIER: Record<PlanId, number> = {
   starter: 1,
-  pro: 1,
-  multi: 2,
   agency: 2,
   enterprise: 3,
 };

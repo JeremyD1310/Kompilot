@@ -108,8 +108,6 @@ export function InsufficientCreditsModal({ open, onClose, required, current }: I
 
               {/* Body */}
               <div className="px-5 pb-5 space-y-4">
-                <p className="text-sm font-semibold text-foreground">Cette action utilisera {required} crédits IA. Il vous restera {Math.max(0, current - required)} crédits.</p>
-
                 {/* Credit deficit visualization */}
                 <div className="rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-950/20 p-4 space-y-2">
                   <div className="flex items-center justify-between text-xs">
@@ -175,15 +173,14 @@ export function useCreditGuard({ cost, action }: CreditGuardOptions) {
 
   const currentBalance = isDemoActive ? 999 : (typeof credits === 'number' ? credits : 999);
 
-  const guard = async (callback: () => void | boolean | Promise<void | boolean>) => {
+  const guard = (callback: () => void) => {
     if (!hasEnoughCredits(cost)) {
       setShowModal(true);
       return false;
     }
-    const result = await callback();
-    if (result === false) return false;
     deductCredits(cost);
     recordCreditSpend(cost, action);
+    callback();
     return true;
   };
 
@@ -196,5 +193,5 @@ export function useCreditGuard({ cost, action }: CreditGuardOptions) {
     />
   );
 
-  return { guard, modalNode, canAfford: hasEnoughCredits(cost), validationMessage: `Cette action utilisera ${cost} crédits IA. Il vous restera ${Math.max(0, currentBalance - cost)} crédits.` };
+  return { guard, modalNode, canAfford: hasEnoughCredits(cost) };
 }

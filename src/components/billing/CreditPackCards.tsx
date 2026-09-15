@@ -6,8 +6,7 @@
 import { useState } from 'react';
 import { Card, CardContent, Button, Badge, toast } from '@blinkdotnew/ui';
 import { Zap, Loader2, Crown, Star } from 'lucide-react';
-import { createOneTimeCheckout, type CheckoutLegalConsent } from '../../lib/billingClient';
-import { ONE_TIME_PRODUCTS, type PricingProductId } from '../../../shared/pricingCatalog';
+import { createContentPackCheckout } from '../../lib/billingClient';
 
 interface PackOption {
   id: 'small' | 'medium' | 'large';
@@ -21,9 +20,9 @@ interface PackOption {
 }
 
 const PACKS: PackOption[] = [
-  { id: 'small', name: '250 crédits IA', credits: 250, price: 19, priceLabel: '19 €', perCredit: '0,08 € / crédit' },
-  { id: 'medium', name: '750 crédits IA', credits: 750, price: 49, priceLabel: '49 €', perCredit: '0,07 € / crédit' },
-  { id: 'large', name: '2 000 crédits IA', credits: 2000, price: 99, priceLabel: '99 €', perCredit: '0,05 € / crédit', highlighted: true, badgeLabel: 'Meilleure valeur' },
+  { id: 'small', name: 'Small', credits: 15, price: 4.99, priceLabel: '4,99 €', perCredit: '0,33 € / crédit' },
+  { id: 'medium', name: 'Medium', credits: 30, price: 7.99, priceLabel: '7,99 €', perCredit: '0,27 € / crédit' },
+  { id: 'large', name: 'Large', credits: 80, price: 14.99, priceLabel: '14,99 €', perCredit: '0,19 € / crédit', highlighted: true, badgeLabel: 'Meilleure valeur' },
 ];
 
 export function CreditPackCards() {
@@ -32,9 +31,7 @@ export function CreditPackCards() {
   const handlePurchase = async (pack: PackOption) => {
     setPurchasingId(pack.id);
     try {
-      const productId = ({ small: 'ai_topup_250', medium: 'ai_topup_750', large: 'ai_topup_2000' } as const)[pack.id];
-      const legalConsent: CheckoutLegalConsent = { cgvAccepted: true, retractionWaived: true, cgvVersion: '2026-09-15', acceptedAt: new Date().toISOString(), userAgent: navigator.userAgent };
-      const result = await createOneTimeCheckout(productId, legalConsent);
+      const result = await createContentPackCheckout(pack.id);
       if (!result.url) throw new Error(result.error || 'Erreur lors de la création du paiement');
       const paymentWindow = window.open(result.url, '_blank', 'noopener,noreferrer');
       if (!paymentWindow) throw new Error('Autorisez les fenêtres pop-up puis réessayez.');

@@ -1,19 +1,8 @@
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { useSubscription } from './SubscriptionContext';
 import { useDemoMode, DEMO_CREDIT_TOTAL } from './DemoModeContext';
-import { SUBSCRIPTION_PLANS } from '../../shared/pricingCatalog';
+import { PLAN_CREDITS } from '../lib/creditsCosts';
 import { blink } from '../blink/client';
-import { isDemoRuntime } from '../lib/demoDomain';
-
-const API_BASE = 'https://gbrhsehk.backend.blink.new';
-
-async function creditsRequest(path: string, init?: RequestInit) {
-  const token = await blink.auth.getValidToken().catch(() => null);
-  if (!token) return null;
-  const response = await fetch(`${API_BASE}${path}`, { ...init, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...(init?.headers ?? {}) } });
-  if (!response.ok) return null;
-  return response.json();
-}
 
 // ── Monthly usage key ─────────────────────────────────────────────────────────
 const USAGE_KEY_BASE = 'kompilot_usage_v2';
@@ -52,9 +41,7 @@ function persistUsage(data: StoredUsage, userId: string | null = null) {
   try { localStorage.setItem(getScopedUsageKey(userId), JSON.stringify(data)); } catch { /* noop */ }
 }
 
-const PLAN_LIMITS: Record<string, number> = Object.fromEntries(
-  SUBSCRIPTION_PLANS.map(plan => [plan.id, plan.entitlements.aiCredits ?? 0]),
-);
+const PLAN_LIMITS: Record<string, number> = PLAN_CREDITS;
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -89,45 +76,89 @@ export function CreditsProvider({ children }: { children: ReactNode }) {
     demoCreditsUsed,
     consumeDemoCredits,
   } = useDemoMode();
-  const limit = PLAN_LIMITS[currentPlan.id] ?? 0;
-  const [serverBalance, setServerBalance] = useState<number | null>(null);
-  const [serverUsed, setServerUsed] = useState(0);
+  const limit = PLAN_LIMITS[currentPlan.id] ?? 3;
 
-  const refreshBalance = async () => {
-    const data = await creditsRequest('/api/credits/balance');
-    if (data) {
-      setServerBalance(Number(data.balance ?? data.remaining ?? 0));
-      setServerUsed(Number(data.usedThisMonth ?? 0));
-    }
-  };
+  const [userId, setUserId] = useState<string | null>(() => {
+    try { return localStorage.getItem('blink_user_id'); } catch { return null; }
+  });
 
+  // Track userId from auth state for key scoping
   useEffect(() => {
-    if (!isDemoRuntime() && blink.auth.isAuthenticated()) refreshBalance();
+    const unsub = blink.auth.onAuthStateChanged((state) => {
+      const uid = state.user?.id ?? null;
+      setUserId(uid);
+      if (!uid) {
+        // Reset credits on logout to prevent data leakage
+        const fresh: StoredUsage = { month: getCurrentMonth(), used: 0 };
+        setStored(fresh);
+        persistUsage(fresh, uid); // Persist reset for anon user
+      }
+    });
+    return unsub;
   }, []);
 
+  const [stored, setStored] = useState<StoredUsage>(() => {
+    const uid = (() => { try { return localStorage.getItem('blink_user_id'); } catch { return null; } })();
+    return readStored(uid);
+  });
+
+  // Monthly reset — re-check each render cycle
+  useEffect(() => {
+    const current = getCurrentMonth();
+    if (stored.month !== current) {
+      const fresh: StoredUsage = { month: current, used: 0 };
+      setStored(fresh);
+      persistUsage(fresh, userId);
+    }
+  }, [stored.month, userId]); // Depend on userId to re-apply reset if user changes
+
+  // Reset when plan changes
+  const prevPlanRef = useRef(currentPlan.id);
+  useEffect(() => {
+    if (prevPlanRef.current === currentPlan.id) return;
+    prevPlanRef.current = currentPlan.id;
+    const fresh: StoredUsage = { month: getCurrentMonth(), used: 0 };
+    setStored(fresh);
+    persistUsage(fresh, userId);
+  }, [currentPlan.id, userId]); // Depend on userId to re-apply reset if user changes
+
   // ── Demo mode: use the 50-credit demo pool ───────────────────────────────────
-  const usage = isDemoActive ? demoCreditsUsed : serverUsed;
-  const effectiveLimit = isDemoActive ? DEMO_CREDIT_TOTAL : (serverBalance ?? 0) + serverUsed;
-  const remaining = isDemoActive ? Math.max(0, effectiveLimit - usage) : (serverBalance ?? 0);
-  const canCreate = remaining > 0;
+  const usage = isDemoActive ? demoCreditsUsed : stored.used;
+  const effectiveLimit = isDemoActive ? DEMO_CREDIT_TOTAL : limit;
+  const canCreate = usage < effectiveLimit;
 
   const increment = (): boolean => {
     if (isDemoActive) return consumeDemoCredits(1);
-    void creditsRequest('/api/credits/consume', { method: 'POST', body: JSON.stringify({ amount: 1, type: 'ai' }) }).then(refreshBalance);
-    return canCreate;
+    if (!canCreate) return false;
+    const next: StoredUsage = { ...stored, used: stored.used + 1 };
+    setStored(next);
+    persistUsage(next, userId);
+    return true;
   };
 
   const deductCredits = (n: number): boolean => {
     if (isDemoActive) return consumeDemoCredits(n);
+    const remaining = effectiveLimit - stored.used;
     if (remaining < n) return false;
-    void creditsRequest('/api/credits/consume', { method: 'POST', body: JSON.stringify({ amount: n, type: 'ai' }) }).then(refreshBalance);
+    const next: StoredUsage = { ...stored, used: stored.used + n };
+    setStored(next);
+    persistUsage(next, userId);
     return true;
   };
 
-  const hasEnoughCredits = (n: number): boolean => remaining >= n;
-  const credits: CreditsValue = remaining;
+  const hasEnoughCredits = (n: number): boolean => {
+    return (effectiveLimit - usage) >= n;
+  };
+
+  // Legacy compat: credits = remaining = limit - used
+  const credits: CreditsValue = Math.max(0, effectiveLimit - usage);
   const deductCredit = increment;
-  const addCredits = (_n: number) => { /* Authenticated balances are server-authoritative; checkout/webhooks add credits. */ };
+  const addCredits = (n: number) => {
+    if (isDemoActive) return; // no-op in demo mode
+    const next: StoredUsage = { ...stored, used: Math.max(0, stored.used - n) };
+    setStored(next);
+    persistUsage(next, userId);
+  };
   const isEmpty = !canCreate;
 
   return (

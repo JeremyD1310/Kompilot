@@ -14,7 +14,6 @@ import {
 import { getDunningEmailHtml, getDunningFollowUpHtml } from '../lib/emailTemplates';
 import { handleCreditPackGrant } from '../lib/creditPackHandler';
 import { handleAioCreditPackGrant } from '../lib/aioCreditPackHandler';
-import { buildPilotCreditAudit } from '../lib/pilotCredit';
 
 export const router = new Hono();
 
@@ -345,11 +344,6 @@ router.post('/api/webhooks/stripe', async (c) => {
       const resolved = firstPriceId ? resolvePriceToPlan(firstPriceId, rawEnv) : null;
       const finalPlanId  = resolved?.planId ?? planId;
       const finalBilling = resolved?.billing ?? billing;
-      const currentMeta = await getUserMeta(blink, userId);
-      // Metadata is the safe fallback ledger: one annual credit, auditable and idempotent.
-      // It does not alter legacy subscriptions or legacy Stripe prices.
-      const pilotCredit = finalBilling === 'yearly' && currentMeta.pilot_status === 'active'
-        ? buildPilotCreditAudit(currentMeta, finalBilling, session.id) : null;
 
       await patchUserMeta(blink, userId, {
         stripe_customer_id:     customerId,
@@ -358,31 +352,11 @@ router.post('/api/webhooks/stripe', async (c) => {
         grace_period_end:       null,
         billing_interval:       finalBilling,
         ...(finalPlanId ? { plan_id: finalPlanId } : {}),
-        ...(pilotCredit || {}),
       });
       console.warn(`[webhook] checkout.completed → user ${userId} subscribed${finalPlanId ? ` to plan: ${finalPlanId}` : ''} [${finalBilling}]`);
     }
 
     // credit-pack one-time payment → grant AI credits to establishment
-    if (userId && session.mode === 'payment' && session.metadata?.product_id && session.metadata?.product_type) {
-      const productId = String(session.metadata.product_id)
-      const productType = String(session.metadata.product_type)
-      const currentMeta = await getUserMeta(blink, userId)
-      const fulfillmentKey = `purchase_fulfilled_${session.id}`
-      if (currentMeta[fulfillmentKey] !== true) {
-        const fulfilledAt = new Date().toISOString()
-        const pilotStartAt = productType === 'guided_pilot' ? fulfilledAt : null
-        const pilotEndAt = pilotStartAt && Number(session.metadata.pilot_days) > 0
-          ? new Date(Date.parse(pilotStartAt) + Number(session.metadata.pilot_days) * 86400000).toISOString() : null
-        const purchase = { productId, productType, fulfilledAt, pilotStartAt, pilotEndAt }
-        await patchUserMeta(blink, userId, {
-          [fulfillmentKey]: true,
-          last_one_time_purchase: JSON.stringify(purchase),
-          ...(productType === 'guided_pilot' ? { pilot_status: 'active', pilot_start_at: pilotStartAt, pilot_end_at: pilotEndAt, pilot_renews: false } : {}),
-        })
-      }
-    }
-
     if (userId && session.mode === 'payment' && session.metadata?.creditPack === 'true') {
       // AIO + Creative Studio pack (29€) → grant Luma AI + SerpApi credits
       if (session.metadata?.packType === 'aio_creative') {

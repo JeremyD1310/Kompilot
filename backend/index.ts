@@ -128,8 +128,6 @@ import { router as oauthTokensRouter }           from './routes/oauthTokens';
 import { router as llmTrackerRouter }            from './routes/llmTracker';
 import { router as seoAgentRouter }              from './routes/seoAgent';
 import { router as referralRewardsRouter }        from './routes/referralRewards';
-import { router as creditsRouter }                 from './routes/credits';
-import { router as teamRouter }                    from './routes/team';
 import { requireRole }                           from './lib/rbacMiddleware';
 import { createClient }                          from '@blinkdotnew/sdk';
 
@@ -160,8 +158,7 @@ const requireInternalSecret = async (c: any, next: any) => {
 };
 
 // Sensitive RBAC checks must run before route modules are mounted.
-// Billing self-service endpoints authenticate the caller in their route modules;
-// only team/admin mutations use the admin permission gate here.
+app.use('/api/billing/*', requireRole('admin'));
 app.use('/api/team/*', requireRole('admin'));
 app.use('/api/admin/*', requireRole('admin'));
 app.use('/api/queues/init', requireInternalSecret);
@@ -264,8 +261,6 @@ app.route('/', oauthTokensRouter);
 app.route('/', llmTrackerRouter);
 app.route('/', seoAgentRouter);
 app.route('/', referralRewardsRouter);
-app.route('/', creditsRouter);
-app.route('/', teamRouter);
 
 // ── RBAC enforcement on sensitive routes ─────────────────────────────────────
 // Billing: admin only (prevents members/guests from changing plans)

@@ -1,19 +1,49 @@
-/** Customer-facing AI action prices. Provider costs and margins stay server-side. */
+/**
+ * CreditCostTable — Static table showing credit costs per action type.
+ * Displays action name, cost, estimation, and margin.
+ */
+
 import { Card, CardHeader, CardTitle, CardContent } from '@blinkdotnew/ui';
 import { Zap, FileText, Brain, Share2, Video } from 'lucide-react';
-import { AI_CREDIT_COSTS, CREDIT_ACTION_LABELS, type CreditActionId } from '../../../shared/pricingCatalog';
 
-const ACTION_ICONS: Record<CreditActionId, typeof FileText> = {
-  short_text: FileText, review_reply: FileText, message_reply: FileText, full_post: Share2,
-  email_sequence: FileText, long_article: FileText, image_generation: Brain, local_seo_analysis: Brain,
-  geo_visibility_scan: Brain, short_video: Video, full_ai_report: Brain,
-};
-const ACTION_COLORS = ['text-emerald-600', 'text-sky-600', 'text-violet-600', 'text-amber-600'];
-const ACTION_BACKGROUNDS = ['bg-emerald-50 dark:bg-emerald-950/30', 'bg-sky-50 dark:bg-sky-950/30', 'bg-violet-50 dark:bg-violet-950/30', 'bg-amber-50 dark:bg-amber-950/30'];
-const COST_ROWS = (Object.keys(AI_CREDIT_COSTS) as CreditActionId[]).map((action, index) => ({
-  icon: ACTION_ICONS[action], action: CREDIT_ACTION_LABELS[action], cost: `${AI_CREDIT_COSTS[action]} crédit${AI_CREDIT_COSTS[action] > 1 ? 's' : ''}`,
-  color: ACTION_COLORS[index % ACTION_COLORS.length], bgColor: ACTION_BACKGROUNDS[index % ACTION_BACKGROUNDS.length],
-}));
+const COST_ROWS = [
+  {
+    icon: FileText,
+    action: 'Génération texte / post',
+    cost: '1 crédit',
+    estimation: '~0,01 €',
+    margin: '>85%',
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-50 dark:bg-emerald-950/30',
+  },
+  {
+    icon: Brain,
+    action: 'Analyse IA / Audit',
+    cost: '3 crédits',
+    estimation: '~0,05 €',
+    margin: '~80%',
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50 dark:bg-blue-950/30',
+  },
+  {
+    icon: Share2,
+    action: 'Automatisation multi-canal',
+    cost: '5 crédits',
+    estimation: '~0,10 €',
+    margin: '>90%',
+    color: 'text-violet-600',
+    bgColor: 'bg-violet-50 dark:bg-violet-950/30',
+  },
+  {
+    icon: Video,
+    action: 'Génération vidéo (Tavus)',
+    cost: '10 crédits',
+    estimation: '~0,46 €',
+    margin: '~42%',
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-50 dark:bg-amber-950/30',
+  },
+];
 
 export function CreditCostTable() {
   return (
@@ -32,7 +62,8 @@ export function CreditCostTable() {
               <tr className="border-b border-border">
                 <th className="text-left font-semibold text-muted-foreground pb-2.5 pr-4">Action</th>
                 <th className="text-center font-semibold text-muted-foreground pb-2.5 px-4">Coût</th>
-                <th className="text-right font-semibold text-muted-foreground pb-2.5 pl-4">Unité</th>
+                <th className="text-center font-semibold text-muted-foreground pb-2.5 px-4">Estimation</th>
+                <th className="text-right font-semibold text-muted-foreground pb-2.5 pl-4">Marge</th>
               </tr>
             </thead>
             <tbody>
@@ -52,7 +83,12 @@ export function CreditCostTable() {
                       {row.cost}
                     </span>
                   </td>
-                  <td className="py-3 pl-4 text-right text-muted-foreground">IA</td>
+                  <td className="py-3 px-4 text-center text-muted-foreground">{row.estimation}</td>
+                  <td className="py-3 pl-4 text-right">
+                    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
+                      {row.margin}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -68,7 +104,7 @@ export function CreditCostTable() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">{row.action}</p>
-                <p className="text-xs text-muted-foreground">Crédits IA · estimation affichée avant validation</p>
+                <p className="text-xs text-muted-foreground">{row.estimation} · Marge {row.margin}</p>
               </div>
               <span className="inline-flex items-center gap-1 text-sm font-bold text-primary shrink-0">
                 <Zap size={12} />
