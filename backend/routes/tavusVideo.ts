@@ -9,8 +9,8 @@
 
 import { Hono } from 'hono';
 import type { Env } from '../lib/types';
-import { getBlink, getUserMeta } from '../lib/stripeHelpers';
-import { consumeExecuteRefund } from '../lib/creditService';
+import { getBlink } from '../lib/stripeHelpers';
+import { consumeExecuteRefund, refundCredits } from '../lib/creditService';
 import { AI_CREDIT_COSTS } from '../../shared/pricingCatalog';
 
 export const router = new Hono();
@@ -33,19 +33,6 @@ interface VideoGeneration {
   createdAt: string;
   updatedAt: string;
   callbackToken: string;
-}
-
-interface CreditTransaction {
-  id: string;
-  userId: string;
-  type: string;
-  actionType: string;
-  creditsDelta: number;
-  balanceAfter: number;
-  description: string;
-  referenceId: string;
-  metadata: string;
-  createdAt: string;
 }
 
 const VIDEO_GENERATION_COST = AI_CREDIT_COSTS.tavus_video_generation;
@@ -87,11 +74,13 @@ router.post('/api/videos/generate', async (c) => {
 
   const replicaId = body.replicaId || rawEnv.TAVUS_DEFAULT_REPLICA_ID as string || '';
   if (!replicaId) return c.json({ error: 'replicaId is required', code: 'NO_REPLICA_ID' }, 400);
-  const callbackToken = crypto.randomUUID();
   const requestId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || crypto.randomUUID();
   // The durable video id is also the ledger reference, so webhook refunds remain
   // linked to the exact charge and retries cannot create a second charge.
   const videoId = `tavus:${auth.userId}:${requestId}`.replace(/[^a-zA-Z0-9:_-]/g, '_').slice(0, 255);
+  const videoTable = blink.db.table<VideoGeneration>('video_generations');
+  const existingVideo = await videoTable.get(videoId);
+  if (existingVideo?.userId === auth.userId) return c.json(existingVideo);
 
   // 4. Deduct credits and execute the Tavus API call and persistence
   const creditReferenceId = videoId;
@@ -102,7 +91,8 @@ router.post('/api/videos/generate', async (c) => {
     'Tavus video generation',
     creditReferenceId,
     async () => {
-      // 5. Call Tavus API
+    const callbackToken = crypto.randomUUID();
+    // 5. Call Tavus API
       const backendUrl = rawEnv.BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
       const callbackUrl = `${backendUrl}/api/webhooks/tavus?token=${encodeURIComponent(callbackToken)}`;
 
@@ -134,7 +124,6 @@ router.post('/api/videos/generate', async (c) => {
       }
 
       // 6. Save record in video_generations table
-      const videoTable = blink.db.table<VideoGeneration>('video_generations');
       await videoTable.create({
         id: videoId,
         userId: auth.userId,
@@ -227,6 +216,7 @@ router.post('/api/webhooks/tavus', async (c) => {
             video.creditsCharged,
             `Auto-refund: Tavus video failed — ${errorMsg}`,
             video.id,
+            'ai',
           );
           refunded = true;
           await videoTable.update(video.id, {

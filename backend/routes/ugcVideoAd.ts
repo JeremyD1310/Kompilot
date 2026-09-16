@@ -11,7 +11,7 @@ import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { generateAIResponse } from '../lib/aiRouter';
-import { consumeExecuteRefund, refundCredits } from '../lib/creditService';
+import { consumeExecuteRefund } from '../lib/creditService';
 
 export const router = new Hono<{ Bindings: Env }>();
 
@@ -83,9 +83,20 @@ router.post('/api/ugc-video-ad/analyze', async (c) => {
   }
 
   const blink = getBlink(env);
-  const projectId = crypto.randomUUID();
+  const requestId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || crypto.randomUUID();
+  const projectId = `ugc:${userId}:${requestId}`.replace(/[^a-zA-Z0-9:_-]/g, '_').slice(0, 255);
   const productName = body.productName || 'Produit';
-  const creditReferenceId = `ugc-analyze:${userId}:${projectId}`;
+  const creditReferenceId = `ugc-analyze:${userId}:${requestId}`;
+  const projectTable = blink.db.table<UGCVideoProject>('ugc_video_projects');
+  let existingProject: UGCVideoProject | null = null;
+  try { existingProject = await projectTable.get(projectId); } catch { /* first request or unavailable durable row */ }
+  if (existingProject?.userId === userId) {
+    let existingScripts: UGCVideoScript[] = [];
+    let existingVariants: VideoVariant[] = [];
+    try { existingScripts = JSON.parse(existingProject.scripts); } catch { /* durable row is malformed */ }
+    try { existingVariants = JSON.parse(existingProject.videoVariants); } catch { /* durable row is malformed */ }
+    return c.json({ projectId, scripts: existingScripts, videoVariants: existingVariants, creditsCost: existingProject.creditsCost, replayed: true });
+  }
 
   try {
     const charged = await consumeExecuteRefund(
@@ -202,7 +213,6 @@ Retourne un tableau JSON de scripts avec cette structure EXACTE:
         }
 
         const videoVariants: VideoVariant[] = scripts.map((_, i) => ({ index: i, status: 'pending', generationId: '', videoUrl: '', aspectRatio: '9:16', visualPrompt: '', errorMessage: '' }));
-        const projectTable = blink.db.table<UGCVideoProject>('ugc_video_projects');
         await projectTable.create({ id: projectId, userId, productImageUrl: body.productImageUrl, productDescription: body.productDescription, productName, status: 'scripts_ready', scripts: JSON.stringify(scripts), videoVariants: JSON.stringify(videoVariants), creditsCost: 1 });
 
         try {
@@ -226,6 +236,7 @@ Retourne un tableau JSON de scripts avec cette structure EXACTE:
     return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
   } catch (error: any) {
     console.error('[UgcVideoAd] analyze error:', error);
+    if (error?.message === 'IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT') return c.json({ error: 'Replay result is not available yet' }, 409);
     if (error?.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Crédits épuisés.', creditsLeft: 0 }, 402);
     return c.json({ error: error?.message ?? 'UGC analysis failed' }, 500);
   }
@@ -283,6 +294,10 @@ router.post('/api/ugc-video-ad/generate', async (c) => {
 
   const generationId = crypto.randomUUID();
   const creditReferenceId = `ugc-video:${body.projectId}:${variantIndex}`;
+  const currentVariant = videoVariants[variantIndex];
+  if (currentVariant?.generationId && ['queued', 'processing', 'completed', 'failed'].includes(currentVariant.status)) {
+    return c.json({ mode: 'async', projectId: body.projectId, variantIndex, status: currentVariant.status, generationId: currentVariant.generationId, videoUrl: currentVariant.videoUrl, errorMessage: currentVariant.errorMessage, replayed: true });
+  }
 
   try {
     const charged = await consumeExecuteRefund(
@@ -334,6 +349,7 @@ router.post('/api/ugc-video-ad/generate', async (c) => {
     return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
   } catch (error: any) {
     console.error('[UgcVideoAd] Queue enqueue failed:', error);
+    if (error?.message === 'IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT') return c.json({ error: 'Replay result is not available yet' }, 409);
     videoVariants[variantIndex].status = 'failed';
     videoVariants[variantIndex].errorMessage = error?.message ?? 'Queue enqueue failed';
     await projectTable.update(body.projectId, { status: 'failed', videoVariants: JSON.stringify(videoVariants), updatedAt: new Date().toISOString() });

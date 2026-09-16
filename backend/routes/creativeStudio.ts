@@ -39,7 +39,8 @@ router.post('/api/creative-studio/analyze', async (c) => {
   if (!userId) return c.json({ error: 'Non autorisé' }, 401);
 
   const { adAccountId, orgId = '', async: useQueue = false } = await c.req.json<{ adAccountId: string; orgId?: string; async?: boolean }>();
-  const requestId = c.req.header('Idempotency-Key') || c.req.header('X-Request-Id') || `creative-studio:${userId}:${crypto.randomUUID()}`;
+  const requestId = c.req.header('Idempotency-Key') || c.req.header('X-Request-Id') || crypto.randomUUID();
+  const referenceId = `creative-studio:${userId}:${requestId}`;
   const db = getDb(c.env);
   if (!adAccountId) return c.json({ error: 'adAccountId requis' }, 400);
 
@@ -81,7 +82,7 @@ router.post('/api/creative-studio/analyze', async (c) => {
       userId,
       'full_ai_report',
       'Creative Studio Meta Ads analysis',
-      requestId,
+      referenceId,
       async () => {
         /* 1. Fetch Meta Ads (ou données démo) ──────────────────────────────── */
         if (isMetaDemo) {
@@ -124,12 +125,12 @@ router.post('/api/creative-studio/analyze', async (c) => {
               await blink.queue.enqueue('analyze-creative', {
                 userId, adAccountId, orgId, formatted, isMetaDemo, isClaudeDemo,
               });
-              return c.json({
+              return {
                 mode: 'async',
                 status: 'queued',
                 adsAnalyzed: formatted.length,
                 message: 'Analysis queued. Poll reports endpoint for results.',
-              });
+              };
             }
           } catch (queueErr) {
             console.warn('[CreativeStudio] Queue enqueue failed, falling back to sync:', queueErr);

@@ -30,6 +30,11 @@ describe('CreditService — export surface', () => {
     expect(mod.CREDIT_COSTS.video_generation).toBe(10);
   });
 
+  it('exports consumeExecuteRefund lifecycle wrapper', async () => {
+    const mod = await import('../../backend/lib/creditService');
+    expect(typeof mod.consumeExecuteRefund).toBe('function');
+  });
+
   it('exports CreditTransaction interface', async () => {
     const mod = await import('../../backend/lib/creditService');
     expect(mod).toBeDefined();

@@ -270,8 +270,13 @@ router.post('/api/url-to-video/generate', async (c) => {
     body.extractedData?.productName ? `Product: ${body.extractedData.productName}.` : '',
     'Professional lighting, smooth transitions, modern marketing style, text overlays.',
   ].filter(Boolean).join(' ');
-  const generationId = crypto.randomUUID();
-  const referenceId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || `url-video:${userId}:${generationId}`;
+  const requestId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || crypto.randomUUID();
+  const generationId = `url-video:${userId}:${requestId}`.replace(/[^a-zA-Z0-9:_-]/g, '_').slice(0, 255);
+  const referenceId = generationId;
+  const generationTable = blink.db.table<any>('luma_generations');
+  let existingGeneration: any = null;
+  try { existingGeneration = await generationTable.get(generationId); } catch { /* missing table or first request */ }
+  if (existingGeneration?.userId === userId) return c.json({ ...existingGeneration, replayed: true });
 
   try {
     const charged = await consumeExecuteRefund(
@@ -282,7 +287,7 @@ router.post('/api/url-to-video/generate', async (c) => {
       referenceId,
       async () => {
         try {
-          await blink.db.luma_generations.create({ id: generationId, userId, prompt: videoPrompt, optimizedPrompt: '', imageUrl: body.extractedData?.ogImage ?? '', videoUrl: '', status: 'processing', aspectRatio, isAiGenerated: 1 });
+          await generationTable.create({ id: generationId, userId, prompt: videoPrompt, optimizedPrompt: '', imageUrl: body.extractedData?.ogImage ?? '', videoUrl: '', status: 'processing', aspectRatio, isAiGenerated: 1 });
         } catch (dbErr) { console.warn('[UrlToVideo] DB store failed (non-critical):', dbErr); }
         if (body.async) {
           const queueFn = (blink as any).queue;
@@ -297,7 +302,7 @@ router.post('/api/url-to-video/generate', async (c) => {
           const res = await fetch('https://api.lumalabs.ai/dream-machine/v1/generations', { method: 'POST', signal: controller.signal, headers: { Authorization: `Bearer ${lumaKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: videoPrompt, aspect_ratio: aspectRatio }) });
           if (!res.ok) throw new Error(`Luma AI error: ${await res.text()}`);
           const data = await res.json() as { id: string; state: string; video?: { url: string } };
-          try { await blink.db.luma_generations.update(generationId, { videoUrl: data.video?.url ?? '', status: data.state ?? 'processing' }); } catch (dbErr) { console.warn('[UrlToVideo] DB update failed (non-critical):', dbErr); }
+          try { await generationTable.update(generationId, { videoUrl: data.video?.url ?? '', status: data.state ?? 'processing' }); } catch (dbErr) { console.warn('[UrlToVideo] DB update failed (non-critical):', dbErr); }
           return { generationId: data.id, status: data.state ?? 'processing', videoUrl: data.video?.url ?? null };
         } finally { clearTimeout(timeout); }
       },
@@ -328,6 +333,8 @@ router.get('/api/url-to-video/status/:generationId', async (c) => {
   if (!lumaKey) {
     return c.json({ error: 'Video generation not configured' }, 503);
   }
+
+  const referenceId = generationId;
 
   try {
     const res = await fetch(
@@ -373,7 +380,7 @@ router.get('/api/url-to-video/status/:generationId', async (c) => {
     if (data.state === 'failed') {
       const blink = getBlink(env);
       try {
-        await refundCredits(blink, userId, 1, `Auto-refund: Luma URL-to-video failed — ${data.failure_reason ?? 'provider failure'}`, referenceId);
+        await refundCredits(blink, userId, 1, `Auto-refund: Luma URL-to-video failed — ${data.failure_reason ?? 'provider failure'}`, generationId, 'ai');
       } catch (refundErr) {
         console.error('[UrlToVideo] Luma refund failed; reconciliation required:', refundErr);
       }

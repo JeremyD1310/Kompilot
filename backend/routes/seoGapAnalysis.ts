@@ -16,7 +16,7 @@ import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { generateAIResponse } from '../lib/aiRouter';
-import { consumeCredits, getCurrentBalance, refundCredits } from '../lib/creditService';
+import { consumeExecuteRefund, getCurrentBalance } from '../lib/creditService';
 import {
   fetchKeywordData,
   fetchSERPResults,
@@ -181,33 +181,9 @@ router.post('/api/seo-gap/analyze', async (c) => {
   try { body = await c.req.json(); } catch { /* empty body OK */ }
 
   const referenceId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || `seo-gap:${userId}:${crypto.randomUUID()}`;
-  let chargedCost = 0;
-  let charged = false;
   try {
-    // 1. Reserve the canonical AI ledger charge before any paid provider work.
     const establishments = await blink.db.establishments.list({ where: { userId }, limit: 1 });
     const est = (establishments[0] as any) ?? {};
-    const consumed = await consumeCredits(
-      blink,
-      userId,
-      'local_seo_analysis',
-      'SEO gap analysis',
-      referenceId,
-      'ai',
-      { provider: 'openai-or-anthropic', route: 'seoGapAnalysis' },
-    );
-    charged = consumed.success;
-    chargedCost = consumed.cost;
-    const creditsLeft = consumed.balanceAfter;
-
-    if (!consumed.success) {
-      return c.json({
-        error: 'NO_CREDITS',
-        message: 'Crédits épuisés. Rechargez votre compte pour continuer.',
-        creditsLeft: 0,
-      }, 402);
-    }
-
     const establishmentName = est.name ?? 'votre établissement';
     const activity = est.activity ?? 'commerce local';
     const city = est.city ?? 'votre ville';
@@ -306,17 +282,28 @@ Retourne un JSON avec cette structure exacte:
 }`;
 
     // 4. Call AI
-    const aiResult = await generateAIResponse(
-      {
-        taskType: 'STRATEGIC_PLANNING',
-        prompt: userPrompt,
-        systemContext: systemContext,
-        forceJson: true,
-        maxTokens: 1500,
-      },
-      { OPENAI_API_KEY: env.OPENAI_API_KEY, ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY },
+    const charged = await consumeExecuteRefund(
+      blink,
       userId,
+      'local_seo_analysis',
+      'SEO gap analysis',
+      referenceId,
+      () => generateAIResponse(
+        {
+          taskType: 'STRATEGIC_PLANNING',
+          prompt: userPrompt,
+          systemContext,
+          forceJson: true,
+          maxTokens: 1500,
+        },
+        { OPENAI_API_KEY: env.OPENAI_API_KEY, ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY },
+        userId,
+      ),
+      'ai',
+      { provider: 'openai-or-anthropic', route: 'seoGapAnalysis' },
     );
+    const aiResult = charged.result;
+    const creditsLeft = charged.balanceAfter;
 
     // 5. Parse AI response
     let parsed: any;
@@ -395,7 +382,7 @@ Retourne un JSON avec cette structure exacte:
       opportunities,
       competitorSummary: parsed.competitorSummary ?? `Analyse de ${activity} à ${city} terminée.`,
       actionPlan: Array.isArray(parsed.actionPlan) ? parsed.actionPlan : [],
-      creditsLeft: creditsLeft - 1,
+      creditsLeft,
       dataSource,
       meta: {
         provider: aiResult.provider,
@@ -405,10 +392,8 @@ Retourne un JSON avec cette structure exacte:
       },
     });
   } catch (err: any) {
-    if (charged && referenceId) {
-      try { await refundCredits(blink, userId, chargedCost, 'Refund: SEO gap analysis failed', referenceId); }
-      catch (refundErr) { console.error('[SeoGap] durable refund failed:', refundErr); }
-    }
+    if (err instanceof Error && err.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Crédits épuisés. Rechargez votre compte pour continuer.', creditsLeft: 0 }, 402);
+    if (err instanceof Error && err.message === 'IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT') return c.json({ error: 'Replay result is not available yet' }, 409);
     console.error('[SeoGap] analyze error:', err);
     return c.json({ error: err.message ?? 'Analysis failed' }, 500);
   }
