@@ -37,7 +37,7 @@ export interface CreditConsumeResult {
 
 export type BlinkClient = ReturnType<typeof createClient>;
 
-export type LedgerCreditType = 'ai' | 'sms' | 'luma' | 'serpapi';
+export type LedgerCreditType = 'ai' | 'sms';
 
 // ── Constants ───────────────────────────────────────────────────────────────────
 
@@ -93,8 +93,6 @@ export async function getPlanInitialCredits(
     const metadata = typeof users[0]?.metadata === 'string' ? JSON.parse(users[0].metadata) : (users[0]?.metadata ?? {});
     const entitlements = getPlanEntitlements(metadata.plan_id ?? metadata.planId);
     if (creditType === 'sms') return Number(entitlements?.smsCredits ?? 0);
-    if (creditType === 'luma') return Number(entitlements?.lumaCredits ?? 0);
-    if (creditType === 'serpapi') return Number(entitlements?.serpapiCredits ?? 0);
     return Number(entitlements?.aiCredits ?? 0);
   } catch {
     return 0;

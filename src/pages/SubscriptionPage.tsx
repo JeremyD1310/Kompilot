@@ -10,6 +10,7 @@ import { WelcomeModal } from '../components/subscription/WelcomeModal';
 import { useWelcomeEmail } from '../hooks/useWelcomeEmail';
 import { useAuth } from '../hooks/useAuth';
 import { cn } from '../lib/utils';
+import { ENTERPRISE_PLAN, SUBSCRIPTION_PLANS } from '../../shared/pricingCatalog';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function monthYearLabel() {
@@ -17,16 +18,36 @@ function monthYearLabel() {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-// Canonical commercial plans. Compatibility aliases are resolved at the billing boundary;
-// they never appear in active pricing UI.
-const B2C_PLANS = [
-  { id: 'starter', emoji: '⚡', name: 'Starter', tagline: 'Pour démarrer efficacement', price: 69, priceLabel: '69€ / mois HT', badgeLabel: 'Starter', badgeClass: 'bg-teal-100 text-teal-700 border-teal-200', gradient: 'from-teal-600 to-emerald-500', popular: false, features: ['Fonctionnalités essentielles', 'IA et automatisations'], ctaLabel: 'Choisir Starter', ctaVariant: 'outline' as const, ctaNote: null, isFree: false, contactOnly: false },
-  { id: 'agency', emoji: '✦', name: 'Agency', tagline: 'Pour les équipes et agences', price: 149, priceLabel: '149€ / mois HT', badgeLabel: 'Agency', badgeClass: 'bg-violet-100 text-violet-700 border-violet-200', gradient: 'from-violet-600 to-indigo-500', popular: true, features: ['Toutes les fonctionnalités Starter', 'Collaboration et gestion multi-sites'], ctaLabel: 'Choisir Agency', ctaVariant: 'default' as const, ctaNote: null, isFree: false, contactOnly: false },
-];
+// The subscription page mirrors the shared commercial catalogue so legacy
+// pack names and prices cannot resurface in account billing UI.
+const B2C_PLANS = SUBSCRIPTION_PLANS.map((plan, index) => ({
+  id: plan.id,
+  emoji: index === 0 ? '⚡' : index === 1 ? '✦' : '◆',
+  name: plan.name,
+  tagline: plan.tagline,
+  price: plan.monthlyPriceEurHt,
+  priceLabel: `${plan.monthlyPriceEurHt}€ / mois HT`,
+  badgeLabel: plan.name,
+  badgeClass: index === 0 ? 'bg-teal-100 text-teal-700 border-teal-200' : index === 1 ? 'bg-violet-100 text-violet-700 border-violet-200' : 'bg-amber-100 text-amber-800 border-amber-200',
+  gradient: index === 0 ? 'from-teal-600 to-emerald-500' : index === 1 ? 'from-violet-600 to-indigo-500' : 'from-amber-600 to-orange-500',
+  popular: plan.id === 'multi',
+  features: plan.features.slice(0, 3),
+  ctaLabel: `Choisir ${plan.name}`,
+  ctaVariant: (plan.id === 'pro' ? 'outline' : 'default') as 'outline' | 'default',
+  ctaNote: null,
+  isFree: false,
+  contactOnly: false,
+}));
 
-// The same canonical catalogue is used for professional accounts. Keeping one
-// shape here avoids old subscription prices resurfacing through profile tabs.
-const B2B_PLANS = B2C_PLANS;
+const B2B_PLANS = [
+  ...B2C_PLANS,
+  {
+    id: 'enterprise', emoji: '◇', name: ENTERPRISE_PLAN.name, tagline: ENTERPRISE_PLAN.tagline,
+    price: null, priceLabel: ENTERPRISE_PLAN.priceLabel, badgeLabel: 'Sur devis', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200',
+    gradient: 'from-slate-700 to-slate-900', popular: false, features: ENTERPRISE_PLAN.features.slice(0, 3),
+    ctaLabel: ENTERPRISE_PLAN.ctaLabel, ctaVariant: 'outline' as const, ctaNote: null, isFree: false, contactOnly: true,
+  },
+];
 
 // ── Credit packs ──────────────────────────────────────────────────────────────
 // Removed CREDIT_PACKS as per edit instruction.
@@ -38,7 +59,7 @@ type CheckoutTarget = {
   invoiceDesc: string;
   isSubscription: boolean;
   /** For real Stripe subscription checkout via SubscriptionCheckoutPanel */
-  stripePlanId?: 'starter' | 'agency';
+  stripePlanId?: 'pro' | 'multi' | 'agency';
 };
 
 // ── Plan card ─────────────────────────────────────────────────────────────────
@@ -159,7 +180,11 @@ export default function SubscriptionPage() {
       try { return localStorage.getItem('kompilot_skip_trial') === 'true'; } catch { return false; }
     })();
     if (skipTrial) {
-      try { localStorage.removeItem('kompilot_skip_trial'); } catch {}
+      try {
+        localStorage.removeItem('kompilot_skip_trial');
+      } catch {
+        // Local storage may be unavailable in privacy mode.
+      }
       setShowTrialRenunciation(true);
     }
 
@@ -167,7 +192,11 @@ export default function SubscriptionPage() {
 
     if (pendingPlan) {
       // Clear the stored plan
-      try { localStorage.removeItem('kompilot_pending_plan'); } catch {}
+      try {
+        localStorage.removeItem('kompilot_pending_plan');
+      } catch {
+        // Local storage may be unavailable in privacy mode.
+      }
       // Remove ?plan from URL without page reload
       const url = new URL(window.location.href);
       url.searchParams.delete('plan');
@@ -199,16 +228,19 @@ export default function SubscriptionPage() {
         priceHT: 69,
         invoiceDesc: `Abonnement Pro – ${monthYearLabel()}`,
         isSubscription: true,
-        stripePlanId: 'starter',
+        stripePlanId: 'pro',
       });
       toast.success('⚡ Accès immédiat activé', { description: 'Cochez la case de renonciation pour confirmer.' });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const creditsLabel = 'Consommation gérée par la facturation';
 
   const handleB2CPlanSelect = (plan: typeof B2C_PLANS[number]) => {
+    if (isDemoActive) {
+      toast('Mode démo : action simulée, aucun envoi réel.');
+      return;
+    }
     if (plan.contactOnly) {
       window.location.href = 'mailto:sales@kompilot.fr';
       return;
@@ -219,11 +251,15 @@ export default function SubscriptionPage() {
       priceHT,
       invoiceDesc: `Abonnement ${plan.name} – ${monthYearLabel()}`,
       isSubscription: true,
-      stripePlanId: plan.id === 'starter' ? 'starter' : 'agency',
+      stripePlanId: plan.id === 'pro' || plan.id === 'multi' || plan.id === 'agency' ? plan.id : undefined,
     });
   };
 
   const handleB2BPlanSelect = (plan: typeof B2B_PLANS[number]) => {
+    if (isDemoActive) {
+      toast('Mode démo : action simulée, aucun envoi réel.');
+      return;
+    }
     if (plan.isFree) {
       navigate({ to: '/signup' });
       return;
@@ -232,8 +268,8 @@ export default function SubscriptionPage() {
       window.location.href = 'mailto:contact@kompilot.fr';
       return;
     }
-    const stripePlanId: 'starter' | 'agency' =
-      plan.id === 'starter' ? 'starter' : 'agency';
+    const stripePlanId = plan.id === 'pro' || plan.id === 'multi' || plan.id === 'agency' ? plan.id : undefined;
+    if (!stripePlanId) return;
     setCheckout({
       planName: plan.name,
       priceHT: plan.price!,
@@ -248,9 +284,9 @@ export default function SubscriptionPage() {
   const handlePaymentSuccess = () => {
     if (!checkout) return;
     if (checkout.isSubscription) {
-      const nameToId: Record<string, string> = { Starter: 'starter', Agency: 'agency' };
+      const nameToId: Record<string, 'pro' | 'multi' | 'agency'> = { Pro: 'pro', Multi: 'multi', Agency: 'agency' };
       const pid = nameToId[checkout.planName];
-      if (pid) setPlan(pid as 'starter' | 'agency');
+      if (pid) setPlan(pid);
       setWelcomeModal({ open: true, planName: checkout.planName });
       sendWelcomeEmail(checkout.planName);
       toast.success(`🎉 Offre ${checkout.planName} activée !`, {

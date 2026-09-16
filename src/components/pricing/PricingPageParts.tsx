@@ -1,11 +1,10 @@
 /**
  * PricingPageParts — Composants de la page /pricing
  *
- * Grille tarifaire unifiée à 3 offres :
- *   Starter (69€) · Agency (149€, phare) · Enterprise (devis)
+ * Grille tarifaire issue du catalogue canonique :
+ *   Pro · Multi · Agency · Enterprise
  *
- * Les boutons Starter → planId='starter', Agency → planId='agency'
- * qui correspondent aux identifiants canoniques Starter et Agency côté Stripe backend.
+ * Les identifiants de plan sont ceux du catalogue partagé et de Stripe.
  */
 
 import { useState } from 'react'

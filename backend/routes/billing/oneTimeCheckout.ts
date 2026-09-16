@@ -17,7 +17,7 @@ router.post('/api/billing/one-time-checkout', async (c) => {
   const body = await c.req.json<{ productId?: string; legalConsent?: { cgvAccepted?: boolean; retractionWaived?: boolean; cgvVersion?: string } }>()
   const product = resolveOneTimeProduct(body?.productId)
   if (!product) return c.json({ error: 'Produit invalide', code: 'INVALID_PRODUCT' }, 400)
-  if (product.productType !== 'topup' && product.productType !== 'guided_pilot') {
+  if ((product.productType !== 'topup' && product.productType !== 'guided_pilot') || product.recurring === true) {
     return c.json({ error: 'Ce produit n’est pas disponible via ce checkout', code: 'INVALID_PRODUCT' }, 400)
   }
   // Enterprise/custom-quote work is never payable through direct checkout.
@@ -66,7 +66,17 @@ router.post('/api/billing/one-time-checkout', async (c) => {
     'payment_intent_data[metadata][credit_eligible]': String(product.creditEligible === true),
   })
   if (meta.stripe_customer_id) params.set('customer', String(meta.stripe_customer_id))
-  const response = await fetch('https://api.stripe.com/v1/checkout/sessions', { method: 'POST', headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`, 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() })
+  const idempotencyKey = c.req.header('Idempotency-Key')?.trim()
+  const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
+    },
+    body: params.toString(),
+    signal: AbortSignal.timeout(8000),
+  })
   if (!response.ok) return c.json({ error: 'Checkout creation failed' }, 502)
   const session = await response.json() as { url?: string }
   await patchUserMeta(blink, auth.userId, {

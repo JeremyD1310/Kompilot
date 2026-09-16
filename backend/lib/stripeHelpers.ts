@@ -155,9 +155,10 @@ export async function resolveStripePrice(
 /** Map planId to its allowed feature tier. */
 const PLAN_TIER: Record<PlanId, number> = { pro: 1, multi: 2, agency: 3, enterprise: 4 };
 
-/** Returns true if `planId` grants access to at least `requiredPlan` tier. */
+/** Returns true if a canonical catalog plan grants access to at least `requiredPlan` tier. */
 export function hasPlanAccess(planId: PlanId | string | undefined, requiredPlan: PlanId): boolean {
-  const normalized = normalizeLegacyPlanForDisplay(planId);
-  if (!normalized) return false;
-  return (PLAN_TIER[normalized as PlanId] ?? 0) >= (PLAN_TIER[requiredPlan] ?? 0);
+  // Display normalization is deliberately not used for authorization. Legacy plans
+  // must be migrated explicitly, never silently upgraded at an access boundary.
+  if (typeof planId !== 'string' || !resolveSubscriptionPlan(planId, 'monthly') && planId !== 'enterprise') return false;
+  return (PLAN_TIER[planId as PlanId] ?? 0) >= (PLAN_TIER[requiredPlan] ?? 0);
 }

@@ -12,10 +12,12 @@ describe('canonical Kompilot pricing catalog', () => {
     expect(resolveNewPlan('multi', 'yearly')?.lookupKey).toBe('kompilot_multi_annual')
     expect(resolveNewPlan('agency', 'weekly')).toBeNull()
   })
-  it('validates one-time products and pilot metadata', () => {
-    expect(resolveOneTimeProduct('pilot_guided_99')?.definition).toMatchObject({ amount: 9900, pilotDays: 30, creditEligible: true })
+  it('accepts only canonical one-time products and preserves pilot metadata', () => {
+    expect(resolveOneTimeProduct('pilot_30d_once')?.definition).toMatchObject({ amount: 9900, pilotDays: 30, creditEligible: true })
+    expect(resolveOneTimeProduct('pilot_guided_99')).toBeNull()
     expect(resolveOneTimeProduct('custom_quote')).toBeNull()
-    expect(resolveOneTimeProduct('service_custom_quote')?.definition.productType).toBe('service')
+    expect(resolveOneTimeProduct('service_custom_quote')).toBeNull()
+    expect(resolveOneTimeProduct('onboarding_once')?.definition.productType).toBe('service')
   })
   it('pilot is a one-time product with no renewal semantics', () => {
     expect(resolveOneTimeProduct('pilot_guided_99')?.definition).not.toHaveProperty('recurring')

@@ -13,15 +13,13 @@ import {
 } from '../lib/stripeHelpers';
 import { getDunningEmailHtml, getDunningFollowUpHtml } from '../lib/emailTemplates';
 import { handleCreditPackGrant } from '../lib/creditPackHandler';
-import { handleAioCreditPackGrant } from '../lib/aioCreditPackHandler';
+import { getPlanEntitlements } from '../../shared/pricingCatalog';
 
 export const router = new Hono();
 
-/** Helper: plan tier for comparison (higher = more premium) */
+/** Helper: plan tier for comparison (higher = more premium). */
 function getPlanTier(planId: string | null | undefined): number {
-  if (planId === 'agency') return 2;
-  if (planId === 'starter') return 1;
-  return 0;
+  return ({ pro: 1, multi: 2, agency: 3, enterprise: 4 } as Record<string, number>)[planId ?? ''] ?? 0;
 }
 
 // ── Meta HMAC-SHA256 verification ─────────────────────────────────────────────
@@ -391,26 +389,49 @@ router.post('/api/webhooks/stripe', async (c) => {
     const userId     = (invoice.metadata?.user_id as string | undefined)
                     || (await findUserByCustomer(blink, customerId));
     if (userId) {
-      // Reset monthly quota counters on successful payment (anniversary billing cycle)
-      const PLAN_LIMITS: Record<string, Record<string, number>> = {
-        starter:   { quota_ai_tokens_left: 200,  quota_search_credits_left: 50,  luma_videos_used: 0, serpapi_queries_used: 0, sms_used: 0, email_used: 0 },
-        business:  { quota_ai_tokens_left: 500,  quota_search_credits_left: 150, luma_videos_used: 0, serpapi_queries_used: 0, sms_used: 0, email_used: 0 },
-        agency:    { quota_ai_tokens_left: 2000, quota_search_credits_left: 500, luma_videos_used: 0, serpapi_queries_used: 0, sms_used: 0, email_used: 0 },
-        agency_pro:{ quota_ai_tokens_left: 5000, quota_search_credits_left: 1000, luma_videos_used: 0, serpapi_queries_used: 0, sms_used: 0, email_used: 0 },
-      };
-      const planIdForQuota = (await getUserMeta(blink, userId)).plan_id as string || 'starter';
-      const quotaReset = PLAN_LIMITS[planIdForQuota] || PLAN_LIMITS.starter;
-      quotaReset.quota_reset_at = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString();
+      const currentMeta = await getUserMeta(blink, userId);
+      const planIdForGrant = typeof currentMeta.plan_id === 'string' ? currentMeta.plan_id : null;
+      const planEntitlements = getPlanEntitlements(planIdForGrant);
+      const entitlements = planEntitlements
+        ? { ai: planEntitlements.aiCredits ?? 0, sms: planEntitlements.smsCredits ?? 0 }
+        : null;
+      const periodKey = String(invoice.id || invoice.period_start || new Date().toISOString().slice(0, 10));
 
       await patchUserMeta(blink, userId, {
-        stripe_customer_id:  customerId,
+        stripe_customer_id: customerId,
         subscription_status: 'active',
-        grace_period_end:    null,
-        dunning_attempt:     0,
-        last_dunning_at:     null,
-        ...quotaReset,
+        grace_period_end: null,
+        dunning_attempt: 0,
+        last_dunning_at: null,
       });
-      console.warn(`[webhook] payment_succeeded → user ${userId} restored to active, dunning + quotas reset`);
+
+      if (entitlements) {
+        const grantExpiresAt = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000).toISOString();
+        const grant = async (creditType: 'ai' | 'sms', amount: number) => {
+          const grantId = `grant:${creditType}:${periodKey}`.slice(0, 255);
+          try {
+            await blink.db.creditTransactions.create({
+              id: grantId,
+              userId,
+              type: 'grant',
+              actionType: 'subscription_renewal',
+              creditsDelta: amount,
+              balanceAfter: 0,
+              description: `Crédits inclus ${creditType} — période ${periodKey}`,
+              referenceId: periodKey,
+              metadata: JSON.stringify({ source: 'stripe_invoice', invoiceId: invoice.id, planId: planIdForGrant }),
+              creditType,
+              sourceType: 'subscription',
+              expiresAt: grantExpiresAt,
+              periodKey,
+            } as any);
+          } catch (grantError: any) {
+            if (grantError?.status !== 409) throw grantError;
+          }
+        };
+        await grant('ai', entitlements.ai);
+        await grant('sms', entitlements.sms);
+      }
 
       // ── Server-Side Purchase event → Conversion APIs ──────────────────────
       try {

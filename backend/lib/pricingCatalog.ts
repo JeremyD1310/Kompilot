@@ -42,12 +42,9 @@ export function resolveNewPlan(planId: unknown, billing: unknown) {
 }
 
 export function resolveOneTimeProduct(productId: unknown) {
-  const aliases: Record<string, string> = {
-    pilot_guided_99: 'pilot_30d_once',
-    service_custom_quote: 'onboarding_once',
-  };
-  const canonicalProductId = typeof productId === 'string' ? aliases[productId] ?? productId : productId;
-  const product = resolveSharedOneTimeProduct(canonicalProductId);
+  // Purchase inputs must be canonical catalog IDs. Legacy aliases remain display-only
+  // compatibility concerns and must never resolve to a new Stripe purchase.
+  const product = resolveSharedOneTimeProduct(productId);
   return product ? {
     productId: product.id,
     definition: {

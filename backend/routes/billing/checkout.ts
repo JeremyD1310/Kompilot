@@ -101,11 +101,13 @@ router.post('/api/billing/checkout', async (c) => {
 
     const custRes = await fetch('https://api.stripe.com/v1/customers', {
       method: 'POST',
+      signal: AbortSignal.timeout(8000),
       headers: {
         Authorization: `Bearer ${stripeKey}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({ email, 'metadata[userId]': auth.userId }).toString(),
+      signal: AbortSignal.timeout(8000),
     });
     if (!custRes.ok) {
       return c.json({ error: 'Impossible de créer le client Stripe.' }, 502);
@@ -165,11 +167,14 @@ router.post('/api/billing/checkout', async (c) => {
 
   const sessRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',
+    signal: AbortSignal.timeout(8000),
     headers: {
       Authorization: `Bearer ${stripeKey}`,
       'Content-Type': 'application/x-www-form-urlencoded',
+      ...(c.req.header('Idempotency-Key')?.trim() ? { 'Idempotency-Key': c.req.header('Idempotency-Key')!.trim() } : {}),
     },
     body: sessionParams.toString(),
+    signal: AbortSignal.timeout(8000),
   });
 
   if (!sessRes.ok) {

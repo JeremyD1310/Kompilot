@@ -39,6 +39,7 @@ router.post('/api/billing/portal', async (c) => {
   const body      = new URLSearchParams({ customer: customerId, return_url: returnUrl });
   const res = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
     method: 'POST',
+    signal: AbortSignal.timeout(8000),
     headers: {
       Authorization:  `Bearer ${stripeKey}`,
       'Content-Type': 'application/x-www-form-urlencoded',

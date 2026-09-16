@@ -349,7 +349,9 @@ export function injectPixelScripts(config: {
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', '${ga4MeasurementId}', { send_page_view: true });
+      // Page views are emitted by the consent-aware GoogleAnalyticsLoader.
+      // Keep the config passive to avoid duplicate GA4 page_view events.
+      gtag('config', '${ga4MeasurementId}', { send_page_view: false });
     `;
     document.head.appendChild(script2);
   }

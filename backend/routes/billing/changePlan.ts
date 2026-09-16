@@ -45,7 +45,7 @@ router.post('/api/billing/change-plan', async (c) => {
 
   const { newPlanId, newBilling } = body;
   const resolvedPlan = resolveSubscriptionPlan(newPlanId, newBilling);
-  if (!resolvedPlan || !['pro', 'multi', 'agency'].includes(resolvedPlan.plan.id)) {
+  if (!resolvedPlan) {
     return c.json({ error: 'Invalid plan. Choose Pro, Multi, or Agency.', code: 'INVALID_PLAN' }, 400);
   }
   if (!newBilling || !['monthly', 'yearly'].includes(newBilling)) {
@@ -83,6 +83,7 @@ router.post('/api/billing/change-plan', async (c) => {
   // 7. Fetch current subscription to get the subscription item ID
   const subRes = await fetch(`https://api.stripe.com/v1/subscriptions/${subId}`, {
     method: 'GET',
+    signal: AbortSignal.timeout(8000),
     headers: { Authorization: `Bearer ${stripeKey}` },
   });
 
@@ -124,6 +125,7 @@ router.post('/api/billing/change-plan', async (c) => {
 
   const updateRes = await fetch(`https://api.stripe.com/v1/subscriptions/${subId}`, {
     method: 'POST',
+    signal: AbortSignal.timeout(8000),
     headers: {
       Authorization:  `Bearer ${stripeKey}`,
       'Content-Type': 'application/x-www-form-urlencoded',
