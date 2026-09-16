@@ -1,4 +1,6 @@
 import { blink } from '../blink/client';
+import { canRequestProtectedApi, isProtectedApiPath } from '../config/api';
+import { isDemoRuntime } from './demoDomain';
 
 const DEFAULT_BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
 export const BACKEND_URL = ((import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_BACKEND_URL || DEFAULT_BACKEND_URL).replace(/\/$/, '');
@@ -16,6 +18,15 @@ export async function authHeaders(json = false): Promise<Record<string, string>>
 }
 
 export async function backendFetch(path: string, init: RequestInit = {}, timeoutMs = 15000): Promise<Response> {
+  const currentPath = typeof window === 'undefined' ? '' : window.location.pathname;
+  if (isProtectedApiPath(path) && !canRequestProtectedApi({
+    authenticated: blink.auth.isAuthenticated(),
+    demo: isDemoRuntime(),
+    path: currentPath,
+  })) {
+    throw new Error('Protected API request blocked on a public or demo route.');
+  }
+
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -37,7 +48,7 @@ export async function backendFetch(path: string, init: RequestInit = {}, timeout
       message,
       cause: error,
     });
-    throw new Error(message);
+    throw new Error(message, { cause: error });
   } finally {
     window.clearTimeout(timeout);
   }

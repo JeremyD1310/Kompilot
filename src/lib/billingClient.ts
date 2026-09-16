@@ -64,6 +64,9 @@ async function getAuthHeader(): Promise<Record<string, string>> {
  * Opens the URL in a new tab (caller's responsibility).
  */
 export async function createBillingPortalSession(): Promise<PortalResult> {
+  if (!canRequestProtectedApi({ authenticated: blink.auth.isAuthenticated(), demo: isDemoRuntime(), path: typeof window === 'undefined' ? '' : window.location.pathname })) {
+    return { url: null, error: 'UNAUTHORIZED' };
+  }
   try {
     const headers = await getAuthHeader();
     const res = await fetch(apiUrl('/api/billing/portal'), {
@@ -106,6 +109,9 @@ export async function createCheckoutSession(
   billing: BillingInterval,
   legalConsent: CheckoutLegalConsent,
 ): Promise<{ url: string | null; fallback?: boolean; error?: string; code?: string }> {
+  if (!canRequestProtectedApi({ authenticated: blink.auth.isAuthenticated(), demo: isDemoRuntime(), path: typeof window === 'undefined' ? '' : window.location.pathname })) {
+    return { url: null, error: 'UNAUTHORIZED', code: 'PUBLIC_ROUTE_BILLING_BLOCKED' };
+  }
   try {
     const headers = await getAuthHeader();
     const res = await fetch(apiUrl('/api/billing/checkout'), {
@@ -126,6 +132,9 @@ export async function createOneTimeCheckout(
   productId: PricingProductId,
   legalConsent: CheckoutLegalConsent,
 ): Promise<{ url: string | null; error?: string; code?: string }> {
+  if (!canRequestProtectedApi({ authenticated: blink.auth.isAuthenticated(), demo: isDemoRuntime(), path: typeof window === 'undefined' ? '' : window.location.pathname })) {
+    return { url: null, error: 'UNAUTHORIZED', code: 'PUBLIC_ROUTE_BILLING_BLOCKED' };
+  }
   if (isDemoRuntime()) {
     return { url: null, error: 'Mode démo : action simulée, aucun paiement réel.', code: 'DEMO_BILLING_BLOCKED' };
   }
@@ -159,7 +168,7 @@ export async function fetchBillingStatus(): Promise<BillingStatus> {
 
   try {
     const token = await blink.auth.getValidToken().catch(() => null);
-    if (!token || !canRequestProtectedApi({ authenticated: true, demo: isDemoRuntime() })) return fallback;
+    if (!token || !canRequestProtectedApi({ authenticated: true, demo: isDemoRuntime(), path: typeof window === 'undefined' ? '' : window.location.pathname })) return fallback;
 
     const res = await fetch(apiUrl('/api/billing/status'), {
       headers: { Authorization: `Bearer ${token}` },
@@ -176,7 +185,7 @@ export async function fetchBillingStatus(): Promise<BillingStatus> {
  */
 export async function fetchCreditBalance(): Promise<CreditBalance> {
   const token = await blink.auth.getValidToken().catch(() => null);
-  if (!token || !canRequestProtectedApi({ authenticated: true, demo: isDemoRuntime() })) {
+  if (!token || !canRequestProtectedApi({ authenticated: true, demo: isDemoRuntime(), path: typeof window === 'undefined' ? '' : window.location.pathname })) {
     throw new Error('Protected credit balance request is not available.');
   }
 
@@ -196,7 +205,7 @@ export async function fetchCreditBalance(): Promise<CreditBalance> {
  */
 export async function fetchCreditHistory(): Promise<CreditHistoryEntry[]> {
   const token = await blink.auth.getValidToken().catch(() => null);
-  if (!token || !canRequestProtectedApi({ authenticated: true, demo: isDemoRuntime() })) {
+  if (!token || !canRequestProtectedApi({ authenticated: true, demo: isDemoRuntime(), path: typeof window === 'undefined' ? '' : window.location.pathname })) {
     throw new Error('Protected credit history request is not available.');
   }
 

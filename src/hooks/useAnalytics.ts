@@ -32,6 +32,9 @@ function gtag(...args: unknown[]) {
   window.dataLayer = window.dataLayer || []
   if (typeof window.gtag === 'function') {
     window.gtag(...args)
+  } else {
+    // Queue consented events until GoogleAnalyticsLoader installs gtag.
+    window.dataLayer.push(args)
   }
 }
 

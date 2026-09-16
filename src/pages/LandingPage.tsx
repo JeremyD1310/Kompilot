@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PWABanner } from '../components/layout/PWABanner';
-import { createCheckoutSession } from '../lib/billingClient';
 import { useAuth } from '../hooks/useAuth';
 import { PricingSection } from '../components/landing/PricingSection';
 import { FAQSection } from '../components/landing/FAQSection';
@@ -82,20 +81,8 @@ export default function LandingPage() {
       blink.auth.login(window.location.origin + '/subscription?plan=' + encodeURIComponent(planId));
       return;
     }
-    try {
-      const result = await createCheckoutSession(planId, {
-        cgvAccepted: true,
-        retractionWaived: false,
-        cgvVersion: 'public-2026-09-14',
-        acceptedAt: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-      });
-      if (result?.url) window.open(result.url, '_blank', 'noopener,noreferrer');
-      else document.getElementById('tarifs')?.scrollIntoView({ behavior: 'smooth' });
-    } catch (error) {
-      console.error('[pricing] checkout session failed', error);
-      window.location.assign(`/subscription?plan=${encodeURIComponent(planId)}`);
-    }
+    // The landing page is public: do not call billing or Stripe from this route.
+    navigate({ to: `/subscription?plan=${encodeURIComponent(planId)}` });
   };
 
   return (

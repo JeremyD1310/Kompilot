@@ -61,6 +61,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     if (!canRequestProtectedApi({
       authenticated: blink.auth.isAuthenticated(),
       demo: isDemoRuntime(),
+      path: typeof window === 'undefined' ? '' : window.location.pathname,
     })) return;
     try {
       const data = await fetchBillingStatus();

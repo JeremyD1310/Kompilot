@@ -28,13 +28,46 @@ const PROTECTED_PATH_PREFIXES = [
   '/email-marketing', '/website-scan', '/email-sequences', '/mon-equipe', '/engagement', '/espion',
 ];
 
-/** Only authenticated application routes may query protected backend modules. */
-export function isProtectedAppPath(path: string = typeof window === 'undefined' ? '' : window.location.pathname): boolean {
-  return PROTECTED_PATH_PREFIXES.some(prefix => path === prefix || path.startsWith(`${prefix}/`));
+const PROTECTED_API_PREFIXES = ['/api/credits', '/api/billing'];
+
+// Keep route policy in one place. These prefixes cover the public router's
+// marketing, auth, legal, content, approval, and demo surfaces.
+const PUBLIC_ROUTE_PREFIXES = [
+  '/', '/login', '/signup', '/forgot-password', '/reset-password', '/email-unverified', '/verify-email',
+  '/privacy', '/legal', '/cgv', '/cgu', '/confidentialite', '/politique-de-confidentialite', '/mentions-legales',
+  '/informations-kompilot', '/a-propos', '/politique-editoriale', '/ressources', '/comparatifs', '/cas-clients',
+  '/scan/fast', '/diagnostic', '/ref', '/approve', '/demo', '/tunnel-report', '/showcase', '/onboarding-copilot',
+  '/roi-dashboard', '/pricing', '/pricing-pro', '/pricing-agency', '/playbook', '/aio-checker', '/extend-trial',
+  '/secteurs', '/local', '/features', '/temoignages', '/faq',
+];
+
+function normalizePath(path: string): string {
+  const pathname = path.split('?')[0].split('#')[0];
+  if (pathname.length > 1) return pathname.replace(/\/+$/, '');
+  return pathname || '/';
+}
+
+function matchesPrefix(path: string, prefixes: string[]): boolean {
+  return prefixes.some(prefix => path === prefix || (prefix !== '/' && path.startsWith(`${prefix}/`)));
+}
+
+/** Public/demo routes never query authenticated credits/billing modules. */
+export function isPublicOrDemoRoute(path: string = typeof window === 'undefined' ? '/' : window.location.pathname): boolean {
+  return matchesPrefix(normalizePath(path), PUBLIC_ROUTE_PREFIXES);
+}
+
+export function isProtectedAppPath(path: string = typeof window === 'undefined' ? '/' : window.location.pathname): boolean {
+  const normalizedPath = normalizePath(path);
+  return matchesPrefix(normalizedPath, PROTECTED_PATH_PREFIXES) && !isPublicOrDemoRoute(normalizedPath);
+}
+
+export function isProtectedApiPath(path: string): boolean {
+  const normalizedPath = path.split('?')[0].split('#')[0].replace(/\/+$/, '') || '/';
+  return PROTECTED_API_PREFIXES.some(prefix => normalizedPath === prefix || normalizedPath.startsWith(`${prefix}/`));
 }
 
 export function canRequestProtectedApi({ authenticated, demo, path }: { authenticated: boolean; demo: boolean; path?: string }): boolean {
-  return authenticated && !demo && (path === undefined || isProtectedAppPath(path));
+  return authenticated && !demo && isProtectedAppPath(path);
 }
 
 /**

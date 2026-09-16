@@ -51,6 +51,7 @@ async function fetchStatus(): Promise<StripeWebhookStatus> {
     if (!canRequestProtectedApi({
       authenticated: true,
       demo: isDemoRuntime(),
+      path: typeof window === 'undefined' ? '' : window.location.pathname,
     })) return NONE;
 
     const res = await fetch(apiUrl('/api/billing/status'), {
@@ -89,6 +90,7 @@ export function useStripeWebhookStatus() {
   const enabled = canRequestProtectedApi({
     authenticated: blink.auth.isAuthenticated(),
     demo: isDemoRuntime(),
+    path: typeof window === 'undefined' ? '' : window.location.pathname,
   });
 
   return useQuery<StripeWebhookStatus>({

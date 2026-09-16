@@ -23,6 +23,13 @@ interface CreditsContextValue {
   refresh: () => Promise<void>;
 }
 
+export const CREDITS_PROVIDER_ERROR = 'useCredits must be used within CreditsProvider';
+
+export function requireCreditsContext(ctx: CreditsContextValue | null): CreditsContextValue {
+  if (!ctx) throw new Error(CREDITS_PROVIDER_ERROR);
+  return ctx;
+}
+
 const CreditsContext = createContext<CreditsContextValue | null>(null);
 
 export function CreditsProvider({ children }: { children: ReactNode }) {
@@ -36,6 +43,7 @@ export function CreditsProvider({ children }: { children: ReactNode }) {
     if (!canRequestProtectedApi({
       authenticated: blink.auth.isAuthenticated(),
       demo: isDemoActive,
+      path: typeof window === 'undefined' ? '' : window.location.pathname,
     })) return;
     try {
       const [current, entries] = await Promise.all([fetchCreditBalance(), fetchCreditHistory()]);
@@ -88,7 +96,5 @@ export function CreditsProvider({ children }: { children: ReactNode }) {
 }
 
 export function useCredits() {
-  const ctx = useContext(CreditsContext);
-  if (!ctx) throw new Error('useCredits must be used within CreditsProvider');
-  return ctx;
+  return requireCreditsContext(useContext(CreditsContext));
 }
