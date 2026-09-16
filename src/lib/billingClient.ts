@@ -124,9 +124,12 @@ export async function createCheckoutSession(
 
 /** Create a one-time Stripe Checkout session for a catalog product. */
 export async function createOneTimeCheckout(
-  productId: Exclude<PricingProductId, 'starter' | 'agency' | 'enterprise'>,
+  productId: PricingProductId,
   legalConsent: CheckoutLegalConsent,
 ): Promise<{ url: string | null; error?: string; code?: string }> {
+  if (isDemoRuntime()) {
+    return { url: null, error: 'Mode démo : action simulée, aucun paiement réel.', code: 'DEMO_BILLING_BLOCKED' };
+  }
   try {
     const headers = await getAuthHeader();
     const res = await fetch(`${BACKEND_URL}/api/billing/one-time-checkout`, {

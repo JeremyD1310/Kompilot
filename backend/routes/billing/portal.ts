@@ -120,18 +120,22 @@ router.get('/api/billing/status', async (c) => {
   // Available plan/billing combinations (read dynamically to avoid static analysis false positives)
   const billingInterval = (meta.billing_interval as string) || 'monthly';
   const planId = (meta.plan_id as string) || null;
-  const _e = rawEnv as Record<string, string | undefined>;
-  const _av = (plan: string, billing: string) => !!_e[`PRICE_${plan}_${billing}_ID`];
   const availablePlans = {
-    starter: { monthly: _av('STARTER','MONTHLY') || _av('STARTER',''), yearly: _av('STARTER','YEARLY') },
-    agency:  { monthly: _av('AGENCY','MONTHLY')  || _av('AGENCY',''),  yearly: _av('AGENCY','YEARLY')  },
+    starter: {
+      monthly: SUBSCRIPTION_PLANS.starter.monthly.id,
+      yearly: SUBSCRIPTION_PLANS.starter.yearly.id,
+    },
+    agency: {
+      monthly: SUBSCRIPTION_PLANS.agency.monthly.id,
+      yearly: SUBSCRIPTION_PLANS.agency.yearly.id,
+    },
   };
 
   return c.json({
     status:               normalisedStatus,
     gracePeriodEnd:       meta.grace_period_end      || null,
     hasStripeCustomer:    !!meta.stripe_customer_id,
-    planId,
+    planId:               planId ? normalizeLegacyPlanForDisplay(planId) : null,
     billingInterval,
     stripeSubscriptionId: subId                      || null,
     currentPeriodEnd,

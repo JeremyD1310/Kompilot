@@ -1,7 +1,6 @@
 import {
   ONE_TIME_PRODUCTS as SHARED_ONE_TIME_PRODUCTS,
   SUBSCRIPTION_PLANS,
-  getOneTimePriceEnvKey,
   resolveOneTimeProduct as resolveSharedOneTimeProduct,
   resolveSubscriptionPlan,
   type BillingInterval,
@@ -63,6 +62,6 @@ export function resolveOneTimeProduct(productId: unknown) {
       lookupKey: product.lookupKey,
       name: product.name,
     },
-    lookupKey: getOneTimePriceEnvKey(product.id),
+    lookupKey: product.lookupKey,
   } : null
 }
