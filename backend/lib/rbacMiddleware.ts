@@ -17,17 +17,19 @@ import type { Context, Next } from 'hono';
 import type { Env } from './types';
 import { getBlink } from './stripeHelpers';
 
-export type KompilotRole = 'admin' | 'member' | 'guest';
+export type KompilotRole = 'owner' | 'admin' | 'member' | 'guest';
 export type StoredTeamRole = 'owner' | 'admin' | 'editor' | 'member' | 'guest' | 'viewer';
 
 export const ROLE_LABELS: Record<KompilotRole, string> = {
+  owner: 'Propriétaire',
   admin: 'Administrateur',
   member: 'Membre',
   guest: 'Invité (lecture seule)',
 };
 
 export const ROLE_PERMISSIONS: Record<KompilotRole, string[]> = {
-  admin: ['*'],
+  owner: ['*'],
+  admin: ['billing.manage', 'team.manage', 'workspace.manage', 'settings.manage', 'content.manage', 'reports.view', 'dashboard.view'],
   member: [
     'content.create', 'content.edit', 'content.delete',
     'credits.consume', 'reports.view', 'inbox.read', 'inbox.reply',
@@ -45,7 +47,7 @@ export interface WorkspaceAuthorization {
 }
 
 const ROLE_MAP: Record<StoredTeamRole, KompilotRole> = {
-  owner: 'admin',
+  owner: 'owner',
   admin: 'admin',
   editor: 'member',
   member: 'member',
@@ -107,7 +109,7 @@ export async function resolveWorkspaceAuthorization(
       userId,
       ownerId: userId,
       workspaceId: owned.id,
-      role: 'admin',
+      role: 'owner',
       membership: { id: `owner:${owned.id}`, workspaceId: owned.id, userId, role: 'owner', status: 'active' },
     };
   }

@@ -322,7 +322,7 @@ export function HeroChatGPTSimulatorSection({ onCta }: { onCta: () => void }) {
             <ArrowRight size={15} />
           </button>
           <p style={{ color: '#334155', fontSize: '.73rem', marginTop: 10 }}>
-            Sans CB · 7 jours offerts · Accès immédiat
+            Sans CB · 14 jours offerts · Accès immédiat
           </p>
         </div>
       </div>
@@ -342,7 +342,7 @@ export function LandingHero({ onCta, onHeroCta, audience }: LandingHeroProps) {
           <h1 style={{ fontSize: 'clamp(2.45rem, 5.5vw, 5rem)', fontWeight: 900, lineHeight: 1.02, letterSpacing: '-.055em', color: '#0F172A', margin: '0 0 24px', maxWidth: 680 }}>{copy.h1Main}{' '}<span style={{ color: '#0F172A' }}>{copy.h1Gradient}</span></h1>
           <p style={{ fontSize: 'clamp(1rem, 1.6vw, 1.15rem)', color: '#475569', lineHeight: 1.75, maxWidth: 560, margin: '0 0 28px' }}>{copy.sub}</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 18 }}><button type="button" aria-label="Créer mon espace gratuitement" data-testid="home-signup-cta" className="nc-pill" style={{ background: '#0D9488', color: '#FFFFFF', padding: '16px 25px', fontSize: '.98rem', boxShadow: '0 12px 26px rgba(13,148,136,.20)' }} onClick={onHeroCta ?? onCta}><Zap size={17} /> {copy.cta} <ArrowRight size={16} /></button><a href="/showcase" className="nc-btn-outline" style={{ color: '#0F172A', borderColor: '#CBD5E1', background: '#FFFFFF', padding: '15px 20px' }}>Voir en action <ArrowRight size={15} /></a></div>
-          <p style={{ color: '#64748B', fontSize: '.78rem', lineHeight: 1.7, margin: 0 }}>7 jours gratuits · Sans carte bancaire · Validation humaine avant publication</p>
+          <p style={{ color: '#64748B', fontSize: '.78rem', lineHeight: 1.7, margin: 0 }}>14 jours gratuits · Sans carte bancaire · Validation humaine avant publication</p>
         </div>
         <div className="sr d2" style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, padding: '0 4px' }}><div><p style={{ margin: 0, color: '#0F172A', fontSize: '.86rem', fontWeight: 800 }}>Votre cockpit Kompilot</p><p style={{ margin: '3px 0 0', color: '#64748B', fontSize: '.72rem' }}>Aperçu produit · données de démonstration</p></div><span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#0F766E', fontSize: '.7rem', fontWeight: 700 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#14B8A6' }} /> En activité</span></div>

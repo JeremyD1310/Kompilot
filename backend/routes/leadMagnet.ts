@@ -79,7 +79,7 @@ Sois concret, chiffré, et orienté business. Réponds UNIQUEMENT avec le JSON.`
         pain_points: ['Visibilité en ligne non optimisée', 'Temps perdu en tâches répétitives'],
         recommendations: ['Centraliser la gestion de présence en ligne', 'Automatiser la publication de contenu'],
         roi_summary: 'Kompilot vous fait économiser 380€/mois en automatisation de votre présence locale.',
-        next_step: 'Essayez Kompilot gratuitement pendant 7 jours',
+        next_step: 'Essayez Kompilot gratuitement pendant 14 jours',
       };
     }
 

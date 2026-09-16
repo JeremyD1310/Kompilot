@@ -7,6 +7,7 @@ import { createRoute, Navigate } from '@tanstack/react-router';
 import { dashboardLayoutRoute } from './dashboardLayoutRoute';
 import { rootRoute } from './rootRoute';
 import { OnboardingGuard, AdminGuard } from './guards';
+import KompilotB2BOnboardingPage from '../pages/KompilotB2BOnboardingPage';
 
 // ── Pages (lazy-loaded) ───────────────────────────────────────────────────────
 const DashboardPage        = React.lazy(() => import('../pages/DashboardPage'));
@@ -68,7 +69,7 @@ const SeoGapPage           = React.lazy(() => import('../pages/SeoGapPage'));
 export const onboardingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/onboarding',
-  component: OnboardingGuard,
+  component: () => <OnboardingGuard><KompilotB2BOnboardingPage /></OnboardingGuard>,
 });
 
 // ── Helper ────────────────────────────────────────────────────────────────────

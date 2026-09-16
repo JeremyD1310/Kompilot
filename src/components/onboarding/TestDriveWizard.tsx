@@ -195,7 +195,7 @@ export function TestDriveWizard({ open, onClose }: TestDriveWizardProps) {
                           Bienvenue dans votre essai Kompilot !
                         </h2>
                         <Badge variant="outline" className="mt-1">
-                          7 jours gratuits
+                          14 jours gratuits
                         </Badge>
                       </div>
                     </div>

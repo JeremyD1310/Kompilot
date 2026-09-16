@@ -64,7 +64,7 @@ const normalizePlan = (plan: typeof SUBSCRIPTION_PLANS[number], billing: Billing
   monthlyPrice: billing === 'monthly' ? plan.monthlyPriceEurHt : plan.annualPriceEurHt,
   yearlyTotal: plan.annualPriceEurHt,
   priceLabel: String(billing === 'monthly' ? plan.monthlyPriceEurHt : plan.annualPriceEurHt),
-  billingNote: billing === 'yearly' ? 'Facturation annuelle · 2 mois offerts' : 'Facturation mensuelle',
+  billingNote: billing === 'yearly' ? 'Facturation annuelle · Prix HT' : 'Facturation mensuelle · Prix HT',
   period: '€ HT / mois',
   popular: plan.id === 'multi',
   ctaLabel: `Choisir ${plan.name}`,
@@ -77,10 +77,8 @@ const normalizePlan = (plan: typeof SUBSCRIPTION_PLANS[number], billing: Billing
 export function getPlansForBilling(billing: BillingInterval): KompilotPlan[] {
   const recurring = SUBSCRIPTION_PLANS.map((plan) => normalizePlan(plan, billing));
   return [
-    { id: 'trial', name: 'Essai gratuit', tagline: 'Découvrez Kompilot sans engagement.', monthlyPrice: 0, yearlyTotal: 0, priceLabel: '0', billingNote: '14 jours · 150 crédits IA · 10 SMS', period: '', popular: false, ctaLabel: 'Commencer gratuitement', features: ['1 utilisateur', '1 établissement', '150 crédits IA', '10 SMS'], highlightColor: '#0D9488', metadata: { plan: 'trial', billing }, comparison: {} },
-    { id: 'pilot', name: 'Pilote 30 jours', tagline: 'Un accompagnement concret pour lancer votre cockpit.', monthlyPrice: 99, yearlyTotal: 99, priceLabel: '99', billingNote: 'Paiement unique · 30 jours', period: '', popular: false, ctaLabel: 'Démarrer le pilote', features: ['2 utilisateurs', '1 établissement', '300 crédits IA', '25 SMS', 'Accompagnement guidé'], highlightColor: '#0D9488', metadata: { plan: 'pilot', billing }, comparison: {} },
     ...recurring,
-    { id: 'enterprise', name: ENTERPRISE_PLAN.name, tagline: ENTERPRISE_PLAN.tagline, monthlyPrice: null, yearlyTotal: null, priceLabel: ENTERPRISE_PLAN.priceLabel, billingNote: '', period: '', popular: false, ctaLabel: ENTERPRISE_PLAN.ctaLabel, ctaHref: 'mailto:sales@kompilot.fr', features: ENTERPRISE_PLAN.features, highlightColor: '#475569', metadata: { plan: 'enterprise', billing }, comparison: ENTERPRISE_PLAN.comparison },
+    { id: 'enterprise', name: ENTERPRISE_PLAN.name, tagline: ENTERPRISE_PLAN.tagline, monthlyPrice: null, yearlyTotal: null, priceLabel: ENTERPRISE_PLAN.priceLabel, billingNote: '', period: '', popular: false, ctaLabel: ENTERPRISE_PLAN.ctaLabel, ctaHref: 'mailto:jeremy@kompilot.fr?subject=Demande%20Enterprise%20Kompilot', features: ENTERPRISE_PLAN.features, highlightColor: '#475569', metadata: { plan: 'enterprise', billing }, comparison: ENTERPRISE_PLAN.comparison },
   ];
 }
 

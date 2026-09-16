@@ -3,7 +3,7 @@
  * when the visitor is in Demo / anonymous sandbox mode.
  *
  * "Vous testez actuellement Kompilot avec des données de démonstration."
- * + CTA: "Activer mon vrai commerce (Essai 7j gratuit)"
+ * + CTA: "Activer mon vrai commerce (Essai 14j gratuit)"
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -66,7 +66,7 @@ export function DemoCtaBanner() {
             <Rocket size={13} className="shrink-0" />
             <span className="hidden sm:inline">Activer mon vrai commerce</span>
             <span className="sm:hidden">Commencer</span>
-            <span className="hidden sm:inline text-indigo-400 font-normal">(Essai 7j gratuit)</span>
+            <span className="hidden sm:inline text-indigo-400 font-normal">(Essai 14j gratuit)</span>
             <ArrowRight size={12} className="shrink-0" />
           </button>
 

@@ -6,6 +6,7 @@
 import { Hono } from 'hono';
 import type { Env } from '../../lib/types';
 import { getBlink, getUserMeta, patchUserMeta, normalizeLegacyPlanForDisplay } from '../../lib/stripeHelpers';
+import { liveBillingConfig, liveStripeKey, isLiveBillingEnabled, liveBillingDisabledResponse, isDemoBillingRequest, demoBillingResponse } from '../../lib/liveBilling';
 import { SUBSCRIPTION_PLANS } from '../../../shared/pricingCatalog';
 
 export const router = new Hono();
@@ -13,19 +14,20 @@ export const router = new Hono();
 // ── Customer Portal session ───────────────────────────────────────────────────
 
 router.post('/api/billing/portal', async (c) => {
-  const env        = c.env as unknown as Env;
-  const rawEnv     = c.env as any;
-  const blink      = getBlink(env);
-  const stripeKey  = rawEnv.STRIPE_SECRET_KEY as string | undefined;
+  const env = c.env as unknown as Env;
+  const rawEnv = c.env as Record<string, unknown>;
+  const blink = getBlink(env);
 
   // 1. Auth
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
+  if (isDemoBillingRequest(c, rawEnv)) return demoBillingResponse(c);
+  if (!isLiveBillingEnabled(rawEnv)) return liveBillingDisabledResponse(c);
 
-  // 2. Stripe configured?
-  if (!stripeKey) {
-    return c.json({ error: 'Stripe not configured', code: 'NO_STRIPE_KEY' }, 503);
-  }
+  // 2. Use only the canonical restricted Live Stripe configuration.
+  const live = liveBillingConfig(rawEnv);
+  if (!live.config) return c.json({ error: live.error ?? 'Stripe Live is not configured', code: live.error ? 'INVALID_LIVE_BILLING_CONFIG' : 'LIVE_BILLING_NOT_CONFIGURED', missing: live.missing }, 503);
+  const { stripeKey, appBaseUrl } = live.config;
 
   // 3. Get customer ID
   const meta       = await getUserMeta(blink, auth.userId);
@@ -35,7 +37,7 @@ router.post('/api/billing/portal', async (c) => {
   }
 
   // 4. Create portal session
-  const returnUrl = 'https://kompilot.blinkpowered.com/account';
+  const returnUrl = new URL('/account', appBaseUrl).toString();
   const body      = new URLSearchParams({ customer: customerId, return_url: returnUrl });
   const res = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
     method: 'POST',
@@ -60,15 +62,16 @@ router.post('/api/billing/portal', async (c) => {
 // ── Billing status ────────────────────────────────────────────────────────────
 
 router.get('/api/billing/status', async (c) => {
-  const env    = c.env as unknown as Env;
-  const rawEnv = c.env as any;
-  const blink  = getBlink(env);
+  const env = c.env as unknown as Env;
+  const rawEnv = c.env as Record<string, unknown>;
+  const blink = getBlink(env);
 
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
+  if (!isLiveBillingEnabled(rawEnv)) return liveBillingDisabledResponse(c);
 
-  const meta       = await getUserMeta(blink, auth.userId);
-  const stripeKey  = rawEnv.STRIPE_SECRET_KEY as string | undefined;
+  const meta = await getUserMeta(blink, auth.userId);
+  const stripeKey = liveStripeKey(rawEnv);
   const subId      = meta.stripe_subscription_id as string | undefined;
 
   // Try to enrich with live Stripe subscription data (currentPeriodEnd, cancelAtPeriodEnd, trialEnd)

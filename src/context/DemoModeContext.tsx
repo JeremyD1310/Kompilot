@@ -168,7 +168,7 @@ const DEMO_DATA: DemoData = {
 
 // ── Context ────────────────────────────────────────────────────────────────────
 
-const DEMO_TRIAL_DAYS = 7;       // How long the demo trial lasts
+const DEMO_TRIAL_DAYS = 14;      // How long the demo trial lasts
 export const DEMO_CREDIT_TOTAL = 50; // Max AI credits during demo
 // Demo active flag uses sessionStorage so it resets each page reload (anonymous visitor gets clean state)
 const DEMO_STORAGE_KEY = 'kompilot_demo_active_session'; // session-scoped

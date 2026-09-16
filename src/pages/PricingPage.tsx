@@ -1,8 +1,8 @@
 /**
  * PricingPage — Page publique /pricing de Kompilot
  *
- * Grille 3 plans uniquement : Pro (69 € HT) · Agency (149 € HT) · Enterprise (sur devis)
- * La grille tarifaire conserve uniquement les offres canoniques publiées.
+ * Grille commerciale : Pro, Multi, Agency · Enterprise sur devis
+ * Les prix et entitlements viennent exclusivement du catalogue partagé.
  */
 
 import { useState, useMemo } from 'react';
@@ -93,7 +93,7 @@ export default function PricingPage() {
         </h1>
 
         <p className="text-base max-w-lg mx-auto leading-relaxed" style={{ color: '#64748B' }}>
-          Essai gratuit 14 jours · 150 crédits IA · 10 SMS · Résiliation sans frais
+          Essai gratuit 14 jours · Sans carte bancaire · 150 crédits IA · 10 SMS
         </p>
         <p className="mx-auto mt-5 max-w-2xl text-sm leading-6" style={{ color: '#94A3B8' }}>
           <strong style={{ color: '#CBD5E1' }}>Kompilot</strong> est une plateforme SaaS B2B de marketing local pour contenus, avis clients et visibilité en ligne. Les tarifs et le périmètre affichés sont ceux publiés dans cette page ; aucun résultat commercial n’est garanti.

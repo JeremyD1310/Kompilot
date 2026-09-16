@@ -5,7 +5,6 @@ export type PricingProductId =
   | 'pilot_30d_once'
   | 'kompilot_ai_250_once' | 'kompilot_ai_750_once' | 'kompilot_ai_2000_once'
   | 'kompilot_sms_100_once' | 'kompilot_sms_500_once' | 'kompilot_sms_1500_once'
-  | 'creative_premium' | 'white_label'
   | 'onboarding_once' | 'audit_seo_geo_once' | 'ga4_gsc_once' | 'training_once' | 'editorial_pack_once'
   | 'user_pro_monthly' | 'user_pro_annual' | 'user_multi_monthly' | 'user_multi_annual' | 'user_agency_monthly' | 'user_agency_annual'
   | 'location_multi_monthly' | 'location_multi_annual' | 'location_agency_monthly' | 'location_agency_annual'
@@ -72,31 +71,31 @@ const comparison = (values: Partial<Record<ComparisonKey, string>>): Record<Comp
 export const SUBSCRIPTION_PLANS: readonly SubscriptionPlanDefinition[] = [
   {
     id: 'pro', name: 'Pro', monthlyPriceEurHt: 69, annualPriceEurHt: 690,
-    entitlements: COMMERCIAL_PLAN_ENTITLEMENTS.pro!, target: 'TPE, indépendants et commerçants.', tagline: 'Le cockpit essentiel pour piloter votre présence locale.',
+    entitlements: COMMERCIAL_PLAN_ENTITLEMENTS.pro!, target: 'PME, indépendants et commerces locaux.', tagline: 'Le cockpit essentiel pour piloter votre visibilité locale.',
     stripeLookupKeys: { monthly: 'kompilot_pro_monthly', yearly: 'kompilot_pro_annual' },
     features: ['2 utilisateurs', '1 établissement', '500 crédits IA / mois', '50 SMS / mois', 'Validation humaine avant diffusion', 'Support standard'],
     comparison: comparison({ establishments: '1', users: '2', ai: '500 / mois', sms: '50 / mois' }),
   },
   {
     id: 'multi', name: 'Multi', monthlyPriceEurHt: 129, annualPriceEurHt: 1290,
-    entitlements: COMMERCIAL_PLAN_ENTITLEMENTS.multi!, target: 'Équipes et entreprises multi-sites.', tagline: 'Une vue coordonnée pour vos équipes et établissements.',
+    entitlements: COMMERCIAL_PLAN_ENTITLEMENTS.multi!, target: 'Équipes et entreprises multi-établissements.', tagline: 'Une vue coordonnée pour vos équipes et établissements.',
     stripeLookupKeys: { monthly: 'kompilot_multi_monthly', yearly: 'kompilot_multi_annual' },
     features: ['5 utilisateurs', '3 établissements', '1 500 crédits IA / mois', '200 SMS / mois', 'Pilotage multi-établissements', 'Support prioritaire'],
     comparison: comparison({ establishments: '3', users: '5', ai: '1 500 / mois', sms: '200 / mois', multiClient: 'Inclus', support: 'Prioritaire' }),
   },
   {
     id: 'agency', name: 'Agency', monthlyPriceEurHt: 229, annualPriceEurHt: 2290,
-    entitlements: COMMERCIAL_PLAN_ENTITLEMENTS.agency!, target: 'Agences, consultants et réseaux.', tagline: 'Le cockpit multi-clients pour déployer à grande échelle.',
+    entitlements: COMMERCIAL_PLAN_ENTITLEMENTS.agency!, target: 'Agences marketing, consultants et réseaux.', tagline: 'Le cockpit multi-clients pour déployer à grande échelle.',
     stripeLookupKeys: { monthly: 'kompilot_agency_monthly', yearly: 'kompilot_agency_annual' },
-    features: ['15 utilisateurs', '10 établissements inclus · 25 max', '5 000 crédits IA / mois', '500 SMS / mois', 'Marque blanche et multi-clients', 'Support dédié'],
-    comparison: comparison({ establishments: '10 inclus · 25 max', users: '15', ai: '5 000 / mois', sms: '500 / mois', whiteLabel: 'Inclus', multiClient: 'Inclus', support: 'Dédié' }),
+    features: ['15 utilisateurs', '10 établissements', '5 000 crédits IA / mois', '500 SMS / mois', 'Gestion multi-clients', 'Support dédié'],
+    comparison: comparison({ establishments: '10', users: '15', ai: '5 000 / mois', sms: '500 / mois', multiClient: 'Inclus', support: 'Dédié' }),
   },
 ]
 
 export const ENTERPRISE_PLAN = {
   id: 'enterprise' as const, name: 'Enterprise', priceLabel: 'Sur devis', target: 'Franchises, groupes et organisations.', tagline: 'Volumes, utilisateurs, établissements et gouvernance définis au devis.',
   features: ['Utilisateurs sur mesure', 'Crédits IA et SMS sur mesure', 'Établissements sur mesure', 'Intégrations et gouvernance avancées', 'SLA et support dédiés'],
-  comparison: comparison(Object.fromEntries(Object.keys(comparison({})).map(key => [key, 'Sur devis']))), ctaLabel: 'Demander une démonstration',
+  comparison: comparison(Object.fromEntries(Object.keys(comparison({})).map(key => [key, 'Sur devis']))), ctaLabel: 'Parler à notre équipe',
 }
 
 export interface OneTimeProductDefinition {
@@ -118,20 +117,18 @@ export interface OneTimeProductDefinition {
 }
 
 export const ONE_TIME_PRODUCTS: readonly OneTimeProductDefinition[] = [
-  { id: 'pilot_30d_once', name: 'Pilote 30 jours', amountEurHt: 99, productType: 'guided_pilot', pilotDays: PILOT_DURATION_DAYS, creditEligible: true, lookupKey: 'kompilot_pilot_30d_once', description: '2 utilisateurs, 1 établissement, 300 crédits IA et 25 SMS.', paymentRule: 'Paiement comptant, sans renouvellement' },
-  { id: 'kompilot_ai_250_once', name: 'Recharge 250 crédits IA', amountEurHt: 19, productType: 'topup', creditType: 'ai', creditAmount: 250, creditEligible: true, lookupKey: 'kompilot_ai_250_once', description: 'Recharge IA valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
-  { id: 'kompilot_ai_750_once', name: 'Recharge 750 crédits IA', amountEurHt: 49, productType: 'topup', creditType: 'ai', creditAmount: 750, creditEligible: true, lookupKey: 'kompilot_ai_750_once', description: 'Recharge IA valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
-  { id: 'kompilot_ai_2000_once', name: 'Recharge 2 000 crédits IA', amountEurHt: 99, productType: 'topup', creditType: 'ai', creditAmount: 2000, creditEligible: true, lookupKey: 'kompilot_ai_2000_once', description: 'Recharge IA valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
-  { id: 'kompilot_sms_100_once', name: 'Recharge 100 SMS', amountEurHt: 15, productType: 'topup', creditType: 'sms', creditAmount: 100, creditEligible: true, lookupKey: 'kompilot_sms_100_once', description: 'Recharge SMS valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
-  { id: 'kompilot_sms_500_once', name: 'Recharge 500 SMS', amountEurHt: 59, productType: 'topup', creditType: 'sms', creditAmount: 500, creditEligible: true, lookupKey: 'kompilot_sms_500_once', description: 'Recharge SMS valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
-  { id: 'kompilot_sms_1500_once', name: 'Recharge 1 500 SMS', amountEurHt: 149, productType: 'topup', creditType: 'sms', creditAmount: 1500, creditEligible: true, lookupKey: 'kompilot_sms_1500_once', description: 'Recharge SMS valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
-  { id: 'creative_premium', name: 'Creative Studio Hyper-Automation', amountEurHt: 39, productType: 'addon', lookupKey: 'kompilot_creative_premium_monthly', recurring: true, planId: 'pro', description: 'URL-to-Video en masse et scripts IA avancés.', paymentRule: 'Récurrent avec l’abonnement' },
-  { id: 'white_label', name: 'Agence White-Label & Rapports AIO', amountEurHt: 49, productType: 'addon', lookupKey: 'kompilot_white_label_monthly', recurring: true, planId: 'agency', description: 'Marque blanche, domaine personnalisé et rapports brandés.', paymentRule: 'Récurrent avec l’abonnement' },
-  { id: 'onboarding_once', name: 'Onboarding', amountEurHt: null, productType: 'service', lookupKey: 'kompilot_onboarding_once', description: 'Paramétrage guidé.', paymentRule: 'Sur devis ou commande' },
-  { id: 'audit_seo_geo_once', name: 'Audit SEO / GEO', amountEurHt: null, productType: 'service', lookupKey: 'kompilot_audit_seo_geo_once', description: 'Audit documenté.', paymentRule: 'Sur devis ou commande' },
-  { id: 'ga4_gsc_once', name: 'Configuration GA4 / GSC', amountEurHt: null, productType: 'service', lookupKey: 'kompilot_ga4_gsc_once', description: 'Configuration analytics.', paymentRule: 'Sur devis ou commande' },
-  { id: 'training_once', name: 'Formation', amountEurHt: null, productType: 'service', lookupKey: 'kompilot_training_once', description: 'Formation d’équipe.', paymentRule: 'Sur devis ou commande' },
-  { id: 'editorial_pack_once', name: 'Pack éditorial', amountEurHt: null, productType: 'service', lookupKey: 'kompilot_editorial_pack_once', description: 'Socle éditorial.', paymentRule: 'Sur devis ou commande' },
+  { id: 'pilot_30d_once', name: 'Pilote 30 jours', amountEurHt: 99, productType: 'guided_pilot', pilotDays: PILOT_DURATION_DAYS, creditEligible: true, lookupKey: 'kompilot_pilot_30d_once', description: '2 utilisateurs, 1 établissement, 300 crédits IA et 25 SMS.', paymentRule: 'Paiement comptant, sans renouvellement', recurring: false },
+  { id: 'kompilot_ai_250_once', name: 'Recharge 250 crédits IA', amountEurHt: 19, productType: 'topup', creditType: 'ai', creditAmount: 250, creditEligible: true, lookupKey: 'kompilot_ai_250_once', description: 'Recharge IA valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement', recurring: false },
+  { id: 'kompilot_ai_750_once', name: 'Recharge 750 crédits IA', amountEurHt: 49, productType: 'topup', creditType: 'ai', creditAmount: 750, creditEligible: true, lookupKey: 'kompilot_ai_750_once', description: 'Recharge IA valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement', recurring: false },
+  { id: 'kompilot_ai_2000_once', name: 'Recharge 2 000 crédits IA', amountEurHt: 99, productType: 'topup', creditType: 'ai', creditAmount: 2000, creditEligible: true, lookupKey: 'kompilot_ai_2000_once', description: 'Recharge IA valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement', recurring: false },
+  { id: 'kompilot_sms_100_once', name: 'Recharge 100 SMS', amountEurHt: 15, productType: 'topup', creditType: 'sms', creditAmount: 100, creditEligible: true, lookupKey: 'kompilot_sms_100_once', description: 'Recharge SMS valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement', recurring: false },
+  { id: 'kompilot_sms_500_once', name: 'Recharge 500 SMS', amountEurHt: 59, productType: 'topup', creditType: 'sms', creditAmount: 500, creditEligible: true, lookupKey: 'kompilot_sms_500_once', description: 'Recharge SMS valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement', recurring: false },
+  { id: 'kompilot_sms_1500_once', name: 'Recharge 1 500 SMS', amountEurHt: 149, productType: 'topup', creditType: 'sms', creditAmount: 1500, creditEligible: true, lookupKey: 'kompilot_sms_1500_once', description: 'Recharge SMS valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement', recurring: false },
+  { id: 'onboarding_once', name: 'Onboarding', amountEurHt: 199, productType: 'service', lookupKey: 'kompilot_onboarding_once', description: 'Paramétrage guidé.', paymentRule: 'Paiement comptant, à planifier', recurring: false },
+  { id: 'audit_seo_geo_once', name: 'Audit SEO / GEO', amountEurHt: 390, productType: 'service', lookupKey: 'kompilot_audit_seo_geo_once', description: 'Audit documenté.', paymentRule: 'Paiement comptant, à planifier', recurring: false },
+  { id: 'ga4_gsc_once', name: 'Configuration GA4 / GSC', amountEurHt: 390, productType: 'service', lookupKey: 'kompilot_ga4_gsc_once', description: 'Configuration analytics.', paymentRule: 'Paiement comptant, à planifier', recurring: false },
+  { id: 'training_once', name: 'Formation équipe', amountEurHt: 490, productType: 'service', lookupKey: 'kompilot_training_once', description: 'Formation d’équipe.', paymentRule: 'Paiement comptant, à planifier', recurring: false },
+  { id: 'editorial_pack_once', name: 'Pack éditorial', amountEurHt: 490, productType: 'service', lookupKey: 'kompilot_editorial_pack_once', description: 'Socle éditorial.', paymentRule: 'Paiement comptant, à planifier', recurring: false },
   ...([
     ['user_pro_monthly', 'kompilot_user_pro_monthly', 9, 'pro', 'monthly'], ['user_pro_annual', 'kompilot_user_pro_annual', 90, 'pro', 'yearly'],
     ['user_multi_monthly', 'kompilot_user_multi_monthly', 8, 'multi', 'monthly'], ['user_multi_annual', 'kompilot_user_multi_annual', 80, 'multi', 'yearly'],

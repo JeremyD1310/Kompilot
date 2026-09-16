@@ -9,6 +9,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
     },
+    dedupe: ['react', 'react-dom'],
   },
   optimizeDeps: {
     include: [
@@ -16,6 +17,10 @@ export default defineConfig({
       'firebase/analytics',
       'firebase/firestore',
       'firebase/messaging',
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'framer-motion',
     ],
   },
   server: {

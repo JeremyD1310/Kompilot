@@ -11,7 +11,7 @@ export function LaunchCTASection() {
           <h2 id="launch-cta-title" className="text-3xl font-black tracking-tight text-slate-100 sm:text-4xl">Votre présence locale mérite son cockpit.</h2>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-slate-400 sm:text-base">Créez votre espace, connectez vos canaux et commencez à piloter vos contenus, vos avis et votre visibilité dès aujourd’hui.</p>
           <a href="/signup" className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-xl bg-teal-400 px-6 py-3 text-sm font-extrabold text-slate-950 no-underline shadow-[0_12px_32px_-12px_rgba(45,212,191,.7)] transition-all hover:-translate-y-0.5 hover:bg-teal-300 hover:shadow-[0_16px_38px_-12px_rgba(45,212,191,.8)] active:scale-[0.98]">Commencer l'essai gratuit <ArrowRight size={16} /></a>
-          <p className="mt-4 inline-flex items-center gap-1.5 text-xs text-slate-500"><ShieldCheck size={14} className="text-teal-300" /> Essai gratuit 7 jours · sans carte bancaire · accès immédiat</p>
+          <p className="mt-4 inline-flex items-center gap-1.5 text-xs text-slate-500"><ShieldCheck size={14} className="text-teal-300" /> Essai gratuit 14 jours · sans carte bancaire · accès immédiat</p>
         </motion.div>
       </div>
     </section>

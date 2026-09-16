@@ -52,30 +52,12 @@ export function SocialProofTab() {
     ? (published.reduce((s, t) => s + t.rating, 0) / published.length).toFixed(1)
     : '0';
 
-  // Build JSON-LD
+  // Build JSON-LD for the connected business without publishing review markup.
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: 'Le Petit Bistro',
     url: 'https://lepetitbistro-lr.fr',
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: avgRating,
-      reviewCount: published.length,
-      bestRating: 5,
-      worstRating: 1,
-    },
-    review: published.map((t) => ({
-      '@type': 'Review',
-      author: { '@type': 'Person', name: t.author },
-      datePublished: t.publishedAt ? new Date(t.publishedAt).toISOString().split('T')[0] : undefined,
-      reviewRating: {
-        '@type': 'Rating',
-        ratingValue: t.rating,
-        bestRating: 5,
-      },
-      reviewBody: t.text,
-    })),
   };
 
   const handleCollect = () => {
