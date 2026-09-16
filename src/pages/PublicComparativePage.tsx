@@ -1,0 +1,13 @@
+import { Link, useParams } from '@tanstack/react-router';
+import { usePageSeo } from '../hooks/usePageSeo';
+import { COMPARISON_PAGES } from '../data/publicComparisons';
+import { faqSchema, pageSchema, publicGraph } from '../lib/structuredData';
+import { PublicPageShell } from '../components/public/PublicPageShell';
+
+export default function PublicComparativePage() {
+  const { slug } = useParams({ strict: false }) as { slug: string };
+  const comparison = COMPARISON_PAGES.find(item => item.slug === slug) ?? COMPARISON_PAGES[0];
+  const path = `/comparatifs/${comparison.slug}`;
+  usePageSeo(comparison.title, comparison.description, path, { structuredData: publicGraph([pageSchema(path, comparison.title, comparison.description), faqSchema(comparison.faq)]) });
+  return <PublicPageShell title={comparison.heading} eyebrow="Comparatif factuel"><p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">{comparison.description} Le choix dépend du contexte, des canaux et du niveau de gouvernance recherché.</p><div className="mt-10 overflow-x-auto rounded-2xl border border-white/10"><table className="w-full min-w-[620px] text-left text-sm"><caption className="sr-only">Critères du comparatif</caption><thead className="bg-white/[.06] text-xs uppercase tracking-wider text-slate-400"><tr><th className="p-4">Critère</th><th className="p-4">Question à poser</th></tr></thead><tbody>{comparison.criteria.map(criteria => <tr key={criteria} className="border-t border-white/10"><th className="p-4 font-bold text-white">{criteria}</th><td className="p-4 text-slate-300">Ce critère doit être évalué selon vos outils actuels, vos équipes et vos obligations de validation.</td></tr>)}</tbody></table></div><article className="mt-12 space-y-10">{comparison.sections.map(section => <section key={section.heading}><h2 className="text-3xl font-black text-white">{section.heading}</h2><p className="mt-4 max-w-4xl text-base leading-8 text-slate-300">{section.body}</p></section>)}</article><section className="mt-12 rounded-2xl border border-white/10 bg-white/[.04] p-6"><h2 className="text-2xl font-bold text-white">FAQ</h2>{comparison.faq.map(faq => <div key={faq.question} className="mt-5"><h3 className="font-bold text-white">{faq.question}</h3><p className="mt-2 leading-7 text-slate-300">{faq.answer}</p></div>)}</section><div className="mt-10 flex flex-wrap gap-4 text-sm"><Link to="/features" className="text-teal-300 hover:underline">Fonctionnalités</Link><Link to="/ressources" className="text-teal-300 hover:underline">Guides pratiques</Link><Link to="/pricing" className="text-teal-300 hover:underline">Tarifs Pro, Multi et Agency</Link><Link to="/signup" className="text-teal-300 hover:underline">Essai 14 jours</Link></div></PublicPageShell>;
+}

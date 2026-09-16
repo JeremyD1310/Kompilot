@@ -5,7 +5,10 @@ export const LANDING_CSS = `
   .nc-pill{display:inline-flex;align-items:center;gap:10px;background:#0D9488;color:#fff;font-weight:700;font-size:1.05rem;border-radius:9999px;padding:18px 40px;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 10px 24px rgba(13,148,136,.18)}
   .nc-pill:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(13,148,136,.25)}.nc-pill:active{transform:scale(.98)}
   .nc-btn-outline{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#0F172A;font-weight:700;font-size:.88rem;border-radius:9999px;padding:10px 22px;border:1px solid #CBD5E1;cursor:pointer;transition:border-color .2s,color .2s,background .2s}
-  .nc-btn-outline:hover{border-color:#0D9488;color:#0F766E;background:#F0FDFA}
+  .nc-btn-outline:hover{border-color:#CBD5E1;color:#0F172A;background:#F8FAFC}
+  .landing-desktop-nav-link:hover,.landing-mobile-nav-link:hover{color:#0F172A!important}
+  .landing-mobile-nav-link{color:#475569!important}
+  .landing-mobile-nav-link[style*="color"]{color:#0F172A!important}
   .nc-section-label{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:#0D9488}
   .landing-section{padding:clamp(68px,9vw,116px) 20px;border-bottom:1px solid #E2E8F0;scroll-margin-top:72px}
   .landing-container{max-width:1120px;margin:0 auto}

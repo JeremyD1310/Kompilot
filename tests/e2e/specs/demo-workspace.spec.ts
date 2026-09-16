@@ -168,7 +168,7 @@ test.describe('public interactive demo', () => {
 
   test('contains only canonical demo pricing language', async ({ page }) => {
     await page.goto('/demo');
-    await expect(page.getByText(/69 € HT|149 € HT|7 jours gratuits/).first()).toBeVisible();
+    await expect(page.getByText(/69 € HT|149 € HT|14 jours gratuits/).first()).toBeVisible();
     await expect(page.getByText(/30 €|39 €|59 €|99 €|299 €|599 €/)).toHaveCount(0);
   });
 

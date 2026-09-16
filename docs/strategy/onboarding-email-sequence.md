@@ -1,6 +1,6 @@
 # Kompilot — Séquence Emails d'Onboarding & Win-Back (J0 → J+30)
 
-> Modèle : Reverse Trial 7 jours → Starter 69€ HT ou Agency 149€ HT
+> Modèle : Reverse Trial 14 jours → Starter 69€ HT ou Agency 149€ HT
 > Ton : Professionnel, direct, ROI-oriented, humain. Signé "Jérémy — Fondateur Kompilot"
 
 ---
@@ -18,7 +18,7 @@
 ```
 Bonjour {{prénom}},
 
-Bienvenue sur Kompilot. Votre essai gratuit de 7 jours vient de commencer — vous avez accès à TOUTES les fonctionnalités du plan Agency (149€/mois) sans aucune restriction.
+Bienvenue sur Kompilot. Votre essai gratuit de 14 jours vient de commencer — vous avez accès à TOUTES les fonctionnalités du plan Agency (149€/mois) sans aucune restriction.
 
 Voici votre mission du jour :
 
@@ -172,9 +172,9 @@ Deux options s'offrent à vous :
 
 ━━━ OPTION 2 : Besoin de plus de temps ? ━━━
 
-Je comprends — une semaine, ça passe vite. Cliquez ci-dessous pour obtenir 7 jours supplémentaires GRATUITEMENT, sans aucune carte bancaire :
+Je comprends — deux semaines, ça passe vite. Cliquez ci-dessous pour obtenir 14 jours supplémentaires GRATUITEMENT, sans aucune carte bancaire :
 
-→ [🎁 Prolonger mon essai de 7 jours gratuits]
+→ [🎁 Prolonger mon essai de 14 jours gratuits]
 
 Ce lien est personnel et unique. Il expire dans 24h.
 
@@ -185,17 +185,17 @@ Jérémy
 P.S. : Le lien de prolongation est à usage unique. Si vous ne l'utilisez pas aujourd'hui, il ne sera plus valide demain.
 ```
 
-**Note technique :** Le lien magique contient un token unique (table `magic_link_tokens`) qui, au clic, prolonge l'essai de 7 jours supplémentaires. Token expiré = redirection vers la page de pricing.
+**Note technique :** Le lien magique contient un token unique (table `magic_link_tokens`) qui, au clic, prolonge l'essai de 14 jours supplémentaires. Token expiré = redirection vers la page de pricing.
 
 ---
 
-## EMAIL 5 | J7 (Jour J — Expiration) — La Clôture Sécurisée
+## EMAIL 5 | J14 (Jour J — Expiration) — La Clôture Sécurisée
 
 **Objet :** Votre compte Kompilot est en pause — vos données sont en sécurité
 
 **Objectif :** Notification de mise en pause. Rassurer sur la sauvegarde des données. Présenter les deux plans avec réactivation instantanée.
 
-**Trigger :** Expiration du trial (7j ou 14j si prolongation activée)
+**Trigger :** Expiration du trial (14j ou 28j si prolongation activée)
 
 **Corps :**
 
@@ -333,14 +333,14 @@ P.S. : Cette offre n'est envoyée qu'une seule fois. Elle ne sera pas renouvelé
 
 ### Retargeting Publicitaire (Meta / LinkedIn)
 
-**Audience cible :** Utilisateurs inscrits en cours d'essai gratuit (J0 à J7)
+**Audience cible :** Utilisateurs inscrits en cours d'essai gratuit (J0 à J14)
 
 **Contenu des créatives :**
 1. Étude de cas : "Comment [Agence X] a gagné 12h/semaine avec Kompilot"
 2. Preuve sociale : Capture d'écran dashboard avec données floutées + "Votre rapport vous attend"
 3. Gains de temps : Infographie comparative "Avant / Après Kompilot"
 
-**Approche :** Pas de survendre l'outil. Renforcer l'usage et la valeur perçue pendant l'essai. Objectif : réduire le churn à J7.
+**Approche :** Pas de survendre l'outil. Renforcer l'usage et la valeur perçue pendant l'essai. Objectif : réduire le churn à J14.
 
 ### Stratégie High-Touch (Alerte Leads Qualifiés)
 

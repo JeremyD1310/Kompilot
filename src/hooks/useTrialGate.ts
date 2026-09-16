@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react';
 import { blink } from '../blink/client';
 import { isKompilotTeam } from '../context/AdminContext';
 import { IS_DEMO_DOMAIN, isDemoRuntime } from '../lib/demoDomain';
+import { TRIAL_DAYS } from '../../shared/pricingCatalog';
 
 export type TrialStatus = 'loading' | 'active' | 'expired' | 'subscribed' | 'admin' | 'error';
 
@@ -20,7 +21,7 @@ interface TrialGateState {
   daysRemaining: number;
 }
 
-const TRIAL_DURATION_DAYS = 7;
+const TRIAL_DURATION_DAYS = TRIAL_DAYS;
 
 export function useTrialGate(
   userId?: string | null,

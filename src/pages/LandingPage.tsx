@@ -10,6 +10,7 @@ import { LandingHero } from '../components/landing/LandingHero';
 import { LandingFooter } from '../components/landing/LandingFooter';
 import { IntegrationsSection } from '../components/landing/IntegrationsSection';
 import { VisibilityLandingSections } from '../components/landing/VisibilityLandingSections';
+import { BetaTestimonialsSection } from '../components/landing/BetaTestimonialsSection';
 import { usePageSeo } from '../hooks/usePageSeo';
 import { createKompilotGraph } from '../lib/seoData';
 import { captureUtmParams, getUtmSector, track } from '../lib/tracking';
@@ -42,8 +43,8 @@ export default function LandingPage() {
   const ref = useScrollReveal();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const title = 'Logiciel de visibilité locale et marketing IA | Kompilot';
-  const description = 'Centralisez contenus, avis Google, réseaux sociaux, SEO local et visibilité dans les IA avec Kompilot. Essai gratuit pendant 7 jours.';
+  const title = 'Logiciel de visibilité locale et communication B2B | Kompilot';
+  const description = 'Centralisez contenus, avis Google, réseaux sociaux et visibilité dans ChatGPT et Gemini avec Kompilot, le cockpit marketing des PME, commerces et agences. Essai gratuit 14 jours.';
 
   usePageSeo(title, description, '/', {
     structuredData: createKompilotGraph('/', title, false, description),
@@ -113,6 +114,7 @@ export default function LandingPage() {
           <PricingSection cta={handlePricingCta} audience={audience} />
           <IntegrationsSection />
           <FAQSection onCta={cta} />
+          <BetaTestimonialsSection />
           <section className="px-5 py-20" style={{ background: '#0F172A' }}>
             <div className="mx-auto max-w-4xl text-center"><p className="text-xs font-bold uppercase tracking-[.16em]" style={{ color: '#5EEAD4' }}>Le prochain geste est simple</p><h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white md:text-5xl">Transformez votre visibilité en actions concrètes</h2><p className="mx-auto mt-5 max-w-2xl text-base leading-8" style={{ color: '#CBD5E1' }}>Centralisez vos contenus, avis et performances dans un cockpit conçu pour les entreprises locales.</p><div className="mt-8 flex flex-wrap justify-center gap-3"><button type="button" onClick={cta} className="nc-pill" style={{ background: '#0D9488', boxShadow: '0 12px 30px rgba(13,148,136,.25)' }}>Commencer gratuitement</button><a href="/showcase" className="nc-btn-outline" style={{ color: '#E2E8F0', borderColor: 'rgba(255,255,255,.2)' }}>Réserver une démonstration</a></div></div>
           </section>

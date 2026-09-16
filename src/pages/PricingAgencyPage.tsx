@@ -87,7 +87,7 @@ export default function PricingAgencyPage() {
         </h1>
 
         <p className="text-base max-w-lg mx-auto leading-relaxed" style={{ color: '#64748B' }}>
-          Marque blanche · Multi-comptes · Support prioritaire 24/7 · Essai 7 jours inclus
+          Marque blanche · Multi-comptes · Support prioritaire 24/7 · Essai gratuit 14 jours sans carte bancaire
         </p>
       </motion.div>
 

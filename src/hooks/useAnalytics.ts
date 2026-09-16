@@ -23,6 +23,7 @@ const ALLOWED_EVENT_PARAMS = new Set([
   'content_category', 'user_type', 'channel', 'source', 'medium', 'campaign',
   'method', 'trial_days', 'profile_type', 'plan', 'billing_interval', 'source_page',
   'cta_type', 'testimonial_section', 'destination',
+  'cta_name', 'cta_destination', 'section_name',
 ])
 
 function gtag(...args: unknown[]) {

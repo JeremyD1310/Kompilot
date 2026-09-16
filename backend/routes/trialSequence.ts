@@ -5,7 +5,7 @@
  *              (called at login / dashboard load — non-blocking)
  *
  * This route replaces the previous ad-hoc J0/J3 logic in onboarding.ts with a
- * complete sequence covering J0 → J1 → J2 → J4 → J6 → J7 → J+14 → J+30.
+ * complete sequence covering J0 → J1 → J2 → J4 → J6 → J14 → J+14 → J+30.
  *
  * Each email is idempotent: it tracks sent timestamps in the user's metadata
  * and only fires once per stage.
@@ -13,6 +13,7 @@
 import { Hono } from 'hono';
 import type { Env } from '../lib/types';
 import { getBlink, getUserMeta, patchUserMeta } from '../lib/stripeHelpers';
+import { TRIAL_DAYS } from '../../shared/pricingCatalog';
 import {
   buildWelcomeEmail,
   buildJ1InactiveEmail,
@@ -73,10 +74,10 @@ router.post('/api/trial-sequence/check-and-send', async (c) => {
   const isAgency = email.includes('agency') || email.includes('agence') || (meta.plan_id as string) === 'agency';
   const createdAt = (meta.created_at as string) || new Date().toISOString();
 
-  // Trial end date (7 days from creation or extended)
+  // Canonical trial end date from the shared commercial catalog.
   const trialEnd = meta.trial_end
     ? new Date(meta.trial_end as string)
-    : new Date(new Date(createdAt).getTime() + 7 * 24 * 60 * 60 * 1000);
+    : new Date(new Date(createdAt).getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
   const trialEndStr = trialEnd.toISOString();
 
   // Sent tracking keys in meta
@@ -190,7 +191,7 @@ router.post('/api/trial-sequence/check-and-send', async (c) => {
     await sendEmail('j6', emailData);
   }
 
-  // ── J7 — Expiration (trial ended, no subscription) ──────────────────────
+  // ── J14 — Expiration (trial ended, no subscription) ─────────────────────
   if (!sent.j7 && hoursUntilExpiry <= 0 && subscriptionStatus === 'trialing') {
     const emailData = buildJ7ExpirationEmail({ firstName });
     await sendEmail('j7', emailData);

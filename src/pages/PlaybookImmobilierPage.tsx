@@ -353,7 +353,7 @@ export default function PlaybookImmobilierPage() {
             <ArrowRight size={15} />
           </button>
           <p style={{ color: '#334155', fontSize: '.73rem', marginTop: 10 }}>
-            7 jours gratuits · Sans CB · Accès immédiat
+            14 jours gratuits · Sans CB · Accès immédiat
           </p>
         </div>
       </main>

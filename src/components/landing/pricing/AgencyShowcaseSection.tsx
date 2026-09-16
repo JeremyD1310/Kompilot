@@ -280,7 +280,7 @@ export function AgencyShowcaseSection() {
             >
               <Zap size={16} className="fill-white" />
               Développer mon agence
-              <span className="text-white/60 text-xs font-normal">(Essai gratuit de 7 jours)</span>
+              <span className="text-white/60 text-xs font-normal">(Essai gratuit de 14 jours)</span>
               <ArrowRight size={16} />
             </Button>
           </Link>

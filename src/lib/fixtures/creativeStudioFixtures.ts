@@ -76,7 +76,7 @@ export const MOCK_UGC_SCRIPTS: MockUGCScript[] = [
       { text: 'Les avis positifs boostent votre référencement local de manière exponentielle', duration: '5s' },
       { text: 'Avec Kompilot, vous gérez tout depuis un seul tableau de bord', duration: '5s' },
     ],
-    cta: { text: 'Testez Kompilot gratuitement pendant 7 jours — le lien est dans la bio !', type: 'website' },
+    cta: { text: 'Testez Kompilot gratuitement pendant 14 jours — le lien est dans la bio !', type: 'website' },
     estimatedDuration: '28s',
     createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
   },

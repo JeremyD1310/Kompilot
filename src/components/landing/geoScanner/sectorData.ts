@@ -94,7 +94,7 @@ export const SECTOR_AI_TONE: Record<Sector, { tone: string; example: string; col
 export const STEPS = [
   { id: 'identity', emoji: '🏢', title: 'Identifiez votre établissement', subtitle: 'Ces données ont déjà été pré-remplies par notre scan — vérifiez et choisissez votre secteur.' },
   { id: 'networks', emoji: '🔗', title: 'Connectez vos plateformes sectorielles', subtitle: 'Liez vos comptes pour centraliser avis et réservations dans Kompilot.' },
-  { id: 'activate', emoji: '🚀', title: 'Activez votre espace gratuitement', subtitle: '7 jours d\'essai offerts. Sans carte bancaire. Résiliable en 1 clic.' },
+  { id: 'activate', emoji: '🚀', title: 'Activez votre espace gratuitement', subtitle: '14 jours d\'essai offerts. Sans carte bancaire. Résiliable en 1 clic.' },
 ];
 
 export const UNIVERSAL_NETWORKS = [

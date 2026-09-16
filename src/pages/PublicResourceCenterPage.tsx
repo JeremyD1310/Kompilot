@@ -1,0 +1,13 @@
+import { Link } from '@tanstack/react-router';
+import { usePageSeo } from '../hooks/usePageSeo';
+import { PUBLIC_ENTITY } from '../config/publicEntity';
+import { RESOURCE_CATEGORIES, RESOURCE_GUIDES } from '../data/publicResources';
+import { pageSchema } from '../lib/structuredData';
+import { PublicPageShell } from '../components/public/PublicPageShell';
+
+export default function PublicResourceCenterPage() {
+  const title = 'Ressources sur la visibilité locale, le SEO et le GEO | Kompilot';
+  const description = 'Guides pratiques de Kompilot sur la visibilité locale, les avis, les contenus, le SEO local, le GEO et la communication multi-établissements.';
+  usePageSeo(title, description, '/ressources', { structuredData: pageSchema('/ressources', title, description) });
+  return <PublicPageShell title="Ressources pour piloter sa visibilité locale" eyebrow="Centre de ressources"><p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">Des guides éditoriaux pour les PME, commerces, indépendants, réseaux et agences. Chaque contenu indique son auteur, ses dates et ses limites.</p><div className="mt-12 grid gap-10 lg:grid-cols-[220px_1fr]"><aside className="rounded-2xl border border-white/10 bg-white/[.04] p-5"><h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">Catégories</h2><ul className="mt-4 space-y-3">{RESOURCE_CATEGORIES.map(category => <li key={category} className="text-sm text-slate-300">{category}</li>)}</ul></aside><div className="grid gap-5 md:grid-cols-2">{RESOURCE_GUIDES.map(guide => <article key={guide.slug} className="rounded-2xl border border-white/10 bg-white/[.04] p-6 transition hover:-translate-y-1 hover:border-teal-300/40"><p className="text-xs font-bold uppercase tracking-wider text-teal-300">{guide.category}</p><h2 className="mt-3 text-xl font-bold text-white">{guide.heading}</h2><p className="mt-3 text-sm leading-6 text-slate-400">{guide.description}</p><p className="mt-4 text-xs text-slate-500">Mis à jour le {new Date(guide.modified).toLocaleDateString('fr-FR')}</p><Link to={`/ressources/${guide.slug}`} className="mt-5 inline-flex min-h-11 items-center font-bold text-teal-300 hover:underline">Lire le guide <span aria-hidden="true" className="ml-2">→</span></Link></article>)}</div></div><div className="mt-14 rounded-2xl border border-teal-300/20 bg-teal-300/[.06] p-6"><p className="text-base leading-7 text-slate-200">Kompilot aide à préparer les actions de visibilité et de communication ; il ne garantit ni classement, ni citation dans un moteur IA, ni résultat commercial.</p><Link to="/pricing" className="mt-4 inline-flex min-h-11 items-center font-bold text-teal-300 hover:underline">Voir les offres Pro, Multi et Agency →</Link></div></PublicPageShell>;
+}

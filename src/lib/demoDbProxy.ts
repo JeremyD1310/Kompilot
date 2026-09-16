@@ -12,7 +12,7 @@
 
 import { blink } from '../blink/client';
 import { isDemoRuntime } from './demoDomain';
-import { createDemoBlockedResponse, isDemoExternalUrl } from './demoSafety';
+import { createDemoBlockedResponse, isDemoAllowedUrl, isDemoExternalUrl } from './demoSafety';
 import { MOCK_TABLES, MOCK_INSTANT_FORM_CONFIGS, MOCK_INSTANT_FORM_APPOINTMENTS } from './demoMockData';
 
 // ── UUID generator for mock creates ────────────────────────────────────────
@@ -163,11 +163,17 @@ export function createDemoDbProxy() {
 // ── getBlink() — returns the blink client with mocked DB on demo domain ────
 
 let _cachedBlink: typeof blink | null = null;
+let _cachedDemoRuntime = false;
 
 export function getBlink(): typeof blink {
-  if (!isDemoRuntime()) return blink;
+  const demoRuntime = isDemoRuntime();
+  if (!demoRuntime) {
+    _cachedBlink = null;
+    _cachedDemoRuntime = false;
+    return blink;
+  }
 
-  if (_cachedBlink) return _cachedBlink;
+  if (_cachedBlink && _cachedDemoRuntime === demoRuntime) return _cachedBlink;
 
   // Create a proxy that intercepts blink.db access
   const dbHandler: ProxyHandler<any> = {
@@ -193,6 +199,7 @@ export function getBlink(): typeof blink {
   }) as typeof blink;
 
   _cachedBlink = blinkProxy;
+  _cachedDemoRuntime = demoRuntime;
   return blinkProxy;
 }
 
@@ -202,15 +209,19 @@ export function getBlink(): typeof blink {
  */
 export function installDemoFetchInterceptor(): void {
   if (typeof window === 'undefined') return;
+  const store = window as Window & { __kompilotDemoFetchInstalled?: boolean; __kompilotOriginalFetch?: typeof window.fetch };
+  if (store.__kompilotDemoFetchInstalled) return;
+  store.__kompilotDemoFetchInstalled = true;
   const origFetch = window.fetch.bind(window);
+  store.__kompilotOriginalFetch = origFetch;
   const demoFetch = async function(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
     if (!isDemoRuntime()) return origFetch(input, init);
 
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
 
-    // The dashboard demo is local-only. Never report success for sensitive
-    // integrations or production database/function calls.
-    if (isDemoExternalUrl(url) || url.includes('blink.new/api/db/')) {
+    // Direct database calls are never simulated through the production API.
+    // Explicit local demo responses below must run before the default-deny rules.
+    if (url.includes('blink.new/api/db/')) {
       return createDemoBlockedResponse();
     }
 
@@ -474,19 +485,16 @@ export function installDemoFetchInterceptor(): void {
       return new Response(JSON.stringify({ success: true, message: 'Sync test réussi — 3 leads importés' }), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Public demo routes must never call the deployed backend with a synthetic
-    // token. Return a safe envelope for any unrecognised backend request so
-    // optional widgets cannot leak 401s into the prospect experience.
-    if (url.includes('.backend.blink.new')) {
-      return new Response(JSON.stringify({ success: true, status: 'demo', data: [], items: [], results: [] }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // All remaining backend, external, and cross-origin calls are denied.
+    // Planned local responses above are the only permitted exceptions.
+    if (url.includes('.backend.blink.new') || isDemoExternalUrl(url)) {
+      return createDemoBlockedResponse();
     }
 
-    // Block every non-local request by default. Local assets, Vite HMR and
-    // same-origin navigation remain available for the demo shell.
-    if (url.startsWith('http') && !url.startsWith(window.location.origin)) {
+    // Block every request except same-origin assets/navigation. This final
+    // allowlist also prevents unknown same-origin API calls from reaching
+    // production through an SDK or hand-written client.
+    if (!isDemoAllowedUrl(url, window.location.origin)) {
       return createDemoBlockedResponse();
     }
 

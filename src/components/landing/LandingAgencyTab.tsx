@@ -186,7 +186,7 @@ export function LandingAgencyTab({ onCta }: Props) {
         >
           <Zap size={16} /> Démarrer en mode Agence <ArrowRight size={16} />
         </button>
-        <p style={{ color: '#475569', fontSize: '.75rem', margin: 0 }}>Essai 7 jours gratuit · Sans carte bancaire</p>
+        <p style={{ color: '#475569', fontSize: '.75rem', margin: 0 }}>Essai 14 jours gratuit · Sans carte bancaire</p>
       </div>
 
     </section>

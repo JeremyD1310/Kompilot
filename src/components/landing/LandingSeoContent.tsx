@@ -58,7 +58,7 @@ export function LandingSeoContent() {
           <aside className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-5" aria-label="Ressources Kompilot">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">À explorer</p>
             <nav className="mt-4 flex flex-col gap-3 text-sm" aria-label="Ressources publiques">
-              <a className="text-slate-300 no-underline transition-colors hover:text-teal-300" href="/pricing">Tarifs Starter et Agency</a>
+              <a className="text-slate-300 no-underline transition-colors hover:text-teal-300" href="/pricing">Tarifs Pro, Multi et Agency</a>
               <a className="text-slate-300 no-underline transition-colors hover:text-teal-300" href="/scan/fast">Scanner votre visibilité locale</a>
               <a className="text-slate-300 no-underline transition-colors hover:text-teal-300" href="/aio-checker">Tester votre visibilité dans les réponses IA</a>
               <a className="text-slate-300 no-underline transition-colors hover:text-teal-300" href="/a-propos">À propos de Kompilot</a>
