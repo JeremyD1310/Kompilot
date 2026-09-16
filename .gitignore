@@ -47,7 +47,7 @@ traces/
 **/traces/
 **/error-context.md
 
-# Generated Playwright media and traces
+# Generated Playwright media and traces (scoped)
 playwright-report/**/*.webm
 tests/playwright-report/**/*.webm
 test-results/**/*.webm
