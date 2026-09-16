@@ -8,6 +8,8 @@ type SeoOptions = {
   image?: string;
 };
 
+const OG_IMAGE = `${KOMPILOT_ORIGIN}/og-image.png`;
+
 function upsertMeta(attribute: 'name' | 'property', key: string, content: string) {
   let meta = document.head.querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`);
   if (!meta) {
@@ -34,7 +36,7 @@ function removeManagedStructuredData() {
 
 export function usePageSeo(title: string, description: string, path: string, options: SeoOptions = {}) {
   const robots = options.robots ?? 'index, follow';
-  const image = options.image ?? `${KOMPILOT_ORIGIN}/og-image.png`;
+  const image = options.image ?? OG_IMAGE;
   const cleanPath = path.split(/[?#]/, 1)[0].replace(/\/+$/, '') || '/';
   const canonical = cleanPath === '/' ? `${KOMPILOT_ORIGIN}/` : `${KOMPILOT_ORIGIN}${cleanPath}`;
   const structuredData = options.structuredData;
@@ -42,14 +44,22 @@ export function usePageSeo(title: string, description: string, path: string, opt
     document.title = title;
     upsertMeta('name', 'description', description);
     upsertMeta('name', 'robots', robots);
+    upsertMeta('property', 'og:type', 'website');
+    upsertMeta('property', 'og:site_name', 'Kompilot');
+    upsertMeta('property', 'og:locale', 'fr_FR');
     upsertMeta('property', 'og:title', title);
     upsertMeta('property', 'og:description', description);
     upsertMeta('property', 'og:url', canonical);
     upsertMeta('property', 'og:image', image);
+    upsertMeta('property', 'og:image:width', '1200');
+    upsertMeta('property', 'og:image:height', '630');
+    upsertMeta('property', 'og:image:type', 'image/png');
+    upsertMeta('property', 'og:image:alt', 'Kompilot — cockpit marketing B2B pour la visibilité locale');
     upsertMeta('name', 'twitter:card', 'summary_large_image');
     upsertMeta('name', 'twitter:title', title);
     upsertMeta('name', 'twitter:description', description);
     upsertMeta('name', 'twitter:image', image);
+    upsertMeta('name', 'twitter:image:alt', 'Kompilot — cockpit marketing B2B pour la visibilité locale');
     upsertLink('canonical', canonical);
 
     removeManagedStructuredData();

@@ -4,7 +4,12 @@ import { Link } from '@tanstack/react-router';
 import { trackEvent } from '../../hooks/useAnalytics';
 import { getApprovedBetaTestimonials, getBetaTestimonial, type BetaTestimonial } from '../../data/betaTestimonials';
 
+const testimonialViewKeys = new Set<string>();
+
 function trackTestimonialSectionView() {
+  const key = `${window.location.pathname}:beta_testimonials`;
+  if (testimonialViewKeys.has(key)) return;
+  testimonialViewKeys.add(key);
   trackEvent('testimonial_section_view', {
     page_path: window.location.pathname,
     section_name: 'beta_testimonials',

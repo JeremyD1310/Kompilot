@@ -6,7 +6,7 @@
 import { Hono } from 'hono';
 import type { Env } from '../../lib/types';
 import { getBlink, getUserMeta, patchUserMeta, normalizeLegacyPlanForDisplay } from '../../lib/stripeHelpers';
-import { liveBillingConfig, liveStripeKey, isDemoBillingRequest, demoBillingResponse } from '../../lib/liveBilling';
+import { liveBillingConfig, liveStripeKey, isLiveBillingEnabled, liveBillingDisabledResponse, isDemoBillingRequest, demoBillingResponse } from '../../lib/liveBilling';
 import { SUBSCRIPTION_PLANS } from '../../../shared/pricingCatalog';
 
 export const router = new Hono();
@@ -22,6 +22,7 @@ router.post('/api/billing/portal', async (c) => {
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
   if (isDemoBillingRequest(c, rawEnv)) return demoBillingResponse(c);
+  if (!isLiveBillingEnabled(rawEnv)) return liveBillingDisabledResponse(c);
 
   // 2. Use only the canonical restricted Live Stripe configuration.
   const live = liveBillingConfig(rawEnv);
@@ -67,6 +68,7 @@ router.get('/api/billing/status', async (c) => {
 
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
+  if (!isLiveBillingEnabled(rawEnv)) return liveBillingDisabledResponse(c);
 
   const meta = await getUserMeta(blink, auth.userId);
   const stripeKey = liveStripeKey(rawEnv);

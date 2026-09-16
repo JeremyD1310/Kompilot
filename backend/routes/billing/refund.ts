@@ -6,7 +6,7 @@
 import { Hono } from 'hono';
 import type { Env } from '../../lib/types';
 import { getBlink, getUserMeta, patchUserMeta } from '../../lib/stripeHelpers';
-import { liveBillingConfig } from '../../lib/liveBilling';
+import { liveBillingConfig, isLiveBillingEnabled, liveBillingDisabledResponse } from '../../lib/liveBilling';
 
 export const router = new Hono();
 
@@ -27,6 +27,7 @@ router.get('/api/billing/refund-eligibility', async (c) => {
 
   const auth = await blinkSdk.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
+  if (!isLiveBillingEnabled(rawEnv)) return liveBillingDisabledResponse(c);
 
   const meta = await getUserMeta(blinkSdk, auth.userId);
 
@@ -140,6 +141,7 @@ router.post('/api/billing/process-refund', async (c) => {
 
   const body = await c.req.json<{ action: string }>();
   const action = body?.action;
+  if (!isLiveBillingEnabled(rawEnv) && !['b2b_freeze_request', 'b2b_transfer_request', 'b2b_escalate'].includes(action)) return liveBillingDisabledResponse(c);
 
   // Non-Stripe actions: log and return success
   if (action === 'b2b_freeze_request' || action === 'b2b_transfer_request' || action === 'b2b_escalate') {

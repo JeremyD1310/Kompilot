@@ -41,6 +41,13 @@ const ExtendTrialPage          = React.lazy(() => import('../pages/ExtendTrialPa
 const SectorPage               = React.lazy(() => import('../pages/SectorPage'));
 const MarketingInfoPage        = React.lazy(() => import('../pages/MarketingInfoPage'));
 const InformationsKompilotPage = React.lazy(() => import('../pages/InformationsKompilotPage'));
+const AboutPage                = React.lazy(() => import('../pages/AboutPage'));
+const EditorialPolicyPage      = React.lazy(() => import('../pages/EditorialPolicyPage'));
+const PublicResourceCenterPage = React.lazy(() => import('../pages/PublicResourceCenterPage'));
+const PublicResourceGuidePage  = React.lazy(() => import('../pages/PublicResourceGuidePage'));
+const PublicComparativePage    = React.lazy(() => import('../pages/PublicComparativePage'));
+const CaseStudiesPage          = React.lazy(() => import('../pages/CaseStudiesPage'));
+const CaseStudyDraftPage       = React.lazy(() => import('../pages/CaseStudyDraftPage'));
 
 export const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: LandingPage });
 export const loginRoute = createRoute({ getParentRoute: () => rootRoute, path: '/login', component: LoginPage });
@@ -49,7 +56,13 @@ export const privacyRoute = createRoute({ getParentRoute: () => rootRoute, path:
 export const legalRoute = createRoute({ getParentRoute: () => rootRoute, path: '/legal', component: LegalPage });
 export const cgvRoute = createRoute({ getParentRoute: () => rootRoute, path: '/cgv', component: CGVPage });
 export const informationsKompilotRoute = createRoute({ getParentRoute: () => rootRoute, path: '/informations-kompilot', component: InformationsKompilotPage });
-export const aProposRoute = createRoute({ getParentRoute: () => rootRoute, path: '/a-propos', component: InformationsKompilotPage });
+export const aProposRoute = createRoute({ getParentRoute: () => rootRoute, path: '/a-propos', component: AboutPage });
+export const editorialPolicyRoute = createRoute({ getParentRoute: () => rootRoute, path: '/politique-editoriale', component: EditorialPolicyPage });
+export const resourcesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/ressources', component: PublicResourceCenterPage });
+export const resourceGuideRoute = createRoute({ getParentRoute: () => rootRoute, path: '/ressources/$slug', component: PublicResourceGuidePage });
+export const comparativeRoute = createRoute({ getParentRoute: () => rootRoute, path: '/comparatifs/$slug', component: PublicComparativePage });
+export const caseStudiesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/cas-clients', component: CaseStudiesPage });
+export const caseStudyDraftRoute = createRoute({ getParentRoute: () => rootRoute, path: '/cas-clients/$slug', component: CaseStudyDraftPage });
 // Alias routes for Stripe/payment compliance
 export const confidentialiteRoute = createRoute({ getParentRoute: () => rootRoute, path: '/confidentialite', component: PrivacyPage });
 export const politiqueConfidentialiteRoute = createRoute({ getParentRoute: () => rootRoute, path: '/politique-de-confidentialite', component: PrivacyPage });
@@ -105,6 +118,12 @@ export const publicRoutes = [
   cgvRoute,
   informationsKompilotRoute,
   aProposRoute,
+  editorialPolicyRoute,
+  resourcesRoute,
+  resourceGuideRoute,
+  comparativeRoute,
+  caseStudiesRoute,
+  caseStudyDraftRoute,
   cguAliasRoute,
   confidentialiteRoute,
   politiqueConfidentialiteRoute,

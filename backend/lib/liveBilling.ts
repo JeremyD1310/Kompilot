@@ -13,6 +13,20 @@ export const LIVE_BILLING_SECRETS = [
   'STRIPE_CANCEL_URL',
 ] as const
 
+export const LIVE_BILLING_DISABLED_CODE = 'LIVE_BILLING_DISABLED'
+
+export function isLiveBillingEnabled(env: Record<string, unknown>): boolean {
+  return String(env.LIVE_BILLING_ENABLED ?? '').trim().toLowerCase() === 'true'
+}
+
+export function liveBillingDisabledResponse(c: Context) {
+  return c.json({
+    error: 'La facturation en ligne sera activée après validation commerciale.',
+    code: LIVE_BILLING_DISABLED_CODE,
+    message: 'Essai gratuit, demande de démonstration ou activation commerciale : jeremy@kompilot.fr',
+  }, 403)
+}
+
 export type LiveBillingConfig = {
   stripeKey: string
   appBaseUrl: URL
@@ -38,6 +52,7 @@ export function blinkBackendUrl(env: Record<string, unknown>): string | null {
 export function liveBillingConfig(env: Record<string, unknown>):
   | { config: LiveBillingConfig; missing: []; error: null }
   | { config: null; missing: string[]; error: string | null } {
+  if (!isLiveBillingEnabled(env)) return { config: null, missing: [], error: LIVE_BILLING_DISABLED_CODE }
   const missing = LIVE_BILLING_SECRETS.filter((name) => !String(env[name] ?? '').trim())
   if (missing.length > 0) return { config: null, missing: [...missing], error: null }
 

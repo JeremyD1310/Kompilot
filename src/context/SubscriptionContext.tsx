@@ -57,6 +57,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }), []);
 
   const refreshBillingStatus = useCallback(async () => {
+    if (isDemoRuntime() || !blink.auth.isAuthenticated()) return;
     try {
       const data = await fetchBillingStatus();
       setStatusState(data.status);

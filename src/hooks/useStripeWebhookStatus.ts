@@ -8,6 +8,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { blink } from '../blink/client';
+import { isDemoRuntime } from '../lib/demoDomain';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'https://gbrhsehk.backend.blink.new';
 
@@ -81,12 +82,15 @@ async function fetchStatus(): Promise<StripeWebhookStatus> {
 }
 
 export function useStripeWebhookStatus() {
+  const enabled = !isDemoRuntime() && blink.auth.isAuthenticated();
+
   return useQuery<StripeWebhookStatus>({
     queryKey: ['stripe-webhook-status'],
     queryFn: fetchStatus,
+    enabled,
     staleTime: 5 * 60 * 1000,
     // Return NONE on error instead of throwing
-    retry: 1,
+    retry: false,
     throwOnError: false,
     placeholderData: NONE,
   });

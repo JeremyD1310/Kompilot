@@ -6,7 +6,7 @@
 import { Hono } from 'hono';
 import type { Env } from '../../lib/types';
 import { getBlink, getUserMeta, patchUserMeta, resolveStripePrice } from '../../lib/stripeHelpers';
-import { liveBillingConfig, isDemoBillingRequest, demoBillingResponse, addQuery } from '../../lib/liveBilling';
+import { liveBillingConfig, isLiveBillingEnabled, liveBillingDisabledResponse, isDemoBillingRequest, demoBillingResponse, addQuery } from '../../lib/liveBilling';
 import { resolveSubscriptionPlan, TRIAL_DAYS } from '../../../shared/pricingCatalog';
 
 export const router = new Hono();
@@ -22,6 +22,7 @@ router.post('/api/billing/checkout', async (c) => {
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
   if (isDemoBillingRequest(c, rawEnv)) return demoBillingResponse(c);
+  if (!isLiveBillingEnabled(rawEnv)) return liveBillingDisabledResponse(c);
 
   // 2. Use only the canonical restricted Live Stripe configuration.
   const live = liveBillingConfig(rawEnv);
