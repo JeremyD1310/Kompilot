@@ -22,6 +22,7 @@ import {
 } from '../lib/demoAccount';
 import { MobileKpiCard, AgencyBadge, DetailButton, UpgradeCTA, PlanGate } from '../components/shared/ResponsiveShared';
 import { LocalVisibilityScanner } from '../components/geo/LocalVisibilityScanner';
+import { B2BExecutiveDashboard } from '../components/dashboard/B2BExecutiveDashboard';
 
 // ── Storage keys ─────────────────────────────────────────────────────────────
 const DEMO_ACTIVE_KEY = 'kompilot_demo_active_session';
@@ -218,6 +219,10 @@ export default function DemoDashboardPage() {
                   <MobileKpiCard icon={<TrendingUp size={15} />} value={`${profile.googleRating}/5`} label="Note Google" change="excellent" trend="up" accent="bg-emerald-500/10 text-emerald-500" />
                   <MobileKpiCard icon={<Star size={15} />} value={geo.overall.toString()} label="Score GEO" change={`+${geo.trend}`} trend="up" accent="bg-amber-500/10 text-amber-500" />
                 </div>
+              </motion.div>
+
+              <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible" className="mb-6">
+                <B2BExecutiveDashboard establishmentName={profile.businessName} isDemo />
               </motion.div>
 
               {/* Local visibility scanner + GEO breakdown */}

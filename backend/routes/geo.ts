@@ -11,6 +11,8 @@
  */
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
+import type { Env } from '../lib/types';
+import { consumeExecuteRefund } from '../lib/creditService';
 
 export const router = new Hono();
 
@@ -48,16 +50,14 @@ router.get('/api/geo/quota', async (c) => {
   if (!establishmentId) return c.json({ error: 'establishment_id required' }, 400);
 
   const weekKey = getWeekKey();
-  const scanKey = `geo_scan_count:${establishmentId}:${weekKey}`;
-
   // Check scans performed this week via KV-style metadata in DB
   try {
     const rows = await blink.db.scheduled_posts.list({
       where: {
-        establishment_id: establishmentId,
-        user_id: auth.userId,
+        establishmentId,
+        userId: auth.userId,
         status: 'geo_scan',
-        // Filter by current week (approximation via created_at)
+        // Filter by current week (approximation via createdAt)
       },
       limit: 10,
     });
@@ -105,8 +105,8 @@ router.post('/api/geo/scan', async (c) => {
   try {
     const existingScans = await blink.db.scheduled_posts.list({
       where: {
-        establishment_id,
-        user_id: auth.userId,
+        establishmentId: establishment_id,
+        userId: auth.userId,
         status: 'geo_scan',
       },
       limit: 5,
@@ -129,35 +129,57 @@ router.post('/api/geo/scan', async (c) => {
     // If rate-limit check fails, allow scan to proceed (fail-open for UX)
   }
 
+  const requestId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || crypto.randomUUID();
+  const scanId = `geo:${auth.userId}:${establishment_id}:${requestId}`.replace(/[^a-zA-Z0-9:_-]/g, '_').slice(0, 255);
+  const referenceId = `geo-scan:${auth.userId}:${establishment_id}:${requestId}`;
+
   // ── Enqueue async scan via a scheduled_posts record ──────────────────
   // We reuse the scheduled_posts table with status='geo_scan' as a job queue.
   // A real implementation would use blink.queue; this is a minimal guardrail approach.
   try {
-    const scanJob = await blink.db.scheduled_posts.create({
-      id: `geo_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      userId: auth.userId,
-      establishmentId: establishment_id,
-      textContent: JSON.stringify({
-        type: 'geo_scan',
-        keywords,
-        city,
-        tokenCap: GEO_SCAN_COST_TOKENS_CAP,
-        scheduledAt: new Date().toISOString(),
-      }),
-      channels: '["geo_scan"]',
-      status: 'geo_scan',
-      scheduledAt: new Date(Date.now() + 60 * 1000).toISOString(), // process in 60s
-    });
+    const existingScan = await blink.db.scheduled_posts.get(scanId);
+    if (existingScan?.userId === auth.userId) return c.json({ ...existingScan, replayed: true }, 202);
 
-    return c.json({
-      success: true,
-      scan_id: (scanJob as any).id,
-      message: 'Scan G.E.O. planifié. Les résultats seront disponibles sous quelques minutes.',
-      token_cap: GEO_SCAN_COST_TOKENS_CAP,
-      disclaimer: 'Ce scan est asynchrone et plafonné à ' + GEO_SCAN_COST_TOKENS_CAP + ' tokens pour maîtriser les coûts IA.',
-    }, 202);
+    const charged = await consumeExecuteRefund(
+      blink,
+      auth.userId,
+      'geo_visibility_scan',
+      'G.E.O. visibility scan',
+      referenceId,
+      async () => {
+        const scanJob = await blink.db.scheduled_posts.create({
+          id: scanId,
+          userId: auth.userId,
+          establishmentId: establishment_id,
+          textContent: JSON.stringify({
+            type: 'geo_scan',
+            keywords,
+            city,
+            tokenCap: GEO_SCAN_COST_TOKENS_CAP,
+            scheduledAt: new Date().toISOString(),
+          }),
+          channels: '["geo_scan"]',
+          status: 'geo_scan',
+          scheduledAt: new Date(Date.now() + 60 * 1000).toISOString(), // process in 60s
+        });
+
+        return {
+          success: true,
+          scan_id: (scanJob as any).id,
+          message: 'Scan G.E.O. planifié. Les résultats seront disponibles sous quelques minutes.',
+          token_cap: GEO_SCAN_COST_TOKENS_CAP,
+          disclaimer: 'Ce scan est asynchrone et plafonné à ' + GEO_SCAN_COST_TOKENS_CAP + ' tokens pour maîtriser les coûts IA.',
+        };
+      },
+      'ai',
+      { provider: 'geo', establishmentId: establishment_id, keywordCount: keywords.length },
+    );
+
+    return c.json({ ...charged.result, creditsLeft: charged.balanceAfter }, 202);
   } catch (err) {
     console.error('[GEO] scan enqueue error', err);
+    if (err instanceof Error && err.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Crédits insuffisants pour ce scan.', creditsLeft: 0 }, 402);
+    if (err instanceof Error && err.message === 'IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT') return c.json({ error: 'Replay result is not available yet' }, 409);
     return c.json({ error: 'Failed to schedule scan' }, 500);
   }
 });

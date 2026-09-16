@@ -1,33 +1,32 @@
-/**
- * AioCreditPackCard — Purchase card for the AIO Sync & Creative Studio credit pack.
- *
- * Shown in:
- *   - SubscriptionPage (billing tab)
- *   - Quota alert banner (when user hits 80% threshold)
- *   - Creative Studio paywall
- */
-
 import { motion } from 'framer-motion';
-import { Video, Search, Zap, Loader2, Check, Clock } from 'lucide-react';
-import { useAioCreditPack } from '../../hooks/useAioCreditPack';
+import { Check, Loader2, Zap } from 'lucide-react';
 import { toast } from '@blinkdotnew/ui';
+import { useAioCreditPack, type AioCreditPack } from '../../hooks/useAioCreditPack';
 
 interface AioCreditPackCardProps {
-  /** Compact mode for inline display (e.g. inside a banner) */
   compact?: boolean;
-  /** Called after successful purchase initiation */
   onPurchaseStarted?: () => void;
 }
 
-export function AioCreditPackCard({ compact = false, onPurchaseStarted }: AioCreditPackCardProps) {
-  const { pack, purchase, purchasing, error } = useAioCreditPack();
+function OfferDetails({ pack }: { pack: AioCreditPack }) {
+  return (
+    <>
+      <div className="flex items-baseline gap-2">
+        <span className="text-2xl font-black text-foreground">+{pack.creditAmount.toLocaleString('fr-FR')}</span>
+        <span className="text-sm font-medium text-muted-foreground">crédits IA</span>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">{pack.description}</p>
+    </>
+  );
+}
 
-  const handlePurchase = async () => {
-    const result = await purchase();
+export function AioCreditPackCard({ compact = false, onPurchaseStarted }: AioCreditPackCardProps) {
+  const { packs, purchase, purchasing, purchasingProductId, error } = useAioCreditPack();
+
+  const handlePurchase = async (pack: AioCreditPack) => {
+    const result = await purchase(pack.productId);
     if (result.url) {
-      toast.success('Redirection vers Stripe…', {
-        description: 'Le paiement s\'effectue dans un nouvel onglet.',
-      });
+      toast.success('Redirection vers Stripe…', { description: 'Le paiement s’effectue dans un nouvel onglet.' });
       onPurchaseStarted?.();
     } else if (result.error) {
       toast.error(result.error);
@@ -35,166 +34,78 @@ export function AioCreditPackCard({ compact = false, onPurchaseStarted }: AioCre
   };
 
   if (compact) {
+    const featured = packs[1];
+    const isPurchasing = purchasingProductId === featured.productId;
     return (
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
-        background: 'linear-gradient(135deg, rgba(13,148,136,.08), rgba(129,140,248,.06))',
-        border: '1px solid rgba(13,148,136,.2)',
-        borderRadius: 14, padding: '16px 20px',
-      }}>
-        <div style={{ flex: 1, minWidth: 200 }}>
-          <p style={{ color: '#E2E8F0', fontWeight: 700, fontSize: '.88rem', margin: '0 0 2px' }}>
-            {pack.label}
-          </p>
-          <p style={{ color: '#94A3B8', fontSize: '.75rem', margin: 0 }}>
-            {pack.lumaCredits} vidéos Luma AI + {pack.serpapiCredits} requêtes SerpApi
-          </p>
+      <div className="flex flex-wrap items-center gap-4 rounded-xl border border-primary/20 bg-primary/5 px-5 py-4">
+        <div className="min-w-[200px] flex-1">
+          <p className="font-bold text-foreground">{featured.label}</p>
+          <p className="text-xs text-muted-foreground">{featured.creditAmount.toLocaleString('fr-FR')} crédits IA · achat unique</p>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <p style={{ color: '#0D9488', fontWeight: 900, fontSize: '1.2rem', margin: '0 0 4px' }}>
-            {pack.priceHT} € HT
-          </p>
+        <div className="text-right">
+          <p className="mb-1 text-lg font-black text-primary">{featured.priceHT} € HT</p>
           <button
-            onClick={handlePurchase}
+            type="button"
+            onClick={() => void handlePurchase(featured)}
             disabled={purchasing}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              background: 'linear-gradient(135deg, #0D9488, #0f766e)',
-              color: '#fff', fontWeight: 700, fontSize: '.78rem',
-              border: 'none', borderRadius: 10, padding: '8px 16px',
-              cursor: purchasing ? 'not-allowed' : 'pointer',
-              opacity: purchasing ? 0.7 : 1,
-            }}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {purchasing ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
-            {purchasing ? '…' : 'Recharger'}
+            {isPurchasing ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+            {isPurchasing ? 'Redirection…' : 'Recharger'}
           </button>
         </div>
+        {error && <p className="basis-full text-center text-xs text-destructive">{error}</p>}
       </div>
     );
   }
 
   return (
-    <motion.div
+    <motion.section
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      style={{
-        background: 'linear-gradient(145deg, rgba(13,21,38,.98), rgba(8,14,28,.99))',
-        border: '1px solid rgba(13,148,136,.25)',
-        borderRadius: 20, overflow: 'hidden',
-        boxShadow: '0 8px 40px rgba(0,0,0,.3), 0 0 0 1px rgba(13,148,136,.08)',
-      }}
+      aria-labelledby="aio-credit-pack-title"
+      className="overflow-hidden rounded-2xl border border-primary/20 bg-card shadow-lg"
     >
-      {/* Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, rgba(13,148,136,.12), rgba(129,140,248,.08))',
-        padding: '20px 24px', borderBottom: '1px solid rgba(13,148,136,.15)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'rgba(13,148,136,.15)', border: '1px solid rgba(13,148,136,.25)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Zap size={18} color="#0D9488" />
-          </div>
+      <div className="border-b border-border bg-primary/5 px-6 py-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><Zap size={19} /></div>
           <div>
-            <h3 style={{ color: '#E2E8F0', fontWeight: 800, fontSize: '1rem', margin: 0 }}>
-              {pack.label}
-            </h3>
-            <p style={{ color: '#64748B', fontSize: '.75rem', margin: 0 }}>
-              Achat unique — crédits sans limite de durée
-            </p>
+            <h3 id="aio-credit-pack-title" className="font-extrabold text-foreground">Recharges IA</h3>
+            <p className="text-xs text-muted-foreground">Crédits génériques, valables 12 mois</p>
           </div>
         </div>
       </div>
-
-      {/* Body */}
-      <div style={{ padding: '24px' }}>
-        {/* Credits */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-          <div style={{
-            background: 'rgba(129,140,248,.06)', border: '1px solid rgba(129,140,248,.15)',
-            borderRadius: 14, padding: '16px', textAlign: 'center',
-          }}>
-            <Video size={20} color="#818CF8" style={{ margin: '0 auto 8px' }} />
-            <p style={{ color: '#818CF8', fontWeight: 900, fontSize: '1.5rem', margin: '0 0 2px' }}>
-              {pack.lumaCredits}
-            </p>
-            <p style={{ color: '#94A3B8', fontSize: '.72rem', margin: 0 }}>
-              Générations vidéo Luma AI
-            </p>
-          </div>
-          <div style={{
-            background: 'rgba(13,148,136,.06)', border: '1px solid rgba(13,148,136,.15)',
-            borderRadius: 14, padding: '16px', textAlign: 'center',
-          }}>
-            <Search size={20} color="#0D9488" style={{ margin: '0 auto 8px' }} />
-            <p style={{ color: '#0D9488', fontWeight: 900, fontSize: '1.5rem', margin: '0 0 2px' }}>
-              {pack.serpapiCredits}
-            </p>
-            <p style={{ color: '#94A3B8', fontSize: '.72rem', margin: 0 }}>
-              Requêtes SerpApi AIO Sync
-            </p>
-          </div>
-        </div>
-
-        {/* Features */}
-        <div style={{ marginBottom: 20 }}>
-          {[
-            'Crédits sans limite de durée — consommés à la demande',
-            'Activés instantanément après paiement',
-            'Cumulables avec votre forfait mensuel/annuel',
-          ].map((f, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
-              <Check size={14} color="#10B981" style={{ flexShrink: 0 }} />
-              <span style={{ color: '#CBD5E1', fontSize: '.78rem' }}>{f}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Price + CTA */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: 'rgba(13,148,136,.06)', border: '1px solid rgba(13,148,136,.15)',
-          borderRadius: 14, padding: '16px 20px',
-        }}>
-          <div>
-            <p style={{ color: '#0D9488', fontWeight: 900, fontSize: '1.6rem', margin: 0, lineHeight: 1 }}>
-              {pack.priceHT} €
-              <span style={{ fontSize: '.72rem', fontWeight: 600, color: '#64748B', marginLeft: 4 }}>HT</span>
-            </p>
-            <p style={{ color: '#64748B', fontSize: '.7rem', margin: '2px 0 0' }}>
-              {pack.priceTTC.toFixed(2)} € TTC
-            </p>
-          </div>
-          <button
-            onClick={handlePurchase}
-            disabled={purchasing}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 7,
-              background: purchasing ? 'rgba(13,148,136,.2)' : 'linear-gradient(135deg, #0D9488, #0f766e)',
-              color: '#fff', fontWeight: 700, fontSize: '.88rem',
-              border: 'none', borderRadius: 12, padding: '12px 24px',
-              cursor: purchasing ? 'not-allowed' : 'pointer',
-              boxShadow: purchasing ? 'none' : '0 0 20px rgba(13,148,136,.3)',
-              transition: 'all .2s',
-              opacity: purchasing ? 0.7 : 1,
-            }}
-          >
-            {purchasing
-              ? <><Loader2 size={15} className="animate-spin" /> Redirection…</>
-              : <><Zap size={15} /> Recharger maintenant</>}
-          </button>
-        </div>
-
-        {error && (
-          <p style={{ color: '#EF4444', fontSize: '.75rem', margin: '10px 0 0', textAlign: 'center' }}>
-            {error}
-          </p>
-        )}
+      <div className="grid gap-3 p-5 md:grid-cols-3">
+        {packs.map((pack) => {
+          const isPurchasing = purchasingProductId === pack.productId;
+          const isFeatured = pack.productId === 'kompilot_ai_750_once';
+          return (
+            <article key={pack.productId} className={`flex flex-col rounded-xl border p-4 ${isFeatured ? 'border-primary/50 bg-primary/5 shadow-sm' : 'border-border bg-background/50'}`}>
+              <OfferDetails pack={pack} />
+              <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
+                <div>
+                  <p className="font-black text-primary">{pack.priceHT} € <span className="text-[10px] font-semibold text-muted-foreground">HT</span></p>
+                  <p className="text-[11px] text-muted-foreground">{pack.priceTTC.toFixed(2)} € TTC</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void handlePurchase(pack)}
+                  disabled={purchasing}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isPurchasing ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+                  {isPurchasing ? '…' : 'Acheter'}
+                </button>
+              </div>
+            </article>
+          );
+        })}
       </div>
-    </motion.div>
+      <div className="flex items-center gap-2 border-t border-border px-6 py-4 text-xs text-muted-foreground">
+        <Check size={14} className="shrink-0 text-primary" /> Aucun quota Luma ou SerpApi séparé
+      </div>
+      {error && <p className="px-6 pb-4 text-center text-xs text-destructive">{error}</p>}
+    </motion.section>
   );
 }

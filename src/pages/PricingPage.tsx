@@ -21,7 +21,7 @@ import {
   type Plan,
   type BillingInterval,
 } from '../components/pricing/PricingPageParts';
-import type { KompilotPlanId } from '../components/landing/pricing/PricingData';
+import type { CommercialPlanId } from '../../shared/pricingCatalog';
 
 export default function PricingPage() {
   usePageSeo(
@@ -30,7 +30,7 @@ export default function PricingPage() {
     '/pricing',
   );
 
-  const [checkoutPlanId, setCheckoutPlanId] = useState<KompilotPlanId | null>(null);
+  const [checkoutPlanId, setCheckoutPlanId] = useState<CommercialPlanId | null>(null);
   const [billing, setBilling] = useState<BillingInterval>('monthly');
   const plans = useMemo(() => getPlansForBilling(billing), [billing]);
 
@@ -40,7 +40,7 @@ export default function PricingPage() {
       return;
     }
     // Toggle checkout inline panel
-    setCheckoutPlanId(prev => prev === plan.id ? null : plan.id as KompilotPlanId);
+    setCheckoutPlanId(prev => prev === plan.id ? null : plan.id as CommercialPlanId);
   };
 
   return (
@@ -93,7 +93,7 @@ export default function PricingPage() {
         </h1>
 
         <p className="text-base max-w-lg mx-auto leading-relaxed" style={{ color: '#64748B' }}>
-          3 formules B2B · Essai 7 jours inclus · Résiliation sans frais à tout moment
+          Essai gratuit 14 jours · 150 crédits IA · 10 SMS · Résiliation sans frais
         </p>
         <p className="mx-auto mt-5 max-w-2xl text-sm leading-6" style={{ color: '#94A3B8' }}>
           <strong style={{ color: '#CBD5E1' }}>Kompilot</strong> est une plateforme SaaS B2B de marketing local pour contenus, avis clients et visibilité en ligne. Les tarifs et le périmètre affichés sont ceux publiés dans cette page ; aucun résultat commercial n’est garanti.

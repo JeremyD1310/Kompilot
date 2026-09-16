@@ -8,6 +8,7 @@
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
+import { consumeExecuteRefund } from '../lib/creditService';
 
 export const router = new Hono();
 
@@ -33,46 +34,61 @@ router.post('/api/aio/audit', async (c) => {
     return c.json({ error: 'Maximum 10 keywords per audit' }, 400);
   }
 
-  const auditResults: {
-    keyword: string;
-    aiAnswer: string;
-    isCited: boolean;
-    status: 'VISIBLE' | 'INVISIBLE_DROP';
-    timestamp: string;
-  }[] = [];
+  const requestId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || crypto.randomUUID();
+  const referenceId = `aio-audit:${auth.userId}:${requestId}`;
 
-  for (const keyword of keywords) {
-    const prompt = `Agis comme un acheteur B2B potentiel. Réponds de manière concise : Quels sont les meilleurs outils ou solutions pour : "${keyword}" ?`;
+  const charged = await consumeExecuteRefund(
+    blink,
+    auth.userId,
+    'aio_audit',
+    'AIO visibility audit',
+    referenceId,
+    async () => {
+      const auditResults: {
+        keyword: string;
+        aiAnswer: string;
+        isCited: boolean;
+        status: 'VISIBLE' | 'INVISIBLE_DROP';
+        timestamp: string;
+      }[] = [];
 
-    try {
-      const { text: aiAnswer } = await blink.ai.generateText({
-        prompt,
-        model: 'gpt-4.1-mini',
-      });
+      for (const keyword of keywords) {
+        const prompt = `Agis comme un acheteur B2B potentiel. Réponds de manière concise : Quels sont les meilleurs outils ou solutions pour : "${keyword}" ?`;
 
-      const isCited = aiAnswer.toLowerCase().includes(brandName.toLowerCase());
+        try {
+          const { text: aiAnswer } = await blink.ai.generateText({
+            prompt,
+            model: 'gpt-4.1-mini',
+          });
 
-      auditResults.push({
-        keyword,
-        aiAnswer,
-        isCited,
-        status: isCited ? 'VISIBLE' : 'INVISIBLE_DROP',
-        timestamp: new Date().toISOString(),
-      });
-    } catch (err) {
-      // On individual keyword failure, record error entry but continue
-      auditResults.push({
-        keyword,
-        aiAnswer: `Erreur lors de l'analyse : ${(err as Error).message ?? 'unknown'}`,
-        isCited: false,
-        status: 'INVISIBLE_DROP',
-        timestamp: new Date().toISOString(),
-      });
-    }
-  }
+          const isCited = aiAnswer.toLowerCase().includes(brandName.toLowerCase());
 
-  const visibleCount = auditResults.filter(r => r.isCited).length;
-  const visibilityScore = Math.round((visibleCount / auditResults.length) * 100);
+          auditResults.push({
+            keyword,
+            aiAnswer,
+            isCited,
+            status: isCited ? 'VISIBLE' : 'INVISIBLE_DROP',
+            timestamp: new Date().toISOString(),
+          });
+        } catch (err) {
+          // On individual keyword failure, record error entry but continue
+          auditResults.push({
+            keyword,
+            aiAnswer: `Erreur lors de l'analyse : ${(err as Error).message ?? 'unknown'}`,
+            isCited: false,
+            status: 'INVISIBLE_DROP',
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
 
-  return c.json({ auditResults, visibilityScore, brandName });
+      const visibleCount = auditResults.filter(r => r.isCited).length;
+      const visibilityScore = Math.round((visibleCount / auditResults.length) * 100);
+      return { auditResults, visibilityScore, brandName };
+    },
+    'ai',
+    { provider: 'blink-ai', keywordCount: keywords.length },
+  );
+
+  return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
 });

@@ -13,15 +13,13 @@ import {
 } from '../lib/stripeHelpers';
 import { getDunningEmailHtml, getDunningFollowUpHtml } from '../lib/emailTemplates';
 import { handleCreditPackGrant } from '../lib/creditPackHandler';
-import { handleAioCreditPackGrant } from '../lib/aioCreditPackHandler';
+import { getPlanEntitlements } from '../../shared/pricingCatalog';
 
 export const router = new Hono();
 
-/** Helper: plan tier for comparison (higher = more premium) */
+/** Helper: plan tier for comparison (higher = more premium). */
 function getPlanTier(planId: string | null | undefined): number {
-  if (planId === 'agency') return 2;
-  if (planId === 'starter') return 1;
-  return 0;
+  return ({ pro: 1, multi: 2, agency: 3, enterprise: 4 } as Record<string, number>)[planId ?? ''] ?? 0;
 }
 
 // ── Meta HMAC-SHA256 verification ─────────────────────────────────────────────
@@ -67,11 +65,17 @@ router.post('/api/webhooks/stripe', async (c) => {
     return c.json({ error: 'Invalid signature' }, 400);
   }
 
-  const event = JSON.parse(rawBody) as {
-    type: string;
-    data: { object: Record<string, any> };
-  };
+  let event: { id?: string; type: string; data: { object: Record<string, any> } };
+  try { event = JSON.parse(rawBody); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+  if (!event.id || !event.type || !event.data?.object) return c.json({ error: 'Malformed Stripe event' }, 400);
   const blink = getBlink(env);
+  try {
+    await blink.db.stripe_webhook_events.create({ id: event.id, eventType: event.type, status: 'processing', receivedAt: new Date().toISOString() } as any);
+  } catch {
+    const prior = await blink.db.stripe_webhook_events.list({ where: { id: event.id }, limit: 1 }) as any[];
+    if (prior.length) return c.json({ received: true, replay: true, type: event.type });
+    throw new Error('Unable to record Stripe event');
+  }
 
   // invoice.payment_failed → progressive dunning (J+0, J+1, J+3) + critical alert
   if (event.type === 'invoice.payment_failed') {
@@ -168,14 +172,14 @@ router.post('/api/webhooks/stripe', async (c) => {
     const userId     = (sub.metadata?.user_id as string | undefined)
                     || (await findUserByCustomer(blink, customerId));
     if (userId) {
-      const planId   = (sub.metadata?.planId as string | undefined) || null;
-      const billing  = (sub.metadata?.billing as BillingInterval | undefined) || 'monthly';
+      const planId   = ((sub.metadata?.plan_id ?? sub.metadata?.planId) as string | undefined) || null;
+      const billing  = ((sub.metadata?.billing_interval ?? sub.metadata?.billing) as BillingInterval | undefined) || 'monthly';
       const subId    = sub.id as string;
 
       // Try to resolve plan + billing from actual subscription price (more reliable than metadata)
       const firstItem = sub.items?.data?.[0];
       const priceId   = firstItem?.price?.id as string | undefined;
-      const resolved  = priceId ? resolvePriceToPlan(priceId, rawEnv) : null;
+      const resolved  = firstItem?.price?.lookup_key ? resolvePriceToPlan(firstItem.price.lookup_key, rawEnv) : null;
       const finalPlanId  = resolved?.planId ?? planId;
       const finalBilling = resolved?.billing ?? billing;
 
@@ -231,13 +235,13 @@ router.post('/api/webhooks/stripe', async (c) => {
       const newStatus = statusMap[sub.status as string] || sub.status;
 
       // Extract planId from subscription metadata (set during checkout)
-      const planId  = (sub.metadata?.planId as string | undefined) || null;
-      const billing = (sub.metadata?.billing as BillingInterval | undefined) || null;
+      const planId  = ((sub.metadata?.plan_id ?? sub.metadata?.planId) as string | undefined) || null;
+      const billing = ((sub.metadata?.billing_interval ?? sub.metadata?.billing) as BillingInterval | undefined) || null;
 
       // Resolve plan + billing from actual subscription price (most reliable)
       const firstItem = sub.items?.data?.[0];
       const priceId   = firstItem?.price?.id as string | undefined;
-      const resolved  = priceId ? resolvePriceToPlan(priceId, rawEnv) : null;
+      const resolved  = firstItem?.price?.lookup_key ? resolvePriceToPlan(firstItem.price.lookup_key, rawEnv) : null;
       const finalPlanId  = resolved?.planId ?? planId;
       const finalBilling = resolved?.billing ?? billing;
 
@@ -331,17 +335,17 @@ router.post('/api/webhooks/stripe', async (c) => {
                     || (session.client_reference_id as string | undefined)
                     || (await findUserByCustomer(blink, customerId));
     if (userId && session.mode === 'subscription') {
-      const planId  = (session.metadata?.planId as string | undefined)
+      const planId  = ((session.metadata?.plan_id ?? session.metadata?.planId) as string | undefined)
                   || (session.subscription as any)?.metadata?.planId
                   || null;
-      const billing = (session.metadata?.billing as BillingInterval | undefined)
+      const billing = ((session.metadata?.billing_interval ?? session.metadata?.billing) as BillingInterval | undefined)
                   || (session.subscription as any)?.metadata?.billing
                   || 'monthly';
 
       // Resolve from line items if available
       const lineItems = session.line_items?.data ?? [];
-      const firstPriceId = lineItems[0]?.price?.id as string | undefined;
-      const resolved = firstPriceId ? resolvePriceToPlan(firstPriceId, rawEnv) : null;
+      const firstLookupKey = lineItems[0]?.price?.lookup_key as string | undefined;
+      const resolved  = firstLookupKey ? resolvePriceToPlan(firstLookupKey, rawEnv) : null;
       const finalPlanId  = resolved?.planId ?? planId;
       const finalBilling = resolved?.billing ?? billing;
 
@@ -356,48 +360,78 @@ router.post('/api/webhooks/stripe', async (c) => {
       console.warn(`[webhook] checkout.completed → user ${userId} subscribed${finalPlanId ? ` to plan: ${finalPlanId}` : ''} [${finalBilling}]`);
     }
 
-    // credit-pack one-time payment → grant AI credits to establishment
-    if (userId && session.mode === 'payment' && session.metadata?.creditPack === 'true') {
-      // AIO + Creative Studio pack (29€) → grant Luma AI + SerpApi credits
-      if (session.metadata?.packType === 'aio_creative') {
-        const lumaCredits = Number(session.metadata?.lumaCredits) || 50;
-        const serpapiCredits = Number(session.metadata?.serpapiCredits) || 500;
-        await handleAioCreditPackGrant(blink, userId, lumaCredits, serpapiCredits);
-      } else {
-        // Legacy credit pack → grant generic AI credits
-        const creditsToAdd = Number(session.metadata?.credits) || 0;
-        await handleCreditPackGrant(blink, userId, creditsToAdd);
+    // Canonical one-time products only. Legacy creditPack metadata is ignored so
+    // old checkout flows cannot mint generic AI balance outside the ledger.
+    if (userId && session.mode === 'payment' && session.metadata?.credit_eligible === 'true' && session.metadata?.product_id) {
+      const creditType = session.metadata.credit_type === 'sms' ? 'sms' : 'ai';
+      const creditAmount = Number(session.metadata.credit_amount) || 0;
+      const reference = `stripe:${event.data.object.id}`;
+
+      if (session.metadata.product_type === 'guided_pilot') {
+        const pilotDays = Number(session.metadata.pilot_days) || 30;
+        await patchUserMeta(blink, userId, {
+          plan_id: 'pilot',
+          pilot_active: true,
+          pilot_started_at: new Date().toISOString(),
+          pilot_ends_at: new Date(Date.now() + pilotDays * 24 * 60 * 60 * 1000).toISOString(),
+          pilot_source_session_id: String(session.id),
+        });
+      } else if (creditAmount > 0) {
+        await handleCreditPackGrant(blink, userId, creditAmount, reference, creditType);
       }
     }
   }
 
   // invoice.payment_succeeded → clear failure + send invoice confirmation to Pro users
-  if (event.type === 'invoice.payment_succeeded') {
+  if (event.type === 'invoice.payment_succeeded' || event.type === 'invoice.paid' || event.type === 'invoice.payment_succeeded_async') {
     const invoice    = event.data.object;
     const customerId = invoice.customer as string;
     const userId     = (invoice.metadata?.user_id as string | undefined)
                     || (await findUserByCustomer(blink, customerId));
     if (userId) {
-      // Reset monthly quota counters on successful payment (anniversary billing cycle)
-      const PLAN_LIMITS: Record<string, Record<string, number>> = {
-        starter:   { quota_ai_tokens_left: 200,  quota_search_credits_left: 50,  luma_videos_used: 0, serpapi_queries_used: 0, sms_used: 0, email_used: 0 },
-        business:  { quota_ai_tokens_left: 500,  quota_search_credits_left: 150, luma_videos_used: 0, serpapi_queries_used: 0, sms_used: 0, email_used: 0 },
-        agency:    { quota_ai_tokens_left: 2000, quota_search_credits_left: 500, luma_videos_used: 0, serpapi_queries_used: 0, sms_used: 0, email_used: 0 },
-        agency_pro:{ quota_ai_tokens_left: 5000, quota_search_credits_left: 1000, luma_videos_used: 0, serpapi_queries_used: 0, sms_used: 0, email_used: 0 },
-      };
-      const planIdForQuota = (await getUserMeta(blink, userId)).plan_id as string || 'starter';
-      const quotaReset = PLAN_LIMITS[planIdForQuota] || PLAN_LIMITS.starter;
-      quotaReset.quota_reset_at = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString();
+      const currentMeta = await getUserMeta(blink, userId);
+      const planIdForGrant = typeof currentMeta.plan_id === 'string' ? currentMeta.plan_id : null;
+      const planEntitlements = getPlanEntitlements(planIdForGrant);
+      const entitlements = planEntitlements
+        ? { ai: planEntitlements.aiCredits ?? 0, sms: planEntitlements.smsCredits ?? 0 }
+        : null;
+      const periodKey = String(invoice.id || invoice.period_start || new Date().toISOString().slice(0, 10));
 
       await patchUserMeta(blink, userId, {
-        stripe_customer_id:  customerId,
+        stripe_customer_id: customerId,
         subscription_status: 'active',
-        grace_period_end:    null,
-        dunning_attempt:     0,
-        last_dunning_at:     null,
-        ...quotaReset,
+        grace_period_end: null,
+        dunning_attempt: 0,
+        last_dunning_at: null,
       });
-      console.warn(`[webhook] payment_succeeded → user ${userId} restored to active, dunning + quotas reset`);
+
+      if (entitlements) {
+        const grantExpiresAt = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000).toISOString();
+        const grant = async (creditType: 'ai' | 'sms', amount: number) => {
+          const grantId = `grant:${creditType}:${periodKey}`.slice(0, 255);
+          try {
+            await blink.db.creditTransactions.create({
+              id: grantId,
+              userId,
+              type: 'grant',
+              actionType: 'subscription_renewal',
+              creditsDelta: amount,
+              balanceAfter: 0,
+              description: `Crédits inclus ${creditType} — période ${periodKey}`,
+              referenceId: periodKey,
+              metadata: JSON.stringify({ source: 'stripe_invoice', invoiceId: invoice.id, planId: planIdForGrant }),
+              creditType,
+              sourceType: 'subscription',
+              expiresAt: grantExpiresAt,
+              periodKey,
+            } as any);
+          } catch (grantError: any) {
+            if (grantError?.status !== 409) throw grantError;
+          }
+        };
+        await grant('ai', entitlements.ai);
+        await grant('sms', entitlements.sms);
+      }
 
       // ── Server-Side Purchase event → Conversion APIs ──────────────────────
       try {
@@ -517,6 +551,7 @@ router.post('/api/webhooks/stripe', async (c) => {
     }
   }
 
+  await blink.db.stripe_webhook_events.update(event.id, { status: 'processed', processedAt: new Date().toISOString() } as any).catch((err: unknown) => console.error('[webhook] event audit update failed', err));
   return c.json({ received: true, type: event.type });
 });
 

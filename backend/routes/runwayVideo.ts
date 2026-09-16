@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
 import type { Env } from '../lib/types';
 import { getBlink } from '../lib/stripeHelpers';
-import { consumeCredits, refundCredits } from '../lib/creditService';
+import { consumeExecuteRefund, refundCredits } from '../lib/creditService';
+import { AI_CREDIT_COSTS } from '../../shared/pricingCatalog';
 
 export const router = new Hono();
 
-const RUNWAY_COST = 5;
+const RUNWAY_COST = AI_CREDIT_COSTS.runway_video_generation;
 const RUNWAY_MODEL = 'gen4.5';
 const RUNWAY_VERSION = '2024-11-06';
 const MAX_PROMPT_LENGTH = 1000;
@@ -60,16 +61,6 @@ async function runwayFetch(path: string, init: RequestInit, apiKey: string) {
   });
 }
 
-async function safelyRefund(blink: ReturnType<typeof getBlink>, userId: string, referenceId: string, reason: string) {
-  try {
-    await refundCredits(blink, userId, RUNWAY_COST, reason, referenceId);
-    return true;
-  } catch (error) {
-    console.error('[runway] Refund failed; reconciliation required:', error);
-    return false;
-  }
-}
-
 router.post('/api/runway/generate', async (c) => {
   const rawEnv = c.env as unknown as Env & { RUNWAY_API_KEY?: string; RUNWAYML_API_SECRET?: string };
   const blink = getBlink(rawEnv);
@@ -85,92 +76,75 @@ router.post('/api/runway/generate', async (c) => {
   if (!prompt) return c.json({ error: 'A creative brief is required' }, 400);
   if (prompt.length > MAX_PROMPT_LENGTH) return c.json({ error: `The brief cannot exceed ${MAX_PROMPT_LENGTH} characters` }, 400);
 
-  const generationId = `runway_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  const creditResult = await consumeCredits(
-    blink,
-    auth.userId,
-    'runway_video_generation',
-    'Runway generative video',
-    generationId,
-  );
-  if (!creditResult.success) return c.json({ error: creditResult.error || 'Insufficient credits' }, 402);
+  const generationId = `runway:${auth.userId}:${c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || crypto.randomUUID()}`
+    .replace(/[^a-zA-Z0-9:_-]/g, '_').slice(0, 255);
+  const generationTable = blink.db.table<RunwayGeneration>('runway_generations');
+  const existingGeneration = await generationTable.get(generationId);
+  if (existingGeneration?.userId === auth.userId) return c.json(existingGeneration);
 
   try {
-    await blink.db.table<RunwayGeneration>('runway_generations').create({
-      id: generationId,
-      userId: auth.userId,
-      taskId: '',
-      prompt,
-      model: RUNWAY_MODEL,
-      ratio,
-      duration,
-      videoUrl: '',
-      status: 'starting',
-      errorMessage: '',
-      creditsCharged: RUNWAY_COST,
-      creditsRefunded: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-
-    const runwayResponse = await runwayFetch('/v1/text_to_video', {
-      method: 'POST',
-      body: JSON.stringify({ model: RUNWAY_MODEL, promptText: prompt, ratio, duration }),
-    }, apiKey);
-    if (!runwayResponse.ok) {
-      const detail = await runwayResponse.text();
-      await safelyRefund(blink, auth.userId, generationId, `Runway API error (${runwayResponse.status})`);
-      await blink.db.table<RunwayGeneration>('runway_generations').update(generationId, {
-        status: 'failed',
-        errorMessage: detail,
-        creditsRefunded: RUNWAY_COST,
-        updatedAt: new Date().toISOString(),
-      });
-      return c.json({ error: 'Runway generation failed', detail }, 502);
-    }
-
-    const task = await runwayResponse.json() as RunwayTask;
-    if (!task.id) {
-      await safelyRefund(blink, auth.userId, generationId, 'Runway returned no task id');
-      await blink.db.table<RunwayGeneration>('runway_generations').update(generationId, {
-        status: 'failed',
-        errorMessage: 'Runway returned no task id',
-        creditsRefunded: RUNWAY_COST,
-        updatedAt: new Date().toISOString(),
-      });
-      return c.json({ error: 'Runway returned an invalid task' }, 502);
-    }
-
-    await blink.db.table<RunwayGeneration>('runway_generations').update(generationId, {
-      taskId: task.id,
-      status: 'processing',
-      updatedAt: new Date().toISOString(),
-    });
-
-    return c.json({
-      success: true,
+    const charged = await consumeExecuteRefund(
+      blink,
+      auth.userId,
+      'runway_video_generation',
+      'Runway generative video',
       generationId,
-      taskId: task.id,
-      status: 'processing',
-      creditsCharged: RUNWAY_COST,
-      balanceAfter: creditResult.balanceAfter,
-    });
-  } catch (error) {
-    console.error('[runway/generate] Provider or persistence error:', error);
-    try {
-      const existing = await blink.db.table<RunwayGeneration>('runway_generations').get(generationId);
-      if (existing && !existing.taskId) {
-        await safelyRefund(blink, auth.userId, generationId, 'Auto-refund: Runway request did not create a task');
-        await blink.db.table<RunwayGeneration>('runway_generations').update(generationId, {
-          status: 'failed',
-          errorMessage: error instanceof Error ? error.message : 'Runway generation failed',
-          creditsRefunded: RUNWAY_COST,
+      async () => {
+        await generationTable.create({
+          id: generationId,
+          userId: auth.userId,
+          taskId: '',
+          prompt,
+          model: RUNWAY_MODEL,
+          ratio,
+          duration,
+          videoUrl: '',
+          status: 'starting',
+          errorMessage: '',
+          creditsCharged: RUNWAY_COST,
+          creditsRefunded: 0,
+          createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
-      } else {
-        await blink.db.table<RunwayGeneration>('runway_generations').update(generationId, {
+
+        const runwayResponse = await runwayFetch('/v1/text_to_video', {
+          method: 'POST',
+          body: JSON.stringify({ model: RUNWAY_MODEL, promptText: prompt, ratio, duration }),
+        }, apiKey);
+        if (!runwayResponse.ok) {
+          const detail = await runwayResponse.text();
+          throw new Error(`Runway generation failed: ${detail}`);
+        }
+
+        const task = await runwayResponse.json() as RunwayTask;
+        if (!task.id) throw new Error('Runway returned an invalid task');
+
+        await generationTable.update(generationId, {
+          taskId: task.id,
           status: 'processing',
-          errorMessage: 'Provider accepted the task; status will be reconciled on the next poll.',
+          updatedAt: new Date().toISOString(),
+        });
+
+        return { success: true, generationId, taskId: task.id, status: 'processing', creditsCharged: RUNWAY_COST };
+      },
+      'ai',
+      { provider: 'runway', model: RUNWAY_MODEL, ratio, duration },
+    );
+
+    return c.json({ ...charged.result, balanceAfter: charged.balanceAfter });
+  } catch (error) {
+    console.error('[runway/generate] Provider or persistence error:', error);
+    if (error instanceof Error && error.message === 'IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT') {
+      const existing = await generationTable.get(generationId);
+      return existing ? c.json(existing) : c.json({ error: 'Replay result is not available yet' }, 409);
+    }
+    try {
+      const existing = await generationTable.get(generationId);
+      if (existing && !existing.taskId) {
+        await generationTable.update(generationId, {
+          status: 'failed',
+          errorMessage: error instanceof Error ? error.message : 'Runway generation failed',
+          creditsRefunded: existing.creditsCharged,
           updatedAt: new Date().toISOString(),
         });
       }
@@ -210,9 +184,13 @@ router.get('/api/runway/status/:generationId', async (c) => {
     };
 
     if (status === 'failed' && generation.creditsRefunded === 0) {
-      const refunded = await safelyRefund(blink, generation.userId, generation.id, `Auto-refund: Runway task failed — ${errorMessage || 'unknown error'}`);
-      if (refunded) patch.creditsRefunded = generation.creditsCharged;
-      else patch.errorMessage = `${errorMessage || 'Runway task failed'} (refund pending reconciliation)`;
+      try {
+        await refundCredits(blink, generation.userId, generation.creditsCharged, `Auto-refund: Runway task failed — ${errorMessage || 'unknown error'}`, generation.id, 'ai');
+        patch.creditsRefunded = generation.creditsCharged;
+      } catch (error) {
+        console.error('[runway/status] Refund failed; reconciliation required:', error);
+        patch.errorMessage = `${errorMessage || 'Runway task failed'} (refund pending reconciliation)`;
+      }
     }
     const updated = await blink.db.table<RunwayGeneration>('runway_generations').update(generation.id, patch);
     return c.json(updated);

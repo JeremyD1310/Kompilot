@@ -284,12 +284,12 @@ export function DemoModeProvider({ children }: { children: ReactNode }) {
   const activateDemo = useCallback(() => demo.activateDemo(), [demo]);
   const deactivateDemo = useCallback(() => demo.deactivateDemo(), [demo]);
   const consumeDemoCredits = useCallback((amount: number) => demo.consumeDemoCredits(amount), [demo]);
-  const resetDemoCredits = useCallback(() => demo.resetDemo(), [demo]);
+  const resetDemoCredits = useCallback(() => demo.resetDemoCredits(), [demo]);
 
   return (
     <DemoModeContext.Provider value={{
       isDemoActive: demo.isDemoActive || isDemoRuntime(),
-      demoData: DEMO_DATA,
+      demoData: demo.demoData,
       activateDemo,
       deactivateDemo,
       demoTrialDaysRemaining,

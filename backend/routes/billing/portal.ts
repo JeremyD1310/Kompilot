@@ -5,7 +5,8 @@
  */
 import { Hono } from 'hono';
 import type { Env } from '../../lib/types';
-import { getBlink, getUserMeta, patchUserMeta } from '../../lib/stripeHelpers';
+import { getBlink, getUserMeta, patchUserMeta, normalizeLegacyPlanForDisplay } from '../../lib/stripeHelpers';
+import { SUBSCRIPTION_PLANS } from '../../../shared/pricingCatalog';
 
 export const router = new Hono();
 
@@ -38,6 +39,7 @@ router.post('/api/billing/portal', async (c) => {
   const body      = new URLSearchParams({ customer: customerId, return_url: returnUrl });
   const res = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
     method: 'POST',
+    signal: AbortSignal.timeout(8000),
     headers: {
       Authorization:  `Bearer ${stripeKey}`,
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -116,23 +118,25 @@ router.get('/api/billing/status', async (c) => {
   };
   const normalisedStatus = statusMap[rawStatus] ?? rawStatus;
 
-  // Available plan/billing combinations (read dynamically to avoid static analysis false positives)
-  const billingInterval = (meta.billing_interval as string) || 'monthly';
-  const planId = (meta.plan_id as string) || null;
-  const _e = rawEnv as Record<string, string | undefined>;
-  const _av = (plan: string, billing: string) => !!_e[`PRICE_${plan}_${billing}_ID`];
-  const availablePlans = {
-    starter: { monthly: _av('STARTER','MONTHLY') || _av('STARTER',''), yearly: _av('STARTER','YEARLY') },
-    agency:  { monthly: _av('AGENCY','MONTHLY')  || _av('AGENCY',''),  yearly: _av('AGENCY','YEARLY')  },
-  };
+  const billingInterval = meta.billing_interval === 'yearly' ? 'yearly' : 'monthly';
+  const rawPlanId = (meta.plan_id as string) || null;
+  const planId = rawPlanId ? normalizeLegacyPlanForDisplay(rawPlanId) : null;
+  const availablePlans = SUBSCRIPTION_PLANS.map((plan) => ({
+    id: plan.id,
+    name: plan.name,
+    billing: {
+      monthly: plan.stripeLookupKeys.monthly,
+      yearly: plan.stripeLookupKeys.yearly,
+    },
+  }));
 
   return c.json({
-    status:               normalisedStatus,
-    gracePeriodEnd:       meta.grace_period_end      || null,
-    hasStripeCustomer:    !!meta.stripe_customer_id,
+    status: normalisedStatus,
+    gracePeriodEnd: meta.grace_period_end || null,
+    hasStripeCustomer: !!meta.stripe_customer_id,
     planId,
     billingInterval,
-    stripeSubscriptionId: subId                      || null,
+    stripeSubscriptionId: subId || null,
     currentPeriodEnd,
     cancelAtPeriodEnd,
     trialEnd,

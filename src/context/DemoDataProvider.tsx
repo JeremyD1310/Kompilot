@@ -51,6 +51,7 @@ interface DemoDataContextValue {
   updateApproval: (id: string, status: DemoWorkflowStatus) => void;
   simulateAction: (action: string) => void;
   consumeDemoCredits: (amount: number) => boolean;
+  resetDemoCredits: () => void;
   activateDemo: () => void;
   deactivateDemo: () => void;
   protectAction: (service: DemoExternalService, simulation?: unknown) => DemoActionResult<unknown>;
@@ -189,6 +190,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     setLastAction(`Simulation locale : ${action}`);
   }, [demoData, persistData]);
   const consumeDemoCredits = useCallback((amount: number) => { if (amount <= 0 || demoCreditsUsed + amount > DEMO_CREDIT_TOTAL) return false; const next = demoCreditsUsed + amount; setDemoCreditsUsed(next); persist(CREDITS_KEY, String(next)); setLastAction(`${DEMO_ACTION_MESSAGE} ${amount} crédit(s) consommé(s).`); return true; }, [demoCreditsUsed]);
+  const resetDemoCredits = useCallback(() => { setDemoCreditsUsed(0); persist(CREDITS_KEY, '0'); setLastAction('Crédits de démonstration réinitialisés localement.'); }, []);
   const activateDemo = useCallback(() => { try { sessionStorage.setItem(ACTIVE_KEY, 'true'); } catch { /* noop */ } setDemoActive(true); }, []);
   const deactivateDemo = useCallback(() => { clearDemoStorage(); setDemoActive(false); }, []);
   const resetDemo = useCallback(() => { clearDemoStorage({ keepSession: true }); persist(APPROVALS_KEY, '{}'); persistSelection({ clientId: null, establishmentId: null }); const fresh = createDemoData('merchant'); setActivePersonaState('merchant'); setDemoData(fresh); persist(DATA_KEY, JSON.stringify(fresh)); setApprovalStatuses({}); setDemoCreditsUsed(0); persist(CREDITS_KEY, '0'); setDemoSectorState('general'); persist(SECTOR_KEY, 'general'); setDemoViewRoleState('pro'); persist(VIEW_KEY, 'pro'); setSelectedClientId(null); setSelectedEstablishmentId(null); setLastAction('Démonstration réinitialisée localement.'); }, []);
@@ -224,7 +226,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   const setDemoSector = useCallback((sector: DemoSector) => { setDemoSectorState(sector); persist(SECTOR_KEY, sector); }, []);
   const setDemoViewRole = useCallback((role: DemoViewRole) => { setDemoViewRoleState(role); persist(VIEW_KEY, role); }, []);
   const demoRuntime = isDemoRuntime() || demoActive;
-  const value = useMemo(() => ({ isDemoMode: demoRuntime, isDemoActive: demoRuntime, activePersona, setActivePersona, demoData, profile, data, demoSector, demoViewRole, demoCreditsUsed, demoCreditTotal: DEMO_CREDIT_TOTAL, demoCreditsRemaining: DEMO_CREDIT_TOTAL - demoCreditsUsed, isDemoCreditsExhausted: demoCreditsUsed >= DEMO_CREDIT_TOTAL, lastAction, resetDemo, simulateCreatePost, simulateApprovePost, simulateReplyReview, simulateSendMessage, simulateSchedulePost, simulateSelectClient, simulateSelectEstablishment, selectedClientId, selectedEstablishmentId, setProfile, setDemoSector, setDemoViewRole, updateApproval, simulateAction, consumeDemoCredits, activateDemo, deactivateDemo, protectAction }), [activePersona, setActivePersona, demoData, profile, data, demoSector, demoViewRole, demoCreditsUsed, lastAction, resetDemo, simulateCreatePost, simulateApprovePost, simulateReplyReview, simulateSendMessage, simulateSchedulePost, simulateSelectClient, simulateSelectEstablishment, selectedClientId, selectedEstablishmentId, setProfile, setDemoSector, setDemoViewRole, updateApproval, simulateAction, consumeDemoCredits, activateDemo, deactivateDemo, protectAction, demoRuntime]);
+  const value = useMemo(() => ({ isDemoMode: demoRuntime, isDemoActive: demoRuntime, activePersona, setActivePersona, demoData, profile, data, demoSector, demoViewRole, demoCreditsUsed, demoCreditTotal: DEMO_CREDIT_TOTAL, demoCreditsRemaining: DEMO_CREDIT_TOTAL - demoCreditsUsed, isDemoCreditsExhausted: demoCreditsUsed >= DEMO_CREDIT_TOTAL, lastAction, resetDemo, simulateCreatePost, simulateApprovePost, simulateReplyReview, simulateSendMessage, simulateSchedulePost, simulateSelectClient, simulateSelectEstablishment, selectedClientId, selectedEstablishmentId, setProfile, setDemoSector, setDemoViewRole, updateApproval, simulateAction, consumeDemoCredits, resetDemoCredits, activateDemo, deactivateDemo, protectAction }), [activePersona, setActivePersona, demoData, profile, data, demoSector, demoViewRole, demoCreditsUsed, lastAction, resetDemo, simulateCreatePost, simulateApprovePost, simulateReplyReview, simulateSendMessage, simulateSchedulePost, simulateSelectClient, simulateSelectEstablishment, selectedClientId, selectedEstablishmentId, setProfile, setDemoSector, setDemoViewRole, updateApproval, simulateAction, consumeDemoCredits, resetDemoCredits, activateDemo, deactivateDemo, protectAction, demoRuntime]);
   return <DemoDataContext.Provider value={value}>{children}</DemoDataContext.Provider>;
 }
 

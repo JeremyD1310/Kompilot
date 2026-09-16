@@ -5,7 +5,9 @@
  */
 import { Hono } from 'hono';
 import type { Env } from '../../lib/types';
-import { getBlink, getUserMeta, patchUserMeta } from '../../lib/stripeHelpers';
+import { getBlink, getUserMeta, patchUserMeta, resolveStripePrice } from '../../lib/stripeHelpers';
+import { resolveSubscriptionPlan, TRIAL_DAYS } from '../../../shared/pricingCatalog';
+import { resolveOneTimeProduct } from '../../lib/pricingCatalog';
 
 export const router = new Hono();
 
@@ -21,9 +23,18 @@ router.post('/api/billing/checkout', async (c) => {
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
 
-  // 2. Stripe configured?
-  if (!stripeKey) {
-    return c.json({ error: 'Stripe not configured', code: 'NO_STRIPE_KEY' }, 503);
+  // 2. Stripe configured and safe for the current environment.
+  if (!stripeKey) return c.json({ error: 'Stripe not configured', code: 'NO_STRIPE_KEY' }, 503);
+  const appUrl = String(rawEnv.APP_URL ?? rawEnv.PUBLIC_APP_URL ?? '').trim();
+  let validatedAppUrl: URL;
+  try {
+    validatedAppUrl = new URL(appUrl);
+    if (validatedAppUrl.protocol !== 'https:') throw new Error('https required');
+  } catch {
+    return c.json({ error: 'APP_URL must be a valid https URL', code: 'INVALID_APP_URL' }, 503);
+  }
+  if (rawEnv.STRIPE_TEST_MODE === 'true' && !stripeKey.startsWith('sk_test_')) {
+    return c.json({ error: 'Test mode requires a Stripe test key', code: 'TEST_KEY_REQUIRED' }, 503);
   }
 
   // 3. Parse body
@@ -45,9 +56,8 @@ router.post('/api/billing/checkout', async (c) => {
   const planId = body?.planId;
   const billing: 'monthly' | 'yearly' = body?.billing === 'yearly' ? 'yearly' : 'monthly';
 
-  if (!planId || !['starter', 'agency'].includes(planId)) {
-    return c.json({ error: 'Offre invalide', code: 'INVALID_PLAN' }, 400);
-  }
+  const resolvedPlan = resolveSubscriptionPlan(planId, billing);
+  if (!resolvedPlan) return c.json({ error: 'Offre invalide', code: 'INVALID_PLAN' }, 400);
 
   // 3b. Enforce clickwrap — both boxes must be ticked
   const consent = body?.legalConsent;
@@ -64,36 +74,16 @@ router.post('/api/billing/checkout', async (c) => {
     return c.json({ error: 'Version des CGV obsolète', code: 'STALE_LEGAL_CONSENT' }, 422);
   }
 
-  // ── Map planId + billing → Stripe price IDs ──────────────────────────────────
-  // Price IDs are read dynamically from env to avoid deploy-tool static analysis false positives.
-  // The keys below match env vars: PRICE_STARTER_MONTHLY_ID, PRICE_STARTER_YEARLY_ID, etc.
-  const _env = rawEnv as Record<string, string | undefined>;
-  const _get = (key: string) => _env[key];
-  const _plans = ['STARTER', 'AGENCY'];
-  const _billings = ['MONTHLY', 'YEARLY'];
-
-  // Build priceMap dynamically
-  const priceMap: Record<string, string | undefined> = {};
-  for (const p of _plans) {
-    for (const b of _billings) {
-      priceMap[`${p.toLowerCase()}_${b.toLowerCase()}`] = _get(`PRICE_${p}_${b}_ID`);
-    }
-  }
-  // Legacy planId without billing → assume monthly
-  priceMap['starter'] = _get(`PRICE_${_plans[0]}_${_billings[0]}_ID`) || _get(['PRICE',_plans[0],'ID'].join('_'));
-  priceMap['agency']  = _get(`PRICE_${_plans[1]}_${_billings[0]}_ID`) || _get(['PRICE',_plans[1],'ID'].join('_'));
-  // Legacy aliases (concat to avoid deploy-scanner false positives)
-  const _L = ['STRIPE','PRICE','PRO','EXPERT','SOLO','COMMERCE','MONTHLY'];
-  priceMap['pro']          = priceMap['starter'] || _get(`${_L[0]}_${_L[1]}_${_L[2]}`) || _get(`${_L[0]}_${_L[1]}_${_L[4]}`);
-  priceMap['expert']       = priceMap['agency']  || _get(`${_L[0]}_${_L[1]}_${_L[3]}`) || _get(`${_L[0]}_${_L[1]}_${_L[2]}_${_L[5]}`);
-  priceMap['solo']         = priceMap['starter'] || _get(`${_L[0]}_${_L[1]}_${_L[4]}`);
-  priceMap['pro-commerce'] = priceMap['agency']  || _get(`${_L[0]}_${_L[1]}_${_L[2]}_${_L[5]}`);
-
-  // Try billing-aware key first (e.g. 'starter_yearly'), fall back to bare planId
-  const priceId = priceMap[`${planId}_${billing}`] ?? priceMap[planId];
-  if (!priceId) {
-    console.warn(`[billing/checkout] Aucun price Stripe configuré pour planId="${planId}". Ajoutez les PRICE_ secrets.`);
-    return c.json({ url: 'https://kompilot.fr/#tarifs', fallback: true, missingPrice: true });
+  // Resolve the server-owned catalog lookup key in Stripe; clients never provide prices.
+  let priceId: string;
+  try {
+    priceId = (await resolveStripePrice(stripeKey, resolvedPlan.lookupKey, {
+      recurring: true,
+      testMode: rawEnv.STRIPE_TEST_MODE === 'true',
+    })).id;
+  } catch (error) {
+    console.error('[billing/checkout] price resolution failed', error);
+    return c.json({ error: 'Prix Stripe non configuré côté serveur', code: 'PRICE_NOT_CONFIGURED' }, 503);
   }
 
   // 4. Get or create Stripe customer
@@ -111,11 +101,13 @@ router.post('/api/billing/checkout', async (c) => {
 
     const custRes = await fetch('https://api.stripe.com/v1/customers', {
       method: 'POST',
+      signal: AbortSignal.timeout(8000),
       headers: {
         Authorization: `Bearer ${stripeKey}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({ email, 'metadata[userId]': auth.userId }).toString(),
+      signal: AbortSignal.timeout(8000),
     });
     if (!custRes.ok) {
       return c.json({ error: 'Impossible de créer le client Stripe.' }, 502);
@@ -130,7 +122,7 @@ router.post('/api/billing/checkout', async (c) => {
 
   // 5. Create checkout session
   const renouncedTrial = consent!.renouncedTrial === true;
-  const baseUrl = 'https://kompilot.blinkpowered.com';
+  const baseUrl = validatedAppUrl.origin;
   const sessionParams = new URLSearchParams({
     mode: 'subscription',
     'line_items[0][price]': priceId,
@@ -138,8 +130,13 @@ router.post('/api/billing/checkout', async (c) => {
     success_url: `${baseUrl}/dashboard?checkout=success&plan=${planId}${renouncedTrial ? '&trial_skipped=1' : ''}`,
     cancel_url:  `${baseUrl}/account?tab=billing`,
     'allow_promotion_codes': 'true',
-    'subscription_data[metadata][planId]': planId,
-    'subscription_data[metadata][billing]': billing,
+    'metadata[user_id]': auth.userId,
+    'metadata[plan_id]': planId,
+    'metadata[billing_interval]': billing,
+    'metadata[checkout_type]': 'subscription',
+    'subscription_data[metadata][user_id]': auth.userId,
+    'subscription_data[metadata][plan_id]': planId,
+    'subscription_data[metadata][billing_interval]': billing,
   });
 
   // If user renounces trial → no trial period (immediate billing from first minute).
@@ -148,13 +145,14 @@ router.post('/api/billing/checkout', async (c) => {
     // Do NOT set trial_period_days → Stripe bills immediately
     sessionParams.set('subscription_data[metadata][trial_renounced]', 'true');
   } else {
-    sessionParams.set('subscription_data[trial_period_days]', '7');
+    sessionParams.set('subscription_data[trial_period_days]', String(TRIAL_DAYS));
   }
 
   // Enable Stripe Tax if customer exists and VAT info is available
   if (customerId) {
     sessionParams.set('customer', customerId);
-    sessionParams.set('automatic_tax[enabled]', 'true');
+
+    // Tax is intentionally configured outside checkout.
 
     // If customer has VAT info, use it for tax calculation
     const vatNumber = meta.vat_number as string | undefined;
@@ -169,11 +167,14 @@ router.post('/api/billing/checkout', async (c) => {
 
   const sessRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',
+    signal: AbortSignal.timeout(8000),
     headers: {
       Authorization: `Bearer ${stripeKey}`,
       'Content-Type': 'application/x-www-form-urlencoded',
+      ...(c.req.header('Idempotency-Key')?.trim() ? { 'Idempotency-Key': c.req.header('Idempotency-Key')!.trim() } : {}),
     },
     body: sessionParams.toString(),
+    signal: AbortSignal.timeout(8000),
   });
 
   if (!sessRes.ok) {
@@ -244,126 +245,11 @@ router.post('/api/billing/checkout', async (c) => {
   return c.json({ url: session.url });
 });
 
-// ── Credit Pack Checkout (one-time payment) ─────────────────────────────────
-
-const CREDIT_PACK_PRICES: Record<number, { credits: number; label: string }> = {
-  20:  { credits: 100,  label: 'Pack Starter — 100 crédits' },
-  50:  { credits: 250,  label: 'Pack Boost — 250 crédits' },
-  100: { credits: 500,  label: 'Pack Pro — 500 crédits' },
-  200: { credits: 1250, label: 'Pack Enterprise — 1250 crédits' },
-};
-
-router.post('/api/billing/credit-pack', async (c) => {
-  const env       = c.env as unknown as Env;
-  const rawEnv    = c.env as any;
-  const blink     = getBlink(env);
-  const stripeKey = rawEnv.STRIPE_SECRET_KEY as string | undefined;
-
-  // 1. Auth
-  const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
-  if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
-
-  // 2. Stripe configured?
-  if (!stripeKey) {
-    return c.json({ error: 'Stripe not configured', code: 'NO_STRIPE_KEY' }, 503);
-  }
-
-  // 3. Parse body
-  const body = await c.req.json<{ amount?: number }>();
-  const amount = body?.amount;
-
-  if (!amount || amount < 5) {
-    return c.json({ error: 'Montant invalide. Minimum : 5 €.' }, 400);
-  }
-
-  // 4. Determine pack credits (or custom amount at 0.20€/credit)
-  const pack = CREDIT_PACK_PRICES[amount];
-  const credits = pack?.credits ?? Math.floor(amount / 0.2);
-  const label = pack?.label ?? `Recharge libre — ${credits} crédits`;
-
-  // 5. Get or create Stripe customer
-  const meta = await getUserMeta(blink, auth.userId);
-  let customerId = meta.stripe_customer_id as string | undefined;
-
-  if (!customerId) {
-    const usersResult = await blink.db.users.list({ where: { id: auth.userId } });
-    const user = usersResult?.[0];
-    const email = (user as any)?.email || '';
-
-    const custRes = await fetch('https://api.stripe.com/v1/customers', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${stripeKey}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({ email, 'metadata[userId]': auth.userId }).toString(),
-    });
-    if (custRes.ok) {
-      const cust = await custRes.json() as { id: string };
-      customerId = cust.id;
-      await blink.db.users.update(auth.userId, {
-        metadata: JSON.stringify({ ...((meta as any) || {}), stripe_customer_id: cust.id }),
-      });
-    }
-  }
-
-  // 6. Create one-time checkout session
-  const baseUrl = 'https://kompilot.blinkpowered.com';
-  const sessionParams = new URLSearchParams({
-    mode: 'payment',
-    'line_items[0][price_data][currency]': 'eur',
-    'line_items[0][price_data][product_data][name]': label,
-    'line_items[0][price_data][product_data][description]': `${credits} crédits IA pour Kompilot`,
-    'line_items[0][price_data][unit_amount]': String(amount * 100), // Stripe uses cents
-    'line_items[0][quantity]': '1',
-    success_url: `${baseUrl}/dashboard?checkout=credit_pack&credits=${credits}`,
-    cancel_url: `${baseUrl}/account?tab=billing`,
-    'metadata[userId]': auth.userId,
-    'metadata[creditPack]': 'true',
-    'metadata[credits]': String(credits),
-  });
-
-  if (customerId) {
-    sessionParams.set('customer', customerId);
-  }
-
-  const sessRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${stripeKey}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: sessionParams.toString(),
-  });
-
-  if (!sessRes.ok) {
-    const detail = await sessRes.text();
-    console.error('[billing/credit-pack] Stripe error:', detail);
-    return c.json({ error: 'Checkout creation failed', detail }, 502);
-  }
-
-  const session = await sessRes.json() as { url: string };
-
-  // 7. Log the credit pack purchase attempt
-  try {
-    const logId = `cp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    await blink.db.complianceConsentLog.create({
-      id:               logId,
-      userId:           auth.userId,
-      cgvVersion:       'CREDIT_PACK',
-      cgvAccepted:      1,
-      retractionWaived: 0,
-      acceptedAt:       new Date().toISOString(),
-      serverTimestamp:  new Date().toISOString(),
-      ip:               c.req.header('cf-connecting-ip') || 'unknown',
-      userAgent:        c.req.header('user-agent') || 'unknown',
-      planId:           `credit_pack_${credits}`,
-      checkoutType:     'credit_pack',
-      renouncedTrial:   0,
-    });
-  } catch (logErr) {
-    console.error('[billing/credit-pack] Log failed (non-fatal):', logErr);
-  }
-
-  return c.json({ url: session.url });
-});
+// Legacy one-time checkout is intentionally disabled. All recharges use
+// POST /api/billing/one-time-checkout so the shared catalog remains the only
+// source of product and Stripe lookup-key resolution.
+router.post('/api/billing/credit-pack', (c) => c.json({
+  error: 'Ancien checkout désactivé. Utilisez /api/billing/one-time-checkout avec un produit canonique.',
+  code: 'LEGACY_CHECKOUT_DISABLED',
+  canonicalEndpoint: '/api/billing/one-time-checkout',
+}, 410));
