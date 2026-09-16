@@ -101,7 +101,7 @@ export function buildDiagnosticEmailHtml(data: DiagnosticEmailData): string {
     </td></tr>
     </table>
 
-    <p style="margin:0;font-size:13px;color:${TEXT_MUTED};">Sans CB requis · Accès immédiat · Résultats visibles en 7 jours</p>
+    <p style="margin:0;font-size:13px;color:${TEXT_MUTED};">Sans CB requis · Accès immédiat · Résultats visibles en 14 jours</p>
   </td></tr>
 
   <!-- Footer -->

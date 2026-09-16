@@ -3,6 +3,7 @@
  */
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from './types';
+import { SUBSCRIPTION_PLANS, resolveSubscriptionPlan, resolveOneTimeProduct, type SubscriptionPlanId, type BillingInterval } from '../../shared/pricingCatalog';
 
 export const getBlink = (env: Env) =>
   createClient({
@@ -10,32 +11,29 @@ export const getBlink = (env: Env) =>
     secretKey:  env.BLINK_SECRET_KEY,
   });
 
-/** Verify Stripe webhook signature using CF Workers native crypto */
+/** Verify Stripe webhook signatures using CF Workers native crypto. */
 export async function verifyStripeSignature(
   payload: string,
   header: string,
   secret: string,
+  toleranceSeconds = 300,
 ): Promise<boolean> {
   try {
-    const parts = header.split(',');
-    const t  = parts.find(p => p.startsWith('t='))?.slice(2);
-    const v1 = parts.find(p => p.startsWith('v1='))?.slice(3);
-    if (!t || !v1) return false;
+    const parts = header.split(',').map(part => part.trim());
+    const timestamp = parts.find(part => part.startsWith('t='))?.slice(2);
+    const signatures = parts.filter(part => part.startsWith('v1=')).map(part => part.slice(3));
+    const timestampSeconds = Number(timestamp);
+    if (!timestamp || !Number.isFinite(timestampSeconds) || signatures.length === 0) return false;
+    if (Math.abs(Math.floor(Date.now() / 1000) - timestampSeconds) > toleranceSeconds) return false;
 
-    const signedPayload = `${t}.${payload}`;
+    const signedPayload = `${timestamp}.${payload}`;
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
-      'raw',
-      encoder.encode(secret),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign'],
+      'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
     );
     const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(signedPayload));
-    const expected = Array.from(new Uint8Array(sig))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-    return expected === v1;
+    const expected = Array.from(new Uint8Array(sig)).map(byte => byte.toString(16).padStart(2, '0')).join('');
+    return signatures.some(signature => signature.length === expected.length && signature === expected);
   } catch {
     return false;
   }
@@ -88,58 +86,104 @@ export async function findUserByCustomer(
 
 // ── Plan resolution ───────────────────────────────────────────────────────────
 
-export type PlanId = 'starter' | 'agency' | 'enterprise';
-export type BillingInterval = 'monthly' | 'yearly';
+export type PlanId = SubscriptionPlanId | 'enterprise';
+export { BillingInterval };
 
-/** Maps Stripe price IDs (from env vars) to plan + billing metadata */
-export function resolvePriceToPlan(
-  priceId: string,
-  env: Record<string, string | undefined>,
-): { planId: PlanId; billing: BillingInterval } | null {
-  const priceMap: Record<string, { planId: PlanId; billing: BillingInterval }> = {};
-  // Build reverse lookup from env — keys built dynamically to pass deploy scanner
-  const add = (key: string, planId: PlanId, billing: BillingInterval) => {
-    const pid = env[key];
-    if (pid) priceMap[pid] = { planId, billing };
-  };
-  // Billing-aware price IDs
-  for (const plan of ['STARTER', 'AGENCY'] as const) {
-    for (const int of ['MONTHLY', 'YEARLY'] as const) {
-      const p = plan.toLowerCase() as PlanId;
-      const b = int.toLowerCase() as BillingInterval;
-      add(`PRICE_${plan}_${int}_ID`, p, b);
-    }
+/** Read-only compatibility mapping for accounts created before the canonical catalog. */
+export function normalizeLegacyPlanForDisplay(planId: unknown): string | null {
+  if (planId === 'starter') {
+    console.warn('[billing] legacy starter plan detected; display-only normalization to pro is required');
+    return 'pro';
   }
-  // Legacy alias keys (built with concat to avoid deploy-scanner detection)
-  const L = ['PRICE','STRIPE','MONTHLY','YEARLY','STARTER','AGENCY','PRO','EXPERT','SOLO','COMMERCE'];
-  add([L[0],L[4],'ID'].join('_'),  'starter', 'monthly');
-  add([L[0],L[5],'ID'].join('_'),  'agency',  'monthly');
-  add(`${L[1]}_${L[2]}_${L[6]}`,     'starter', 'monthly');
-  add(`${L[1]}_${L[2]}_${L[7]}`,     'agency',  'monthly');
-  add(`${L[1]}_${L[2]}_${L[8]}`,     'starter', 'monthly');
-  add(`${L[1]}_${L[2]}_${L[6]}_${L[9]}`, 'agency', 'monthly');
-  return priceMap[priceId] ?? null;
+  return typeof planId === 'string' && (planId === 'trial' || planId === 'pilot' || planId === 'pro' || planId === 'multi' || planId === 'agency' || planId === 'enterprise')
+    ? planId
+    : null;
 }
 
-/** Map planId to its allowed feature tier (hierarchical: agency > starter) */
-const PLAN_TIER: Record<PlanId, number> = {
-  starter: 1,
-  agency: 2,
-  enterprise: 3,
+/** Resolve a canonical Stripe lookup key (never compare a Stripe price ID to a lookup key). */
+export function resolvePriceToPlan(lookupKey: string | undefined, _env?: Record<string, string | undefined>): { planId: PlanId; billing: BillingInterval } | null {
+  if (!lookupKey) return null;
+  for (const plan of SUBSCRIPTION_PLANS) for (const billing of ['monthly', 'yearly'] as const) {
+    if (lookupKey === plan.stripeLookupKeys[billing]) return { planId: plan.id, billing };
+  }
+  return null;
+}
+
+export async function resolvePriceIdToPlan(stripeKey: string | null, priceId: string | undefined) {
+  if (!stripeKey || !priceId) return null;
+  try {
+    const response = await fetch(`https://api.stripe.com/v1/prices/${encodeURIComponent(priceId)}`, {
+      headers: { Authorization: `Bearer ${stripeKey}` },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) return null;
+    const price = await response.json() as { livemode?: boolean; active?: boolean; lookup_key?: string };
+    if (price.livemode !== true || price.active !== true) return null;
+    return resolvePriceToPlan(price.lookup_key);
+  } catch {
+    return null;
+  }
+}
+
+export function canonicalPlan(planId: unknown, billing: unknown) {
+  return resolveSubscriptionPlan(planId, billing);
+}
+export function canonicalOneTime(productId: unknown) { return resolveOneTimeProduct(productId); }
+
+export type ResolvedStripePrice = {
+  id: string;
+  lookupKey: string;
+  currency: string;
+  active: boolean;
+  recurring: boolean;
+  livemode: boolean;
+  unitAmount: number;
 };
 
-/** Returns true if `planId` grants access to at least `requiredPlan` tier */
-export function hasPlanAccess(planId: PlanId | string | undefined, requiredPlan: PlanId): boolean {
-  if (!planId) return requiredPlan === 'starter'; // no plan = free/starter level only
-  const tier = PLAN_TIER[planId as PlanId] ?? 0;
-  return tier >= PLAN_TIER[requiredPlan];
+/** Resolve a server-owned Stripe price. Browser supplied price IDs and amounts are never accepted. */
+export async function resolveStripePrice(
+  stripeKey: string,
+  lookupKey: string,
+  options: { testMode?: boolean; recurring: boolean; currency?: string; expectedAmount?: number; expectedInterval?: 'month' | 'year'; expectedProductId?: string },
+): Promise<ResolvedStripePrice> {
+  if (!stripeKey || !lookupKey) throw new Error('Stripe price lookup is required');
+  const expectedTest = options.testMode ?? false;
+  if (expectedTest || !stripeKey.startsWith('rk_live_')) throw new Error('LIVE_STRIPE_KEY_REQUIRED');
+  const response = await fetch(`https://api.stripe.com/v1/prices?${new URLSearchParams({ lookup_keys: lookupKey, active: 'true', limit: '10' })}`, {
+    headers: { Authorization: `Bearer ${stripeKey}` },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!response.ok) throw new Error('Stripe price lookup failed');
+  const payload = await response.json() as { data?: Array<any> };
+  const candidates = (payload.data ?? []).filter((price) =>
+    price?.active === true && price?.lookup_key === lookupKey && price?.currency === (options.currency ?? 'eur') &&
+    price?.livemode === true && Boolean(price?.recurring) === options.recurring &&
+    (!options.recurring || price.recurring?.interval === (options.expectedInterval ?? price.recurring?.interval)),
+  );
+  if (candidates.length !== 1) throw new Error('Stripe price is missing, ambiguous, or has the wrong mode/shape');
+  const price = candidates[0];
+  if (!price.id || !Number.isInteger(price.unit_amount) || price.unit_amount <= 0) throw new Error('Stripe price has invalid amount');
+  if (options.expectedAmount !== undefined && price.unit_amount !== options.expectedAmount) throw new Error('STRIPE_CATALOG_AMOUNT_MISMATCH');
+  const productId = typeof price.product === 'string' ? price.product : price.product?.id;
+  if (!productId) throw new Error('STRIPE_PRODUCT_MISSING');
+  if (options.expectedProductId && productId !== options.expectedProductId) throw new Error('STRIPE_PRODUCT_MISMATCH');
+  const productResponse = await fetch(`https://api.stripe.com/v1/products/${encodeURIComponent(productId)}`, {
+    headers: { Authorization: `Bearer ${stripeKey}` },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!productResponse.ok) throw new Error('Stripe product lookup failed');
+  const product = await productResponse.json() as { active?: boolean; livemode?: boolean };
+  if (product.active !== true || product.livemode !== true) throw new Error('STRIPE_PRODUCT_INACTIVE_OR_TEST');
+  return { id: price.id, lookupKey, currency: price.currency, active: true, recurring: options.recurring, livemode: true, unitAmount: price.unit_amount };
 }
 
-/** Returns the expected Stripe env key names for a plan + billing combination */
-export function getStripePriceEnvKeys(planId: PlanId, billing: BillingInterval): string[] {
-  const primary = `PRICE_${planId.toUpperCase()}_${billing.toUpperCase()}_ID`;
-  // Also return legacy key as fallback (built with concat to avoid deploy-scanner)
-  const L = ['PRICE','STARTER','AGENCY','ID'];
-  const legacy = planId === 'starter' ? [L[0],L[1],L[3]].join('_') : [L[0],L[2],L[3]].join('_');
-  return billing === 'monthly' ? [primary, legacy] : [primary];
+/** Map planId to its allowed feature tier. */
+const PLAN_TIER: Record<PlanId, number> = { pro: 1, multi: 2, agency: 3, enterprise: 4 };
+
+/** Returns true if a canonical catalog plan grants access to at least `requiredPlan` tier. */
+export function hasPlanAccess(planId: PlanId | string | undefined, requiredPlan: PlanId): boolean {
+  // Display normalization is deliberately not used for authorization. Legacy plans
+  // must be migrated explicitly, never silently upgraded at an access boundary.
+  if (typeof planId !== 'string' || !resolveSubscriptionPlan(planId, 'monthly') && planId !== 'enterprise') return false;
+  return (PLAN_TIER[planId as PlanId] ?? 0) >= (PLAN_TIER[requiredPlan] ?? 0);
 }

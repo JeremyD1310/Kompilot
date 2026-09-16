@@ -9,6 +9,17 @@ CREATE TABLE IF NOT EXISTS stripe_webhook_events (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_stripe_webhook_events_id ON stripe_webhook_events(id);
 
+CREATE TABLE IF NOT EXISTS pilot_coupon_audits (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  coupon_lookup_key TEXT NOT NULL,
+  checkout_session_id TEXT,
+  eligible INTEGER NOT NULL DEFAULT 0,
+  reason TEXT NOT NULL DEFAULT '',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pilot_coupon_audit_user ON pilot_coupon_audits(user_id, coupon_lookup_key);
+
 CREATE TABLE IF NOT EXISTS lead_score_events (
   id TEXT PRIMARY KEY,
   thread_id TEXT NOT NULL,

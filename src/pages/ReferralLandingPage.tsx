@@ -305,7 +305,7 @@ export default function ReferralLandingPage() {
         </button>
 
         <p style={{ fontSize: '.75rem', color: '#475569', marginBottom: 40 }}>
-          Essai gratuit 7 jours · Sans carte bancaire · Accès immédiat
+          Essai gratuit 14 jours · Sans carte bancaire · Accès immédiat
         </p>
 
         {/* Benefits */}

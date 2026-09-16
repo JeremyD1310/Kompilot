@@ -62,7 +62,7 @@ const BRUNSON_ADS: AdCreative[] = [
   { id: 'ad-b1', hook: 'Ce funnel nous a rapporté 30M$ en 18 mois (copie-le)', daysActive: 112, format: 'video', platform: 'meta' },
   { id: 'ad-b2', hook: 'Comment créer ton premier funnel en 24h même sans audience', daysActive: 54, format: 'video', platform: 'meta' },
   { id: 'ad-b3', hook: '1 clic pour voir notre funnel qui convertit à 38%', daysActive: 78, format: 'image', platform: 'google' },
-  { id: 'ad-b4', hook: 'Rejoins 50,000 entrepreneurs — essai gratuit 7 jours', daysActive: 14, format: 'carousel', platform: 'meta' },
+  { id: 'ad-b4', hook: 'Rejoins 50,000 entrepreneurs — essai gratuit 14 jours', daysActive: 14, format: 'carousel', platform: 'meta' },
 ];
 
 const FORLEO_ADS: AdCreative[] = [

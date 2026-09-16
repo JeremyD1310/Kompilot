@@ -181,7 +181,7 @@ export default function CockpitPage() {
   const handleGenerate = async () => {
     if (!isAuthenticated) { blink.auth.login(window.location.href); return; }
     if (isEmpty) { toast.error('Crédits IA épuisés — rechargez dans Mon Compte → Facturation.'); return; }
-    if (!deductCredit()) return;
+    if (!(await deductCredit())) return;
 
     setIsGenerating(true);
     setGeneratedText('');

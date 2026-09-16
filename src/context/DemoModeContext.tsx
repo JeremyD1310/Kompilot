@@ -168,7 +168,7 @@ const DEMO_DATA: DemoData = {
 
 // ── Context ────────────────────────────────────────────────────────────────────
 
-const DEMO_TRIAL_DAYS = 7;       // How long the demo trial lasts
+const DEMO_TRIAL_DAYS = 14;      // How long the demo trial lasts
 export const DEMO_CREDIT_TOTAL = 50; // Max AI credits during demo
 // Demo active flag uses sessionStorage so it resets each page reload (anonymous visitor gets clean state)
 const DEMO_STORAGE_KEY = 'kompilot_demo_active_session'; // session-scoped
@@ -284,12 +284,12 @@ export function DemoModeProvider({ children }: { children: ReactNode }) {
   const activateDemo = useCallback(() => demo.activateDemo(), [demo]);
   const deactivateDemo = useCallback(() => demo.deactivateDemo(), [demo]);
   const consumeDemoCredits = useCallback((amount: number) => demo.consumeDemoCredits(amount), [demo]);
-  const resetDemoCredits = useCallback(() => demo.resetDemo(), [demo]);
+  const resetDemoCredits = useCallback(() => demo.resetDemoCredits(), [demo]);
 
   return (
     <DemoModeContext.Provider value={{
       isDemoActive: demo.isDemoActive || isDemoRuntime(),
-      demoData: DEMO_DATA,
+      demoData: demo.demoData,
       activateDemo,
       deactivateDemo,
       demoTrialDaysRemaining,

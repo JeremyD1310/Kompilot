@@ -9,6 +9,8 @@ import { toast } from '@blinkdotnew/ui';
 import { Zap, X, Star, CheckCircle2, ExternalLink, RefreshCw, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCredits } from '../../context/CreditsContext';
+import { createOneTimeCheckout } from '../../lib/billingClient';
+import { LegalConsentBlock, isLegalConsentValid, type LegalConsentState, CGV_VERSION } from './LegalConsentBlock';
 
 // ── Pack definitions ──────────────────────────────────────────────────────────
 
@@ -24,33 +26,9 @@ interface CreditPack {
 }
 
 const PACKS: CreditPack[] = [
-  {
-    id: 'micro',
-    name: 'Pack Micro',
-    credits: 50,
-    priceEur: 5,
-    pricePerCredit: '0,10€',
-    highlight: false,
-    badge: undefined,
-  },
-  {
-    id: 'standard',
-    name: 'Pack Standard',
-    credits: 150,
-    priceEur: 10,
-    pricePerCredit: '0,07€',
-    highlight: true,
-    badge: '⭐ Populaire',
-  },
-  {
-    id: 'booster',
-    name: 'Pack Booster',
-    credits: 400,
-    priceEur: 20,
-    pricePerCredit: '0,05€',
-    highlight: false,
-    badge: '💰 Meilleure valeur',
-  },
+  { id: 'kompilot_ai_250_once', name: 'Pack 250', credits: 250, priceEur: 19, pricePerCredit: '0,08€', highlight: false },
+  { id: 'kompilot_ai_750_once', name: 'Pack 750', credits: 750, priceEur: 49, pricePerCredit: '0,07€', highlight: true, badge: '⭐ Populaire' },
+  { id: 'kompilot_ai_2000_once', name: 'Pack 2000', credits: 2000, priceEur: 99, pricePerCredit: '0,05€', highlight: false, badge: '💰 Meilleure valeur' },
 ];
 
 // ── Pack card ─────────────────────────────────────────────────────────────────
@@ -120,10 +98,11 @@ interface CreditsTopUpModalProps {
 }
 
 export function CreditsTopUpModal({ open, onClose }: CreditsTopUpModalProps) {
-  const { usage, limit, addCredits } = useCredits();
-  const [selectedPack, setSelectedPack] = useState<string>('standard');
+  const { usage, limit } = useCredits();
+  const [selectedPack, setSelectedPack] = useState<string>('kompilot_ai_750_once');
   const [loading, setLoading] = useState(false);
   const [checkoutOpened, setCheckoutOpened] = useState(false);
+  const [consent, setConsent] = useState<LegalConsentState>({ cgvAccepted: false, retractionWaived: false });
 
   if (!open) return null;
 
@@ -131,29 +110,25 @@ export function CreditsTopUpModal({ open, onClose }: CreditsTopUpModalProps) {
   const pack = PACKS.find(p => p.id === selectedPack)!;
 
   const handleCheckout = async () => {
+    if (!isLegalConsentValid(consent)) return;
     setLoading(true);
 
-    // In production this would call your backend to create a Stripe checkout session.
-    // For demo, we open Stripe's test checkout and simulate the credit add.
-    const stripeTestUrl = `https://buy.stripe.com/test_placeholder_${pack.id}?prefilled_promo_code=KOMPILOT`;
-
-    // Open Stripe in a new tab (iframe is blocked by Stripe)
-    window.open(stripeTestUrl, '_blank');
+    const result = await createOneTimeCheckout(pack.id as 'kompilot_ai_250_once' | 'kompilot_ai_750_once' | 'kompilot_ai_2000_once', {
+      ...consent, cgvVersion: CGV_VERSION, acceptedAt: new Date().toISOString(), userAgent: navigator.userAgent,
+    });
+    if (!result.url) throw new Error(result.error || 'Paiement indisponible');
+    const paymentWindow = window.open(result.url, '_blank', 'noopener,noreferrer');
+    if (!paymentWindow) throw new Error('Autorisez les fenêtres pop-up puis réessayez.');
     setCheckoutOpened(true);
     setLoading(false);
 
     toast.success('Fenêtre Stripe ouverte dans un nouvel onglet', {
-      description: 'Complétez le paiement puis revenez ici pour voir vos crédits mis à jour.',
+      description: 'Les crédits seront ajoutés après confirmation du paiement.',
     });
   };
 
   const handleSimulateSuccess = () => {
-    // Simulate webhook credit add for demo purposes
-    addCredits(pack.credits);
-    toast.success(`+${pack.credits} ⚡ crédits ajoutés à votre solde !`, {
-      description: `Votre solde passe à ${remaining + pack.credits} crédits.`,
-    });
-    onClose();
+    // Simulated success removed: only the backend webhook can grant credits.
   };
 
   return (
@@ -203,12 +178,16 @@ export function CreditsTopUpModal({ open, onClose }: CreditsTopUpModalProps) {
           ))}
         </div>
 
+        <div className="px-6 pt-4">
+          <LegalConsentBlock state={consent} onChange={setConsent} disabled={loading} />
+        </div>
+
         {/* Checkout button */}
         <div className="p-6 pt-4 space-y-3">
           {!checkoutOpened ? (
             <button
               onClick={handleCheckout}
-              disabled={loading}
+              disabled={loading || !isLegalConsentValid(consent)}
               className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold text-sm rounded-xl py-3 hover:opacity-90 transition-opacity disabled:opacity-60"
             >
               {loading ? (
@@ -220,14 +199,8 @@ export function CreditsTopUpModal({ open, onClose }: CreditsTopUpModalProps) {
           ) : (
             <div className="space-y-2">
               <p className="text-xs text-center text-muted-foreground">
-                Complété le paiement ? Cliquez pour créditer votre compte instantanément.
+                Le solde sera actualisé automatiquement après confirmation du paiement par Stripe.
               </p>
-              <button
-                onClick={handleSimulateSuccess}
-                className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold text-sm rounded-xl py-3 hover:bg-emerald-700 transition-colors"
-              >
-                <CheckCircle2 size={14} /> Paiement effectué — Ajouter {pack.credits} ⚡
-              </button>
               <button
                 onClick={handleCheckout}
                 className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground py-2 transition-colors"

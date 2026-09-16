@@ -1,6 +1,6 @@
 # Kompilot — Stratégie Growth Marketing, PLG & Launch (7 Septembre 2026)
 
-> Business Model : Reverse Trial 7 jours → Starter 69€ HT/mois | Agency 149€ HT/mois + Packs crédits IA
+> Business Model : Reverse Trial 14 jours → Starter 69€ HT/mois | Agency 149€ HT/mois + Packs crédits IA
 
 ---
 
@@ -111,7 +111,7 @@ Affichée en permanence dans la sidebar (widget footer) :
 **Creative 2 — "L'agence"** (conversion)
 - Visuel : Split screen "Avant Kompilot / Après Kompilot" avec métriques
 - Texte : "12h/semaine récupérées. 8 nouveaux clients en 2 mois. Leur secret ?"
-- CTA : "Tester 7 jours gratuits"
+- CTA : "Tester 14 jours gratuits"
 
 **Creative 3 — "La preuve sociale"** (réassurance)
 - Visuel : Photo portrait + citation client
@@ -200,7 +200,7 @@ Jérémy
 |-------|----------|------------------------|
 | Visite → Inscription | Taux de conversion | 8-12% |
 | Inscription → Activation (48h) | Taux d'activation | 40% |
-| Activation → Trial complet (7j) | Taux de complétion | 70% |
+| Activation → Trial complet (14j) | Taux de complétion | 70% |
 | Trial → Paid | Taux de conversion | 15-20% |
 | Starter → Agency (upsell) | Taux d'upsell | 10% |
 | Paid → Retenu (M3) | Rétention M3 | 80% |

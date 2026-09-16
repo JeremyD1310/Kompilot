@@ -99,11 +99,11 @@ const { data: task } = useQuery({
 
 ### 2.1 Hard Caps — Logique de crédit
 
-Pendant l'essai gratuit (7 jours), l'utilisateur a accès au plan Agency (149€). Sans limites, les coûts API (Luma ~0.05€/vidéo, SerpApi ~0.01€/query) détruiraient la marge.
+Pendant l'essai gratuit (14 jours), l'utilisateur a accès au plan Agency (149€). Sans limites, les coûts API (Luma ~0.05€/vidéo, SerpApi ~0.01€/query) détruiraient la marge.
 
 **Stratégie : Crédits virtuels consommables**
 
-| Ressource | Starter (69€) | Agency (149€) | Essai Gratuit (7j) |
+| Ressource | Starter (69€) | Agency (149€) | Essai Gratuit (14j) |
 |-----------|--------------|---------------|---------------------|
 | Vidéos IA / mois | 10 | 50 | 15 |
 | AIO Sync / mois | 100 | 500 | 100 |

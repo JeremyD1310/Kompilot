@@ -12,6 +12,7 @@
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
+import { consumeExecuteRefund } from '../lib/creditService';
 
 export const router = new Hono<{ Bindings: Env }>();
 
@@ -140,147 +141,160 @@ router.get('/api/predictive-scoring/leads', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
   const limit = Math.min(parseInt(c.req.query('limit') || '50', 10), 200);
+  const requestId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || crypto.randomUUID();
+  const referenceId = `predictive-lead-scoring:${userId}:${requestId}`;
 
   try {
-
-    // Fetch CRM contacts for this user
-    const contacts = await blink.db.table<CrmContact>('crm_contacts').list({
-      where: { userId },
-      orderBy: { updatedAt: 'desc' },
-      limit,
-    });
-
-    const contactList = Array.isArray(contacts) ? contacts : [];
-
-    if (contactList.length === 0) {
-      return c.json({ contacts: [], summary: 'Aucun contact CRM trouvé.', scored: 0 });
-    }
-
-    // Build contact data for AI scoring
-    const now = Date.now();
-    const DAY_MS = 86400000;
-
-    const contactData = contactList.map((c: CrmContact) => {
-      let tags: string[] = [];
-      let custom: Record<string, unknown> = {};
-      try { tags = JSON.parse(c.tags || '[]'); } catch { /* ignore */ }
-      try { custom = JSON.parse(c.customFields || '{}'); } catch { /* ignore */ }
-
-      const contactedAt = c.lastContactedAt ? new Date(c.lastContactedAt).getTime() : NaN;
-      const createdAt = new Date(c.createdAt).getTime();
-      const daysSinceContact = Number.isFinite(contactedAt) ? Math.max(0, Math.floor((now - contactedAt) / DAY_MS)) : null;
-      const daysSinceCreated = Number.isFinite(createdAt) ? Math.max(0, Math.floor((now - createdAt) / DAY_MS)) : 999;
-
-      return {
-        id: c.id,
-        email: c.email,
-        firstName: c.firstName || '',
-        lastName: c.lastName || '',
-        phone: c.phone || null,
-        company: c.company || null,
-        tags,
-        customFields: custom,
-        source: c.source || 'manual',
-        status: c.status || 'active',
-        hasNotes: !!(c.notes && c.notes.trim().length > 0),
-        daysSinceContact,
-        daysSinceCreated,
-        lastContactedAt: c.lastContactedAt || null,
-        createdAt: c.createdAt,
-      };
-    });
-
-    // Batch into chunks of 20 for AI processing
-    const chunkSize = 20;
-    let allScores: LeadScore[] = [];
-
-    for (let i = 0; i < contactData.length; i += chunkSize) {
-      const chunk = contactData.slice(i, i + chunkSize);
-      const chunkJson = JSON.stringify(chunk, null, 2);
-
-      // Compute basic rule-based pre-scores for the AI to refine
-      const preScores = chunk.map((c: any) => {
-        let score = 30; // baseline
-        if (c.phone) score += 15;
-        if (c.company) score += 10;
-        if (c.hasNotes) score += 10;
-        if (c.tags?.length > 0) score += 5;
-        if (c.source === 'widget' || c.source === 'form_submission') score += 15;
-        if (c.daysSinceContact !== null && c.daysSinceContact <= 7) score += 15;
-        if (c.daysSinceCreated <= 7) score += 10;
-        return { ...c, ruleBasedScore: Math.min(100, score) };
-      });
-
-      try {
-        const { text: aiResponse } = await blink.ai.generateText({
-          messages: [
-            { role: 'system', content: LEAD_SCORING_PROMPT },
-            {
-              role: 'user',
-              content: `## Contacts CRM (avec pré-scores basés sur des règles)\n\n${JSON.stringify(preScores, null, 2)}\n\nAnalyse ces contacts et retourne le JSON de scoring.`,
-            },
-          ],
-          temperature: 0.2,
+    const charged = await consumeExecuteRefund(
+      blink,
+      userId,
+      'predictive_lead_scoring',
+      'Predictive lead scoring',
+      referenceId,
+      async () => {
+        // Fetch CRM contacts for this user
+        const contacts = await blink.db.table<CrmContact>('crm_contacts').list({
+          where: { userId },
+          orderBy: { updatedAt: 'desc' },
+          limit,
         });
 
-        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          const validIds = new Set(chunk.map((contact: any) => contact.id));
-          const scores: LeadScore[] = (parsed.contacts ?? []).filter((s: any) => validIds.has(s.contactId)).map((s: any) => ({
-            contactId: s.contactId,
-            email: s.email ?? '',
-            name: (s.name ?? [s.firstName, s.lastName].filter(Boolean).join(' ')) || '',
-            score: Math.max(0, Math.min(100, Math.round(s.score ?? 50))),
-            topSignals: Array.isArray(s.topSignals) ? s.topSignals : [],
-            recommendedAction: s.recommendedAction ?? 'send_email',
-          }));
-          const returnedIds = new Set(scores.map(score => score.contactId));
-          const missing = preScores.filter((contact: any) => !returnedIds.has(contact.id));
-          allScores = allScores.concat(scores, missing.map((c: any) => ({ contactId: c.id, email: c.email, name: [c.firstName, c.lastName].filter(Boolean).join(' ') || c.email, score: c.ruleBasedScore, topSignals: ['Score de secours déterministe'], recommendedAction: c.ruleBasedScore >= 80 ? 'call_immediately' : c.ruleBasedScore >= 60 ? 'send_email' : 'add_to_nurture' })));
+        const contactList = Array.isArray(contacts) ? contacts : [];
+
+        if (contactList.length === 0) {
+          return { contacts: [], summary: 'Aucun contact CRM trouvé.', scored: 0 };
         }
-      } catch (aiErr: any) {
-        console.error(`[PredictiveScoring] AI scoring failed for chunk ${i}:`, aiErr.message);
-        // Fallback: use rule-based scores
-        const fallback: LeadScore[] = preScores.map((c: any) => ({
-          contactId: c.id,
-          email: c.email,
-          name: [c.firstName, c.lastName].filter(Boolean).join(' ') || c.email,
-          score: Math.max(0, Math.min(100, c.ruleBasedScore)),
-          topSignals: [
-            c.phone ? 'A un numéro de téléphone' : null,
-            c.company ? `Entreprise: ${c.company}` : null,
-            c.source !== 'manual' ? `Source: ${c.source}` : null,
-            c.hasNotes ? 'A des notes' : null,
-          ].filter(Boolean) as string[],
-          recommendedAction: c.ruleBasedScore >= 80 ? 'call_immediately' :
-            c.ruleBasedScore >= 60 ? 'send_email' :
-            c.ruleBasedScore >= 40 ? 'add_to_nurture' : 'low_priority',
-        }));
-        allScores = allScores.concat(fallback);
-      }
-    }
 
-    // Sort by score descending
-    allScores.sort((a, b) => b.score - a.score);
+        // Build contact data for AI scoring
+        const now = Date.now();
+        const DAY_MS = 86400000;
 
-    // Build summary
-    const hotCount = allScores.filter(s => s.score >= 80).length;
-    const warmCount = allScores.filter(s => s.score >= 60 && s.score < 80).length;
+        const contactData = contactList.map((c: CrmContact) => {
+          let tags: string[] = [];
+          let custom: Record<string, unknown> = {};
+          try { tags = JSON.parse(c.tags || '[]'); } catch { /* ignore */ }
+          try { custom = JSON.parse(c.customFields || '{}'); } catch { /* ignore */ }
 
-    return c.json({
-      contacts: allScores,
-      scored: allScores.length,
-      breakdown: {
-        hot: hotCount,
-        warm: warmCount,
-        lukewarm: allScores.filter(s => s.score >= 40 && s.score < 60).length,
-        cold: allScores.filter(s => s.score < 40).length,
+          const contactedAt = c.lastContactedAt ? new Date(c.lastContactedAt).getTime() : NaN;
+          const createdAt = new Date(c.createdAt).getTime();
+          const daysSinceContact = Number.isFinite(contactedAt) ? Math.max(0, Math.floor((now - contactedAt) / DAY_MS)) : null;
+          const daysSinceCreated = Number.isFinite(createdAt) ? Math.max(0, Math.floor((now - createdAt) / DAY_MS)) : 999;
+
+          return {
+            id: c.id,
+            email: c.email,
+            firstName: c.firstName || '',
+            lastName: c.lastName || '',
+            phone: c.phone || null,
+            company: c.company || null,
+            tags,
+            customFields: custom,
+            source: c.source || 'manual',
+            status: c.status || 'active',
+            hasNotes: !!(c.notes && c.notes.trim().length > 0),
+            daysSinceContact,
+            daysSinceCreated,
+            lastContactedAt: c.lastContactedAt || null,
+            createdAt: c.createdAt,
+          };
+        });
+
+        // Batch into chunks of 20 for AI processing
+        const chunkSize = 20;
+        let allScores: LeadScore[] = [];
+
+        for (let i = 0; i < contactData.length; i += chunkSize) {
+          const chunk = contactData.slice(i, i + chunkSize);
+          // Compute basic rule-based pre-scores for the AI to refine
+          const preScores = chunk.map((c: any) => {
+            let score = 30; // baseline
+            if (c.phone) score += 15;
+            if (c.company) score += 10;
+            if (c.hasNotes) score += 10;
+            if (c.tags?.length > 0) score += 5;
+            if (c.source === 'widget' || c.source === 'form_submission') score += 15;
+            if (c.daysSinceContact !== null && c.daysSinceContact <= 7) score += 15;
+            if (c.daysSinceCreated <= 7) score += 10;
+            return { ...c, ruleBasedScore: Math.min(100, score) };
+          });
+
+          try {
+            const { text: aiResponse } = await blink.ai.generateText({
+              messages: [
+                { role: 'system', content: LEAD_SCORING_PROMPT },
+                {
+                  role: 'user',
+                  content: `## Contacts CRM (avec pré-scores basés sur des règles)\n\n${JSON.stringify(preScores, null, 2)}\n\nAnalyse ces contacts et retourne le JSON de scoring.`,
+                },
+              ],
+              temperature: 0.2,
+            });
+
+            const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const parsed = JSON.parse(jsonMatch[0]);
+              const validIds = new Set(chunk.map((contact: any) => contact.id));
+              const scores: LeadScore[] = (parsed.contacts ?? []).filter((s: any) => validIds.has(s.contactId)).map((s: any) => ({
+                contactId: s.contactId,
+                email: s.email ?? '',
+                name: (s.name ?? [s.firstName, s.lastName].filter(Boolean).join(' ')) || '',
+                score: Math.max(0, Math.min(100, Math.round(s.score ?? 50))),
+                topSignals: Array.isArray(s.topSignals) ? s.topSignals : [],
+                recommendedAction: s.recommendedAction ?? 'send_email',
+              }));
+              const returnedIds = new Set(scores.map(score => score.contactId));
+              const missing = preScores.filter((contact: any) => !returnedIds.has(contact.id));
+              allScores = allScores.concat(scores, missing.map((c: any) => ({ contactId: c.id, email: c.email, name: [c.firstName, c.lastName].filter(Boolean).join(' ') || c.email, score: c.ruleBasedScore, topSignals: ['Score de secours déterministe'], recommendedAction: c.ruleBasedScore >= 80 ? 'call_immediately' : c.ruleBasedScore >= 60 ? 'send_email' : 'add_to_nurture' })));
+            }
+          } catch (aiErr: any) {
+            console.error(`[PredictiveScoring] AI scoring failed for chunk ${i}:`, aiErr.message);
+            // Fallback: use rule-based scores
+            const fallback: LeadScore[] = preScores.map((c: any) => ({
+              contactId: c.id,
+              email: c.email,
+              name: [c.firstName, c.lastName].filter(Boolean).join(' ') || c.email,
+              score: Math.max(0, Math.min(100, c.ruleBasedScore)),
+              topSignals: [
+                c.phone ? 'A un numéro de téléphone' : null,
+                c.company ? `Entreprise: ${c.company}` : null,
+                c.source !== 'manual' ? `Source: ${c.source}` : null,
+                c.hasNotes ? 'A des notes' : null,
+              ].filter(Boolean) as string[],
+              recommendedAction: c.ruleBasedScore >= 80 ? 'call_immediately' :
+                c.ruleBasedScore >= 60 ? 'send_email' :
+                c.ruleBasedScore >= 40 ? 'add_to_nurture' : 'low_priority',
+            }));
+            allScores = allScores.concat(fallback);
+          }
+        }
+
+        // Sort by score descending
+        allScores.sort((a, b) => b.score - a.score);
+
+        // Build summary
+        const hotCount = allScores.filter(s => s.score >= 80).length;
+        const warmCount = allScores.filter(s => s.score >= 60 && s.score < 80).length;
+
+        return {
+          contacts: allScores,
+          scored: allScores.length,
+          breakdown: {
+            hot: hotCount,
+            warm: warmCount,
+            lukewarm: allScores.filter(s => s.score >= 40 && s.score < 60).length,
+            cold: allScores.filter(s => s.score < 40).length,
+          },
+          summary: `${allScores.length} contacts analysés. ${hotCount} leads chauds, ${warmCount} leads tièdes.`,
+        };
       },
-      summary: `${allScores.length} contacts analysés. ${hotCount} leads chauds, ${warmCount} leads tièdes.`,
-    });
+      'ai',
+      { provider: 'blink-ai', route: 'predictiveScoring.leads' },
+    );
+    return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
   } catch (err: any) {
     console.error('[PredictiveScoring] leads error:', err.message);
+    if (err?.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Crédits insuffisants.', creditsLeft: 0 }, 402);
+    if (err?.message === 'IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT') return c.json({ error: 'Replay result is not available yet' }, 409);
     return c.json({ error: err.message }, 500);
   }
 });
@@ -370,24 +384,19 @@ router.get('/api/predictive-scoring/churn-risk', async (c) => {
         // Best-effort
       }
 
-      // 5. AI credits unused
+      // 5. AI credits unused — read the canonical ledger, never establishments.aiCreditsUsed.
       try {
-        const establishments = await blink.db.table('establishments').list({
-          where: { userId: user.id },
-          limit: 1,
-        });
-        const est = Array.isArray(establishments) && establishments.length > 0
-          ? (establishments[0] as any)
-          : null;
-        if (est) {
-          const used = Number(est.aiCreditsUsed) || 0;
-          const limit = Number(est.aiCreditsLimit) || 50;
-          // If 0% used and limit > 0
-          // eslint-disable-next-line eqeqeq
-          if (limit > 0 && used == 0) {
-            riskScore += 15;
-            riskFactors.push('Crédits IA inutilisés');
-          }
+        const ledger = await blink.db.sql<{ total: number; count: number }>(
+          `SELECT COALESCE(SUM(credits_delta), 0) AS total, COUNT(*) AS count
+           FROM credit_transactions
+           WHERE user_id = ? AND COALESCE(credit_type, 'ai') = 'ai'`,
+          [user.id],
+        );
+        const hasAiActivity = Number(ledger.rows[0]?.count ?? 0) > 0;
+        const balance = Number(ledger.rows[0]?.total ?? 0);
+        if (hasAiActivity && balance > 0) {
+          riskScore += 15;
+          riskFactors.push('Crédits IA disponibles mais inutilisés récemment');
         }
       } catch {
         // Best-effort

@@ -104,13 +104,13 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
               const { label, href, isAudience } = navLink;
               const isRoute = 'isRoute' in navLink && navLink.isRoute;
               const isActive = isAudience ? audience === isAudience : false;
-              const activeColor = isAudience === 'agency' ? '#818CF8' : '#0D9488';
+              const activeColor = '#0D9488';
               const linkClass = [
-                'relative pb-1 no-underline transition-colors duration-200 cursor-pointer',
+                'relative min-h-11 inline-flex items-center pb-1 no-underline transition-colors duration-200 cursor-pointer',
                 'text-[.91rem] tracking-[.015em]',
                 isActive
-                  ? 'text-[#E2E8F0] font-bold'
-                  : 'text-[#94A3B8] font-medium hover:text-[#E2E8F0]',
+                  ? 'text-[#0F172A] font-bold'
+                  : 'text-[#475569] font-medium hover:text-[#0F172A]',
               ].join(' ');
 
               if (isRoute) {
@@ -130,7 +130,7 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
                   key={label}
                   href={href}
                   onClick={e => { e.preventDefault(); scrollToHref(href, setAudience, audience); }}
-                  className={linkClass}
+                  className={`${linkClass} landing-desktop-nav-link`}
                 >
                   {label}
                   {/* Active underline */}
@@ -182,7 +182,7 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
 
           {/* ── Mobile hamburger ─────────────────────────────────────────── */}
           <button
-            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-200 bg-[rgba(255,255,255,.06)] hover:bg-[rgba(255,255,255,.12)] border border-[rgba(255,255,255,.1)]"
+            className="md:hidden flex items-center justify-center w-11 h-11 rounded-lg transition-colors duration-200 bg-[rgba(15,23,42,.04)] hover:bg-[rgba(15,23,42,.08)] border border-[rgba(15,23,42,.12)]"
             onClick={() => setMobileOpen(v => !v)}
             aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
             aria-expanded={mobileOpen}
@@ -210,11 +210,12 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
                 const { label, href, isAudience } = navLink;
                 const isRoute = 'isRoute' in navLink && navLink.isRoute;
                 const isActive = isAudience ? audience === isAudience : false;
-                const activeColor = isAudience === 'agency' ? '#818CF8' : '#0D9488';
+                const activeColor = '#0D9488';
                 const linkStyle = {
                   display: 'flex' as const, alignItems: 'center' as const, justifyContent: 'space-between' as const,
+                  minHeight: 44,
                   padding: '10px 14px', borderRadius: 10,
-                  color: isActive ? '#0F172A' : '#64748B',
+                  color: isActive ? '#0F172A' : undefined,
                   fontWeight: isActive ? 700 : 500,
                   fontSize: '.92rem',
                   textDecoration: 'none',
@@ -227,6 +228,7 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
                     <Link
                       key={label}
                       to={href as string}
+                      className="landing-mobile-nav-link"
                       style={linkStyle}
                       onClick={() => setMobileOpen(false)}
                     >
@@ -240,6 +242,7 @@ export function LandingNav({ audience, setAudience, onCta, isLoggedIn = false }:
                     key={label}
                     href={href}
                     onClick={e => { e.preventDefault(); handleMobileLink(href); }}
+                    className="landing-mobile-nav-link"
                     style={linkStyle}
                   >
                     <span>{label}</span>

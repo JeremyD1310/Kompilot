@@ -53,7 +53,7 @@ export default function DemoPage() {
     setActivePersona(persona);
     setProfile(personaToProfile[persona]);
   };
-  const enterWorkspace = () => navigate({ to: '/demo/workspace' });
+  const enterWorkspace = () => navigate({ to: '/demo/onboarding' });
 
   return (
     <PremiumWinProvider>
