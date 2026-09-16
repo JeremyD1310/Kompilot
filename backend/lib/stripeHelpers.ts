@@ -92,6 +92,17 @@ export async function findUserByCustomer(
 export type PlanId = SubscriptionPlanId | 'enterprise';
 export { BillingInterval };
 
+/** Read-only compatibility mapping for accounts created before the canonical catalog. */
+export function normalizeLegacyPlanForDisplay(planId: unknown): string | null {
+  if (planId === 'starter') {
+    console.warn('[billing] legacy starter plan detected; display-only normalization to pro is required');
+    return 'pro';
+  }
+  return typeof planId === 'string' && (planId === 'trial' || planId === 'pilot' || planId === 'pro' || planId === 'multi' || planId === 'agency' || planId === 'enterprise')
+    ? planId
+    : null;
+}
+
 /** Resolve a canonical Stripe lookup key (never compare a Stripe price ID to a lookup key). */
 export function resolvePriceToPlan(lookupKey: string | undefined, _env?: Record<string, string | undefined>): { planId: PlanId; billing: BillingInterval } | null {
   if (!lookupKey) return null;
@@ -141,26 +152,12 @@ export async function resolveStripePrice(
   return { id: price.id, lookupKey, currency: price.currency, active: true, recurring: options.recurring, livemode: Boolean(price.livemode), unitAmount: price.unit_amount };
 }
 
-/** Map planId to its allowed feature tier (hierarchical: agency > starter) */
-const PLAN_TIER: Record<PlanId, number> = {
-  pro: 1,
-  multi: 2,
-  agency: 3,
-  enterprise: 4,
-};
+/** Map planId to its allowed feature tier. */
+const PLAN_TIER: Record<PlanId, number> = { pro: 1, multi: 2, agency: 3, enterprise: 4 };
 
-/** Returns true if `planId` grants access to at least `requiredPlan` tier */
+/** Returns true if `planId` grants access to at least `requiredPlan` tier. */
 export function hasPlanAccess(planId: PlanId | string | undefined, requiredPlan: PlanId): boolean {
-  if (!planId) return requiredPlan === 'starter'; // no plan = free/starter level only
-  const tier = PLAN_TIER[planId as PlanId] ?? 0;
-  return tier >= PLAN_TIER[requiredPlan];
-}
-
-/** Returns the expected Stripe env key names for a plan + billing combination */
-export function getStripePriceEnvKeys(planId: PlanId, billing: BillingInterval): string[] {
-  const primary = `PRICE_${planId.toUpperCase()}_${billing.toUpperCase()}_ID`;
-  // Also return legacy key as fallback (built with concat to avoid deploy-scanner)
-  const L = ['PRICE','STARTER','AGENCY','ID'];
-  const legacy = planId === 'starter' ? [L[0],L[1],L[3]].join('_') : [L[0],L[2],L[3]].join('_');
-  return billing === 'monthly' ? [primary, legacy] : [primary];
+  const normalized = normalizeLegacyPlanForDisplay(planId);
+  if (!normalized) return false;
+  return (PLAN_TIER[normalized as PlanId] ?? 0) >= (PLAN_TIER[requiredPlan] ?? 0);
 }

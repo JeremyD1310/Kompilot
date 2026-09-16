@@ -3,6 +3,7 @@
  * Calls the deployed Hono backend (/api/billing/*) with Blink auth.
  */
 import { blink } from '../blink/client';
+import { isDemoRuntime } from './demoDomain';
 import type { BillingInterval, PricingProductId, SubscriptionPlanId } from '../../shared/pricingCatalog';
 
 const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';

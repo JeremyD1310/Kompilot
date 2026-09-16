@@ -6,7 +6,7 @@
  */
 
 import { createClient } from '@blinkdotnew/sdk';
-import { AI_CREDIT_COSTS, getPlanEntitlements, type CreditActionId } from '../../shared/pricingCatalog';
+import { AI_CREDIT_COSTS, SMS_CREDIT_COST, getPlanEntitlements, type CreditActionId } from '../../shared/pricingCatalog';
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -47,7 +47,7 @@ export const CREDIT_COSTS: Record<string, number> = {
   ai_analysis: AI_CREDIT_COSTS.full_ai_report,
   multi_channel_automation: AI_CREDIT_COSTS.full_post,
   video_generation: AI_CREDIT_COSTS.tavus_video_generation,
-  sms_send: 1,
+  sms_send: SMS_CREDIT_COST,
 };
 
 // ── Credit helpers ──────────────────────────────────────────────────────────────
@@ -210,6 +210,13 @@ export async function refundCredits(
  * 7. Provider/route metadata is stored on the consumption transaction.
  * 8. A replay is reported with `replayed: true`; callers must resolve their durable result
  *    before invoking provider work again.
+ *
+ * Required parameters: Blink client, user id, catalog action id, description, stable reference,
+ * provider executor, optional ledger credit type, and optional metadata. The wrapper consumes
+ * before provider work, returns the executor result plus catalog cost/balance on success, and
+ * refunds exactly once only when the executor throws. Replays never execute the provider again;
+ * they throw `IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT` so the route can load its durable result.
+ * Provider metadata is written on the consumption transaction. Demo executions skip ledger writes.
  */
 export async function consumeExecuteRefund<T>(
   blink: BlinkClient,

@@ -4,7 +4,8 @@ export type CommercialPlanId = 'trial' | 'pilot' | SubscriptionPlanId | 'enterpr
 export type PricingProductId =
   | 'pilot_30d_once'
   | 'kompilot_ai_250_once' | 'kompilot_ai_750_once' | 'kompilot_ai_2000_once'
-  | 'sms_topup_100' | 'sms_topup_500' | 'sms_topup_1500'
+  | 'kompilot_sms_100_once' | 'kompilot_sms_500_once' | 'kompilot_sms_1500_once'
+  | 'creative_premium' | 'white_label'
   | 'onboarding_once' | 'audit_seo_geo_once' | 'ga4_gsc_once' | 'training_once' | 'editorial_pack_once'
   | 'user_pro_monthly' | 'user_pro_annual' | 'user_multi_monthly' | 'user_multi_annual' | 'user_agency_monthly' | 'user_agency_annual'
   | 'location_multi_monthly' | 'location_multi_annual' | 'location_agency_monthly' | 'location_agency_annual'
@@ -121,9 +122,11 @@ export const ONE_TIME_PRODUCTS: readonly OneTimeProductDefinition[] = [
   { id: 'kompilot_ai_250_once', name: 'Recharge 250 crédits IA', amountEurHt: 19, productType: 'topup', creditType: 'ai', creditAmount: 250, creditEligible: true, lookupKey: 'kompilot_ai_250_once', description: 'Recharge IA valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
   { id: 'kompilot_ai_750_once', name: 'Recharge 750 crédits IA', amountEurHt: 49, productType: 'topup', creditType: 'ai', creditAmount: 750, creditEligible: true, lookupKey: 'kompilot_ai_750_once', description: 'Recharge IA valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
   { id: 'kompilot_ai_2000_once', name: 'Recharge 2 000 crédits IA', amountEurHt: 99, productType: 'topup', creditType: 'ai', creditAmount: 2000, creditEligible: true, lookupKey: 'kompilot_ai_2000_once', description: 'Recharge IA valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
-  { id: 'sms_topup_100', name: 'Recharge 100 SMS', amountEurHt: 15, productType: 'topup', creditType: 'sms', creditAmount: 100, creditEligible: true, lookupKey: 'kompilot_sms_100_once', description: 'Recharge SMS valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
-  { id: 'sms_topup_500', name: 'Recharge 500 SMS', amountEurHt: 59, productType: 'topup', creditType: 'sms', creditAmount: 500, creditEligible: true, lookupKey: 'kompilot_sms_500_once', description: 'Recharge SMS valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
-  { id: 'sms_topup_1500', name: 'Recharge 1 500 SMS', amountEurHt: 149, productType: 'topup', creditType: 'sms', creditAmount: 1500, creditEligible: true, lookupKey: 'kompilot_sms_1500_once', description: 'Recharge SMS valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
+  { id: 'kompilot_sms_100_once', name: 'Recharge 100 SMS', amountEurHt: 15, productType: 'topup', creditType: 'sms', creditAmount: 100, creditEligible: true, lookupKey: 'kompilot_sms_100_once', description: 'Recharge SMS valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
+  { id: 'kompilot_sms_500_once', name: 'Recharge 500 SMS', amountEurHt: 59, productType: 'topup', creditType: 'sms', creditAmount: 500, creditEligible: true, lookupKey: 'kompilot_sms_500_once', description: 'Recharge SMS valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
+  { id: 'kompilot_sms_1500_once', name: 'Recharge 1 500 SMS', amountEurHt: 149, productType: 'topup', creditType: 'sms', creditAmount: 1500, creditEligible: true, lookupKey: 'kompilot_sms_1500_once', description: 'Recharge SMS valable 12 mois.', paymentRule: 'Paiement comptant, sans renouvellement' },
+  { id: 'creative_premium', name: 'Creative Studio Hyper-Automation', amountEurHt: 39, productType: 'addon', lookupKey: 'kompilot_creative_premium_monthly', recurring: true, planId: 'pro', description: 'URL-to-Video en masse et scripts IA avancés.', paymentRule: 'Récurrent avec l’abonnement' },
+  { id: 'white_label', name: 'Agence White-Label & Rapports AIO', amountEurHt: 49, productType: 'addon', lookupKey: 'kompilot_white_label_monthly', recurring: true, planId: 'agency', description: 'Marque blanche, domaine personnalisé et rapports brandés.', paymentRule: 'Récurrent avec l’abonnement' },
   { id: 'onboarding_once', name: 'Onboarding', amountEurHt: null, productType: 'service', lookupKey: 'kompilot_onboarding_once', description: 'Paramétrage guidé.', paymentRule: 'Sur devis ou commande' },
   { id: 'audit_seo_geo_once', name: 'Audit SEO / GEO', amountEurHt: null, productType: 'service', lookupKey: 'kompilot_audit_seo_geo_once', description: 'Audit documenté.', paymentRule: 'Sur devis ou commande' },
   { id: 'ga4_gsc_once', name: 'Configuration GA4 / GSC', amountEurHt: null, productType: 'service', lookupKey: 'kompilot_ga4_gsc_once', description: 'Configuration analytics.', paymentRule: 'Sur devis ou commande' },

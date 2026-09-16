@@ -5,7 +5,8 @@
  */
 import { Hono } from 'hono';
 import type { Env } from '../../lib/types';
-import { getBlink, getUserMeta, patchUserMeta } from '../../lib/stripeHelpers';
+import { getBlink, getUserMeta, patchUserMeta, normalizeLegacyPlanForDisplay } from '../../lib/stripeHelpers';
+import { SUBSCRIPTION_PLANS } from '../../../shared/pricingCatalog';
 
 export const router = new Hono();
 
