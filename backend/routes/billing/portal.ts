@@ -117,27 +117,25 @@ router.get('/api/billing/status', async (c) => {
   };
   const normalisedStatus = statusMap[rawStatus] ?? rawStatus;
 
-  // Available plan/billing combinations (read dynamically to avoid static analysis false positives)
-  const billingInterval = (meta.billing_interval as string) || 'monthly';
-  const planId = (meta.plan_id as string) || null;
-  const availablePlans = {
-    starter: {
-      monthly: SUBSCRIPTION_PLANS.starter.monthly.id,
-      yearly: SUBSCRIPTION_PLANS.starter.yearly.id,
+  const billingInterval = meta.billing_interval === 'yearly' ? 'yearly' : 'monthly';
+  const rawPlanId = (meta.plan_id as string) || null;
+  const planId = rawPlanId ? normalizeLegacyPlanForDisplay(rawPlanId) : null;
+  const availablePlans = SUBSCRIPTION_PLANS.map((plan) => ({
+    id: plan.id,
+    name: plan.name,
+    billing: {
+      monthly: plan.stripeLookupKeys.monthly,
+      yearly: plan.stripeLookupKeys.yearly,
     },
-    agency: {
-      monthly: SUBSCRIPTION_PLANS.agency.monthly.id,
-      yearly: SUBSCRIPTION_PLANS.agency.yearly.id,
-    },
-  };
+  }));
 
   return c.json({
-    status:               normalisedStatus,
-    gracePeriodEnd:       meta.grace_period_end      || null,
-    hasStripeCustomer:    !!meta.stripe_customer_id,
-    planId:               planId ? normalizeLegacyPlanForDisplay(planId) : null,
+    status: normalisedStatus,
+    gracePeriodEnd: meta.grace_period_end || null,
+    hasStripeCustomer: !!meta.stripe_customer_id,
+    planId,
     billingInterval,
-    stripeSubscriptionId: subId                      || null,
+    stripeSubscriptionId: subId || null,
     currentPeriodEnd,
     cancelAtPeriodEnd,
     trialEnd,

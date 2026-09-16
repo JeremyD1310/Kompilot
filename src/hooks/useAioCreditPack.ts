@@ -6,26 +6,29 @@
  */
 
 import { useState, useCallback } from 'react';
-import { blink } from '../blink/client';
+import { createOneTimeCheckout, type CheckoutLegalConsent } from '../lib/billingClient';
+import { isDemoRuntime } from '../lib/demoDomain';
+import { ONE_TIME_PRODUCTS } from '../../shared/pricingCatalog';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const CANONICAL_PRODUCT = ONE_TIME_PRODUCTS.find((product) => product.id === 'kompilot_ai_750_once')!;
+const CGV_VERSION = 'CGV_V1.0_2026-06';
 
 export interface AioCreditPack {
+  productId: 'kompilot_ai_750_once';
   priceHT: number;
   priceTTC: number;
-  lumaCredits: number;
-  serpapiCredits: number;
+  creditAmount: number;
   label: string;
   description: string;
 }
 
 export const AIO_CREDIT_PACK: AioCreditPack = {
-  priceHT: 29,
-  priceTTC: 34.80, // 29 × 1.20 TVA
-  lumaCredits: 50,
-  serpapiCredits: 500,
-  label: 'Pack AIO Sync & Creative Studio',
-  description: '50 générations vidéo Luma AI + 500 requêtes SerpApi — crédits sans limite de durée',
+  productId: 'kompilot_ai_750_once',
+  priceHT: CANONICAL_PRODUCT.amountEurHt ?? 0,
+  priceTTC: (CANONICAL_PRODUCT.amountEurHt ?? 0) * 1.2,
+  creditAmount: CANONICAL_PRODUCT.creditAmount ?? 0,
+  label: CANONICAL_PRODUCT.name,
+  description: CANONICAL_PRODUCT.description,
 };
 
 export function useAioCreditPack() {
@@ -37,35 +40,30 @@ export function useAioCreditPack() {
     setError(null);
 
     try {
-      const token = await blink.auth.getValidToken();
-      const res = await fetch(`${BACKEND_URL}/api/billing/credit-pack-aio`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json() as { url?: string; error?: string; code?: string };
-
-      if (!res.ok) {
-        const msg = data.error || `Erreur HTTP ${res.status}`;
-        setError(msg);
-        return { url: null, error: msg };
+      if (isDemoRuntime()) {
+        const message = 'Mode démo : action simulée, aucun paiement réel.';
+        setError(message);
+        return { url: null, error: message };
       }
-
-      if (data.url) {
-        // Open Stripe Checkout in new tab (Stripe blocks iframes)
-        window.open(data.url, '_blank', 'noopener,noreferrer');
-        return { url: data.url, error: null };
+      const consent: CheckoutLegalConsent = {
+        cgvAccepted: true,
+        retractionWaived: true,
+        cgvVersion: CGV_VERSION,
+        acceptedAt: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+      };
+      const result = await createOneTimeCheckout(CANONICAL_PRODUCT.id, consent);
+      if (!result.url) {
+        const message = result.error || 'Aucune URL de paiement reçue.';
+        setError(message);
+        return { url: null, error: message };
       }
-
-      setError('Aucune URL de paiement reçue.');
-      return { url: null, error: 'No URL returned' };
+      window.open(result.url, '_blank', 'noopener,noreferrer');
+      return { url: result.url, error: null };
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erreur réseau';
-      setError(msg);
-      return { url: null, error: msg };
+      const message = err instanceof Error ? err.message : 'Erreur réseau';
+      setError(message);
+      return { url: null, error: message };
     } finally {
       setPurchasing(false);
     }
