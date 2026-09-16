@@ -28,12 +28,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# Playwright test artifacts
-playwright-report/
-tests/playwright-report/
-test-results/
-blob-report/
-
 # Browser captures, media, and traces
 captures/
 **/captures/
