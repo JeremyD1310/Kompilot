@@ -144,15 +144,20 @@ export type CreditActionId =
   | 'short_text' | 'review_reply' | 'message_reply' | 'full_post' | 'email_sequence'
   | 'long_article' | 'image_generation' | 'local_seo_analysis' | 'geo_visibility_scan'
   | 'short_video' | 'full_ai_report' | 'luma_video_generation' | 'runway_video_generation'
-  | 'tavus_video_generation' | 'ugc_video_generation' | 'voiceover_generation'
-  | 'predictive_lead_scoring'
-/** Canonical Kompilot AI charges. SerpApi remains provider-cost metadata, not an AI-credit action. */
+  | 'tavus_video_generation' | 'ugc_product_analysis' | 'ugc_script_generation'
+  | 'ugc_video_generation' | 'voiceover_generation' | 'predictive_lead_scoring'
+  | 'serpapi_visibility_sync' | 'aio_audit' | 'url_to_video_analysis'
+/**
+ * Canonical Kompilot AI/provider actions. Each paid route must resolve its cost
+ * from this catalog; provider names belong in transaction metadata only.
+ */
 export const AI_CREDIT_COSTS: Readonly<Record<CreditActionId, number>> = {
   short_text: 1, review_reply: 1, message_reply: 1, full_post: 3, email_sequence: 3,
   long_article: 10, image_generation: 5, local_seo_analysis: 10, geo_visibility_scan: 15,
   short_video: 25, full_ai_report: 15, luma_video_generation: 1, runway_video_generation: 5,
-  tavus_video_generation: 10, ugc_video_generation: 10, voiceover_generation: 1,
-  predictive_lead_scoring: 1,
+  tavus_video_generation: 10, ugc_product_analysis: 1, ugc_script_generation: 1,
+  ugc_video_generation: 10, voiceover_generation: 1, predictive_lead_scoring: 1,
+  serpapi_visibility_sync: 1, aio_audit: 1, url_to_video_analysis: 1,
 }
 export const SMS_CREDIT_COST = 1
 export const CREDIT_ALERT_THRESHOLDS = [50, 80, 100] as const

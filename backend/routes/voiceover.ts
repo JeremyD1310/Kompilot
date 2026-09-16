@@ -69,13 +69,14 @@ router.post('/api/voiceover/generate', async (c) => {
   if (text.length > 4096) return c.json({ error: 'TEXT_TOO_LONG', message: `Le texte fait ${text.length} caractères. Maximum : 4096.` }, 400);
 
   const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
-  const referenceId = `voiceover:${userId}:${body.requestId?.trim() || crypto.randomUUID()}`;
+  const requestId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || body.requestId?.trim() || crypto.randomUUID();
+  const referenceId = `voiceover:${userId}:${requestId}`;
 
   try {
     const charged = await consumeExecuteRefund(
       blink,
       userId,
-      'text_generation',
+      'voiceover_generation',
       'Voiceover TTS',
       referenceId,
       async () => {

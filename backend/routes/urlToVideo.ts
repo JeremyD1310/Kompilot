@@ -173,7 +173,7 @@ router.post('/api/url-to-video/scrape', async (c) => {
     const charged = await consumeExecuteRefund(
       blink,
       userId,
-      'text_generation',
+      'url_to_video_analysis',
       'URL-to-video website analysis',
       referenceId,
       async () => {
@@ -277,7 +277,7 @@ router.post('/api/url-to-video/generate', async (c) => {
     const charged = await consumeExecuteRefund(
       blink,
       userId,
-      'video_generation',
+      'luma_video_generation',
       'URL-to-video Luma generation',
       referenceId,
       async () => {
@@ -373,7 +373,7 @@ router.get('/api/url-to-video/status/:generationId', async (c) => {
     if (data.state === 'failed') {
       const blink = getBlink(env);
       try {
-        await refundCredits(blink, userId, 1, `Auto-refund: Luma URL-to-video failed — ${data.failure_reason ?? 'provider failure'}`, generationId);
+        await refundCredits(blink, userId, 1, `Auto-refund: Luma URL-to-video failed — ${data.failure_reason ?? 'provider failure'}`, referenceId);
       } catch (refundErr) {
         console.error('[UrlToVideo] Luma refund failed; reconciliation required:', refundErr);
       }

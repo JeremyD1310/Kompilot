@@ -133,13 +133,14 @@ router.post('/api/aio/sync/track', async (c) => {
   // ── Appel au service AIO Sync (sync fallback) ─────────────────────────────
   console.log(`[aioSync route] POST /api/aio/sync/track — keyword="${keyword}" brand="${brandName}"`);
 
-  const referenceId = c.req.header('Idempotency-Key') || c.req.header('X-Request-Id') || `aio-sync:${userId}:${keyword}`;
+  const requestId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || crypto.randomUUID();
+  const referenceId = `aio-sync:${userId}:${requestId}`;
 
   try {
     const charged = await consumeExecuteRefund(
       createClient({ projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: c.env.BLINK_SECRET_KEY }),
       userId,
-      'serpapi_query',
+      'serpapi_visibility_sync',
       'AIO visibility sync',
       referenceId,
       async () => {

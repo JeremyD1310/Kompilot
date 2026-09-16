@@ -79,7 +79,7 @@ router.post('/api/creative-studio/analyze', async (c) => {
     const charged = await consumeExecuteRefund(
       db,
       userId,
-      'ai_analysis',
+      'full_ai_report',
       'Creative Studio Meta Ads analysis',
       requestId,
       async () => {
@@ -209,7 +209,7 @@ Réponds UNIQUEMENT avec un JSON valide (pas de markdown, pas d'explication) :
         return { reportId, analysis, adsAnalyzed: formatted.length, budgetWasteDetected: isClaudeDemo ? (analysis.budget_waste_euros ?? 140) : Math.round(totalBudgetWaste), isDemo: isMetaDemo || isClaudeDemo };
       },
       'ai',
-      { provider: 'anthropic', route: 'creativeStudio.analyze', adAccountId, orgId },
+      { provider: 'anthropic', route: 'creativeStudio.analyze', adAccountId, orgId, demo: isMetaDemo && isClaudeDemo },
     );
     return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
 

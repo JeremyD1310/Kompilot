@@ -27,6 +27,14 @@ export interface CreditTransaction {
   createdAt: string;
 }
 
+export interface CreditConsumeResult {
+  success: boolean;
+  balanceAfter: number;
+  cost: number;
+  replayed?: boolean;
+  error?: string;
+}
+
 export type BlinkClient = ReturnType<typeof createClient>;
 
 export type LedgerCreditType = 'ai' | 'sms' | 'luma' | 'serpapi';
@@ -40,7 +48,6 @@ export const CREDIT_COSTS: Record<string, number> = {
   multi_channel_automation: AI_CREDIT_COSTS.full_post,
   video_generation: AI_CREDIT_COSTS.tavus_video_generation,
   sms_send: 1,
-  serpapi_query: 1,
 };
 
 // ── Credit helpers ──────────────────────────────────────────────────────────────
@@ -108,14 +115,17 @@ export async function consumeCredits(
   referenceId: string,
   creditType: LedgerCreditType = 'ai',
   metadata: Record<string, unknown> = {},
-): Promise<{ success: boolean; balanceAfter: number; cost: number; error?: string }> {
+): Promise<CreditConsumeResult> {
   const cost = CREDIT_COSTS[actionType] ?? (AI_CREDIT_COSTS[actionType as CreditActionId] ?? 0);
   if (!Number.isFinite(cost) || cost <= 0) {
     return { success: false, balanceAfter: 0, cost: 0, error: 'Unknown credit action' };
   }
   const initialCredits = await getPlanInitialCredits(blink, userId, creditType);
   const now = new Date().toISOString();
-  const safeReferenceId = referenceId.trim() || `consume:${userId}:${creditType}:${actionType}:${now.slice(0, 10)}`;
+  const safeReferenceId = referenceId.trim();
+  if (!safeReferenceId) {
+    return { success: false, balanceAfter: initialCredits, cost, error: 'A stable referenceId is required' };
+  }
   const txId = `ctx:${creditType}:${safeReferenceId}`.slice(0, 255);
 
   const result = await blink.db.batch([
@@ -144,7 +154,7 @@ export async function consumeCredits(
       limit: 1,
     });
     if (existing.length > 0) {
-      return { success: true, balanceAfter: Number(existing[0].balanceAfter) || 0, cost };
+      return { success: true, balanceAfter: Number(existing[0].balanceAfter) || 0, cost, replayed: true };
     }
     const balance = await getCurrentBalance(blink, userId, creditType);
     return { success: false, balanceAfter: balance === -1 ? initialCredits : balance, cost, error: 'Insufficient credits' };
@@ -161,9 +171,10 @@ export async function refundCredits(
   amount: number,
   reason: string,
   referenceId: string,
+  creditType: LedgerCreditType = 'ai',
 ): Promise<void> {
   if (amount <= 0 || !referenceId) return;
-  const initialCredits = await getPlanInitialCredits(blink, userId);
+  const initialCredits = await getPlanInitialCredits(blink, userId, creditType);
   const now = new Date().toISOString();
   const safeReferenceId = referenceId.trim();
   if (!safeReferenceId) throw new Error('A stable referenceId is required for refunds');
@@ -188,6 +199,17 @@ export async function refundCredits(
 /**
  * Standard paid-AI lifecycle: reserve before execution and refund exactly once
  * when the executor throws. Callers retain their existing response semantics.
+ *
+ * Contract:
+ * 1. `actionType` resolves its cost only through the shared pricing catalog.
+ * 2. `referenceId` is the caller-owned idempotency key and must be stable across retries.
+ * 3. Consumption is attempted before `execute`; insufficient balance fails before provider work.
+ * 4. `execute` runs exactly after a successful ledger reservation.
+ * 5. A thrown technical error triggers one idempotent refund for that reference.
+ * 6. A successful or provider-accepted async result is never refunded by this wrapper.
+ * 7. Provider/route metadata is stored on the consumption transaction.
+ * 8. A replay is reported with `replayed: true`; callers must resolve their durable result
+ *    before invoking provider work again.
  */
 export async function consumeExecuteRefund<T>(
   blink: BlinkClient,
@@ -198,14 +220,21 @@ export async function consumeExecuteRefund<T>(
   execute: () => Promise<T>,
   creditType: LedgerCreditType = 'ai',
   metadata: Record<string, unknown> = {},
-): Promise<{ result: T; cost: number; balanceAfter: number }> {
+): Promise<{ result: T; cost: number; balanceAfter: number; replayed: boolean }> {
+  if (metadata.demo === true) {
+    const result = await execute();
+    return { result, cost: 0, balanceAfter: -1, replayed: false };
+  }
   const consumed = await consumeCredits(blink, userId, actionType, description, referenceId, creditType, metadata);
   if (!consumed.success) throw new Error(consumed.error || 'Insufficient credits');
+  if (consumed.replayed) {
+    throw new Error('IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT');
+  }
   try {
     const result = await execute();
-    return { result, cost: consumed.cost, balanceAfter: consumed.balanceAfter };
+    return { result, cost: consumed.cost, balanceAfter: consumed.balanceAfter, replayed: false };
   } catch (error) {
-    await refundCredits(blink, userId, consumed.cost, `Refund: ${description}`, referenceId);
+    await refundCredits(blink, userId, consumed.cost, `Refund: ${description}`, referenceId, creditType);
     throw error;
   }
 }

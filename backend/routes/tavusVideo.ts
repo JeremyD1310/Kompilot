@@ -86,10 +86,12 @@ router.post('/api/videos/generate', async (c) => {
   }
 
   const replicaId = body.replicaId || rawEnv.TAVUS_DEFAULT_REPLICA_ID as string || '';
+  if (!replicaId) return c.json({ error: 'replicaId is required', code: 'NO_REPLICA_ID' }, 400);
   const callbackToken = crypto.randomUUID();
-  // Use the durable video record id as the credit reference so webhook refunds
-  // remain linked to the exact charge even when callbacks arrive later.
-  const videoId = `vid_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const requestId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || crypto.randomUUID();
+  // The durable video id is also the ledger reference, so webhook refunds remain
+  // linked to the exact charge and retries cannot create a second charge.
+  const videoId = `tavus:${auth.userId}:${requestId}`.replace(/[^a-zA-Z0-9:_-]/g, '_').slice(0, 255);
 
   // 4. Deduct credits and execute the Tavus API call and persistence
   const creditReferenceId = videoId;
@@ -127,6 +129,10 @@ router.post('/api/videos/generate', async (c) => {
         hosted_url?: string;
       };
 
+      if (!tavusData.video_id) {
+        throw new Error('Tavus accepted no usable video identifier');
+      }
+
       // 6. Save record in video_generations table
       const videoTable = blink.db.table<VideoGeneration>('video_generations');
       await videoTable.create({
@@ -158,10 +164,6 @@ router.post('/api/videos/generate', async (c) => {
     'ai',
     { provider: 'tavus', replicaId },
   );
-
-  if (!charged.success) {
-    return c.json({ error: charged.error }, 402);
-  }
 
   return c.json({ ...charged.result, balanceAfter: charged.balanceAfter });
 });
