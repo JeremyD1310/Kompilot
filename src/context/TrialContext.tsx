@@ -1,5 +1,5 @@
 /**
- * TrialContext — Gestion de l'essai gratuit 7 jours + logique paywall.
+ * TrialContext — Gestion de l'essai gratuit 14 jours + logique paywall.
  *
  * - Calcule le nombre de jours restants depuis la date de création du compte
  * - Expose `isTrialActive`, `trialDaysLeft`, `isTrialExpired`

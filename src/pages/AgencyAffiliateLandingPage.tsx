@@ -38,7 +38,7 @@ interface AffiliateData {
 }
 
 const BENEFITS = [
-  { icon: Zap, text: 'Essai gratuit 7 jours — sans carte bancaire' },
+  { icon: Zap, text: 'Essai gratuit 14 jours — sans carte bancaire' },
   { icon: Shield, text: 'Données sécurisées, jamais revendues' },
   { icon: Users, text: 'Utilisé par +2 400 commerçants en France' },
 ];
@@ -225,7 +225,7 @@ export default function AgencyAffiliateLandingPage() {
         </button>
 
         <p style={{ fontSize: '.75rem', color: 'hsl(var(--landing-subtle))', marginBottom: 40 }}>
-          Essai gratuit 7 jours · Sans carte bancaire · Accès immédiat
+          Essai gratuit 14 jours · Sans carte bancaire · Accès immédiat
         </p>
 
         {/* Benefits */}

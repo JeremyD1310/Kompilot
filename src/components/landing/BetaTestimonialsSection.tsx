@@ -4,6 +4,13 @@ import { Link } from '@tanstack/react-router';
 import { trackEvent } from '../../hooks/useAnalytics';
 import { getApprovedBetaTestimonials, getBetaTestimonial, type BetaTestimonial } from '../../data/betaTestimonials';
 
+function trackTestimonialSectionView() {
+  trackEvent('testimonial_section_view', {
+    page_path: window.location.pathname,
+    section_name: 'beta_testimonials',
+  });
+}
+
 function trackTestimonialCta(ctaName: 'signup' | 'demo', destination: '/signup' | '/demo') {
   trackEvent('testimonial_cta_click', {
     cta_name: ctaName,
@@ -55,11 +62,9 @@ export function BetaTestimonialsSection() {
   const testimonials = getApprovedBetaTestimonials();
 
   useEffect(() => {
-    trackEvent('testimonial_section_view', {
-      page_path: window.location.pathname,
-      section_name: 'beta_testimonials',
-    });
-  }, [trackEvent]);
+    trackTestimonialSectionView();
+    // Tracking is consent-gated in useAnalytics and this effect runs once per mount.
+  }, []);
 
   return (
     <section id="temoignages" className="landing-section overflow-hidden bg-[#0F172A] text-slate-100" aria-labelledby="beta-testimonials-title">

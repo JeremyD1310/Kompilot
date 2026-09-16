@@ -1,5 +1,5 @@
 /**
- * TrialGatePaywall — Shown when the 7-day trial expires without an active subscription.
+ * TrialGatePaywall — Shown when the 14-day trial expires without an active subscription.
  *
  * Beautiful, minimal paywall screen with Starter (69€) and Agency (149€) plans.
  * Pushes trial_status="expired" to Crisp so support can follow up.

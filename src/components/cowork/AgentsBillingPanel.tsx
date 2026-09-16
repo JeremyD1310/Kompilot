@@ -49,7 +49,7 @@ export function AgentsBillingPanel({ isTrial, isAgency, aiOptionActivated, setAi
           <div className="bg-amber-950/40 border border-amber-900/50 p-3 rounded-xl flex gap-2.5">
             <AlertTriangle size={14} className="text-amber-400 shrink-0 mt-0.5" />
             <p className="text-[11px] text-amber-300/90 leading-normal">
-              <strong>Période d'essai active (7 jours).</strong> L'intégration d'options complémentaires
+              <strong>Période d'essai active (14 jours).</strong> L'intégration d'options complémentaires
               n'est accessible qu'à la validation définitive du plan de production.
             </p>
           </div>

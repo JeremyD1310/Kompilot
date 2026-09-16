@@ -35,7 +35,7 @@ Avant d'écrire une seule ligne de code, connecte-toi au Dashboard Stripe et cr�
     "plan_tier": "starter|agency|surmesure",
     "billing_cycle": "monthly|annual",
     "commitment_months": "1|12",
-    "trial_days": "7"
+    "trial_days": "14"
   }
   ```
 - Pour les prix annuels, le checkout doit collecter le paiement **immédiatement** (`mode: 'subscription'`, pas de `trial_period_days` si l'essai est déjà consommé).
@@ -98,7 +98,7 @@ interface CheckoutBody {
 Logique métier :
 1. Résoudre le `priceId` depuis `STRIPE_PRICES[planId][billingCycle]`.
 2. Si `planId === 'surmesure'` → rediriger vers `/contact?plan=surmesure` (pas de checkout Stripe).
-3. Créer la session avec `payment_behavior: 'default_incomplete'` et `trial_period_days: 7` uniquement si l'utilisateur n'a pas déjà consommé son essai (vérifier `user.trial_end` dans la DB).
+3. Créer la session avec `payment_behavior: 'default_incomplete'` et `trial_period_days: 14` uniquement si l'utilisateur n'a pas déjà consommé son essai (vérifier `user.trial_end` dans la DB).
 4. Injecter les métadonnées du plan dans `subscription_data.metadata`.
 5. Retourner `{ url: session.url }`.
 
@@ -158,7 +158,7 @@ interface PricingPlan {
 ```
 Engagement d'un an ferme à compter de la date de souscription pour l'offre annuelle.
 Tous les prix sont affichés hors taxes (HT). TVA applicable au taux en vigueur (20%).
-Essai gratuit de 7 jours sans engagement pour les offres mensuelles uniquement.
+Essai gratuit de 14 jours sans engagement pour les offres mensuelles uniquement.
 ```
 
 ### 2.2 Mise à jour des landing pages existantes

@@ -22,11 +22,15 @@ export default function TestimonialsPage() {
 
   const onCta = () => window.location.assign(user ? '/dashboard' : '/signup');
   const approvedTestimonials = getApprovedBetaTestimonials();
+  if (approvedTestimonials.length !== 4) {
+    console.error('[testimonials] expected exactly four approved beta testimonials');
+  }
   useEffect(() => {
     trackEvent('testimonial_section_view', {
       page_path: window.location.pathname,
       section_name: 'beta_testimonials',
     });
+    // Tracking is consent-gated in useAnalytics and this effect runs once per mount.
   }, []);
   const trackCta = (ctaName: 'signup' | 'demo', destination: '/signup' | '/demo') => {
     trackEvent('testimonial_cta_click', {
@@ -59,7 +63,7 @@ export default function TestimonialsPage() {
             <div className="mx-auto max-w-4xl"><h2 id="beta-programme-title" className="text-3xl font-black text-slate-50">Une plateforme de communication B2B testée sur le terrain</h2><p className="mt-5 text-base leading-7 text-slate-300">Les bêta-testeurs explorent la création de contenu assistée par IA, la communication multicanale, la visibilité SEO et GEO, la gestion de communication locale et les usages d’un outil marketing pour PME, agences et commerces.</p></div>
           </section>
 
-          <section className="mx-auto max-w-6xl px-4 py-16"><div className="rounded-3xl border border-teal-300/20 bg-teal-300/[0.06] p-7 md:p-10"><p className="text-base text-slate-300">Sans carte bancaire · Activation immédiate · Vous gardez le contrôle</p><div className="mt-7 flex flex-col gap-3 sm:flex-row"><Link to="/signup" onClick={() => trackCta('signup', '/signup')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-3 font-bold text-white transition hover:bg-teal-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300">Essayer Kompilot gratuitement <ArrowRight size={16} /></Link><Link to="/demo" onClick={() => trackCta('demo', '/demo')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/20 px-5 py-3 font-bold text-slate-100 transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300">Explorer la démonstration</Link></div><div className="mt-7 flex flex-wrap gap-x-5 gap-y-3 text-sm"><Link to="/features" className="text-teal-300 underline-offset-4 hover:underline">Voir les fonctionnalités</Link><Link to="/secteurs/agences" className="text-teal-300 underline-offset-4 hover:underline">Solutions pour agences</Link><Link to="/secteurs/immobilier" className="text-teal-300 underline-offset-4 hover:underline">Solutions sectorielles</Link></div></div></section>
+          <section className="mx-auto max-w-6xl px-4 py-16"><div className="rounded-3xl border border-teal-300/20 bg-teal-300/[0.06] p-7 md:p-10"><p className="text-base font-semibold text-slate-200">Essai gratuit 14 jours</p><p className="mt-2 text-base text-slate-300">Sans carte bancaire · Activation immédiate · Vous gardez le contrôle</p><div className="mt-7 flex flex-col gap-3 sm:flex-row"><Link to="/signup" onClick={() => trackCta('signup', '/signup')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-3 font-bold text-white transition hover:bg-teal-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300">Essayer Kompilot gratuitement <ArrowRight size={16} /></Link><Link to="/demo" onClick={() => trackCta('demo', '/demo')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/20 px-5 py-3 font-bold text-slate-100 transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300">Explorer la démonstration</Link></div><div className="mt-7 flex flex-wrap gap-x-5 gap-y-3 text-sm"><Link to="/features" className="text-teal-300 underline-offset-4 hover:underline">Voir les fonctionnalités</Link><Link to="/secteurs/agences" className="text-teal-300 underline-offset-4 hover:underline">Solutions pour agences</Link><Link to="/secteurs/immobilier" className="text-teal-300 underline-offset-4 hover:underline">Solutions sectorielles</Link></div></div></section>
         </main>
         <LandingFooter />
       </div>

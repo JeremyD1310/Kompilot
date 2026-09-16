@@ -333,7 +333,7 @@ export function TrialEndModal({ open, onClose }: TrialEndModalProps) {
                         <div className="flex items-center gap-2 mb-3">
                           <AlertTriangle size={14} className="text-red-400" />
                           <p className="text-[12px] font-bold text-red-400 uppercase tracking-wider">
-                            Ce que vous allez perdre dans 7 jours
+                            Ce que vous allez perdre dans 14 jours
                           </p>
                         </div>
                         <div className="space-y-2.5">
