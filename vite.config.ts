@@ -23,7 +23,7 @@ export default defineConfig({
       'framer-motion',
     ],
   },
-  server: {
+    server: {
     port: 3000,
     strictPort: true,
     host: true,
