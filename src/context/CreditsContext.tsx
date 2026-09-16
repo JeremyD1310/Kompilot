@@ -3,6 +3,7 @@ import { blink } from '../blink/client';
 import { useDemoMode, DEMO_CREDIT_TOTAL } from './DemoModeContext';
 import { consumeContentQuotaClient, releaseContentQuotaClient } from '../lib/contentQuotaClient';
 import { fetchCreditBalance, fetchCreditHistory, type CreditHistoryEntry } from '../lib/billingClient';
+import { canRequestProtectedApi } from '../config/api';
 
 export type CreditsValue = number;
 
@@ -32,7 +33,10 @@ export function CreditsProvider({ children }: { children: ReactNode }) {
   const [history, setHistory] = useState<CreditHistoryEntry[]>([]);
 
   const refresh = async () => {
-    if (isDemoActive || !blink.auth.isAuthenticated()) return;
+    if (!canRequestProtectedApi({
+      authenticated: blink.auth.isAuthenticated(),
+      demo: isDemoActive,
+    })) return;
     try {
       const [current, entries] = await Promise.all([fetchCreditBalance(), fetchCreditHistory()]);
       setBalance(current.balance);

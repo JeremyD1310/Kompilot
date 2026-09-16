@@ -3,6 +3,7 @@ import { fetchBillingStatus } from '../lib/billingClient';
 import { blink } from '../blink/client';
 import { isDemoRuntime } from '../lib/demoDomain';
 import { SUBSCRIPTION_PLANS, type SubscriptionPlanId } from '../../shared/pricingCatalog';
+import { canRequestProtectedApi } from '../config/api';
 
 export type PlanId = SubscriptionPlanId;
 export interface Plan {
@@ -57,7 +58,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }), []);
 
   const refreshBillingStatus = useCallback(async () => {
-    if (isDemoRuntime() || !blink.auth.isAuthenticated()) return;
+    if (!canRequestProtectedApi({
+      authenticated: blink.auth.isAuthenticated(),
+      demo: isDemoRuntime(),
+    })) return;
     try {
       const data = await fetchBillingStatus();
       setStatusState(data.status);

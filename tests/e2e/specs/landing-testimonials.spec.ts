@@ -15,12 +15,15 @@ async function installAnalyticsConsent(page: Page) {
   });
 }
 
-async function countTestimonialViewEvents(page: Page) {
-  return page.evaluate(() =>
-    ((window as Window & { dataLayer?: unknown[] }).dataLayer ?? [])
-      .filter(entry => Array.isArray(entry) && entry[0] === 'event' && entry[1] === 'testimonial_section_view')
-      .length,
-  );
+async function trackingSnapshot(page: Page) {
+  return page.evaluate(() => {
+    const entries = ((window as Window & { dataLayer?: unknown[] }).dataLayer ?? [])
+      .filter(entry => Array.isArray(entry) && entry[0] === 'event') as unknown[][];
+    return {
+      viewEvents: entries.filter(entry => entry[1] === 'testimonial_section_view').length,
+      ctaEvents: entries.filter(entry => entry[1] === 'testimonial_cta_click').length,
+    };
+  });
 }
 
 test.describe('landing beta testimonials canonical section', () => {
@@ -36,11 +39,21 @@ test.describe('landing beta testimonials canonical section', () => {
       await expect(section.getByRole('heading', { name: 'Retours de bêta-testeurs', exact: true })).toHaveCount(1);
       await expect(section.locator('[data-testimonial-id]')).toHaveCount(4);
 
+      const cards = section.locator('[data-testimonial-id]');
+      await expect(cards.nth(0)).toHaveAttribute('data-testimonial-id', 'julien');
+      await expect(cards.nth(1)).toHaveAttribute('data-testimonial-id', 'camille');
+      await expect(cards.nth(2)).toHaveAttribute('data-testimonial-id', 'marc');
+      await expect(cards.nth(3)).toHaveAttribute('data-testimonial-id', 'elodie');
+      await expect(section.getByText('Bêta-testeur', { exact: true })).toHaveCount(2);
+      await expect(section.getByText('Bêta-testeuse', { exact: true })).toHaveCount(2);
+      await expect(section.locator('script[type="application/ld+json"]')).toHaveCount(0);
+
       for (const id of ['julien', 'camille', 'marc', 'elodie']) {
         await expect(section.locator(`[data-testimonial-id="${id}"]`)).toHaveCount(1);
       }
 
-      await page.screenshot({ path: `test-results/landing-testimonials-${viewport.width}.png`, fullPage: false });
+      await expect(section.getByRole('link', { name: /Essayer Kompilot gratuitement/i })).toHaveAttribute('href', '/signup');
+      await expect(section.getByRole('link', { name: /Explorer la démonstration/i })).toHaveAttribute('href', '/demo');
     }
   });
 
@@ -52,13 +65,15 @@ test.describe('landing beta testimonials canonical section', () => {
     });
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await expect.poll(() => countTestimonialViewEvents(page)).toBe(0);
+    await expect.poll(async () => (await trackingSnapshot(page)).viewEvents).toBe(0);
 
     await page.evaluate(() => {
       localStorage.setItem('kompilot_cookie_consent', 'accepted');
       window.dispatchEvent(new Event('kompilot:cookie-consent-changed'));
     });
 
-    await expect.poll(() => countTestimonialViewEvents(page)).toBe(1);
+    await expect.poll(async () => (await trackingSnapshot(page)).viewEvents).toBe(1);
+    await page.getByRole('link', { name: /Essayer Kompilot gratuitement/i }).click();
+    await expect.poll(async () => (await trackingSnapshot(page)).ctaEvents).toBe(1);
   });
 });

@@ -85,7 +85,6 @@ const StaticProviders = compose(
   SubscriptionProvider,
   EstablishmentProvider,
   BrandSettingsProvider,
-  CreditsProvider,
   EcoModeProvider,
   BYOKProvider,
   ConnectedAccountsProvider,
@@ -94,7 +93,6 @@ const StaticProviders = compose(
   ContentPillarsProvider,
   PublicationSlotsProvider,
   UserRoleProvider,
-  TeamModeProvider,
   GuidedTourProvider,
   NotificationsProvider,
   TrialProvider,
@@ -112,9 +110,13 @@ function ThemedApp() {
         <PremiumActionGate />
         <DemoDataProvider>
           <DemoModeProvider>
-            <div className="flex w-full flex-1 flex-col min-h-0">
-              <App />
-            </div>
+            <CreditsProvider>
+              <TeamModeProvider>
+                <div className="flex w-full flex-1 flex-col min-h-0">
+                  <App />
+                </div>
+              </TeamModeProvider>
+            </CreditsProvider>
           </DemoModeProvider>
         </DemoDataProvider>
         <CookieBanner />

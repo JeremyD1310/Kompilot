@@ -17,6 +17,26 @@ export function apiUrl(path: string): string {
   return `${BACKEND_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
+const PROTECTED_PATH_PREFIXES = [
+  '/onboarding', '/dashboard', '/setup', '/calendrier', '/inbox', '/settings', '/profile',
+  '/guide', '/subscription', '/billing', '/admin', '/referral', '/widget', '/library',
+  '/analytics', '/account', '/emailing', '/social', '/establishments', '/posts-data',
+  '/cockpit', '/growth', '/performance', '/reviews', '/seo-local', '/google-maps',
+  '/local-ads', '/academy', '/live-chat', '/notifications', '/geo-authority', '/agence',
+  '/lead-gen', '/semantic', '/qrcode', '/caisse', '/brand', '/creative-factory',
+  '/ai-creative-studio', '/features-showcase', '/tunnels', '/aio', '/roas',
+  '/email-marketing', '/website-scan', '/email-sequences', '/mon-equipe', '/engagement', '/espion',
+];
+
+/** Only authenticated application routes may query protected backend modules. */
+export function isProtectedAppPath(path: string = typeof window === 'undefined' ? '' : window.location.pathname): boolean {
+  return PROTECTED_PATH_PREFIXES.some(prefix => path === prefix || path.startsWith(`${prefix}/`));
+}
+
+export function canRequestProtectedApi({ authenticated, demo, path }: { authenticated: boolean; demo: boolean; path?: string }): boolean {
+  return authenticated && !demo && (path === undefined || isProtectedAppPath(path));
+}
+
 /**
  * Authenticated fetch wrapper — attaches the user's JWT automatically.
  * - Throws on non-2xx responses with the backend error message.

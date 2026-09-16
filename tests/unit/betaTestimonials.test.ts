@@ -8,8 +8,16 @@ describe('beta testimonials publication rules', () => {
     expect(BETA_TESTIMONIALS.every(testimonial => testimonial.betaTester)).toBe(true);
   });
 
-  test('does not expose unapproved testimonials to the public selector', () => {
-    expect(getApprovedBetaTestimonials()).toEqual([]);
+  test('publishes exactly the approved testimonials in the same order', () => {
+    expect(getApprovedBetaTestimonials().map(testimonial => testimonial.id)).toEqual(['julien', 'camille', 'marc', 'elodie']);
+    expect(getApprovedBetaTestimonials()).toHaveLength(4);
+    expect(getApprovedBetaTestimonials().every(testimonial => testimonial.betaTester)).toBe(true);
+    expect(getApprovedBetaTestimonials().map(testimonial => testimonial.badge)).toEqual([
+      'Bêta-testeur',
+      'Bêta-testeuse',
+      'Bêta-testeur',
+      'Bêta-testeuse',
+    ]);
   });
 
   test('returns every entry only when each entry is explicitly approved', () => {

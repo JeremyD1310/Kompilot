@@ -9,8 +9,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { blink } from '../blink/client';
 import { isDemoRuntime } from '../lib/demoDomain';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'https://gbrhsehk.backend.blink.new';
+import { canRequestProtectedApi, apiUrl } from '../config/api';
 
 export type StripeSubStatus = 'active' | 'trialing' | 'past_due' | 'canceled' | 'none';
 
@@ -49,7 +48,12 @@ async function fetchStatus(): Promise<StripeWebhookStatus> {
     const token = await blink.auth.getValidToken().catch(() => null);
     if (!token) return NONE;
 
-    const res = await fetch(`${BACKEND_URL}/api/billing/status`, {
+    if (!canRequestProtectedApi({
+      authenticated: true,
+      demo: isDemoRuntime(),
+    })) return NONE;
+
+    const res = await fetch(apiUrl('/api/billing/status'), {
       headers: { Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(8000),
     });
@@ -82,7 +86,10 @@ async function fetchStatus(): Promise<StripeWebhookStatus> {
 }
 
 export function useStripeWebhookStatus() {
-  const enabled = !isDemoRuntime() && blink.auth.isAuthenticated();
+  const enabled = canRequestProtectedApi({
+    authenticated: blink.auth.isAuthenticated(),
+    demo: isDemoRuntime(),
+  });
 
   return useQuery<StripeWebhookStatus>({
     queryKey: ['stripe-webhook-status'],

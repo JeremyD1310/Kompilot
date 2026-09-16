@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { PWABanner } from '../components/layout/PWABanner';
@@ -25,13 +24,6 @@ export default function TestimonialsPage() {
   if (approvedTestimonials.length !== 4) {
     console.error('[testimonials] expected exactly four approved beta testimonials');
   }
-  useEffect(() => {
-    trackEvent('testimonial_section_view', {
-      page_path: window.location.pathname,
-      section_name: 'beta_testimonials',
-    });
-    // Tracking is consent-gated in useAnalytics and this effect runs once per mount.
-  }, []);
   const trackCta = (ctaName: 'signup' | 'demo', destination: '/signup' | '/demo') => {
     trackEvent('testimonial_cta_click', {
       cta_name: ctaName,
