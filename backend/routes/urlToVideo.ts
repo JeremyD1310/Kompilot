@@ -8,7 +8,6 @@
 
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
-import { checkUserQuota } from '../lib/quotaMiddleware';
 import type { Env } from '../lib/types';
 import { generateAIResponse } from '../lib/aiRouter';
 import { consumeExecuteRefund, refundCredits } from '../lib/creditService';
@@ -236,7 +235,7 @@ Retourne un JSON avec cette structure:
 
 // ── POST /api/url-to-video/generate ──────────────────────────────────────────
 
-router.post('/api/url-to-video/generate', checkUserQuota('luma_videos', 1), async (c) => {
+router.post('/api/url-to-video/generate', async (c) => {
   const userId = getUserId(c.req.header('Authorization'));
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 

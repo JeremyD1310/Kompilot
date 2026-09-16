@@ -9,7 +9,7 @@
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
-import { consumeCredits, refundCredits } from '../lib/creditService';
+import { consumeExecuteRefund } from '../lib/creditService';
 
 export const router = new Hono<{ Bindings: Env }>();
 
@@ -70,57 +70,64 @@ router.post('/api/voiceover/generate', async (c) => {
 
   const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
   const referenceId = `voiceover:${userId}:${body.requestId?.trim() || crypto.randomUUID()}`;
-  const creditResult = await consumeCredits(blink, userId, 'text_generation', 'Voiceover TTS', referenceId);
-  if (!creditResult.success) return c.json({ error: 'NO_CREDITS', message: 'Crédits épuisés.', creditsLeft: creditResult.balanceAfter }, 402);
-
-  const voicePreset = VOICE_PRESETS[body.voice ?? 'nova'] ?? VOICE_PRESETS['nova'];
-  const speed = body.speed ?? voicePreset.speed;
-  const format = body.format ?? 'mp3';
 
   try {
-    const response = await fetch('https://api.openai.com/v1/audio/speech', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openaiKey}`,
-        'Content-Type': 'application/json',
+    const charged = await consumeExecuteRefund(
+      blink,
+      userId,
+      'text_generation',
+      'Voiceover TTS',
+      referenceId,
+      async () => {
+        const voicePreset = VOICE_PRESETS[body.voice ?? 'nova'] ?? VOICE_PRESETS['nova'];
+        const speed = body.speed ?? voicePreset.speed;
+        const format = body.format ?? 'mp3';
+
+        const response = await fetch('https://api.openai.com/v1/audio/speech', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openaiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'tts-1',
+            input: text,
+            voice: voicePreset.voice,
+            speed,
+            response_format: format,
+          }),
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          console.error(`[Voiceover] OpenAI TTS error ${response.status}: ${errText}`);
+          throw new Error(`TTS generation failed: ${response.status}`);
+        }
+
+        // Stream the audio response back — use manual base64 for CF Workers compatibility
+        const audioBuffer = await response.arrayBuffer();
+        const bytes = new Uint8Array(audioBuffer);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        const base64Audio = btoa(binary);
+        const mimeType = format === 'mp3' ? 'audio/mpeg' : `audio/${format}`;
+
+        return {
+          audio: `data:${mimeType};base64,${base64Audio}`,
+          voice: voicePreset.voice,
+          speed,
+          format,
+          charactersUsed: text.length,
+        };
       },
-      body: JSON.stringify({
-        model: 'tts-1',
-        input: text,
-        voice: voicePreset.voice,
-        speed,
-        response_format: format,
-      }),
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error(`[Voiceover] OpenAI TTS error ${response.status}: ${errText}`);
-      await refundCredits(blink, userId, creditResult.cost, 'Voiceover provider failure', referenceId);
-      return c.json({ error: `TTS generation failed: ${response.status}` }, 502);
-    }
-
-    // Stream the audio response back — use manual base64 for CF Workers compatibility
-    const audioBuffer = await response.arrayBuffer();
-    const bytes = new Uint8Array(audioBuffer);
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    const base64Audio = btoa(binary);
-    const mimeType = format === 'mp3' ? 'audio/mpeg' : `audio/${format}`;
-
-    return c.json({
-      audio: `data:${mimeType};base64,${base64Audio}`,
-      voice: voicePreset.voice,
-      speed,
-      format,
-      charactersUsed: text.length,
-      creditsLeft: creditResult.balanceAfter,
-    });
+      'ai',
+      { provider: 'openai', route: 'voiceover' },
+    );
+    return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
   } catch (err: any) {
     console.error('[Voiceover] generate error:', err);
-    await refundCredits(blink, userId, creditResult.cost, 'Voiceover execution failure', referenceId);
     return c.json({ error: err.message ?? 'Voice generation failed' }, 500);
   }
 });

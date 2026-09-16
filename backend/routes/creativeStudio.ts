@@ -7,7 +7,7 @@
  */
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
-import { checkUserQuota } from '../lib/quotaMiddleware';
+import { consumeExecuteRefund } from '../lib/creditService';
 
 type Env = {
   BLINK_SECRET_KEY: string;
@@ -34,11 +34,13 @@ function getUserId(authHeader: string | undefined): string | null {
 }
 
 /* ── POST /api/creative-studio/analyze ──────────────────────────────────── */
-router.post('/api/creative-studio/analyze', checkUserQuota('creative_credits', 1), async (c) => {
+router.post('/api/creative-studio/analyze', async (c) => {
   const userId = getUserId(c.req.header('Authorization'));
   if (!userId) return c.json({ error: 'Non autorisé' }, 401);
 
   const { adAccountId, orgId = '', async: useQueue = false } = await c.req.json<{ adAccountId: string; orgId?: string; async?: boolean }>();
+  const requestId = c.req.header('Idempotency-Key') || c.req.header('X-Request-Id') || `creative-studio:${userId}:${crypto.randomUUID()}`;
+  const db = getDb(c.env);
   if (!adAccountId) return c.json({ error: 'adAccountId requis' }, 400);
 
   const metaToken = c.env.META_ADS_GRAPH_TOKEN;
@@ -57,62 +59,7 @@ router.post('/api/creative-studio/analyze', checkUserQuota('creative_credits', 1
   ];
 
   try {
-    /* 1. Fetch Meta Ads (ou données démo) ──────────────────────────────── */
-    let formatted: any[];
-
-    if (isMetaDemo) {
-      formatted = DEMO_META_ADS;
-    } else {
-      const metaUrl =
-        `https://graph.facebook.com/v19.0/${adAccountId}/ads` +
-        `?fields=name,creative{image_url,body,title},insights{spend,inline_link_click_ctr,purchase_roas}` +
-        `&access_token=${metaToken}`;
-
-      const metaRes = await fetch(metaUrl);
-      const metaData = await metaRes.json() as { data?: any[]; error?: any };
-
-      if (!metaData.data) {
-        const msg = metaData.error?.message ?? 'Impossible de récupérer les données Meta Ads.';
-        return c.json({ error: msg }, 400);
-      }
-
-      formatted = metaData.data
-        .map((ad: any) => ({
-          name: ad.name ?? '',
-          text: ad.creative?.body ?? '',
-          title: ad.creative?.title ?? '',
-          ctr: parseFloat(ad.insights?.[0]?.inline_link_click_ctr ?? '0'),
-          roas: parseFloat(ad.insights?.[0]?.purchase_roas?.[0]?.value ?? '0'),
-          spend: parseFloat(ad.insights?.[0]?.spend ?? '0'),
-        }))
-        .filter((ad: any) => ad.spend > 10);
-
-      if (formatted.length === 0) {
-        return c.json({ error: 'Aucune publicité avec budget dépensé trouvée sur ce compte.' }, 422);
-      }
-    }
-
-    /* 2. Async queue mode: enqueue Claude analysis ─────────────────────── */
-    if (useQueue) {
-      try {
-        const blink = getDb(c.env) as any;
-        if (blink.queue?.enqueue) {
-          await blink.queue.enqueue('analyze-creative', {
-            userId, adAccountId, orgId, formatted, isMetaDemo, isClaudeDemo,
-          });
-          return c.json({
-            mode: 'async',
-            status: 'queued',
-            adsAnalyzed: formatted.length,
-            message: 'Analysis queued. Poll reports endpoint for results.',
-          });
-        }
-      } catch (queueErr) {
-        console.warn('[CreativeStudio] Queue enqueue failed, falling back to sync:', queueErr);
-      }
-    }
-
-    /* 3. Analyse Claude (ou réponse démo) — sync fallback ─────────────── */
+    /* ── Analyse Claude (ou réponse démo) — sync fallback ─────────────── */
     const DEMO_CLAUDE_ANALYSIS = {
       winners: 'Les accroches "Pain Point" (Gamma, CTR 5.1%, ROAS 6.3x) et "Promo directe" (Alpha, ROAS 4.2x) surperforment nettement. Le format court avec chiffre de réduction + urgence génère le meilleur CTR. Les visuels UGC avec preuve sociale fonctionnent bien sur le mid-funnel.',
       losers: 'La campagne Delta "Awareness" est à couper immédiatement (ROAS 0.4x, CTR <1%). La campagne Beta UGC perd du budget (ROAS 0.8x) — le storytelling seul sans CTA chiffré ne convertit pas sur ce segment.',
@@ -125,12 +72,76 @@ router.post('/api/creative-studio/analyze', checkUserQuota('creative_credits', 1
     };
 
     let analysis: { winners: string; losers: string; next_actions: string[]; budget_waste_euros: number };
+    let formatted: any[];
+    let reportId: string;
+    let totalBudgetWaste: number;
 
-    if (isClaudeDemo) {
-      analysis = DEMO_CLAUDE_ANALYSIS;
-    } else {
-      /* Prompt Claude Sonnet */
-      const prompt = `Tu es Creative Strategist pour Kompilot. Analyse ces Meta Ads (données réelles).
+    const charged = await consumeExecuteRefund(
+      db,
+      userId,
+      'ai_analysis',
+      'Creative Studio Meta Ads analysis',
+      requestId,
+      async () => {
+        /* 1. Fetch Meta Ads (ou données démo) ──────────────────────────────── */
+        if (isMetaDemo) {
+          formatted = DEMO_META_ADS;
+        } else {
+          const metaUrl =
+            `https://graph.facebook.com/v19.0/${adAccountId}/ads` +
+            `?fields=name,creative{image_url,body,title},insights{spend,inline_link_click_ctr,purchase_roas}` +
+            `&access_token=${metaToken}`;
+
+          const metaRes = await fetch(metaUrl);
+          const metaData = await metaRes.json() as { data?: any[]; error?: any };
+
+          if (!metaData.data) {
+            const msg = metaData.error?.message ?? 'Impossible de récupérer les données Meta Ads.';
+            throw new Error(`Meta Ads error: ${msg}`);
+          }
+
+          formatted = metaData.data
+            .map((ad: any) => ({
+              name: ad.name ?? '',
+              text: ad.creative?.body ?? '',
+              title: ad.creative?.title ?? '',
+              ctr: parseFloat(ad.insights?.[0]?.inline_link_click_ctr ?? '0'),
+              roas: parseFloat(ad.insights?.[0]?.purchase_roas?.[0]?.value ?? '0'),
+              spend: parseFloat(ad.insights?.[0]?.spend ?? '0'),
+            }))
+            .filter((ad: any) => ad.spend > 10);
+
+          if (formatted.length === 0) {
+            throw new Error('Aucune publicité avec budget dépensé trouvée sur ce compte.');
+          }
+        }
+
+        /* 2. Async queue mode: enqueue Claude analysis ─────────────────────── */
+        if (useQueue) {
+          try {
+            const blink = getDb(c.env) as any;
+            if (blink.queue?.enqueue) {
+              await blink.queue.enqueue('analyze-creative', {
+                userId, adAccountId, orgId, formatted, isMetaDemo, isClaudeDemo,
+              });
+              return c.json({
+                mode: 'async',
+                status: 'queued',
+                adsAnalyzed: formatted.length,
+                message: 'Analysis queued. Poll reports endpoint for results.',
+              });
+            }
+          } catch (queueErr) {
+            console.warn('[CreativeStudio] Queue enqueue failed, falling back to sync:', queueErr);
+          }
+        }
+
+        /* 3. Analyse Claude (ou réponse démo) — sync fallback ─────────────── */
+        if (isClaudeDemo) {
+          analysis = DEMO_CLAUDE_ANALYSIS;
+        } else {
+          /* Prompt Claude Sonnet */
+          const prompt = `Tu es Creative Strategist pour Kompilot. Analyse ces Meta Ads (données réelles).
 
 Identifie ce qui surperforme (CTR/ROAS élevés) vs ce qui perd du budget.
 
@@ -145,67 +156,68 @@ Réponds UNIQUEMENT avec un JSON valide (pas de markdown, pas d'explication) :
   "budget_waste_euros": 0
 }`;
 
-      const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': anthropicKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 1500,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
+          const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'x-api-key': anthropicKey,
+              'anthropic-version': '2023-06-01',
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'claude-3-5-sonnet-20241022',
+              max_tokens: 1500,
+              messages: [{ role: 'user', content: prompt }],
+            }),
+          });
 
-      if (!claudeRes.ok) {
-        const errText = await claudeRes.text();
-        return c.json({ error: `Claude API error: ${errText}` }, 502);
-      }
+          if (!claudeRes.ok) {
+            const errText = await claudeRes.text();
+            throw new Error(`Claude API error: ${errText}`);
+          }
 
-      const claudeData = await claudeRes.json() as { content: { text: string }[] };
-      const rawText = claudeData.content?.[0]?.text ?? '{}';
+          const claudeData = await claudeRes.json() as { content: { text: string }[] };
+          const rawText = claudeData.content?.[0]?.text ?? '{}';
 
-      try {
-        analysis = JSON.parse(rawText);
-      } catch {
-        const match = rawText.match(/\{[\s\S]*\}/);
-        analysis = match ? JSON.parse(match[0]) : { winners: rawText, losers: '', next_actions: [], budget_waste_euros: 0 };
-      }
-    }
+          try {
+            analysis = JSON.parse(rawText);
+          } catch {
+            const match = rawText.match(/\{[\s\S]*\}/);
+            analysis = match ? JSON.parse(match[0]) : { winners: rawText, losers: '', next_actions: [], budget_waste_euros: 0 };
+          }
+        }
 
-    /* 4. Save to Blink DB ────────────────────────────────────────────── */
-    const db = getDb(c.env);
-    const reportId = crypto.randomUUID();
-    const totalBudgetWaste = formatted
-      .filter((a: any) => a.roas < 1 && a.spend > 0)
-      .reduce((sum: number, a: any) => sum + a.spend, 0);
+        /* 4. Save to Blink DB ────────────────────────────────────────────── */
+        const db = getDb(c.env);
+        reportId = crypto.randomUUID();
+        totalBudgetWaste = formatted
+          .filter((a: any) => a.roas < 1 && a.spend > 0)
+          .reduce((sum: number, a: any) => sum + a.spend, 0);
 
-    await db.db.creative_reports.create({
-      id: reportId,
-      userId,
-      orgId,
-      adAccountId,
-      adsAnalyzed: formatted.length,
-      budgetWasteDetected: Math.round(totalBudgetWaste),
-      winners: JSON.stringify(analysis.winners ?? ''),
-      losers: JSON.stringify(analysis.losers ?? ''),
-      nextActions: JSON.stringify(analysis.next_actions ?? []),
-      rawMetaData: JSON.stringify(formatted),
-    });
+        await db.db.creative_reports.create({
+          id: reportId,
+          userId,
+          orgId,
+          adAccountId,
+          adsAnalyzed: formatted.length,
+          budgetWasteDetected: Math.round(totalBudgetWaste),
+          winners: JSON.stringify(analysis.winners ?? ''),
+          losers: JSON.stringify(analysis.losers ?? ''),
+          nextActions: JSON.stringify(analysis.next_actions ?? []),
+          rawMetaData: JSON.stringify(formatted),
+        });
 
-    return c.json({
-      reportId,
-      analysis,
-      adsAnalyzed: formatted.length,
-      budgetWasteDetected: isClaudeDemo ? (analysis.budget_waste_euros ?? 140) : Math.round(totalBudgetWaste),
-      isDemo: isMetaDemo || isClaudeDemo,
-    });
+        return { reportId, analysis, adsAnalyzed: formatted.length, budgetWasteDetected: isClaudeDemo ? (analysis.budget_waste_euros ?? 140) : Math.round(totalBudgetWaste), isDemo: isMetaDemo || isClaudeDemo };
+      },
+      'ai',
+      { provider: 'anthropic', route: 'creativeStudio.analyze', adAccountId, orgId },
+    );
+    return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
 
   } catch (err: any) {
     console.error('[CreativeStudio] analyze error:', err);
-    return c.json({ error: err.message ?? 'Erreur inconnue' }, 500);
+    const message = err.message ?? 'Erreur inconnue';
+    const status = message.includes('Aucune publicité') ? 422 : message.includes('Meta Ads error:') ? 400 : message.includes('Claude API error:') ? 502 : message.includes('Insufficient credits') ? 402 : 500;
+    return c.json({ error: message }, status as 400 | 402 | 422 | 500);
   }
 });
 
