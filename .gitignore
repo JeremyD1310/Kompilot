@@ -28,29 +28,16 @@ dist-ssr
 *.sln
 *.sw?
 
-# Generated Playwright artifacts
+# Playwright test artifacts
 playwright-report/
 tests/playwright-report/
 test-results/
 blob-report/
-**/playwright-report/
-**/test-results/
-**/blob-report/
-playwright/.cache/
 
-# Browser captures, media, traces, and failure context
+# Browser captures, media, and traces
 captures/
 **/captures/
 videos/
 **/videos/
 traces/
 **/traces/
-**/error-context.md
-
-# Generated Playwright media and traces (scoped)
-playwright-report/**/*.webm
-tests/playwright-report/**/*.webm
-test-results/**/*.webm
-playwright-report/**/*.zip
-tests/playwright-report/**/*.zip
-test-results/**/*.zip
