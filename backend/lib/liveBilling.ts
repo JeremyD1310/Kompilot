@@ -20,6 +20,21 @@ export type LiveBillingConfig = {
   cancelUrl: URL
 }
 
+export function liveStripeKey(env: Record<string, unknown>): string | null {
+  const key = String(env.STRIPE_RESTRICTED_KEY_LIVE ?? '').trim()
+  return String(env.STRIPE_MODE ?? '').trim() === 'live' && key.startsWith('rk_live_') ? key : null
+}
+
+export function liveWebhookSecret(env: Record<string, unknown>): string | null {
+  const secret = String(env.STRIPE_WEBHOOK_SECRET_LIVE ?? '').trim()
+  return secret.startsWith('whsec_') ? secret : null
+}
+
+export function blinkBackendUrl(env: Record<string, unknown>): string | null {
+  const projectId = String(env.BLINK_PROJECT_ID ?? '').trim()
+  return projectId ? `https://${projectId}.backend.blink.new` : null
+}
+
 export function liveBillingConfig(env: Record<string, unknown>):
   | { config: LiveBillingConfig; missing: []; error: null }
   | { config: null; missing: string[]; error: string | null } {

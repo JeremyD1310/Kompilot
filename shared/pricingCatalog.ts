@@ -70,7 +70,7 @@ const comparison = (values: Partial<Record<ComparisonKey, string>>): Record<Comp
 
 export const SUBSCRIPTION_PLANS: readonly SubscriptionPlanDefinition[] = [
   {
-    id: 'pro', name: 'Pro', monthlyPriceEurHt: 69, annualPriceEurHt: 690,
+    id: 'pro', name: 'Starter', monthlyPriceEurHt: 69, annualPriceEurHt: 690,
     entitlements: COMMERCIAL_PLAN_ENTITLEMENTS.pro!, target: 'TPE, indépendants et commerçants.', tagline: 'Le cockpit essentiel pour piloter votre présence locale.',
     stripeLookupKeys: { monthly: 'kompilot_pro_monthly', yearly: 'kompilot_pro_annual' },
     features: ['2 utilisateurs', '1 établissement', '500 crédits IA / mois', '50 SMS / mois', 'Validation humaine avant diffusion', 'Support standard'],
@@ -84,7 +84,7 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlanDefinition[] = [
     comparison: comparison({ establishments: '3', users: '5', ai: '1 500 / mois', sms: '200 / mois', multiClient: 'Inclus', support: 'Prioritaire' }),
   },
   {
-    id: 'agency', name: 'Agency', monthlyPriceEurHt: 229, annualPriceEurHt: 2290,
+    id: 'agency', name: 'Agency', monthlyPriceEurHt: 149, annualPriceEurHt: 1490,
     entitlements: COMMERCIAL_PLAN_ENTITLEMENTS.agency!, target: 'Agences, consultants et réseaux.', tagline: 'Le cockpit multi-clients pour déployer à grande échelle.',
     stripeLookupKeys: { monthly: 'kompilot_agency_monthly', yearly: 'kompilot_agency_annual' },
     features: ['15 utilisateurs', '10 établissements inclus · 25 max', '5 000 crédits IA / mois', '500 SMS / mois', 'Marque blanche et multi-clients', 'Support dédié'],

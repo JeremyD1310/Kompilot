@@ -217,7 +217,7 @@ export default function SubscriptionPage() {
         priceHT,
         invoiceDesc: `Abonnement ${found.name} – ${monthYearLabel()}`,
         isSubscription: true,
-        stripePlanId: found.id === 'starter' ? 'starter' : 'agency',
+        stripePlanId: found.id === 'pro' || found.id === 'multi' || found.id === 'agency' ? found.id : undefined,
       });
       const msg = skipTrial ? `⚡ Accès immédiat — finalisez votre abonnement` : `Plan ${found.name} sélectionné`;
       toast.success(msg, { description: 'Finalisez votre abonnement ci-dessous.' });

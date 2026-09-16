@@ -162,7 +162,9 @@ const requireInternalSecret = async (c: any, next: any) => {
 };
 
 // Sensitive RBAC checks must run before route modules are mounted.
-app.use('/api/billing/*', requireRole('admin'));
+// Billing self-service routes authenticate the signed-in customer themselves;
+// applying an admin-only guard to the whole namespace would block checkout,
+// portal and plan changes for ordinary workspace owners.
 app.use('/api/team/*', requireRole('admin'));
 app.use('/api/admin/*', requireRole('admin'));
 app.use('/api/queues/init', requireInternalSecret);

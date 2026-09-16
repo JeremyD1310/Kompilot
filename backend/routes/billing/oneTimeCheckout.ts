@@ -1,18 +1,21 @@
 import { Hono } from 'hono'
-import type { Env } from '../../lib/types'
 import { getBlink, getUserMeta, patchUserMeta, resolveStripePrice } from '../../lib/stripeHelpers'
+import { liveBillingConfig, isDemoBillingRequest, demoBillingResponse, addQuery } from '../../lib/liveBilling'
 import { resolveOneTimeProduct } from '../../../shared/pricingCatalog'
 
 export const router = new Hono()
 const CGV_VERSION = 'CGV_V1.0_2026-06'
 
 router.post('/api/billing/one-time-checkout', async (c) => {
-  const env = c.env as unknown as Env & Record<string, string | undefined>
+  const rawEnv = c.env as Record<string, unknown>
+  const env = c.env as any
   const blink = getBlink(env)
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'))
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401)
-  if (!env.STRIPE_SECRET_KEY) return c.json({ error: 'Stripe not configured', code: 'NO_STRIPE_KEY' }, 503)
-  if (env.KOMPILOT_DEMO_MODE === 'true') return c.json({ error: 'Les achats sont désactivés dans le mode démo.', code: 'DEMO_BILLING_BLOCKED' }, 403)
+  if (isDemoBillingRequest(c, rawEnv)) return demoBillingResponse(c)
+  const live = liveBillingConfig(rawEnv)
+  if (!live.config) return c.json({ error: live.error ?? 'Stripe Live is not configured', code: live.error ? 'INVALID_LIVE_BILLING_CONFIG' : 'LIVE_BILLING_NOT_CONFIGURED', missing: live.missing }, 503)
+  const { stripeKey, successUrl, cancelUrl } = live.config
 
   const body = await c.req.json<{ productId?: string; legalConsent?: { cgvAccepted?: boolean; retractionWaived?: boolean; cgvVersion?: string } }>()
   const product = resolveOneTimeProduct(body?.productId)
@@ -31,15 +34,14 @@ router.post('/api/billing/one-time-checkout', async (c) => {
 
   const consentAt = new Date().toISOString()
   const meta = await getUserMeta(blink, auth.userId)
-  const appUrl = String(env.APP_URL ?? env.PUBLIC_APP_URL ?? '').trim()
-  let validatedAppUrl: URL
-  try { validatedAppUrl = new URL(appUrl); if (validatedAppUrl.protocol !== 'https:') throw new Error('https required') } catch { return c.json({ error: 'APP_URL must be a valid https URL', code: 'INVALID_APP_URL' }, 503) }
-  if (env.STRIPE_SECRET_KEY.startsWith('sk_live_') && env.STRIPE_TEST_MODE === 'true') return c.json({ error: 'Live Stripe key rejected in test mode', code: 'LIVE_KEY_IN_TEST_MODE' }, 503)
   let priceId: string
   try {
-    priceId = (await resolveStripePrice(env.STRIPE_SECRET_KEY, product.lookupKey, {
+    priceId = (await resolveStripePrice(stripeKey, product.lookupKey, {
       recurring: product.recurring === true,
-      testMode: env.STRIPE_TEST_MODE === 'true',
+      testMode: false,
+      currency: 'eur',
+      expectedAmount: product.amountEurHt * 100,
+      ...(product.recurring === true ? { expectedInterval: product.billing === 'monthly' ? 'month' : 'year' } : {}),
     })).id
   } catch (error) {
     console.error('[billing/one-time-checkout] price resolution failed', error)
@@ -50,8 +52,8 @@ router.post('/api/billing/one-time-checkout', async (c) => {
     mode: 'payment',
     'line_items[0][price]': priceId,
     'line_items[0][quantity]': '1',
-    success_url: `${validatedAppUrl.origin}/dashboard?checkout=success&product=${product.id}`,
-    cancel_url: `${validatedAppUrl.origin}/account?tab=billing`,
+    success_url: addQuery(successUrl, { checkout: 'success', product: product.id }),
+    cancel_url: cancelUrl.toString(),
     'metadata[user_id]': auth.userId,
     'metadata[product_id]': product.id,
     'metadata[product_type]': product.productType,
@@ -70,9 +72,9 @@ router.post('/api/billing/one-time-checkout', async (c) => {
   const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+      Authorization: `Bearer ${stripeKey}`,
       'Content-Type': 'application/x-www-form-urlencoded',
-      ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
+      'Idempotency-Key': idempotencyKey || `kompilot:one-time:${auth.userId}:${product.id}`.slice(0, 255),
     },
     body: params.toString(),
     signal: AbortSignal.timeout(8000),

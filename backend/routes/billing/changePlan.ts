@@ -16,6 +16,7 @@ import {
   resolveStripePrice,
   type BillingInterval,
 } from '../../lib/stripeHelpers';
+import { liveBillingConfig, isDemoBillingRequest, demoBillingResponse } from '../../lib/liveBilling';
 import { resolveSubscriptionPlan, type SubscriptionPlanId } from '../../../shared/pricingCatalog';
 
 export const router = new Hono();
@@ -23,19 +24,19 @@ export const router = new Hono();
 // ── POST /api/billing/change-plan ─────────────────────────────────────────────
 
 router.post('/api/billing/change-plan', async (c) => {
-  const env    = c.env as unknown as Env;
-  const rawEnv = c.env as any;
-  const blink  = getBlink(env);
+  const rawEnv = c.env as Record<string, unknown>;
+  const env = c.env as unknown as Env;
+  const blink = getBlink(env);
 
   // 1. Auth
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
+  if (isDemoBillingRequest(c, rawEnv)) return demoBillingResponse(c);
 
-  // 2. Stripe configured?
-  const stripeKey = rawEnv.STRIPE_SECRET_KEY as string | undefined;
-  if (!stripeKey) {
-    return c.json({ error: 'Stripe not configured', code: 'NO_STRIPE_KEY' }, 503);
-  }
+  // 2. Use only the canonical restricted Live Stripe configuration.
+  const live = liveBillingConfig(rawEnv);
+  if (!live.config) return c.json({ error: live.error ?? 'Stripe Live is not configured', code: live.error ? 'INVALID_LIVE_BILLING_CONFIG' : 'LIVE_BILLING_NOT_CONFIGURED', missing: live.missing }, 503);
+  const { stripeKey } = live.config;
 
   // 3. Parse body
   const body = await c.req.json<{
@@ -73,7 +74,10 @@ router.post('/api/billing/change-plan', async (c) => {
   try {
     newPriceId = (await resolveStripePrice(stripeKey, resolvedPlan.lookupKey, {
       recurring: true,
-      testMode: rawEnv.STRIPE_TEST_MODE === 'true',
+      testMode: false,
+      currency: 'eur',
+      expectedAmount: (resolvedPlan.billing === 'monthly' ? resolvedPlan.plan.monthlyPriceEurHt : resolvedPlan.plan.annualPriceEurHt) * 100,
+      expectedInterval: resolvedPlan.billing === 'monthly' ? 'month' : 'year',
     })).id;
   } catch (error) {
     console.error('[billing/change-plan] price resolution failed', error);

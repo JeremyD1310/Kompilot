@@ -11,32 +11,29 @@ export const getBlink = (env: Env) =>
     secretKey:  env.BLINK_SECRET_KEY,
   });
 
-/** Verify Stripe webhook signature using CF Workers native crypto */
+/** Verify Stripe webhook signatures using CF Workers native crypto. */
 export async function verifyStripeSignature(
   payload: string,
   header: string,
   secret: string,
+  toleranceSeconds = 300,
 ): Promise<boolean> {
   try {
-    const parts = header.split(',');
-    const t  = parts.find(p => p.startsWith('t='))?.slice(2);
-    const v1 = parts.find(p => p.startsWith('v1='))?.slice(3);
-    if (!t || !v1) return false;
+    const parts = header.split(',').map(part => part.trim());
+    const timestamp = parts.find(part => part.startsWith('t='))?.slice(2);
+    const signatures = parts.filter(part => part.startsWith('v1=')).map(part => part.slice(3));
+    const timestampSeconds = Number(timestamp);
+    if (!timestamp || !Number.isFinite(timestampSeconds) || signatures.length === 0) return false;
+    if (Math.abs(Math.floor(Date.now() / 1000) - timestampSeconds) > toleranceSeconds) return false;
 
-    const signedPayload = `${t}.${payload}`;
+    const signedPayload = `${timestamp}.${payload}`;
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
-      'raw',
-      encoder.encode(secret),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign'],
+      'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
     );
     const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(signedPayload));
-    const expected = Array.from(new Uint8Array(sig))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-    return expected === v1;
+    const expected = Array.from(new Uint8Array(sig)).map(byte => byte.toString(16).padStart(2, '0')).join('');
+    return signatures.some(signature => signature.length === expected.length && signature === expected);
   } catch {
     return false;
   }
@@ -112,6 +109,22 @@ export function resolvePriceToPlan(lookupKey: string | undefined, _env?: Record<
   return null;
 }
 
+export async function resolvePriceIdToPlan(stripeKey: string | null, priceId: string | undefined) {
+  if (!stripeKey || !priceId) return null;
+  try {
+    const response = await fetch(`https://api.stripe.com/v1/prices/${encodeURIComponent(priceId)}`, {
+      headers: { Authorization: `Bearer ${stripeKey}` },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) return null;
+    const price = await response.json() as { livemode?: boolean; active?: boolean; lookup_key?: string };
+    if (price.livemode !== true || price.active !== true) return null;
+    return resolvePriceToPlan(price.lookup_key);
+  } catch {
+    return null;
+  }
+}
+
 export function canonicalPlan(planId: unknown, billing: unknown) {
   return resolveSubscriptionPlan(planId, billing);
 }
@@ -131,7 +144,7 @@ export type ResolvedStripePrice = {
 export async function resolveStripePrice(
   stripeKey: string,
   lookupKey: string,
-  options: { testMode?: boolean; recurring: boolean; currency?: string; expectedAmount?: number; expectedInterval?: 'month' | 'year' },
+  options: { testMode?: boolean; recurring: boolean; currency?: string; expectedAmount?: number; expectedInterval?: 'month' | 'year'; expectedProductId?: string },
 ): Promise<ResolvedStripePrice> {
   if (!stripeKey || !lookupKey) throw new Error('Stripe price lookup is required');
   const expectedTest = options.testMode ?? false;
@@ -153,6 +166,7 @@ export async function resolveStripePrice(
   if (options.expectedAmount !== undefined && price.unit_amount !== options.expectedAmount) throw new Error('STRIPE_CATALOG_AMOUNT_MISMATCH');
   const productId = typeof price.product === 'string' ? price.product : price.product?.id;
   if (!productId) throw new Error('STRIPE_PRODUCT_MISSING');
+  if (options.expectedProductId && productId !== options.expectedProductId) throw new Error('STRIPE_PRODUCT_MISMATCH');
   const productResponse = await fetch(`https://api.stripe.com/v1/products/${encodeURIComponent(productId)}`, {
     headers: { Authorization: `Bearer ${stripeKey}` },
     signal: AbortSignal.timeout(8000),

@@ -6,36 +6,27 @@
 import { Hono } from 'hono';
 import type { Env } from '../../lib/types';
 import { getBlink, getUserMeta, patchUserMeta, resolveStripePrice } from '../../lib/stripeHelpers';
+import { liveBillingConfig, isDemoBillingRequest, demoBillingResponse, addQuery } from '../../lib/liveBilling';
 import { resolveSubscriptionPlan, TRIAL_DAYS } from '../../../shared/pricingCatalog';
-import { resolveOneTimeProduct } from '../../lib/pricingCatalog';
 
 export const router = new Hono();
 
 // ── Checkout session ──────────────────────────────────────────────────────────
 
 router.post('/api/billing/checkout', async (c) => {
-  const env       = c.env as unknown as Env;
-  const rawEnv    = c.env as any;
-  const blink     = getBlink(env);
-  const stripeKey = rawEnv.STRIPE_SECRET_KEY as string | undefined;
+  const rawEnv = c.env as Record<string, unknown>;
+  const env = c.env as unknown as Env;
+  const blink = getBlink(env);
 
   // 1. Auth
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
+  if (isDemoBillingRequest(c, rawEnv)) return demoBillingResponse(c);
 
-  // 2. Stripe configured and safe for the current environment.
-  if (!stripeKey) return c.json({ error: 'Stripe not configured', code: 'NO_STRIPE_KEY' }, 503);
-  const appUrl = String(rawEnv.APP_URL ?? rawEnv.PUBLIC_APP_URL ?? '').trim();
-  let validatedAppUrl: URL;
-  try {
-    validatedAppUrl = new URL(appUrl);
-    if (validatedAppUrl.protocol !== 'https:') throw new Error('https required');
-  } catch {
-    return c.json({ error: 'APP_URL must be a valid https URL', code: 'INVALID_APP_URL' }, 503);
-  }
-  if (rawEnv.STRIPE_TEST_MODE === 'true' && !stripeKey.startsWith('sk_test_')) {
-    return c.json({ error: 'Test mode requires a Stripe test key', code: 'TEST_KEY_REQUIRED' }, 503);
-  }
+  // 2. Use only the canonical restricted Live Stripe configuration.
+  const live = liveBillingConfig(rawEnv);
+  if (!live.config) return c.json({ error: live.error ?? 'Stripe Live is not configured', code: live.error ? 'INVALID_LIVE_BILLING_CONFIG' : 'LIVE_BILLING_NOT_CONFIGURED', missing: live.missing }, 503);
+  const { stripeKey, successUrl, cancelUrl } = live.config;
 
   // 3. Parse body
   const body = await c.req.json<{
@@ -79,7 +70,10 @@ router.post('/api/billing/checkout', async (c) => {
   try {
     priceId = (await resolveStripePrice(stripeKey, resolvedPlan.lookupKey, {
       recurring: true,
-      testMode: rawEnv.STRIPE_TEST_MODE === 'true',
+      testMode: false,
+      currency: 'eur',
+      expectedAmount: (resolvedPlan.billing === 'monthly' ? resolvedPlan.plan.monthlyPriceEurHt : resolvedPlan.plan.annualPriceEurHt) * 100,
+      expectedInterval: resolvedPlan.billing === 'monthly' ? 'month' : 'year',
     })).id;
   } catch (error) {
     console.error('[billing/checkout] price resolution failed', error);
@@ -95,18 +89,22 @@ router.post('/api/billing/checkout', async (c) => {
     const usersResult = await blink.db.users.list({ where: { id: auth.userId } });
     const user = usersResult?.[0];
     const email = String((user as any)?.email || '').trim();
-    if (!email || !(user as any)?.emailVerified) {
+    if (!email || (user as any)?.emailVerified !== true) {
       return c.json({ error: 'Un email de compte vérifié est requis avant le paiement.', code: 'VERIFIED_EMAIL_REQUIRED' }, 422);
     }
 
     const custRes = await fetch('https://api.stripe.com/v1/customers', {
       method: 'POST',
-      signal: AbortSignal.timeout(8000),
       headers: {
         Authorization: `Bearer ${stripeKey}`,
         'Content-Type': 'application/x-www-form-urlencoded',
+        'Idempotency-Key': `kompilot:customer:${auth.userId}`.slice(0, 255),
       },
-      body: new URLSearchParams({ email, 'metadata[userId]': auth.userId }).toString(),
+      body: new URLSearchParams({
+        email,
+        'metadata[user_id]': auth.userId,
+        'metadata[environment]': 'live',
+      }).toString(),
       signal: AbortSignal.timeout(8000),
     });
     if (!custRes.ok) {
@@ -122,13 +120,12 @@ router.post('/api/billing/checkout', async (c) => {
 
   // 5. Create checkout session
   const renouncedTrial = consent!.renouncedTrial === true;
-  const baseUrl = validatedAppUrl.origin;
   const sessionParams = new URLSearchParams({
     mode: 'subscription',
     'line_items[0][price]': priceId,
     'line_items[0][quantity]': '1',
-    success_url: `${baseUrl}/dashboard?checkout=success&plan=${planId}${renouncedTrial ? '&trial_skipped=1' : ''}`,
-    cancel_url:  `${baseUrl}/account?tab=billing`,
+    success_url: addQuery(successUrl, { checkout: 'success', plan: planId, ...(renouncedTrial ? { trial_skipped: '1' } : {}) }),
+    cancel_url:  cancelUrl.toString(),
     'allow_promotion_codes': 'true',
     'metadata[user_id]': auth.userId,
     'metadata[plan_id]': planId,
@@ -167,11 +164,10 @@ router.post('/api/billing/checkout', async (c) => {
 
   const sessRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',
-    signal: AbortSignal.timeout(8000),
     headers: {
       Authorization: `Bearer ${stripeKey}`,
       'Content-Type': 'application/x-www-form-urlencoded',
-      ...(c.req.header('Idempotency-Key')?.trim() ? { 'Idempotency-Key': c.req.header('Idempotency-Key')!.trim() } : {}),
+      'Idempotency-Key': c.req.header('Idempotency-Key')?.trim() || `kompilot:checkout:${auth.userId}:${planId}:${billing}`.slice(0, 255),
     },
     body: sessionParams.toString(),
     signal: AbortSignal.timeout(8000),
