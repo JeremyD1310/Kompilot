@@ -3,10 +3,12 @@ import { ArrowRight, Quote } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { trackEvent } from '../../hooks/useAnalytics';
 import { getApprovedBetaTestimonials, getBetaTestimonial, type BetaTestimonial } from '../../data/betaTestimonials';
+import { COOKIE_CONSENT_EVENT, hasAnalyticsConsent } from '../../lib/cookieConsent';
 
 const testimonialViewKeys = new Set<string>();
 
 function trackTestimonialSectionView() {
+  if (!hasAnalyticsConsent()) return;
   const key = `${window.location.pathname}:beta_testimonials`;
   if (testimonialViewKeys.has(key)) return;
   testimonialViewKeys.add(key);
@@ -29,7 +31,7 @@ export function BetaTestimonialCard({ testimonial }: { testimonial: BetaTestimon
   const quoteId = `beta-quote-${testimonial.id}`;
 
   return (
-    <article className="flex min-h-[390px] flex-col rounded-3xl border border-white/10 bg-white/[0.045] p-6 shadow-[0_18px_50px_rgba(2,6,23,.2)] transition duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.07] md:p-7">
+    <article data-testimonial-id={testimonial.id} className="flex min-h-[390px] flex-col rounded-3xl border border-white/10 bg-white/[0.045] p-6 shadow-[0_18px_50px_rgba(2,6,23,.2)] transition duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.07] md:p-7">
       <div className="flex items-center justify-between gap-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-teal-300/20 bg-teal-300/[0.08] text-teal-200" aria-hidden="true"><Quote size={18} /></div>
         <span className="rounded-full border border-teal-300/20 bg-teal-300/[0.08] px-3 py-1 text-xs font-semibold text-teal-200">Bêta-testeur Kompilot</span>
@@ -67,8 +69,10 @@ export function BetaTestimonialsSection() {
   const testimonials = getApprovedBetaTestimonials();
 
   useEffect(() => {
+    const handleConsentChange = () => trackTestimonialSectionView();
     trackTestimonialSectionView();
-    // Tracking is consent-gated in useAnalytics and this effect runs once per mount.
+    window.addEventListener(COOKIE_CONSENT_EVENT, handleConsentChange);
+    return () => window.removeEventListener(COOKIE_CONSENT_EVENT, handleConsentChange);
   }, []);
 
   return (
@@ -76,7 +80,7 @@ export function BetaTestimonialsSection() {
       <div className="landing-container py-20 md:py-28">
         <div className="mx-auto max-w-3xl text-center">
           <p className="nc-section-label text-teal-300">RETOURS DE BÊTA-TESTEURS</p>
-          <h2 id="beta-testimonials-title" className="mt-4 text-3xl font-black tracking-tight text-slate-50 md:text-5xl">Ils testent déjà Kompilot au quotidien</h2>
+          <h2 id="beta-testimonials-title" className="mt-4 text-3xl font-black tracking-tight text-slate-50 md:text-5xl">Retours de bêta-testeurs</h2>
           <p className="mt-5 text-base leading-7 text-slate-300 md:text-lg">Agences, équipes marketing, consultants et e-commerçants partagent leur expérience de Kompilot dans leurs activités quotidiennes.</p>
           <p className="mt-4 text-base leading-7 text-slate-300">Kompilot est une plateforme de communication B2B qui réunit création de contenu assistée par IA, communication multicanale, visibilité SEO et GEO et gestion de communication locale pour les PME, les agences et les commerces.</p>
         </div>

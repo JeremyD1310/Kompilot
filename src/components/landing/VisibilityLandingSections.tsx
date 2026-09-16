@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowRight, BarChart3, CalendarDays, CheckCircle2, Inbox, MapPin, Search, ShieldCheck, Sparkles, Star } from 'lucide-react';
-import { BetaContextualQuote, BetaTestimonialsSection } from './BetaTestimonialsSection';
+import { BetaContextualQuote } from './BetaTestimonialsSection';
 
 const FEATURES = [
   { icon: Sparkles, title: 'Création de contenus avec l’IA', text: 'Préparez une publication adaptée à votre activité et à chaque canal.', detail: 'Partez d’un brief, relisez la proposition puis validez avant diffusion.', href: '/features', preview: ['Idée de contenu', 'Marché local : 3 angles à tester', 'Brouillon prêt à relire'] },
@@ -34,7 +34,5 @@ export function VisibilityLandingSections({ onCta }: { onCta: () => void }) {
     <section id="geo" className="landing-section landing-geo"><div className="landing-container geo-layout"><div><p className="nc-section-label">SEO local + GEO</p><h2>Votre entreprise apparaît-elle dans les réponses des IA&nbsp;?</h2><p>Le GEO consiste à améliorer les informations, les contenus et les signaux qui permettent à ChatGPT, Gemini et Perplexity de comprendre, sélectionner et citer une entreprise.</p><ul>{['Test de visibilité de la marque', 'Cohérence des informations locales', 'Suivi des citations et recommandations de contenus', 'Comparaison avec les concurrents'].map(item => <li key={item}><CheckCircle2 size={17} />{item}</li>)}</ul><button type="button" onClick={onCta} className="nc-pill geo-cta">Tester ma visibilité dans les IA <ArrowRight size={15} /></button><BetaContextualQuote id="marc">Les recommandations sont structurées, ciblées et directement exploitables.</BetaContextualQuote></div><div className="geo-panel"><p>Ce que Kompilot observe</p>{['Fiche Google et informations locales', 'Avis et perception client', 'Contenus du site et des réseaux', 'Présence dans les réponses génératives'].map((item, index) => <div key={item}><span>{index + 1}</span><b>{item}</b></div>)}</div></div></section>
 
     <section id="secteurs" className="landing-section landing-sectors"><div className="landing-container"><div className="landing-section-intro"><p className="nc-section-label">Des pages pensées par métier</p><h2>Une visibilité adaptée à votre activité</h2><p>Chaque secteur dispose de ses enjeux, de ses contenus et de ses signaux locaux.</p></div><div className="sector-grid">{SECTORS.map(([to, title, text]) => <Link key={to} to={to as '/'}><MapPin size={17} /><span><strong>{title}</strong><small>{text}</small></span><ArrowRight size={16} /></Link>)}</div></div></section>
-
-    <BetaTestimonialsSection />
   </>;
 }

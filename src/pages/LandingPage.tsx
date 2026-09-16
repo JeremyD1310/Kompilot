@@ -51,7 +51,13 @@ export default function LandingPage() {
   });
 
   const cta = () => navigate({ to: user ? '/dashboard' : '/signup' });
-  const utmParams = useMemo(() => { try { return captureUtmParams(); } catch { return {}; } }, []);
+  const utmParams = useMemo(() => {
+    try {
+      return captureUtmParams();
+    } catch {
+      return {};
+    }
+  }, []);
   const detectedSector = useMemo(() => getUtmSector(), []);
   const sectorConfig = useMemo(() => getSectorConfig(detectedSector), [detectedSector]);
   const [audience, setAudience] = useState<'commerce' | 'agency'>(() => {
@@ -63,12 +69,16 @@ export default function LandingPage() {
 
   useEffect(() => {
     captureUtmParams();
-    track('ViewContent', { sector: detectedSector ?? undefined, userType: audience, eventUrl: window.location.href }).catch(() => {});
+    track('ViewContent', { sector: detectedSector ?? undefined, userType: audience, eventUrl: window.location.href }).catch(() => undefined);
   }, [audience, detectedSector, utmParams]);
 
   const handlePricingCta = async (planId: string) => {
     if (!user) {
-      try { localStorage.setItem('kompilot_pending_plan', planId); } catch {}
+      try {
+        localStorage.setItem('kompilot_pending_plan', planId);
+      } catch {
+        // Storage is optional; authentication should continue when it is unavailable.
+      }
       blink.auth.login(window.location.origin + '/subscription?plan=' + encodeURIComponent(planId));
       return;
     }
