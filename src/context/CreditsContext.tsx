@@ -1,175 +1,89 @@
-import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
-import { useSubscription } from './SubscriptionContext';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useDemoMode, DEMO_CREDIT_TOTAL } from './DemoModeContext';
-import { PLAN_CREDITS } from '../lib/creditsCosts';
-import { blink } from '../blink/client';
+import { consumeContentQuotaClient, releaseContentQuotaClient } from '../lib/contentQuotaClient';
+import { fetchCreditBalance, fetchCreditHistory, type CreditHistoryEntry } from '../lib/billingClient';
 
-// ── Monthly usage key ─────────────────────────────────────────────────────────
-const USAGE_KEY_BASE = 'kompilot_usage_v2';
-// Legacy key kept for migration reads
-const USAGE_KEY = USAGE_KEY_BASE;
-
-/** Returns the scoped key for the current userId (or anon). */
-function getScopedUsageKey(userId: string | null): string {
-  return userId ? `${USAGE_KEY_BASE}_${userId}` : `${USAGE_KEY_BASE}_anon`;
-}
-
-function getCurrentMonth(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-}
-
-interface StoredUsage {
-  month: string;
-  used: number;
-}
-
-function readStored(userId: string | null = null): StoredUsage {
-  try {
-    // Try scoped key first, fall back to legacy for migration
-    const raw = localStorage.getItem(getScopedUsageKey(userId))
-      ?? localStorage.getItem(USAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as StoredUsage;
-      if (parsed.month === getCurrentMonth()) return parsed;
-    }
-  } catch { /* noop */ }
-  return { month: getCurrentMonth(), used: 0 };
-}
-
-function persistUsage(data: StoredUsage, userId: string | null = null) {
-  try { localStorage.setItem(getScopedUsageKey(userId), JSON.stringify(data)); } catch { /* noop */ }
-}
-
-const PLAN_LIMITS: Record<string, number> = PLAN_CREDITS;
-
-// ── Types ──────────────────────────────────────────────────────────────────────
-
-// Legacy alias kept for backward compatibility
-export type CreditsValue = number | 'unlimited';
+export type CreditsValue = number;
 
 interface CreditsContextValue {
-  // ── New API ──
   usage: number;
   limit: number;
   canCreate: boolean;
-  increment: () => boolean;
-  // ── Multi-credit deduction ──
-  deductCredits: (n: number) => boolean;
+  increment: () => Promise<boolean>;
+  deductCredits: (n: number, action?: string) => Promise<boolean>;
   hasEnoughCredits: (n: number) => boolean;
-
-  // ── Legacy API (backward compat with CreatePostModal etc.) ──
+  releaseCredits: (n?: number) => Promise<void>;
   credits: CreditsValue;
-  deductCredit: () => boolean;
+  history: CreditHistoryEntry[];
+  deductCredit: () => Promise<boolean>;
   addCredits: (n: number) => void;
   isEmpty: boolean;
+  refresh: () => Promise<void>;
 }
-
-// ── Context ───────────────────────────────────────────────────────────────────
 
 const CreditsContext = createContext<CreditsContextValue | null>(null);
 
 export function CreditsProvider({ children }: { children: ReactNode }) {
-  const { currentPlan } = useSubscription();
-  const {
-    isDemoActive,
-    demoCreditsUsed,
-    consumeDemoCredits,
-  } = useDemoMode();
-  const limit = PLAN_LIMITS[currentPlan.id] ?? 3;
+  const { isDemoActive, demoCreditsUsed, consumeDemoCredits } = useDemoMode();
+  const [balance, setBalance] = useState<number | null>(null);
+  const [limit, setLimit] = useState<number | null>(null);
+  const [usage, setUsage] = useState<number | null>(null);
+  const [history, setHistory] = useState<CreditHistoryEntry[]>([]);
 
-  const [userId, setUserId] = useState<string | null>(() => {
-    try { return localStorage.getItem('blink_user_id'); } catch { return null; }
-  });
-
-  // Track userId from auth state for key scoping
-  useEffect(() => {
-    const unsub = blink.auth.onAuthStateChanged((state) => {
-      const uid = state.user?.id ?? null;
-      setUserId(uid);
-      if (!uid) {
-        // Reset credits on logout to prevent data leakage
-        const fresh: StoredUsage = { month: getCurrentMonth(), used: 0 };
-        setStored(fresh);
-        persistUsage(fresh, uid); // Persist reset for anon user
-      }
-    });
-    return unsub;
-  }, []);
-
-  const [stored, setStored] = useState<StoredUsage>(() => {
-    const uid = (() => { try { return localStorage.getItem('blink_user_id'); } catch { return null; } })();
-    return readStored(uid);
-  });
-
-  // Monthly reset — re-check each render cycle
-  useEffect(() => {
-    const current = getCurrentMonth();
-    if (stored.month !== current) {
-      const fresh: StoredUsage = { month: current, used: 0 };
-      setStored(fresh);
-      persistUsage(fresh, userId);
+  const refresh = async () => {
+    if (isDemoActive) return;
+    try {
+      const [current, entries] = await Promise.all([fetchCreditBalance(), fetchCreditHistory()]);
+      setBalance(current.balance);
+      setLimit(current.monthlyLimit ?? current.monthlyIncluded ?? current.balance);
+      setUsage(current.monthlyUsed ?? 0);
+      setHistory(entries);
+    } catch {
+      setBalance(null);
+      setLimit(null);
+      setUsage(null);
     }
-  }, [stored.month, userId]); // Depend on userId to re-apply reset if user changes
+  };
 
-  // Reset when plan changes
-  const prevPlanRef = useRef(currentPlan.id);
-  useEffect(() => {
-    if (prevPlanRef.current === currentPlan.id) return;
-    prevPlanRef.current = currentPlan.id;
-    const fresh: StoredUsage = { month: getCurrentMonth(), used: 0 };
-    setStored(fresh);
-    persistUsage(fresh, userId);
-  }, [currentPlan.id, userId]); // Depend on userId to re-apply reset if user changes
+  useEffect(() => { refresh(); }, [isDemoActive]);
 
-  // ── Demo mode: use the 50-credit demo pool ───────────────────────────────────
-  const usage = isDemoActive ? demoCreditsUsed : stored.used;
-  const effectiveLimit = isDemoActive ? DEMO_CREDIT_TOTAL : limit;
-  const canCreate = usage < effectiveLimit;
+  const demoLimit = isDemoActive ? DEMO_CREDIT_TOTAL : 0;
+  const effectiveUsage = isDemoActive ? demoCreditsUsed : (usage ?? 0);
+  const effectiveLimit = isDemoActive ? demoLimit : (limit ?? 0);
+  const effectiveBalance = isDemoActive ? Math.max(0, demoLimit - demoCreditsUsed) : (balance ?? 0);
+  const canCreate = isDemoActive ? effectiveBalance > 0 : balance !== null && effectiveBalance > 0;
 
-  const increment = (): boolean => {
+  const increment = async () => {
     if (isDemoActive) return consumeDemoCredits(1);
-    if (!canCreate) return false;
-    const next: StoredUsage = { ...stored, used: stored.used + 1 };
-    setStored(next);
-    persistUsage(next, userId);
-    return true;
+    try { await consumeContentQuotaClient('content_generation', 1); await refresh(); return true; } catch { return false; }
   };
-
-  const deductCredits = (n: number): boolean => {
+  const deductCredits = async (n: number, action = 'content_generation') => {
     if (isDemoActive) return consumeDemoCredits(n);
-    const remaining = effectiveLimit - stored.used;
-    if (remaining < n) return false;
-    const next: StoredUsage = { ...stored, used: stored.used + n };
-    setStored(next);
-    persistUsage(next, userId);
-    return true;
+    try { await consumeContentQuotaClient(action, n); await refresh(); return true; } catch { return false; }
   };
+  const releaseCredits = async (n = 1) => { if (!isDemoActive) { await releaseContentQuotaClient(n); await refresh(); } };
+  const hasEnoughCredits = (n: number) => isDemoActive ? effectiveBalance >= n : balance !== null && effectiveBalance >= n;
+  const addCredits = (_n: number) => { /* backend webhook owns purchases */ };
 
-  const hasEnoughCredits = (n: number): boolean => {
-    return (effectiveLimit - usage) >= n;
-  };
-
-  // Legacy compat: credits = remaining = limit - used
-  const credits: CreditsValue = Math.max(0, effectiveLimit - usage);
-  const deductCredit = increment;
-  const addCredits = (n: number) => {
-    if (isDemoActive) return; // no-op in demo mode
-    const next: StoredUsage = { ...stored, used: Math.max(0, stored.used - n) };
-    setStored(next);
-    persistUsage(next, userId);
-  };
-  const isEmpty = !canCreate;
-
-  return (
-    <CreditsContext.Provider value={{ usage, limit: effectiveLimit, canCreate, increment, deductCredits, hasEnoughCredits, credits, deductCredit, addCredits, isEmpty }}>
-      {children}
-    </CreditsContext.Provider>
-  );
+  return <CreditsContext.Provider value={{
+    usage: effectiveUsage,
+    limit: effectiveLimit,
+    canCreate,
+    increment,
+    deductCredits,
+    hasEnoughCredits,
+    releaseCredits,
+    credits: effectiveBalance,
+    history,
+    deductCredit: increment,
+    addCredits,
+    isEmpty: balance !== null ? effectiveBalance <= 0 : !isDemoActive,
+    refresh,
+  }}>{children}</CreditsContext.Provider>;
 }
 
 export function useCredits() {
   const ctx = useContext(CreditsContext);
-  if (!ctx) { console.warn('useCredits must be used within CreditsProvider' + ' — context missing, returning safe fallback'); return {} as any; }
+  if (!ctx) throw new Error('useCredits must be used within CreditsProvider');
   return ctx;
 }

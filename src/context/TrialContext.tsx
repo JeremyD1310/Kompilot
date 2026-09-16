@@ -11,8 +11,9 @@ import {
   type ReactNode,
 } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { TRIAL_DAYS } from '../../shared/pricingCatalog';
 
-const TRIAL_DURATION_DAYS = 7;
+const TRIAL_DURATION_DAYS = TRIAL_DAYS;
 
 // ── Trial quotas ────────────────────────────────────────────────────────────
 export const TRIAL_QUOTA = {

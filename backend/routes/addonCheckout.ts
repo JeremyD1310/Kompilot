@@ -11,6 +11,7 @@
 import { Hono } from 'hono';
 import type { Env } from '../lib/types';
 import { getBlink, getUserMeta, patchUserMeta } from '../lib/stripeHelpers';
+import { resolveOneTimeProduct } from '../lib/pricingCatalog';
 import {
   ADDON_DEFINITIONS,
   type AddonId,
@@ -45,6 +46,18 @@ router.post('/api/billing/addon/checkout', async (c) => {
   }
 
   const def = ADDON_DEFINITIONS[addonId];
+  const canonicalProduct = resolveOneTimeProduct(body?.addonId);
+  if (canonicalProduct?.definition.productType === 'addon') {
+    const meta = await getUserMeta(blink, auth.userId);
+    const planId = String(meta.plan_id ?? '');
+    if (canonicalProduct.definition.planId && planId !== canonicalProduct.definition.planId && planId !== 'enterprise') {
+      return c.json({ error: 'Cet add-on nécessite un forfait compatible.', code: 'PLAN_REQUIRED', requiredPlan: canonicalProduct.definition.planId }, 403);
+    }
+    if (canonicalProduct.definition.maxTotal) {
+      const existing = await blink.db.user_addons.list({ where: { userId: auth.userId, status: 'active' }, limit: 100 }) as any[];
+      if (existing.length >= canonicalProduct.definition.maxTotal) return c.json({ error: 'Limite d’add-ons atteinte.', code: 'ADDON_LIMIT_REACHED' }, 409);
+    }
+  }
 
   // 4. Check plan restriction (white_label requires agency)
   const meta = await getUserMeta(blink, auth.userId);
@@ -72,7 +85,11 @@ router.post('/api/billing/addon/checkout', async (c) => {
   }
 
   // 7. Resolve addon price ID
-  const priceId = getAddonPriceId(rawEnv, addonId);
+  const canonicalAddon = resolveOneTimeProduct(body?.addonId)
+  const priceId = canonicalAddon?.definition.productType === 'addon' ? await (async () => {
+    const r = await fetch(`https://api.stripe.com/v1/prices?${new URLSearchParams({ lookup_keys: canonicalAddon.lookupKey ?? '', active: 'true', limit: '1' })}`, { headers: { Authorization: `Bearer ${stripeKey}` } });
+    const d = await r.json() as { data?: Array<{ id: string }> }; return d.data?.[0]?.id ?? null
+  })() : getAddonPriceId(rawEnv, addonId);
   if (!priceId) {
     return c.json({
       error: 'Prix de l\'add-on non configuré côté serveur.',

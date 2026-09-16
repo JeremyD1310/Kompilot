@@ -121,6 +121,10 @@ import { platformWebhooksRouter }                 from './routes/platformWebhook
 import { router as weeklyReportRouter }           from './routes/weeklyReport';
 import { router as addonCheckoutRouter }          from './routes/addonCheckout';
 import { router as creditPackAioRouter }          from './routes/billing/creditPackAio';
+import { router as creditPacksRouter }             from './routes/creditPacks';
+import { router as creditsRouter }                 from './routes/credits';
+import { router as smsCreditsRouter }              from './routes/smsCredits';
+import { router as contentQuotaRouter }            from './routes/contentQuota';
 import { router as trialExtensionRouter }        from './routes/trialExtension';
 import { router as trialSequenceRouter }         from './routes/trialSequence';
 import { router as highTouchRouter }             from './routes/highTouch';
@@ -158,7 +162,9 @@ const requireInternalSecret = async (c: any, next: any) => {
 };
 
 // Sensitive RBAC checks must run before route modules are mounted.
-app.use('/api/billing/*', requireRole('admin'));
+// Billing self-service routes authenticate the signed-in customer themselves;
+// applying an admin-only guard to the whole namespace would block checkout,
+// portal and plan changes for ordinary workspace owners.
 app.use('/api/team/*', requireRole('admin'));
 app.use('/api/admin/*', requireRole('admin'));
 app.use('/api/queues/init', requireInternalSecret);
@@ -254,6 +260,10 @@ app.route('/', platformWebhooksRouter);
 app.route('/', weeklyReportRouter);
 app.route('/', addonCheckoutRouter);
 app.route('/', creditPackAioRouter);
+app.route('/', creditPacksRouter);
+app.route('/', creditsRouter);
+app.route('/', smsCreditsRouter);
+app.route('/', contentQuotaRouter);
 app.route('/', trialExtensionRouter);
 app.route('/', trialSequenceRouter);
 app.route('/', highTouchRouter);

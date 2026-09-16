@@ -51,5 +51,9 @@ router.post('/api/content-credits/release', async (c) => {
 router.post('/api/content-credits/add', async (c) => {
   const userId = await authUser(c);
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
-  return c.json({ error: 'Use /api/billing/credit-packs for Stripe checkout.', code: 'USE_STRIPE_CREDIT_PACK_CHECKOUT' }, 410);
+  return c.json({
+    error: 'Les recharges de contenu ne créent plus de Checkout legacy.',
+    code: 'LEGACY_CHECKOUT_DISABLED',
+    canonicalEndpoint: '/api/billing/one-time-checkout',
+  }, 410);
 });

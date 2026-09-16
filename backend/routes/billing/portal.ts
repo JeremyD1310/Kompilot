@@ -5,26 +5,28 @@
  */
 import { Hono } from 'hono';
 import type { Env } from '../../lib/types';
-import { getBlink, getUserMeta, patchUserMeta } from '../../lib/stripeHelpers';
+import { getBlink, getUserMeta, patchUserMeta, normalizeLegacyPlanForDisplay } from '../../lib/stripeHelpers';
+import { liveBillingConfig, liveStripeKey, isDemoBillingRequest, demoBillingResponse } from '../../lib/liveBilling';
+import { SUBSCRIPTION_PLANS } from '../../../shared/pricingCatalog';
 
 export const router = new Hono();
 
 // ── Customer Portal session ───────────────────────────────────────────────────
 
 router.post('/api/billing/portal', async (c) => {
-  const env        = c.env as unknown as Env;
-  const rawEnv     = c.env as any;
-  const blink      = getBlink(env);
-  const stripeKey  = rawEnv.STRIPE_SECRET_KEY as string | undefined;
+  const env = c.env as unknown as Env;
+  const rawEnv = c.env as Record<string, unknown>;
+  const blink = getBlink(env);
 
   // 1. Auth
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
+  if (isDemoBillingRequest(c, rawEnv)) return demoBillingResponse(c);
 
-  // 2. Stripe configured?
-  if (!stripeKey) {
-    return c.json({ error: 'Stripe not configured', code: 'NO_STRIPE_KEY' }, 503);
-  }
+  // 2. Use only the canonical restricted Live Stripe configuration.
+  const live = liveBillingConfig(rawEnv);
+  if (!live.config) return c.json({ error: live.error ?? 'Stripe Live is not configured', code: live.error ? 'INVALID_LIVE_BILLING_CONFIG' : 'LIVE_BILLING_NOT_CONFIGURED', missing: live.missing }, 503);
+  const { stripeKey, appBaseUrl } = live.config;
 
   // 3. Get customer ID
   const meta       = await getUserMeta(blink, auth.userId);
@@ -34,10 +36,11 @@ router.post('/api/billing/portal', async (c) => {
   }
 
   // 4. Create portal session
-  const returnUrl = 'https://kompilot.blinkpowered.com/account';
+  const returnUrl = new URL('/account', appBaseUrl).toString();
   const body      = new URLSearchParams({ customer: customerId, return_url: returnUrl });
   const res = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
     method: 'POST',
+    signal: AbortSignal.timeout(8000),
     headers: {
       Authorization:  `Bearer ${stripeKey}`,
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -58,15 +61,15 @@ router.post('/api/billing/portal', async (c) => {
 // ── Billing status ────────────────────────────────────────────────────────────
 
 router.get('/api/billing/status', async (c) => {
-  const env    = c.env as unknown as Env;
-  const rawEnv = c.env as any;
-  const blink  = getBlink(env);
+  const env = c.env as unknown as Env;
+  const rawEnv = c.env as Record<string, unknown>;
+  const blink = getBlink(env);
 
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
 
-  const meta       = await getUserMeta(blink, auth.userId);
-  const stripeKey  = rawEnv.STRIPE_SECRET_KEY as string | undefined;
+  const meta = await getUserMeta(blink, auth.userId);
+  const stripeKey = liveStripeKey(rawEnv);
   const subId      = meta.stripe_subscription_id as string | undefined;
 
   // Try to enrich with live Stripe subscription data (currentPeriodEnd, cancelAtPeriodEnd, trialEnd)
@@ -116,23 +119,25 @@ router.get('/api/billing/status', async (c) => {
   };
   const normalisedStatus = statusMap[rawStatus] ?? rawStatus;
 
-  // Available plan/billing combinations (read dynamically to avoid static analysis false positives)
-  const billingInterval = (meta.billing_interval as string) || 'monthly';
-  const planId = (meta.plan_id as string) || null;
-  const _e = rawEnv as Record<string, string | undefined>;
-  const _av = (plan: string, billing: string) => !!_e[`PRICE_${plan}_${billing}_ID`];
-  const availablePlans = {
-    starter: { monthly: _av('STARTER','MONTHLY') || _av('STARTER',''), yearly: _av('STARTER','YEARLY') },
-    agency:  { monthly: _av('AGENCY','MONTHLY')  || _av('AGENCY',''),  yearly: _av('AGENCY','YEARLY')  },
-  };
+  const billingInterval = meta.billing_interval === 'yearly' ? 'yearly' : 'monthly';
+  const rawPlanId = (meta.plan_id as string) || null;
+  const planId = rawPlanId ? normalizeLegacyPlanForDisplay(rawPlanId) : null;
+  const availablePlans = SUBSCRIPTION_PLANS.map((plan) => ({
+    id: plan.id,
+    name: plan.name,
+    billing: {
+      monthly: plan.stripeLookupKeys.monthly,
+      yearly: plan.stripeLookupKeys.yearly,
+    },
+  }));
 
   return c.json({
-    status:               normalisedStatus,
-    gracePeriodEnd:       meta.grace_period_end      || null,
-    hasStripeCustomer:    !!meta.stripe_customer_id,
+    status: normalisedStatus,
+    gracePeriodEnd: meta.grace_period_end || null,
+    hasStripeCustomer: !!meta.stripe_customer_id,
     planId,
     billingInterval,
-    stripeSubscriptionId: subId                      || null,
+    stripeSubscriptionId: subId || null,
     currentPeriodEnd,
     cancelAtPeriodEnd,
     trialEnd,

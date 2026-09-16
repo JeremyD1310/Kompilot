@@ -183,8 +183,8 @@ export default function SignupPage() {
       analyticsTrackSignup('email');
       trackEvent('sign_up', { method: 'email', profile_type: data.profileType });
       trackEvent('sign_up_completed', { method: 'email', profile_type: data.profileType });
-      trackEvent('trial_start', { method: 'email', trial_days: 7 });
-      trackEvent('trial_started', { method: 'email', trial_days: 7 });
+      trackEvent('trial_start', { method: 'email', trial_days: 14 });
+      trackEvent('trial_started', { method: 'email', trial_days: 14 });
       navigate({ to: '/email-unverified' });
     } catch (err: any) {
       const code = err?.code ?? '';

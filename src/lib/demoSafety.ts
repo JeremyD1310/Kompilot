@@ -10,6 +10,20 @@ export type DemoExternalService =
   | 'twilio'
   | 'meta'
   | 'google-business'
+  | 'google-apis'
+  | 'google-analytics'
+  | 'linkedin'
+  | 'tiktok'
+  | 'openai'
+  | 'anthropic'
+  | 'claude'
+  | 'perplexity'
+  | 'luma'
+  | 'dataforseo'
+  | 'bing'
+  | 'firebase'
+  | 'brevo'
+  | 'tavus'
   | 'social'
   | 'publishing'
   | 'review-reply'
@@ -37,10 +51,25 @@ export function isDemoExternalUrl(input: string | URL): boolean {
   const url = String(input).toLowerCase();
   return [
     'stripe.com', 'gmail.com', 'resend.com', 'sendgrid.com', 'twilio.com',
-    'graph.facebook.com', 'facebook.com', 'instagram.com', 'linkedin.com',
-    'twitter.com', 'x.com', 'googleapis.com', 'business.google.com',
+    'brevo.com', 'mailinblue.com', 'graph.facebook.com', 'facebook.com',
+    'instagram.com', 'linkedin.com', 'tiktok.com', 'ads.tiktok.com',
+    'twitter.com', 'x.com', 'googleapis.com', 'google-analytics.com',
+    'googletagmanager.com', 'business.google.com', 'firebaseio.com',
+    'firebase.google.com', 'api.openai.com', 'api.anthropic.com',
+    'anthropic.com', 'claude.ai', 'api.perplexity.ai', 'api.lumalabs.ai',
+    'dataforseo.com', 'bing.com', 'tavus.io', 'youtube.com', 'youtu.be',
     '.backend.blink.new', '/api/db/', '/api/functions/',
   ].some(marker => url.includes(marker));
+}
+
+export function isDemoAllowedUrl(input: string | URL, origin: string): boolean {
+  const url = String(input);
+  try {
+    const parsed = new URL(url, origin);
+    return parsed.origin === origin && !parsed.pathname.startsWith('/api/');
+  } catch {
+    return false;
+  }
 }
 
 export function createDemoBlockedResponse(): Response {

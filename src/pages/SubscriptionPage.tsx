@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Page, PageHeader, PageTitle, PageDescription, PageBody, Button, toast } from '@blinkdotnew/ui';
-import { Check, Zap, ShieldCheck, Sparkles, Package, Mail, Lock } from 'lucide-react';
+import { Check, Zap, ShieldCheck, Sparkles, Mail, Lock } from 'lucide-react';
 import { useSubscription } from '../context/SubscriptionContext';
-import { useCredits } from '../context/CreditsContext';
 import { useUserProfile } from '../context/UserProfileContext';
 import { useDemoMode } from '../context/DemoModeContext';
-import { StripePaymentModal } from '../components/subscription/StripePaymentModal';
 import { SubscriptionCheckoutPanel } from '../components/subscription/SubscriptionCheckoutPanel';
 import { WelcomeModal } from '../components/subscription/WelcomeModal';
 import { useWelcomeEmail } from '../hooks/useWelcomeEmail';
 import { useAuth } from '../hooks/useAuth';
 import { cn } from '../lib/utils';
-import { KOMPILOT_PLANS_MONTHLY } from '../components/landing/pricing/PricingData';
+import { ENTERPRISE_PLAN, SUBSCRIPTION_PLANS } from '../../shared/pricingCatalog';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function monthYearLabel() {
@@ -20,36 +18,39 @@ function monthYearLabel() {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-// ── B2C Plans ─────────────────────────────────────────────────────────────────
-const B2C_PLANS = KOMPILOT_PLANS_MONTHLY.map(plan => ({
+// The subscription page mirrors the shared commercial catalogue so legacy
+// pack names and prices cannot resurface in account billing UI.
+const B2C_PLANS = SUBSCRIPTION_PLANS.map((plan, index) => ({
   id: plan.id,
-  emoji: plan.id === 'starter' ? '⚡' : plan.id === 'agency' ? '✦' : '◈',
+  emoji: index === 0 ? '⚡' : index === 1 ? '✦' : '◆',
   name: plan.name,
   tagline: plan.tagline,
-  price: plan.monthlyPrice,
-  priceLabel: plan.monthlyPrice === null ? 'Sur devis HT' : `${plan.monthlyPrice}€ / mois HT`,
-  badgeLabel: plan.badge ?? plan.name,
-  badgeClass: plan.id === 'agency' ? 'bg-violet-100 text-violet-700 border-violet-200' : plan.id === 'enterprise' ? 'bg-slate-100 text-slate-700 border-slate-300' : 'bg-teal-100 text-teal-700 border-teal-200',
-  gradient: plan.id === 'agency' ? 'from-violet-600 to-indigo-500' : plan.id === 'enterprise' ? 'from-slate-700 to-slate-500' : 'from-teal-600 to-emerald-500',
-  popular: plan.popular,
-  features: plan.features,
-  ctaLabel: plan.id === 'starter' ? 'Choisir Pro' : plan.id === 'agency' ? 'Choisir Agency' : 'Nous contacter',
-  ctaVariant: plan.id === 'agency' ? 'default' as const : 'outline' as const,
+  price: plan.monthlyPriceEurHt,
+  priceLabel: `${plan.monthlyPriceEurHt}€ / mois HT`,
+  badgeLabel: plan.name,
+  badgeClass: index === 0 ? 'bg-teal-100 text-teal-700 border-teal-200' : index === 1 ? 'bg-violet-100 text-violet-700 border-violet-200' : 'bg-amber-100 text-amber-800 border-amber-200',
+  gradient: index === 0 ? 'from-teal-600 to-emerald-500' : index === 1 ? 'from-violet-600 to-indigo-500' : 'from-amber-600 to-orange-500',
+  popular: plan.id === 'multi',
+  features: plan.features.slice(0, 3),
+  ctaLabel: `Choisir ${plan.name}`,
+  ctaVariant: (plan.id === 'pro' ? 'outline' : 'default') as 'outline' | 'default',
   ctaNote: null,
   isFree: false,
-  contactOnly: plan.id === 'enterprise',
+  contactOnly: false,
 }));
 
-// The same canonical catalogue is used for professional accounts. Keeping one
-// shape here avoids old subscription prices resurfacing through profile tabs.
-const B2B_PLANS = B2C_PLANS;
+const B2B_PLANS = [
+  ...B2C_PLANS,
+  {
+    id: 'enterprise', emoji: '◇', name: ENTERPRISE_PLAN.name, tagline: ENTERPRISE_PLAN.tagline,
+    price: null, priceLabel: ENTERPRISE_PLAN.priceLabel, badgeLabel: 'Sur devis', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200',
+    gradient: 'from-slate-700 to-slate-900', popular: false, features: ENTERPRISE_PLAN.features.slice(0, 3),
+    ctaLabel: ENTERPRISE_PLAN.ctaLabel, ctaVariant: 'outline' as const, ctaNote: null, isFree: false, contactOnly: true,
+  },
+];
 
 // ── Credit packs ──────────────────────────────────────────────────────────────
-const CREDIT_PACKS = [
-  { id: 'starter',  label: 'Pack Starter',  credits: 5,  priceTTC: 4.99,  color: 'from-slate-500 to-slate-400',  badge: null,        desc: 'Pour tester sans engagement' },
-  { id: 'boost',    label: 'Pack Boost',    credits: 20, priceTTC: 14.99, color: 'from-primary to-teal-400',      badge: 'Populaire', desc: 'Le meilleur rapport qualité/prix' },
-  { id: 'business', label: 'Pack Business', credits: 50, priceTTC: 29.99, color: 'from-violet-600 to-violet-400', badge: null,        desc: 'Pour les pros qui publient souvent' },
-];
+// Removed CREDIT_PACKS as per edit instruction.
 
 // ── Checkout target ───────────────────────────────────────────────────────────
 type CheckoutTarget = {
@@ -57,9 +58,8 @@ type CheckoutTarget = {
   priceHT: number;
   invoiceDesc: string;
   isSubscription: boolean;
-  creditsToAdd?: number;
   /** For real Stripe subscription checkout via SubscriptionCheckoutPanel */
-  stripePlanId?: 'starter' | 'agency';
+  stripePlanId?: 'pro' | 'multi' | 'agency';
 };
 
 // ── Plan card ─────────────────────────────────────────────────────────────────
@@ -142,51 +142,12 @@ function PlanCard({ plan, onSelect }: { plan: PlanDef; onSelect: () => void }) {
 }
 
 // ── Credit pack card ──────────────────────────────────────────────────────────
-function CreditPackCard({ pack, onBuy }: { pack: typeof CREDIT_PACKS[0]; onBuy: () => void }) {
-  return (
-    <div className={cn(
-      'relative rounded-2xl border overflow-hidden flex flex-col transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg',
-      pack.badge ? 'border-primary shadow-[0_0_0_2px_hsl(var(--primary)/0.2)]' : 'border-border',
-    )}>
-      <div className={cn('bg-gradient-to-br px-5 py-5 relative overflow-hidden', pack.color)}>
-        <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/10 pointer-events-none" />
-        {pack.badge && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest bg-white/20 text-white rounded-full px-2.5 py-0.5 mb-2">
-            ⭐ {pack.badge}
-          </span>
-        )}
-        <div className="flex items-end justify-between gap-2 relative z-10">
-          <div>
-            <p className="text-white/80 text-xs font-semibold">{pack.label}</p>
-            <p className="text-white text-3xl font-extrabold leading-tight">{pack.credits}</p>
-            <p className="text-white/80 text-xs">crédits</p>
-          </div>
-          <div className="text-right">
-            <p className="text-white text-xl font-extrabold">{pack.priceTTC}€</p>
-            <p className="text-white/70 text-[11px]">TTC · paiement unique</p>
-          </div>
-        </div>
-      </div>
-      <div className="px-5 py-4 flex-1 flex flex-col gap-3 bg-card">
-        <p className="text-xs text-muted-foreground">{pack.desc}</p>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Check size={12} className="text-green-500 shrink-0" /> Sans abonnement
-          <span className="mx-1">·</span>
-          <Check size={12} className="text-green-500 shrink-0" /> Valable 12 mois
-        </div>
-        <Button onClick={onBuy} variant={pack.badge ? 'default' : 'outline'} className="w-full gap-2 mt-auto">
-          <Package size={14} /> Acheter ce pack
-        </Button>
-      </div>
-    </div>
-  );
-}
+// Removed CreditPackCard as per edit instruction.
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function SubscriptionPage() {
   const navigate = useNavigate();
   const { currentPlan, setPlan } = useSubscription();
-  const { credits, addCredits } = useCredits();
   const { profileType, isB2C } = useUserProfile();
   const { isDemoActive } = useDemoMode();
   const { user } = useAuth();
@@ -219,7 +180,11 @@ export default function SubscriptionPage() {
       try { return localStorage.getItem('kompilot_skip_trial') === 'true'; } catch { return false; }
     })();
     if (skipTrial) {
-      try { localStorage.removeItem('kompilot_skip_trial'); } catch {}
+      try {
+        localStorage.removeItem('kompilot_skip_trial');
+      } catch {
+        // Local storage may be unavailable in privacy mode.
+      }
       setShowTrialRenunciation(true);
     }
 
@@ -227,7 +192,11 @@ export default function SubscriptionPage() {
 
     if (pendingPlan) {
       // Clear the stored plan
-      try { localStorage.removeItem('kompilot_pending_plan'); } catch {}
+      try {
+        localStorage.removeItem('kompilot_pending_plan');
+      } catch {
+        // Local storage may be unavailable in privacy mode.
+      }
       // Remove ?plan from URL without page reload
       const url = new URL(window.location.href);
       url.searchParams.delete('plan');
@@ -248,7 +217,7 @@ export default function SubscriptionPage() {
         priceHT,
         invoiceDesc: `Abonnement ${found.name} – ${monthYearLabel()}`,
         isSubscription: true,
-        stripePlanId: found.id === 'starter' ? 'starter' : 'agency',
+        stripePlanId: found.id === 'pro' || found.id === 'multi' || found.id === 'agency' ? found.id : undefined,
       });
       const msg = skipTrial ? `⚡ Accès immédiat — finalisez votre abonnement` : `Plan ${found.name} sélectionné`;
       toast.success(msg, { description: 'Finalisez votre abonnement ci-dessous.' });
@@ -259,16 +228,19 @@ export default function SubscriptionPage() {
         priceHT: 69,
         invoiceDesc: `Abonnement Pro – ${monthYearLabel()}`,
         isSubscription: true,
-        stripePlanId: 'starter',
+        stripePlanId: 'pro',
       });
       toast.success('⚡ Accès immédiat activé', { description: 'Cochez la case de renonciation pour confirmer.' });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const creditsLabel = credits === 'unlimited' ? 'Illimité' : `${credits} crédits restants`;
+  const creditsLabel = 'Consommation gérée par la facturation';
 
   const handleB2CPlanSelect = (plan: typeof B2C_PLANS[number]) => {
+    if (isDemoActive) {
+      toast('Mode démo : action simulée, aucun envoi réel.');
+      return;
+    }
     if (plan.contactOnly) {
       window.location.href = 'mailto:sales@kompilot.fr';
       return;
@@ -279,11 +251,15 @@ export default function SubscriptionPage() {
       priceHT,
       invoiceDesc: `Abonnement ${plan.name} – ${monthYearLabel()}`,
       isSubscription: true,
-      stripePlanId: plan.id === 'starter' ? 'starter' : 'agency',
+      stripePlanId: plan.id === 'pro' || plan.id === 'multi' || plan.id === 'agency' ? plan.id : undefined,
     });
   };
 
   const handleB2BPlanSelect = (plan: typeof B2B_PLANS[number]) => {
+    if (isDemoActive) {
+      toast('Mode démo : action simulée, aucun envoi réel.');
+      return;
+    }
     if (plan.isFree) {
       navigate({ to: '/signup' });
       return;
@@ -292,8 +268,8 @@ export default function SubscriptionPage() {
       window.location.href = 'mailto:contact@kompilot.fr';
       return;
     }
-    const stripePlanId: 'starter' | 'agency' =
-      plan.id === 'starter' ? 'starter' : 'agency';
+    const stripePlanId = plan.id === 'pro' || plan.id === 'multi' || plan.id === 'agency' ? plan.id : undefined;
+    if (!stripePlanId) return;
     setCheckout({
       planName: plan.name,
       priceHT: plan.price!,
@@ -303,31 +279,22 @@ export default function SubscriptionPage() {
     });
   };
 
-  const openCreditsCheckout = (pack: typeof CREDIT_PACKS[0]) => {
-    setCheckout({
-      planName: `${pack.label} — ${pack.credits} crédits`,
-      priceHT: parseFloat((pack.priceTTC / 1.2).toFixed(2)),
-      invoiceDesc: `${pack.label} – ${pack.credits} crédits`,
-      isSubscription: false,
-      creditsToAdd: pack.credits,
-    });
-  };
+  // Removed openCreditsCheckout as per edit instruction.
 
   const handlePaymentSuccess = () => {
     if (!checkout) return;
     if (checkout.isSubscription) {
-      const nameToId: Record<string, string> = { Starter: 'starter', Agency: 'agency' };
+      const nameToId: Record<string, 'pro' | 'multi' | 'agency'> = { Pro: 'pro', Multi: 'multi', Agency: 'agency' };
       const pid = nameToId[checkout.planName];
-      if (pid) setPlan(pid as 'starter' | 'agency');
+      if (pid) setPlan(pid);
       setWelcomeModal({ open: true, planName: checkout.planName });
       sendWelcomeEmail(checkout.planName);
       toast.success(`🎉 Offre ${checkout.planName} activée !`, {
         description: 'Votre abonnement est maintenant actif.',
       });
     } else {
-      if (checkout.creditsToAdd) addCredits(checkout.creditsToAdd);
-      toast.success(`+${checkout.creditsToAdd} crédits ajoutés !`, {
-        description: 'Votre solde a été mis à jour en temps réel.',
+      toast.success('Paiement confirmé', {
+        description: 'Les crédits seront ajoutés par le backend après confirmation Stripe.',
       });
     }
     setCheckout(null);
@@ -517,23 +484,7 @@ export default function SubscriptionPage() {
         </section>
 
         {/* ── Credit packs shop ── */}
-        <section>
-          <div className="flex items-center gap-3 mb-1">
-            <Sparkles size={18} className="text-primary" />
-            <h2 className="text-lg font-extrabold text-foreground">Besoin de publier ponctuellement ?</h2>
-          </div>
-          <p className="text-sm text-muted-foreground mb-5 ml-7">
-            Achetez des crédits sans engagement. Chaque crédit = 1 publication (Post ou Story) planifiée avec l'IA.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {CREDIT_PACKS.map((pack) => (
-              <CreditPackCard key={pack.id} pack={pack} onBuy={() => openCreditsCheckout(pack)} />
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground mt-4">
-            Prix TTC · Paiement unique · Valable 12 mois · Sans abonnement requis
-          </p>
-        </section>
+        {/* Removed Credit packs shop section as per edit instruction. */}
 
       </PageBody>
 
@@ -553,17 +504,7 @@ export default function SubscriptionPage() {
       )}
 
       {/* ── Credit pack checkout uses old modal (one-time, no subscription) ── */}
-      {checkout && !checkout.isSubscription && (
-        <StripePaymentModal
-          open={!!checkout}
-          onClose={() => setCheckout(null)}
-          planName={checkout.planName}
-          priceHT={checkout.priceHT}
-          invoiceDesc={checkout.invoiceDesc}
-          isSubscription={false}
-          onSuccess={handlePaymentSuccess}
-        />
-      )}
+      {/* Removed StripePaymentModal usage as per edit instruction. */}
 
       {/* ── Welcome modal (post-payment) ── */}
       <WelcomeModal

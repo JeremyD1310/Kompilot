@@ -3,7 +3,7 @@
  *
  * TWO DISTINCT MODES (strictly separated):
  *  1. Mode Démo Sandbox  (anonymous visitor, isDemoActive)  → session-scoped, resets on reload
- *  2. Mode Essai 7 jours (authenticated user, isTrialActive) → countdown from user.created_at
+ *  2. Mode Essai 14 jours (authenticated user, isTrialActive) → countdown from user.created_at
  *
  * Shows low-credit warning when < 20% AI credits remain.
  */
@@ -117,15 +117,15 @@ export function DemoBanner({ onUpgradeClick }: DemoBannerProps = {}) {
                   </span>
                 </span>
               ) : isAuthenticatedUser ? (
-                // ── AUTHENTICATED: Real 7-day trial countdown from DB ──
+                // ── AUTHENTICATED: Real 14-day trial countdown from DB ──
                 <span className="text-xs font-semibold leading-tight">
                   <span className="hidden sm:inline">
-                    🚀 <strong>Mode Essai Gratuit 7 jours</strong> — Il vous reste{' '}
+                    🚀 <strong>Mode Essai Gratuit 14 jours</strong> — Il vous reste{' '}
                   </span>
                   <span className="sm:hidden">Essai · </span>
                   <strong className="inline-flex items-center gap-1">
                     <Clock size={12} />
-                    {trialDaysLeft !== null ? `${trialDaysLeft} jour${trialDaysLeft !== 1 ? 's' : ''}` : '7 jours'}
+                    {trialDaysLeft !== null ? `${trialDaysLeft} jour${trialDaysLeft !== 1 ? 's' : ''}` : '14 jours'}
                   </strong>
                   <span className="hidden sm:inline"> · Toutes vos vraies données sont sauvegardées.</span>
                 </span>

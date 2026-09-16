@@ -24,10 +24,15 @@ const initialChannels: Channel[] = [
 const ONBOARDING_KEY = 'kompilot_onboarding_b2b';
 type OnboardingDraft = { step: 0 | 1 | 2 | 3; sector: string; size: string; objective: string; channels: Channel[]; keywords: string[] };
 
-function readDraft(isDemoActive: boolean): OnboardingDraft {
+function getStorageKey(userId?: string, isDemoActive = false) {
+  // Demo data remains intentionally isolated from authenticated accounts.
+  return isDemoActive ? `${ONBOARDING_KEY}_demo` : userId ? `${ONBOARDING_KEY}_${userId}` : `${ONBOARDING_KEY}_pending`;
+}
+
+function readDraft(userId: string | undefined, isDemoActive: boolean): OnboardingDraft {
   const fallback: OnboardingDraft = { step: 0, sector: '', size: '', objective: '', channels: initialChannels.map(item => ({ ...item })), keywords: isDemoActive ? ['marketing local', 'agence digitale', 'visibilité IA'] : [] };
   try {
-    const stored = localStorage.getItem(ONBOARDING_KEY);
+    const stored = localStorage.getItem(getStorageKey(userId, isDemoActive));
     if (!stored) return fallback;
     const parsed = JSON.parse(stored) as Partial<OnboardingDraft>;
     return { ...fallback, ...parsed, channels: Array.isArray(parsed.channels) ? parsed.channels : fallback.channels, keywords: Array.isArray(parsed.keywords) ? parsed.keywords : fallback.keywords };
@@ -38,7 +43,8 @@ export default function KompilotB2BOnboardingPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isDemoActive } = useDemoMode();
-  const draft = useMemo(() => readDraft(isDemoActive), [isDemoActive]);
+  const storageKey = useMemo(() => getStorageKey(user?.id, isDemoActive), [user?.id, isDemoActive]);
+  const draft = useMemo(() => readDraft(user?.id, isDemoActive), [user?.id, isDemoActive]);
   const [step, setStep] = useState<0 | 1 | 2 | 3>(draft.step);
   const [sector, setSector] = useState(draft.sector);
   const [size, setSize] = useState(draft.size);
@@ -49,8 +55,8 @@ export default function KompilotB2BOnboardingPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    try { localStorage.setItem(ONBOARDING_KEY, JSON.stringify({ step, sector, size, objective, channels, keywords } satisfies OnboardingDraft)); } catch { /* storage can be unavailable */ }
-  }, [step, sector, size, objective, channels, keywords]);
+    try { localStorage.setItem(storageKey, JSON.stringify({ step, sector, size, objective, channels, keywords } satisfies OnboardingDraft)); } catch { /* storage can be unavailable */ }
+  }, [storageKey, step, sector, size, objective, channels, keywords]);
 
   const canContinue = step === 0 ? Boolean(sector && size && objective) : step === 2 ? keywords.length > 0 : true;
   const progress = ((step + 1) / steps.length) * 100;
@@ -61,9 +67,19 @@ export default function KompilotB2BOnboardingPage() {
   const toggleChannel = (id: string) => setChannels(current => current.map(channel => channel.id === id ? { ...channel, state: channel.state === 'connected' ? 'pending' : 'connected' } : channel));
   const addKeyword = () => { const value = keywordInput.trim(); if (value && !keywords.includes(value)) setKeywords(current => [...current, value]); setKeywordInput(''); };
   const removeKeyword = (keyword: string) => setKeywords(current => current.filter(item => item !== keyword));
-  const activate = async () => { setSaving(true); localStorage.setItem('kompilot_onboarding_b2b', JSON.stringify({ completedAt: Date.now(), ...summary, connectedChannels: channels.filter(channel => channel.state === 'connected').map(channel => channel.id) })); await new Promise(resolve => setTimeout(resolve, 500)); navigate({ to: '/command-center' }); };
+  const activate = async () => {
+    if (saving) return;
+    setSaving(true);
+    const completed = { completedAt: Date.now(), ...summary, connectedChannels: channels.filter(channel => channel.state === 'connected').map(channel => channel.id) };
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(completed));
+      if (user?.id && !isDemoActive) localStorage.setItem(`onboarding_done_${user.id}`, '1');
+    } catch { /* storage can be unavailable; navigation should still complete */ }
+    await new Promise(resolve => setTimeout(resolve, 500));
+    navigate({ to: isDemoActive ? '/demo/dashboard' : '/dashboard' });
+  };
 
-  return <div className="min-h-dvh bg-background text-foreground"><header className="flex h-16 items-center justify-between border-b border-border px-5 sm:px-8"><Link to="/" aria-label="Kompilot accueil"><KompilotLogo variant="full" height={25} textColor="currentColor" /></Link><div className="flex items-center gap-3 text-xs text-muted-foreground"><span className="hidden sm:inline">Configuration de votre workspace</span><button onClick={() => navigate({ to: isDemoActive ? '/demo/dashboard' : '/command-center' })} className="flex items-center gap-1 font-semibold hover:text-foreground"><X size={14} /> Quitter</button></div></header>
+  return <div className="min-h-dvh bg-background text-foreground"><header className="flex h-16 items-center justify-between border-b border-border px-5 sm:px-8"><Link to="/" aria-label="Kompilot accueil"><KompilotLogo variant="full" height={25} textColor="currentColor" /></Link><div className="flex items-center gap-3 text-xs text-muted-foreground"><span className="hidden sm:inline">Configuration de votre workspace</span><button onClick={() => navigate({ to: isDemoActive ? '/demo/dashboard' : '/dashboard' })} className="flex items-center gap-1 font-semibold hover:text-foreground"><X size={14} /> Quitter</button></div></header>
     <main className="mx-auto grid min-h-[calc(100dvh-4rem)] w-full max-w-6xl grid-cols-1 gap-8 px-4 py-6 sm:px-8 lg:grid-cols-[220px_minmax(0,680px)] lg:gap-16 lg:py-12"><aside className="lg:pt-8"><p className="mb-6 text-xs font-bold uppercase tracking-[0.16em] text-primary">Bienvenue {firstName}</p><div className="flex gap-2 overflow-x-auto lg:block lg:space-y-5">{steps.map((label, index) => <div key={label} className={`flex shrink-0 items-center gap-3 text-sm font-semibold lg:gap-3 ${index === step ? 'text-foreground' : index < step ? 'text-primary' : 'text-muted-foreground/60'}`}><span className={`flex h-8 w-8 items-center justify-center rounded-full border text-xs ${index < step ? 'border-primary bg-primary text-primary-foreground' : index === step ? 'border-primary bg-primary/10 text-primary' : 'border-border'}`}>{index < step ? <Check size={14} /> : index + 1}</span><span>{label}</span></div>)}</div><div className="mt-10 hidden rounded-2xl border border-border bg-card p-4 lg:block"><p className="text-xs font-bold text-foreground">Environ 3 minutes</p><p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">Vous pouvez ignorer les connexions et les compléter plus tard.</p></div></aside>
       <section className="min-w-0"><div className="mb-7"><Progress value={progress} className="mb-5 h-1.5" /><p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Étape {step + 1} sur 4</p></div>
         {step === 0 && <Card className="border-border/80 shadow-[var(--shadow-dashboard)]"><CardHeader><CardTitle className="text-2xl tracking-tight sm:text-3xl">Parlons de votre entreprise.</CardTitle><p className="text-sm leading-relaxed text-muted-foreground">Nous allons calibrer votre cockpit sur votre contexte métier et votre objectif prioritaire.</p></CardHeader><CardContent className="space-y-7"><ChoiceGroup label="Votre secteur" items={sectors} value={sector} onChange={setSector} /><ChoiceGroup label="Taille de l’entreprise" items={sizes} value={size} onChange={setSize} /><ChoiceGroup label="Votre objectif principal" items={objectives} value={objective} onChange={setObjective} /></CardContent></Card>}
