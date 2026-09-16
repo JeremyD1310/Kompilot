@@ -17,6 +17,9 @@ router.post('/api/billing/one-time-checkout', async (c) => {
   const body = await c.req.json<{ productId?: string; legalConsent?: { cgvAccepted?: boolean; retractionWaived?: boolean; cgvVersion?: string } }>()
   const product = resolveOneTimeProduct(body?.productId)
   if (!product) return c.json({ error: 'Produit invalide', code: 'INVALID_PRODUCT' }, 400)
+  if (product.productType !== 'topup' && product.productType !== 'guided_pilot') {
+    return c.json({ error: 'Ce produit n’est pas disponible via ce checkout', code: 'INVALID_PRODUCT' }, 400)
+  }
   // Enterprise/custom-quote work is never payable through direct checkout.
   if (product.amountEurHt === null) {
     return c.json({ error: 'Ce produit nécessite un devis signé', code: 'CUSTOM_QUOTE_REQUIRED' }, 400)
@@ -27,11 +30,6 @@ router.post('/api/billing/one-time-checkout', async (c) => {
   }
 
   const consentAt = new Date().toISOString()
-  await patchUserMeta(blink, auth.userId, {
-    legal_consent_at: consentAt,
-    legal_consent_version: consent.cgvVersion,
-    legal_consent_log: JSON.stringify({ cgvVersion: consent.cgvVersion, acceptedAt: consentAt, productId: product.id, cgvAccepted: true, retractionWaived: true }),
-  })
   const meta = await getUserMeta(blink, auth.userId)
   const appUrl = String(env.APP_URL ?? env.PUBLIC_APP_URL ?? '').trim()
   let validatedAppUrl: URL
@@ -71,5 +69,10 @@ router.post('/api/billing/one-time-checkout', async (c) => {
   const response = await fetch('https://api.stripe.com/v1/checkout/sessions', { method: 'POST', headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`, 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() })
   if (!response.ok) return c.json({ error: 'Checkout creation failed' }, 502)
   const session = await response.json() as { url?: string }
+  await patchUserMeta(blink, auth.userId, {
+    legal_consent_at: consentAt,
+    legal_consent_version: consent.cgvVersion,
+    legal_consent_log: JSON.stringify({ cgvVersion: consent.cgvVersion, acceptedAt: consentAt, productId: product.id, cgvAccepted: true, retractionWaived: true }),
+  })
   return c.json({ url: session.url, productId: product.id, pilotEndAt: null, renews: false })
 })

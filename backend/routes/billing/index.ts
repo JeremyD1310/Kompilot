@@ -8,7 +8,7 @@
  *                 GET  /api/billing/status
  *
  *   checkout.ts → POST /api/billing/checkout
- *                 POST /api/billing/credit-pack
+ *                 POST /api/billing/credit-pack (410 legacy guard)
  *
  *   vat.ts      → POST   /api/billing/vat/validate
  *                 GET    /api/billing/vat

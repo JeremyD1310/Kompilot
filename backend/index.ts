@@ -121,6 +121,7 @@ import { platformWebhooksRouter }                 from './routes/platformWebhook
 import { router as weeklyReportRouter }           from './routes/weeklyReport';
 import { router as addonCheckoutRouter }          from './routes/addonCheckout';
 import { router as creditPackAioRouter }          from './routes/billing/creditPackAio';
+import { router as creditPacksRouter }             from './routes/creditPacks';
 import { router as creditsRouter }                 from './routes/credits';
 import { router as smsCreditsRouter }              from './routes/smsCredits';
 import { router as contentQuotaRouter }            from './routes/contentQuota';
@@ -257,6 +258,7 @@ app.route('/', platformWebhooksRouter);
 app.route('/', weeklyReportRouter);
 app.route('/', addonCheckoutRouter);
 app.route('/', creditPackAioRouter);
+app.route('/', creditPacksRouter);
 app.route('/', creditsRouter);
 app.route('/', smsCreditsRouter);
 app.route('/', contentQuotaRouter);
