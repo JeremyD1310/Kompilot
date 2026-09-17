@@ -139,6 +139,7 @@ export type ResolvedStripePrice = {
   recurring: boolean;
   livemode: boolean;
   unitAmount: number;
+  taxBehavior: 'exclusive';
 };
 
 /** Resolve a server-owned Stripe price. Browser supplied price IDs and amounts are never accepted. */
@@ -165,6 +166,10 @@ export async function resolveStripePrice(
   const price = candidates[0];
   if (!price.id || !Number.isInteger(price.unit_amount) || price.unit_amount <= 0) throw new Error('Stripe price has invalid amount');
   if (options.expectedAmount !== undefined && price.unit_amount !== options.expectedAmount) throw new Error('STRIPE_CATALOG_AMOUNT_MISMATCH');
+  // The catalog publishes HT amounts only, so Stripe Tax must add VAT on top of the
+  // unit amount. An 'inclusive' or 'unspecified' price would silently turn the
+  // catalog amount into a TTC amount and shrink the taxable base.
+  if (price.tax_behavior !== 'exclusive') throw new Error('STRIPE_TAX_BEHAVIOR_INVALID');
   const productId = typeof price.product === 'string' ? price.product : price.product?.id;
   if (!productId) throw new Error('STRIPE_PRODUCT_MISSING');
   if (options.expectedProductId && productId !== options.expectedProductId) throw new Error('STRIPE_PRODUCT_MISMATCH');
@@ -175,7 +180,7 @@ export async function resolveStripePrice(
   if (!productResponse.ok) throw new Error('Stripe product lookup failed');
   const product = await productResponse.json() as { active?: boolean; livemode?: boolean };
   if (product.active !== true || product.livemode !== true) throw new Error('STRIPE_PRODUCT_INACTIVE_OR_TEST');
-  return { id: price.id, lookupKey, currency: price.currency, active: true, recurring: options.recurring, livemode: true, unitAmount: price.unit_amount };
+  return { id: price.id, lookupKey, currency: price.currency, active: true, recurring: options.recurring, livemode: true, unitAmount: price.unit_amount, taxBehavior: 'exclusive' };
 }
 
 /** Map planId to its allowed feature tier. */

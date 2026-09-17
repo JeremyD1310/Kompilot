@@ -68,7 +68,17 @@ router.post('/api/billing/one-time-checkout', async (c) => {
     'payment_intent_data[metadata][pilot_days]': String(product.pilotDays ?? ''),
     'payment_intent_data[metadata][credit_eligible]': String(product.creditEligible === true),
   })
-  if (meta.stripe_customer_id) params.set('customer', String(meta.stripe_customer_id))
+  // Catalog amounts are HT; Stripe Tax adds VAT on top (prices are validated as
+  // `tax_behavior: 'exclusive'` by resolveStripePrice).
+  params.set('automatic_tax[enabled]', 'true')
+  params.set('tax_id_collection[enabled]', 'true')
+  if (meta.stripe_customer_id) {
+    params.set('customer', String(meta.stripe_customer_id))
+    // Required by Stripe when automatic_tax runs against an existing customer.
+    params.set('customer_update[address]', 'auto')
+    params.set('customer_update[name]', 'auto')
+    params.set('customer_update[shipping]', 'auto')
+  }
   const idempotencyKey = c.req.header('Idempotency-Key')?.trim()
   const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',

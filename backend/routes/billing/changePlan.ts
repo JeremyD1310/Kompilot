@@ -123,6 +123,9 @@ router.post('/api/billing/change-plan', async (c) => {
   updateParams.set('items[0][id]', currentItemId);
   updateParams.set('items[0][price]', newPriceId);
   updateParams.set('proration_behavior', prorationBehavior);
+  // Keep Stripe Tax on the subscription so proration invoices (always_invoice) and
+  // every following renewal are taxed, never billed on the bare HT amount.
+  updateParams.set('automatic_tax[enabled]', 'true');
   updateParams.set('metadata[planId]', canonicalNewPlanId);
   updateParams.set('metadata[billing]', newBilling);
   updateParams.set('metadata[user_id]', auth.userId);

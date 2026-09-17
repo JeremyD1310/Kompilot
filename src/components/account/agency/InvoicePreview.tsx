@@ -28,11 +28,15 @@ interface BackendInvoiceData {
   lineItems:   BackendLineItem[];
   subtotal?:   number;
   totalHT?:    number;
-  tva:         number;
-  total?:      number;
-  totalTTC?:   number;
+  /** null when Stripe has not applied any tax to this customer yet */
+  tva:         number | null;
+  total?:      number | null;
+  totalTTC?:   number | null;
   currency:    string;
-  tvaRate?:    number;
+  /** Rate actually applied by Stripe Tax; null when unknown — never assume 20 % */
+  tvaRate?:    number | null;
+  taxSource?:  'stripe_invoice' | 'unavailable';
+  reverseCharge?: boolean | null;
 }
 
 interface Props {
@@ -138,12 +142,18 @@ export function InvoicePreview({ agencyName }: Props) {
 
       {invoice && (() => {
         const ht          = invoice.totalHT  ?? invoice.subtotal ?? 0;
-        const ttc         = invoice.totalTTC ?? invoice.total    ?? 0;
         const currency    = (invoice.currency ?? 'EUR').toUpperCase();
-        const tvaRate     = invoice.tvaRate ?? (invoice.tva > 0 ? invoice.tva / (ht || 1) : 0);
-        const isReverse   = tvaRate === 0 && ttc > 0;
+        // The backend returns the rate Stripe actually applied, or null when Stripe has
+        // no taxed invoice for this customer yet. A null rate is unknown, not 0 %.
+        const tvaRate     = invoice.tvaRate ?? (typeof invoice.tva === 'number' && invoice.tva > 0 ? invoice.tva / (ht || 1) : null);
+        const taxKnown    = tvaRate !== null;
+        const tva         = typeof invoice.tva === 'number' ? invoice.tva : null;
+        const ttc         = invoice.totalTTC ?? invoice.total ?? null;
+        const isReverse   = invoice.reverseCharge === true || (taxKnown && tvaRate === 0);
         const displayName = invoice.agencyName ?? agencyName;
-        const legal       = getLegalMention(currency, isReverse ? 0 : tvaRate);
+        const legal       = taxKnown
+          ? getLegalMention(currency, isReverse ? 0 : tvaRate)
+          : 'TVA calculée et collectée par Stripe au moment du paiement.';
 
         return (
           <Card className="rounded-2xl border-[#0D9488]/20 bg-gradient-to-br from-white to-teal-50/30 shadow-sm overflow-hidden">
@@ -223,18 +233,20 @@ export function InvoicePreview({ agencyName }: Props) {
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>
-                    {isReverse
-                      ? 'TVA — Autoliquidation (0 %)'
-                      : `TVA ${Math.round(tvaRate * 100)} %`}
+                    {!taxKnown
+                      ? 'TVA — calculée au paiement'
+                      : isReverse
+                        ? 'TVA — Autoliquidation (0 %)'
+                        : `TVA ${Math.round(tvaRate * 100)} %`}
                   </span>
                   <span className="tabular-nums font-mono">
-                    {isReverse ? formatMoney(0, currency) : formatMoney(invoice.tva, currency)}
+                    {!taxKnown ? '—' : isReverse ? formatMoney(0, currency) : formatMoney(tva ?? 0, currency)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-foreground border-t border-border pt-2 mt-1">
                   <span>Total TTC</span>
                   <span className={`tabular-nums font-mono ${isReverse ? 'text-violet-600' : 'text-[#0D9488]'}`}>
-                    {formatMoney(ttc, currency)}
+                    {ttc === null ? '—' : formatMoney(ttc, currency)}
                   </span>
                 </div>
               </div>

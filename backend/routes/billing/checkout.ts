@@ -146,21 +146,21 @@ router.post('/api/billing/checkout', async (c) => {
     sessionParams.set('subscription_data[trial_period_days]', String(TRIAL_DAYS));
   }
 
-  // Enable Stripe Tax if customer exists and VAT info is available
+  // Stripe Tax computes and collects VAT on top of the catalog price. Catalog
+  // amounts are HT (see shared/pricingCatalog), and resolveStripePrice rejects any
+  // price that is not `tax_behavior: 'exclusive'`, so the tax is always added on top.
+  sessionParams.set('automatic_tax[enabled]', 'true');
+  // Always expose the VAT-number field: domestic B2B buyers need it on the invoice,
+  // and EU buyers outside France need it for reverse charge.
+  sessionParams.set('tax_id_collection[enabled]', 'true');
+
   if (customerId) {
     sessionParams.set('customer', customerId);
-
-    // Tax is intentionally configured outside checkout.
-
-    // If customer has VAT info, use it for tax calculation
-    const vatNumber = meta.vat_number as string | undefined;
-    const vatCountry = meta.vat_country as string | undefined;
-    if (vatNumber && vatCountry) {
-      sessionParams.set('customer_update[shipping]', 'auto'); // Auto-update shipping address if provided
-      sessionParams.set('customer_update[billing]', 'auto'); // Auto-update billing address if provided
-      sessionParams.set('tax_id_collection[enabled]', 'true'); // Collect tax ID if not present
-      sessionParams.set('tax_id_collection[fallback_behavior]', 'auto'); // Auto-apply tax ID if available
-    }
+    // automatic_tax on an existing customer requires Stripe to be allowed to persist
+    // the address it collects, otherwise the session is rejected.
+    sessionParams.set('customer_update[address]', 'auto');
+    sessionParams.set('customer_update[name]', 'auto');
+    sessionParams.set('customer_update[shipping]', 'auto');
   }
 
   const sessRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
