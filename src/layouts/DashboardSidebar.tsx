@@ -38,12 +38,18 @@ interface DashboardSidebarProps {
 }
 
 // ── Unified color — all nav items use primary teal ──────────────────────────
+// Keys must match SidebarNavItemProps exactly (`activeStyle`, `hoverStyle`, …).
+// They previously read `active`, `hover`, `activeIcon`, … — since `{...primary}`
+// is spread *after* `active={is(path)}`, the `active` class string overrode the
+// boolean, so every item rendered in the active style and the four style keys
+// were silently dropped (the component fell back to its defaults, which carry
+// these same values).
 const primary = {
-  active: 'bg-primary/10 text-primary',
-  hover: 'hover:bg-primary/8 hover:text-primary',
-  activeIcon: 'bg-primary text-primary-foreground',
-  defaultIcon: 'bg-primary/10 text-primary',
-  hoverIcon: 'group-hover:bg-primary group-hover:text-primary-foreground',
+  activeStyle: 'bg-primary/10 text-primary',
+  hoverStyle: 'hover:bg-primary/8 hover:text-primary',
+  activeIconStyle: 'bg-primary text-primary-foreground',
+  defaultIconStyle: 'bg-primary/10 text-primary',
+  hoverIconStyle: 'group-hover:bg-primary group-hover:text-primary-foreground',
 };
 
 const NavGroupHeader = ({ label, collapsed }: { label: string; collapsed: boolean }) => {
@@ -169,7 +175,7 @@ export function DashboardSidebar({
             {...primary}
           />
           <SidebarNavItem to="/calendrier" icon={Calendar} label="Calendrier" active={is('/calendrier')} collapsed={c} {...primary} />
-          <SidebarNavItem to="/mon-equipe" icon={Users} label="Équipe" sublabel="Membres · Chat · Activité" active={is('/mon-equipe')} collapsed={c} data-tour="nav-team"
+          <SidebarNavItem to="/mon-equipe" icon={Users} label="Équipe" sublabel="Membres · Chat · Activité" active={is('/mon-equipe')} collapsed={c} dataTour="nav-team"
             suffix={!c ? (
               <span className="text-[8px] bg-primary text-primary-foreground font-bold px-1.5 py-0.5 rounded-full shrink-0">NEW</span>
             ) : undefined}

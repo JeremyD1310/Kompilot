@@ -79,7 +79,6 @@ const PATH_LABELS: Record<string, string> = {
   '/google-maps': 'Google Maps',
   '/local-ads': 'Publicité Locale',
   '/reviews': 'Avis Google',
-  '/inbox': 'Boîte de réception',
   '/account': 'Mon Compte',
   '/subscription': 'Mon Abonnement',
 };

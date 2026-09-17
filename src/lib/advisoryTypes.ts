@@ -50,7 +50,13 @@ export interface AdvisoryMetricSnapshot {
   engagementRate: number;
 }
 
-export interface AdvisoryImpact {
+/**
+ * Before/after measurement returned by GET /api/advisory/impact.
+ * Named *Report* to avoid colliding with the `AdvisoryImpact` severity union
+ * above — the collision silently resolved `AdvisoryImpact` to the union at
+ * every use site, which is why `.before`/`.after` were reported as missing.
+ */
+export interface AdvisoryImpactReport {
   recommendationAt: string;
   before: AdvisoryMetricSnapshot;
   after: AdvisoryMetricSnapshot;

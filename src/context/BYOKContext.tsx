@@ -137,7 +137,7 @@ export function BYOKProvider({ children }: { children: ReactNode }) {
       });
     } catch {
       setKeys(prev => {
-        const next = { ...prev, openaiStatus: 'invalid' };
+        const next = { ...prev, openaiStatus: 'invalid' as KeyStatus };
         persistKeys(next);
         return next;
       });
@@ -193,7 +193,7 @@ export function BYOKProvider({ children }: { children: ReactNode }) {
     } catch {
       // If the request fails for network reasons, mark invalid
       setKeys(prev => {
-        const next = { ...prev, whatsappStatus: 'invalid' };
+        const next = { ...prev, whatsappStatus: 'invalid' as KeyStatus };
         persistKeys(next);
         return next;
       });
@@ -202,7 +202,7 @@ export function BYOKProvider({ children }: { children: ReactNode }) {
 
   const clearOpenAIKey = useCallback(() => {
     setKeys(prev => {
-      const next = { ...prev, openaiKey: '', openaiStatus: 'idle' };
+      const next = { ...prev, openaiKey: '', openaiStatus: 'idle' as KeyStatus };
       persistKeys(next);
       return next;
     });
@@ -218,7 +218,7 @@ export function BYOKProvider({ children }: { children: ReactNode }) {
 
   const clearWhatsAppToken = useCallback(() => {
     setKeys(prev => {
-      const next = { ...prev, whatsappToken: '', whatsappStatus: 'idle' };
+      const next = { ...prev, whatsappToken: '', whatsappStatus: 'idle' as KeyStatus };
       persistKeys(next);
       return next;
     });

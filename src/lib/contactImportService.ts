@@ -61,7 +61,7 @@ const FIELD_MAP: Record<string, string> = {
   prenom: 'firstName', prénom: 'firstName', first_name: 'firstName', firstname: 'firstName',
   nom: 'lastName', last_name: 'lastName', lastname: 'lastName', famille: 'lastName',
   telephone: 'phone', tel: 'phone', phone: 'phone', mobile: 'phone', portable: 'phone',
-  entreprise: 'company', societe: 'company', company: 'company', organisation: 'company', organisation: 'company',
+  entreprise: 'company', societe: 'company', company: 'company', organisation: 'company',
   tags: 'tags', tag: 'tags', label: 'tags', labels: 'tags',
   notes: 'notes', note: 'notes', remarque: 'notes', commentaires: 'notes',
 };
