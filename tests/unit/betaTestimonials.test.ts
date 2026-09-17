@@ -8,8 +8,8 @@ describe('beta testimonials publication rules', () => {
     expect(BETA_TESTIMONIALS.every(testimonial => testimonial.betaTester)).toBe(true);
   });
 
-  test('does not expose unapproved testimonials to the public selector', () => {
-    expect(getApprovedBetaTestimonials()).toEqual([]);
+  test('exposes only the explicitly approved testimonials to the public selector', () => {
+    expect(getApprovedBetaTestimonials().map(testimonial => testimonial.id)).toEqual(['julien', 'camille', 'marc', 'elodie']);
   });
 
   test('returns every entry only when each entry is explicitly approved', () => {

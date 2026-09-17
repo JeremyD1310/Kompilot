@@ -472,6 +472,7 @@ export default function LoginPage() {
           {/* Instant login CTA */}
           <button
             onClick={handleInstantDemo}
+            aria-label="Accès Démo Immédiat — Connexion Instantanée"
             disabled={loggingIn || googleLoading}
             style={{
               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -485,7 +486,7 @@ export default function LoginPage() {
             className="active:scale-[.98]"
           >
             <Play size={15} fill="currentColor" />
-            Connexion Instantanée
+            Accès Démo Immédiat
           </button>
         </div>
       )}

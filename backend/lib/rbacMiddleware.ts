@@ -147,7 +147,8 @@ export function requireRole(...roles: KompilotRole[]) {
     if (!authorization) {
       return c.json({ error: 'FORBIDDEN', message: 'Aucun rôle actif pour cet espace de travail.', required_roles: roles.map((role) => ROLE_LABELS[role]) }, 403);
     }
-    if (!roles.includes(authorization.role)) {
+    const ownerCanUseAdminRoute = authorization.role === 'owner' && roles.includes('admin');
+    if (!roles.includes(authorization.role) && !ownerCanUseAdminRoute) {
       return c.json({
         error: 'FORBIDDEN',
         message: `Accès insuffisant. Rôle requis : ${roles.map((role) => ROLE_LABELS[role]).join(' ou ')}.`,

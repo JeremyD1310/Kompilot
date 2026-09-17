@@ -21,7 +21,7 @@ describe('workspace RBAC authority resolution', () => {
       agency_workspaces: [{ id: 'agency-1', ownerId: 'owner-1' }],
       agency_workspace_members: [],
     }), 'owner-1', 'agency-1');
-    expect(result?.role).toBe('admin');
+    expect(result?.role).toBe('owner');
     expect(result?.ownerId).toBe('owner-1');
   });
 
@@ -31,7 +31,7 @@ describe('workspace RBAC authority resolution', () => {
       agency_workspaces: [{ id: 'agency-1', ownerId: 'owner-1' }],
       agency_workspace_members: [{ workspaceId: 'agency-1', userId: 'owner-1', role: 'owner', status: 'active' }],
     }), 'owner-1', 'agency-1');
-    expect(result?.role).toBe('admin');
+    expect(result?.role).toBe('owner');
     expect(result?.ownerId).toBe('owner-1');
   });
 
@@ -70,7 +70,9 @@ describe('workspace RBAC authority resolution', () => {
   });
 
   it('does not grant elevated permission to an unknown role', () => {
-    expect(ROLE_PERMISSIONS.admin).toEqual(['*']);
+    expect(ROLE_PERMISSIONS.owner).toEqual(['*']);
+    expect(hasPermission('admin', 'billing.manage')).toBe(true);
+    expect(hasPermission('owner', 'billing.manage')).toBe(true);
     expect(hasPermission('guest', 'billing.manage')).toBe(false);
   });
 });

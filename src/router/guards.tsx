@@ -113,7 +113,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   // After login, team members (jeremy, romain, valentine @kompilot.fr) are
   // automatically redirected to the admin dashboard instead of the client view.
   // The /admin route uses AdminGuard (not AuthGuard), so this won't loop.
-  if (user && isKompilotTeam(user.email)) return <Navigate to="/admin" />;
+  if (user && !isDemoActive && isKompilotTeam(user.email)) return <Navigate to="/admin" />;
 
   // ── 6. All clear ─────────────────────────────────────────────────────────────
   return <>{children}</>;
