@@ -8,8 +8,7 @@
  * GET  /api/meta/pages              — List user's Facebook Pages + linked IG accounts
  */
 
-import { requireBackendUrl } from '../lib/blinkConfig';
-import { requireBlinkProjectId } from '../lib/blinkConfig';
+import { requireAppUrl, requireBackendUrl, requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { getUserPages, exchangeForLongLivedToken, validateToken } from '../lib/metaPublishingService';
@@ -43,11 +42,11 @@ const META_SCOPES = [
 function envOf(c: any): any { return c.env as any; }
 
 function backendRedirect(env: any) {
-  return env.META_REDIRECT_URI || `${env.BACKEND_URL || requireBackendUrl(env)}/api/meta/oauth/callback`;
+  return env.META_REDIRECT_URI || `${requireBackendUrl(env)}/api/meta/oauth/callback`;
 }
 
 function appRedirect(env: any, params = '') {
-  return `${env.APP_URL || 'https://kompilot.fr'}/settings${params}`;
+  return `${requireAppUrl(env)}/settings${params}`;
 }
 
 function toBase64Url(value: string) {
