@@ -9,6 +9,7 @@ import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { consumeExecuteRefund } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 
 type Env = {
   BLINK_SECRET_KEY: string;
@@ -21,6 +22,12 @@ export const router = new Hono<{ Bindings: Env }>();
 /* ── Auth helper ─────────────────────────────────────────────────────────── */
 function getDb(env: Env) {
   return createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
+}
+
+/** Report columns hold JSON-encoded values; fall back when a row predates that shape. */
+function parseStored<T>(raw: unknown, fallback: T): T {
+  if (typeof raw !== 'string') return fallback;
+  try { return JSON.parse(raw) as T; } catch { return (raw as unknown as T) ?? fallback; }
 }
 
 function getUserId(authHeader: string | undefined): string | null {
@@ -42,6 +49,9 @@ router.post('/api/creative-studio/analyze', async (c) => {
   const { adAccountId, orgId = '', async: useQueue = false } = await c.req.json<{ adAccountId: string; orgId?: string; async?: boolean }>();
   const requestId = c.req.header('Idempotency-Key') || c.req.header('X-Request-Id') || crypto.randomUUID();
   const referenceId = `creative-studio:${userId}:${requestId}`;
+  // Derived from the ledger reference so a replay can reload the persisted report
+  // instead of surfacing an unrecoverable error.
+  const reportRowId = `creative-report:${referenceId}`.slice(0, 255);
   const db = getDb(c.env);
   if (!adAccountId) return c.json({ error: 'adAccountId requis' }, 400);
 
@@ -190,7 +200,7 @@ Réponds UNIQUEMENT avec un JSON valide (pas de markdown, pas d'explication) :
 
         /* 4. Save to Blink DB ────────────────────────────────────────────── */
         const db = getDb(c.env);
-        reportId = crypto.randomUUID();
+        reportId = reportRowId;
         totalBudgetWaste = formatted
           .filter((a: any) => a.roas < 1 && a.spend > 0)
           .reduce((sum: number, a: any) => sum + a.spend, 0);
@@ -216,6 +226,26 @@ Réponds UNIQUEMENT avec un JSON valide (pas de markdown, pas d'explication) :
     return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
 
   } catch (err: any) {
+    if (isIdempotentReplayError(err)) {
+      const durable = await db.db.creative_reports.get(reportRowId).catch(() => null);
+      if (durable && durable.userId === userId) {
+        return c.json({
+          reportId: reportRowId,
+          analysis: {
+            winners: parseStored(durable.winners, ''),
+            losers: parseStored(durable.losers, ''),
+            next_actions: parseStored<string[]>(durable.nextActions, []),
+            budget_waste_euros: Number(durable.budgetWasteDetected) || 0,
+          },
+          adsAnalyzed: Number(durable.adsAnalyzed) || 0,
+          budgetWasteDetected: Number(durable.budgetWasteDetected) || 0,
+          replayed: true,
+        });
+      }
+      // No report row: the first attempt failed before persistence (and was refunded),
+      // or it only enqueued an async job. Nothing to replay under this reference.
+      return c.json(replayConflictBody(err, 'analyse Creative Studio'), 409);
+    }
     console.error('[CreativeStudio] analyze error:', err);
     const message = err.message ?? 'Erreur inconnue';
     const status = message.includes('Aucune publicité') ? 422 : message.includes('Meta Ads error:') ? 400 : message.includes('Claude API error:') ? 502 : message.includes('Insufficient credits') ? 402 : 500;

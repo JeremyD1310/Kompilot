@@ -4,6 +4,8 @@ import { consumeExecuteRefund } from '../../backend/lib/creditService';
 type FakeDbState = {
   affectedRows: number;
   existingConsumption: boolean;
+  /** Ledger rows already present for the reference, when the shape matters. */
+  existingRows?: Array<{ type: string; balanceAfter: number }>;
   batches: Array<{ statements: unknown[]; mode: string }>;
   executorReads: number;
   refundWrites: number;
@@ -15,7 +17,7 @@ function createFakeBlink(state: FakeDbState) {
   };
   const transactionsTable = {
     get: async () => ({ balanceAfter: 499 }),
-    list: async () => state.existingConsumption ? [{ balanceAfter: 499 }] : [],
+    list: async () => state.existingRows ?? (state.existingConsumption ? [{ balanceAfter: 499 }] : []),
   };
 
   return {
@@ -72,6 +74,34 @@ describe('consumeExecuteRefund idempotency contract', () => {
         return 'should-not-run';
       },
     )).rejects.toThrow('IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT');
+
+    expect(executions).toBe(0);
+    expect(state.refundWrites).toBe(0);
+  });
+
+  it('reports a replay whose charge was already refunded as terminal', async () => {
+    const state: FakeDbState = {
+      affectedRows: 0,
+      existingConsumption: true,
+      existingRows: [{ type: 'consumption', balanceAfter: 499 }, { type: 'refund', balanceAfter: 500 }],
+      batches: [],
+      executorReads: 0,
+      refundWrites: 0,
+    };
+    const blink = createFakeBlink(state);
+    let executions = 0;
+
+    await expect(consumeExecuteRefund(
+      blink,
+      'user-1',
+      'text_generation',
+      'Test generation',
+      'stable-reference-refunded',
+      async () => {
+        executions += 1;
+        return 'should-not-run';
+      },
+    )).rejects.toThrow('IDEMPOTENT_REPLAY_ALREADY_REFUNDED');
 
     expect(executions).toBe(0);
     expect(state.refundWrites).toBe(0);

@@ -11,6 +11,7 @@ import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { consumeExecuteRefund } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 
 export const router = new Hono<{ Bindings: Env }>();
 
@@ -129,6 +130,8 @@ router.post('/api/voiceover/generate', async (c) => {
     );
     return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
   } catch (err: any) {
+    // The audio is streamed back inline and never stored, so a replay cannot be answered.
+    if (isIdempotentReplayError(err)) return c.json(replayConflictBody(err, 'voix off'), 409);
     console.error('[Voiceover] generate error:', err);
     return c.json({ error: err.message ?? 'Voice generation failed' }, 500);
   }

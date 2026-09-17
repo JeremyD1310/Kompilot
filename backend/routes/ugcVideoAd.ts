@@ -13,6 +13,7 @@ import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { generateAIResponse } from '../lib/aiRouter';
 import { consumeExecuteRefund } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 
 export const router = new Hono<{ Bindings: Env }>();
 
@@ -237,7 +238,18 @@ Retourne un tableau JSON de scripts avec cette structure EXACTE:
     return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
   } catch (error: any) {
     console.error('[UgcVideoAd] analyze error:', error);
-    if (error?.message === 'IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT') return c.json({ error: 'Replay result is not available yet' }, 409);
+    if (isIdempotentReplayError(error)) {
+      // Re-read once: the durable project may have landed after the pre-check above.
+      const durable = await projectTable.get(projectId).catch(() => null);
+      if (durable?.userId === userId) {
+        let scripts: UGCVideoScript[] = [];
+        let variants: VideoVariant[] = [];
+        try { scripts = JSON.parse(durable.scripts); } catch { /* durable row is malformed */ }
+        try { variants = JSON.parse(durable.videoVariants); } catch { /* durable row is malformed */ }
+        return c.json({ projectId, scripts, videoVariants: variants, creditsCost: durable.creditsCost, replayed: true });
+      }
+      return c.json(replayConflictBody(error, 'analyse UGC'), 409);
+    }
     if (error?.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Crédits épuisés.', creditsLeft: 0 }, 402);
     return c.json({ error: error?.message ?? 'UGC analysis failed' }, 500);
   }
@@ -350,7 +362,9 @@ router.post('/api/ugc-video-ad/generate', async (c) => {
     return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
   } catch (error: any) {
     console.error('[UgcVideoAd] Queue enqueue failed:', error);
-    if (error?.message === 'IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT') return c.json({ error: 'Replay result is not available yet' }, 409);
+    // Must stay above the failure marking: a replay must never flip a variant that
+    // another attempt already moved forward.
+    if (isIdempotentReplayError(error)) return c.json(replayConflictBody(error, 'génération vidéo UGC'), 409);
     videoVariants[variantIndex].status = 'failed';
     videoVariants[variantIndex].errorMessage = error?.message ?? 'Queue enqueue failed';
     await projectTable.update(body.projectId, { status: 'failed', videoVariants: JSON.stringify(videoVariants), updatedAt: new Date().toISOString() });

@@ -74,12 +74,21 @@ export const onboardingRoute = createRoute({
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
+/**
+ * `createRoute` takes a `RouteComponent`, i.e. a callable `(props) => ReactNode`.
+ * `React.ComponentType` is the union `FunctionComponent | ComponentClass`, and the
+ * class branch is a constructor with no call signature — so it is not assignable.
+ * Every page below is a `React.lazy()` result (callable), so narrowing the
+ * annotation to a function component is enough; no call site changes.
+ */
+type RoutePageComponent = (props: Record<string, unknown>) => React.ReactNode;
+
 const d = dashboardLayoutRoute;
-const r = (path: string, component: React.ComponentType) =>
+const r = (path: string, component: RoutePageComponent) =>
   createRoute({ getParentRoute: () => d, path, component });
 
 // Admin-only route — wrapped with AdminGuard for RBAC
-const ra = (path: string, AdminComponent: React.ComponentType) =>
+const ra = (path: string, AdminComponent: RoutePageComponent) =>
   createRoute({
     getParentRoute: () => d,
     path,

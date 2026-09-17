@@ -14,6 +14,7 @@ import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { consumeExecuteRefund } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 
 export const router = new Hono<{ Bindings: Env }>();
 
@@ -295,7 +296,8 @@ router.get('/api/predictive-scoring/leads', async (c) => {
   } catch (err: any) {
     console.error('[PredictiveScoring] leads error:', err.message);
     if (err?.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Crédits insuffisants.', creditsLeft: 0 }, 402);
-    if (err?.message === 'IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT') return c.json({ error: 'Replay result is not available yet' }, 409);
+    // Scores are returned inline and never persisted: no durable result to reload.
+    if (isIdempotentReplayError(err)) return c.json(replayConflictBody(err, 'scoring prédictif'), 409);
     return c.json({ error: err.message }, 500);
   }
 });

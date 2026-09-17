@@ -18,6 +18,7 @@ import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { generateAIResponse } from '../lib/aiRouter';
 import { consumeExecuteRefund, getCurrentBalance } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 import {
   fetchKeywordData,
   fetchSERPResults,
@@ -394,7 +395,8 @@ Retourne un JSON avec cette structure exacte:
     });
   } catch (err: any) {
     if (err instanceof Error && err.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Crédits épuisés. Rechargez votre compte pour continuer.', creditsLeft: 0 }, 402);
-    if (err instanceof Error && err.message === 'IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT') return c.json({ error: 'Replay result is not available yet' }, 409);
+    // The analysis is returned inline and never persisted: no durable result to reload.
+    if (isIdempotentReplayError(err)) return c.json(replayConflictBody(err, 'analyse SEO'), 409);
     console.error('[SeoGap] analyze error:', err);
     return c.json({ error: err.message ?? 'Analysis failed' }, 500);
   }

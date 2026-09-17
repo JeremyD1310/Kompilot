@@ -12,6 +12,7 @@ import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { generateAIResponse } from '../lib/aiRouter';
 import { consumeExecuteRefund } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 
 export const router = new Hono<{ Bindings: Env }>();
 
@@ -256,6 +257,9 @@ Retourne un JSON avec cette structure EXACTE:
       },
     });
   } catch (err: any) {
+    // Scripts are returned inline (only an observability log is written), so a replay
+    // has no durable result: report the conflict instead of a retryable 500.
+    if (isIdempotentReplayError(err)) return c.json(replayConflictBody(err, 'script UGC'), 409);
     console.error('[UgcScript] generate error:', err);
     return c.json({ error: err.message ?? 'Script generation failed' }, 500);
   }

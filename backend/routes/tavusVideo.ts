@@ -12,6 +12,7 @@ import { Hono } from 'hono';
 import type { Env } from '../lib/types';
 import { getBlink } from '../lib/stripeHelpers';
 import { consumeExecuteRefund, refundCredits } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 import { AI_CREDIT_COSTS } from '../../shared/pricingCatalog';
 
 export const router = new Hono();
@@ -153,7 +154,18 @@ router.post('/api/videos/generate', async (c) => {
     },
     'ai',
     { provider: 'tavus', replicaId },
-  );
+  ).catch((err: unknown) => {
+    if (isIdempotentReplayError(err)) return { replayError: err } as const;
+    throw err;
+  });
+
+  if ('replayError' in charged) {
+    // The pre-check above misses the row only when the first attempt failed after the
+    // charge (and was refunded) or before persistence, so re-read once then report.
+    const durable = await videoTable.get(videoId);
+    if (durable?.userId === auth.userId) return c.json(durable);
+    return c.json(replayConflictBody(charged.replayError, 'génération vidéo Tavus'), 409);
+  }
 
   return c.json({ ...charged.result, balanceAfter: charged.balanceAfter });
 });

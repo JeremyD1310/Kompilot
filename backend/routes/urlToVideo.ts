@@ -12,6 +12,7 @@ import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { generateAIResponse } from '../lib/aiRouter';
 import { consumeExecuteRefund, refundCredits } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 
 export const router = new Hono<{ Bindings: Env }>();
 
@@ -230,6 +231,8 @@ Retourne un JSON avec cette structure:
   } catch (err: any) {
     console.error('[UrlToVideo] scrape error:', err);
     if (err?.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Crédits épuisés.' }, 402);
+    // The scrape result is returned inline and never stored, so a replay has nothing to reload.
+    if (isIdempotentReplayError(err)) return c.json(replayConflictBody(err, 'analyse de site'), 409);
     return c.json({ error: err.message ?? 'Scraping failed' }, 500);
   }
 });
@@ -314,6 +317,14 @@ router.post('/api/url-to-video/generate', async (c) => {
   } catch (err: any) {
     console.error('[UrlToVideo] generate error:', err);
     if (err?.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Génération vidéo nécessite 3 crédits.' }, 402);
+    // Handle the replay before the failure marking below: flagging the durable row as
+    // failed on a replay would overwrite a generation that is still running.
+    if (isIdempotentReplayError(err)) {
+      let durable: any = null;
+      try { durable = await generationTable.get(generationId); } catch { /* unavailable durable row */ }
+      if (durable?.userId === userId) return c.json({ ...durable, replayed: true });
+      return c.json(replayConflictBody(err, 'génération vidéo'), 409);
+    }
     try { await blink.db.luma_generations.update(generationId, { status: 'failed' }); } catch { /* best effort */ }
     return c.json({ error: err.message ?? 'Video generation failed' }, 500);
   }

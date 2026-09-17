@@ -14,6 +14,7 @@ import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { consumeExecuteRefund } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 
 export const router = new Hono();
 
@@ -180,7 +181,11 @@ router.post('/api/geo/scan', async (c) => {
   } catch (err) {
     console.error('[GEO] scan enqueue error', err);
     if (err instanceof Error && err.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Crédits insuffisants pour ce scan.', creditsLeft: 0 }, 402);
-    if (err instanceof Error && err.message === 'IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT') return c.json({ error: 'Replay result is not available yet' }, 409);
+    if (isIdempotentReplayError(err)) {
+      const durable = await blink.db.scheduled_posts.get(scanId).catch(() => null);
+      if (durable?.userId === auth.userId) return c.json({ ...durable, replayed: true }, 202);
+      return c.json(replayConflictBody(err, 'scan G.E.O.'), 409);
+    }
     return c.json({ error: 'Failed to schedule scan' }, 500);
   }
 });

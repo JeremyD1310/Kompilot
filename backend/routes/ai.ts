@@ -13,6 +13,7 @@ import { isMedicalSector, sanitizeMedicalPrompt, anonymizeMedicalPayload } from 
 import { getSectorSystemPrompt, ALL_VALID_SECTORS } from '../lib/sectorPrompts';
 import type { Env } from '../lib/types';
 import { consumeExecuteRefund } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 
 export const router = new Hono();
 
@@ -168,6 +169,9 @@ router.post('/api/ai/generate', async (c) => {
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
+    // Generations are not persisted, so a replay has no durable result to reload.
+    // Answer 409 rather than 502 so the client stops retrying the same request id.
+    if (isIdempotentReplayError(err)) return c.json(replayConflictBody(err, 'génération IA'), 409);
     console.error('[/api/ai/generate] Router error:', message);
     return c.json({ error: 'AI generation failed', detail: message }, 502);
   }

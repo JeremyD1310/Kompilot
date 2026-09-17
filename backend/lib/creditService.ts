@@ -7,6 +7,10 @@
 
 import { createClient } from '@blinkdotnew/sdk';
 import { AI_CREDIT_COSTS, SMS_CREDIT_COST, getPlanEntitlements, type CreditActionId } from '../../shared/pricingCatalog';
+import {
+  IDEMPOTENT_REPLAY_ALREADY_REFUNDED,
+  IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT,
+} from './idempotentReplay';
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -32,6 +36,8 @@ export interface CreditConsumeResult {
   balanceAfter: number;
   cost: number;
   replayed?: boolean;
+  /** Set on a replay whose original charge was already reversed by `refundCredits`. */
+  refunded?: boolean;
   error?: string;
 }
 
@@ -147,12 +153,17 @@ export async function consumeCredits(
 
   const inserted = Number((result.results?.[0] as { affectedRows?: number } | undefined)?.affectedRows ?? 0);
   if (inserted !== 1) {
+    // Read every row for this reference, not just the consumption: a reference whose
+    // charge was refunded is settled, and callers must be told so explicitly rather
+    // than being pointed at a durable result that will never exist.
     const existing = await blink.db.table<CreditTransaction>('credit_transactions').list({
-      where: { userId, type: 'consumption', referenceId: safeReferenceId, creditType },
-      limit: 1,
+      where: { userId, referenceId: safeReferenceId, creditType },
+      limit: 10,
     });
     if (existing.length > 0) {
-      return { success: true, balanceAfter: Number(existing[0].balanceAfter) || 0, cost, replayed: true };
+      const consumption = existing.find(tx => tx.type === 'consumption') ?? existing[0];
+      const refunded = existing.some(tx => tx.type === 'refund');
+      return { success: true, balanceAfter: Number(consumption.balanceAfter) || 0, cost, replayed: true, refunded };
     }
     const balance = await getCurrentBalance(blink, userId, creditType);
     return { success: false, balanceAfter: balance === -1 ? initialCredits : balance, cost, error: 'Insufficient credits' };
@@ -208,6 +219,10 @@ export async function refundCredits(
  * 7. Provider/route metadata is stored on the consumption transaction.
  * 8. A replay is reported with `replayed: true`; callers must resolve their durable result
  *    before invoking provider work again.
+ * 9. A replay whose charge was already refunded throws `IDEMPOTENT_REPLAY_ALREADY_REFUNDED`.
+ *    The deterministic ledger id cannot be charged twice, so that reference is terminal and
+ *    the client must retry under a new idempotency key. Routes surface both replay sentinels
+ *    as 409 via `replayConflictBody` — never as a 5xx, which would invite a retry loop.
  *
  * Required parameters: Blink client, user id, catalog action id, description, stable reference,
  * provider executor, optional ledger credit type, and optional metadata. The wrapper consumes
@@ -233,7 +248,9 @@ export async function consumeExecuteRefund<T>(
   const consumed = await consumeCredits(blink, userId, actionType, description, referenceId, creditType, metadata);
   if (!consumed.success) throw new Error(consumed.error || 'Insufficient credits');
   if (consumed.replayed) {
-    throw new Error('IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT');
+    throw new Error(consumed.refunded
+      ? IDEMPOTENT_REPLAY_ALREADY_REFUNDED
+      : IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT);
   }
   try {
     const result = await execute();

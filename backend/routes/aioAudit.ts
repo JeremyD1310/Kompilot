@@ -10,6 +10,7 @@ import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { consumeExecuteRefund } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 
 export const router = new Hono();
 
@@ -89,7 +90,14 @@ router.post('/api/aio/audit', async (c) => {
     },
     'ai',
     { provider: 'blink-ai', keywordCount: keywords.length },
-  );
+  ).catch((err: unknown) => {
+    // Audit results are returned inline and never persisted, so a replay has no
+    // durable result. Report the conflict instead of letting the sentinel become a 500.
+    if (isIdempotentReplayError(err)) return { replayError: err } as const;
+    throw err;
+  });
+
+  if ('replayError' in charged) return c.json(replayConflictBody(charged.replayError, 'audit AIO'), 409);
 
   return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
 });

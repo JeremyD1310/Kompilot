@@ -26,6 +26,7 @@ import { Hono }               from 'hono';
 import { createClient }        from '@blinkdotnew/sdk';
 import type { Env }            from '../lib/types';
 import { consumeExecuteRefund } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 import { trackAiVisibility }  from '../lib/aioSyncService';
 
 // ── Codes d'erreur (constantes — évite la confusion avec les noms de secrets) ─
@@ -174,6 +175,8 @@ router.post('/api/aio/sync/track', async (c) => {
     return c.json({ ...charged.result, creditsLeft: charged.balanceAfter }, 200);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    // Tracking results are returned inline, so a replay has no durable row to reload.
+    if (isIdempotentReplayError(err)) return c.json(replayConflictBody(err, 'sync AIO'), 409);
     console.error('[aioSync route] trackAiVisibility error:', msg);
 
     // Distinguer erreur SerpApi (quota, clé…) vs erreur réseau

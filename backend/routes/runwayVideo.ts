@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import type { Env } from '../lib/types';
 import { getBlink } from '../lib/stripeHelpers';
 import { consumeExecuteRefund, refundCredits } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 import { AI_CREDIT_COSTS } from '../../shared/pricingCatalog';
 
 export const router = new Hono();
@@ -134,9 +135,11 @@ router.post('/api/runway/generate', async (c) => {
     return c.json({ ...charged.result, balanceAfter: charged.balanceAfter });
   } catch (error) {
     console.error('[runway/generate] Provider or persistence error:', error);
-    if (error instanceof Error && error.message === 'IDEMPOTENT_REPLAY_REQUIRES_DURABLE_RESULT') {
-      const existing = await generationTable.get(generationId);
-      return existing ? c.json(existing) : c.json({ error: 'Replay result is not available yet' }, 409);
+    if (isIdempotentReplayError(error)) {
+      const existing = await generationTable.get(generationId).catch(() => null);
+      return existing
+        ? c.json(existing)
+        : c.json(replayConflictBody(error, 'génération vidéo Runway'), 409);
     }
     try {
       const existing = await generationTable.get(generationId);
