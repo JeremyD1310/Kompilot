@@ -17,7 +17,7 @@ export function DisputeAlertWidget() {
     if (!user?.id) return;
     (async () => {
       try {
-        const rows = await blink.db.users.list({ where: { id: user.id }, limit: 1 });
+        const rows = await blink.db.table<any>('users').list({ where: { id: user.id }, limit: 1 });
         const row = (rows as any[])[0];
         if (!row?.metadata) { setLoaded(true); return; }
         const meta = JSON.parse(row.metadata);

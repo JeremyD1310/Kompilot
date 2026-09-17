@@ -36,7 +36,7 @@ export function useInitialScan(establishmentId: string | undefined) {
     staleTime: Infinity, // immuable — jamais re-fetchée
     queryFn: async (): Promise<InitialScan | null> => {
       if (!establishmentId) return null;
-      const rows = await blink.db.initialScans.list({
+      const rows = await blink.db.table<any>('initialScans').list({
         where: { establishmentId },
         orderBy: { scannedAt: 'asc' },
         limit: 1,

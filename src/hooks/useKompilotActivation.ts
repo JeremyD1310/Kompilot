@@ -90,7 +90,7 @@ function buildSteps(): ActivationStep[] {
 /** Lit le flag _copilot depuis le champ description JSON de l'établissement */
 async function readCopilotFlag(establishmentId: string): Promise<{ active: boolean; activatedAt: string | null }> {
   try {
-    const rows = await blink.db.establishments.list({ where: { id: establishmentId } });
+    const rows = await blink.db.table<any>('establishments').list({ where: { id: establishmentId } });
     if (!rows.length) return { active: false, activatedAt: null };
     // Axe 2 FIX — optional chaining défensif
     const raw = (rows[0] as Record<string, unknown>)?.description as string | undefined;
@@ -219,7 +219,7 @@ export function useKompilotActivation(
       markStep('calendar', 'active');
       if (abortRef.current) return;
       const scheduledAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-      await blink.db.scheduledPosts.create({
+      await blink.db.table<any>('scheduledPosts').create({
         id:             `act_${Date.now()}`,
         userId,
         establishmentId,
@@ -238,7 +238,7 @@ export function useKompilotActivation(
       // Lire la description existante pour ne pas écraser d'autres champs JSON
       let existingDesc: Record<string, unknown> = {};
       try {
-        const rows = await blink.db.establishments.list({ where: { id: establishmentId } });
+        const rows = await blink.db.table<any>('establishments').list({ where: { id: establishmentId } });
         if (rows.length) {
           const raw = (rows[0] as Record<string, unknown>).description as string | undefined;
           if (raw) existingDesc = JSON.parse(raw) as Record<string, unknown>;
@@ -246,7 +246,7 @@ export function useKompilotActivation(
       } catch { /* noop */ }
 
       const now = new Date().toISOString();
-      await blink.db.establishments.update(establishmentId, {
+      await blink.db.table<any>('establishments').update(establishmentId, {
         description: JSON.stringify({
           ...existingDesc,
           _copilot: {

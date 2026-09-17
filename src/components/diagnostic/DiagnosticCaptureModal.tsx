@@ -36,7 +36,7 @@ export function DiagnosticCaptureModal({ formData, score, open, onClose }: Props
       setLoading(true);
       try {
         // 1. Save lead to DB
-        await blink.db.leads.create({
+        await blink.db.table<any>('leads').create({
           id: generateId(),
           businessName: formData.businessName,
           email: formData.email,

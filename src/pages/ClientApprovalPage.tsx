@@ -82,7 +82,7 @@ export default function ClientApprovalPage() {
   useEffect(() => {
     async function load() {
       try {
-        const rows = await blink.db.clientApprovalTokens.list({ where: { token }, limit: 1 });
+        const rows = await blink.db.table<any>('clientApprovalTokens').list({ where: { token }, limit: 1 });
         if (rows.length === 0) { setNotFound(true); setLoading(false); return; }
         const row = rows[0] as ApprovalData;
         setData(row);
@@ -100,7 +100,7 @@ export default function ClientApprovalPage() {
   const handleApprove = async () => {
     if (!data) return;
     // 1. Mark token as approved in DB
-    await blink.db.clientApprovalTokens.update(data.id, {
+    await blink.db.table<any>('clientApprovalTokens').update(data.id, {
       status: 'approved',
       approvedAt: new Date().toISOString(),
     });
@@ -115,7 +115,7 @@ export default function ClientApprovalPage() {
 
   const handleRequestMod = async (text: string) => {
     if (!data) return;
-    await blink.db.clientApprovalTokens.update(data.id, { status: 'modification_requested', modificationRequest: text });
+    await blink.db.table<any>('clientApprovalTokens').update(data.id, { status: 'modification_requested', modificationRequest: text });
     setActionDone('modification_requested');
   };
 

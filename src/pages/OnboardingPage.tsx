@@ -206,7 +206,7 @@ export default function OnboardingPage() {
     localStorage.setItem(`onboarding_done_${user.id}`, '1');
 
     try {
-      await blink.db.onboardingProfiles.create({
+      await blink.db.table<any>('onboardingProfiles').create({
         id: crypto.randomUUID(),
         userId: user.id,
         sector,
@@ -216,7 +216,7 @@ export default function OnboardingPage() {
       // For B2B users: create an establishment with the SIRET
       if (isB2B && siret) {
         try {
-          await blink.db.establishments.create({
+          await blink.db.table<any>('establishments').create({
             id: crypto.randomUUID(),
             userId: user.id,
             name: trimmedCompany,
@@ -230,7 +230,7 @@ export default function OnboardingPage() {
       } else if (trimmedCity) {
         // Non-B2B: still create a minimal establishment record so the city is available
         try {
-          await blink.db.establishments.create({
+          await blink.db.table<any>('establishments').create({
             id: crypto.randomUUID(),
             userId: user.id,
             name: trimmedCompany,
@@ -247,10 +247,10 @@ export default function OnboardingPage() {
 
       // ── Grant 50 welcome SMS credits (idempotent) ────────────────────────
       try {
-        const existingRows = await blink.db.smsCredits.list({ where: { userId: user.id }, limit: 1 } as any);
+        const existingRows = await blink.db.table<any>('smsCredits').list({ where: { userId: user.id }, limit: 1 } as any);
         if (!existingRows || (existingRows as any[]).length === 0) {
           const smsId = `sms_${user.id.slice(0, 8)}_${Date.now()}`;
-          await blink.db.smsCredits.create({
+          await blink.db.table<any>('smsCredits').create({
             id: smsId,
             userId: user.id,
             balance: 50,

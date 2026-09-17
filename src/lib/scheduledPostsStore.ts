@@ -106,9 +106,9 @@ function statusToDb(status: PostStatus): 'draft' | 'scheduled' | 'published' {
 
 async function syncPostToDb(post: ScheduledPostStore, userId: string): Promise<void> {
   try {
-    // Try upsert — blink.db.scheduledPosts.upsert by id
+    // Try upsert — blink.db.table<any>('scheduledPosts').upsert by id
     const scheduledAt = post.date && post.time ? `${post.date}T${post.time}:00` : null;
-    await blink.db.scheduledPosts.upsert({
+    await blink.db.table<any>('scheduledPosts').upsert({
       id: post.id,
       userId,
       textContent: post.text,
@@ -123,7 +123,7 @@ async function syncPostToDb(post: ScheduledPostStore, userId: string): Promise<v
 
 async function deletePostFromDb(id: string): Promise<void> {
   try {
-    await blink.db.scheduledPosts.delete(id);
+    await blink.db.table<any>('scheduledPosts').delete(id);
   } catch {
     // Non-blocking
   }
@@ -162,7 +162,7 @@ export function useScheduledPosts(userId?: string) {
   useEffect(() => {
     if (!userId || dbSynced) return;
     let cancelled = false;
-    blink.db.scheduledPosts
+    blink.db.table<any>('scheduledPosts')
       .list({ where: { userId }, orderBy: { createdAt: 'desc' }, limit: 200 })
       .then((rows: any[]) => {
         if (cancelled) return;

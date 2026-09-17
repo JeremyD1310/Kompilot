@@ -59,7 +59,7 @@ export function useTeam() {
     queryKey: ['team-members', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const rows = await blink.db.teamMembers.list({ where: { workspaceOwnerId: user.id }, orderBy: { createdAt: 'asc' }, limit: 50 });
+      const rows = await blink.db.table<any>('teamMembers').list({ where: { workspaceOwnerId: user.id }, orderBy: { createdAt: 'asc' }, limit: 50 });
       return (rows as Record<string, unknown>[]).map(normalise);
     },
     enabled: !!user?.id,
@@ -73,7 +73,7 @@ export function useTeam() {
     mutationFn: async ({ email, role, displayName }: { email: string; role: TeamRole; displayName: string }) => {
       if (!user?.id) throw new Error('Non authentifié');
       const id = `tm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      await blink.db.teamMembers.create({ id, workspaceOwnerId: user.id, memberUserId: '', memberEmail: email, displayName: displayName || email.split('@')[0], avatarUrl: '', role, status: 'pending', invitedBy: user.displayName ?? user.email ?? '', inviteToken: Math.random().toString(36).slice(2), joinedAt: null });
+      await blink.db.table<any>('teamMembers').create({ id, workspaceOwnerId: user.id, memberUserId: '', memberEmail: email, displayName: displayName || email.split('@')[0], avatarUrl: '', role, status: 'pending', invitedBy: user.displayName ?? user.email ?? '', inviteToken: Math.random().toString(36).slice(2), joinedAt: null });
       // Mark onboarding checklist step
       try { localStorage.setItem(`team_member_invited_${user.id}`, '1'); } catch {}
     },
@@ -82,13 +82,13 @@ export function useTeam() {
   });
 
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ memberId, role }: { memberId: string; role: TeamRole }) => { await blink.db.teamMembers.update(memberId, { role }); },
+    mutationFn: async ({ memberId, role }: { memberId: string; role: TeamRole }) => { await blink.db.table<any>('teamMembers').update(memberId, { role }); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['team-members'] }); toast.success('Rôle mis à jour'); },
     onError: (e: Error) => toast.error(`Erreur : ${e.message}`),
   });
 
   const removeMutation = useMutation({
-    mutationFn: async (memberId: string) => { await blink.db.teamMembers.update(memberId, { status: 'removed' }); },
+    mutationFn: async (memberId: string) => { await blink.db.table<any>('teamMembers').update(memberId, { status: 'removed' }); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['team-members'] }); toast.success('Membre retiré'); },
     onError: (e: Error) => toast.error(`Erreur : ${e.message}`),
   });

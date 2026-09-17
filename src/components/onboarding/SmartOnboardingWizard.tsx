@@ -88,7 +88,7 @@ export function SmartOnboardingWizard({ open, onComplete }: Props) {
     markOnboardingCompleted();
     if (user?.id) {
       try {
-        await blink.db.onboardingProfiles.upsert({
+        await blink.db.table<any>('onboardingProfiles').upsert({
           id: user.id,
           userId: user.id,
           sector: legacySector || granularSector || 'autre',

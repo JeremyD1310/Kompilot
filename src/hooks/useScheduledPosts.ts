@@ -34,7 +34,7 @@ export function useScheduledPosts() {
     queryKey: [QUERY_KEY, userId],
     queryFn: async () => {
       if (!userId) return [];
-      const rows = await blink.db.scheduledPosts.list({
+      const rows = await blink.db.table<any>('scheduledPosts').list({
         where: { userId },
         orderBy: { createdAt: 'desc' },
       });
@@ -49,7 +49,7 @@ export function useScheduledPosts() {
   const createPost = useMutation({
     mutationFn: async (data: ScheduledPostCreate) => {
       const now = new Date().toISOString();
-      return blink.db.scheduledPosts.create({
+      return blink.db.table<any>('scheduledPosts').create({
         ...data,
         userId,
         channels: data.channels ?? '[]',
@@ -63,7 +63,7 @@ export function useScheduledPosts() {
 
   const updatePost = useMutation({
     mutationFn: async ({ id, patch }: { id: string; patch: ScheduledPostUpdate }) => {
-      return blink.db.scheduledPosts.update(id, {
+      return blink.db.table<any>('scheduledPosts').update(id, {
         ...patch,
         updatedAt: new Date().toISOString(),
       });
@@ -72,13 +72,13 @@ export function useScheduledPosts() {
   });
 
   const deletePost = useMutation({
-    mutationFn: async (id: string) => blink.db.scheduledPosts.delete(id),
+    mutationFn: async (id: string) => blink.db.table<any>('scheduledPosts').delete(id),
     onSuccess: invalidate,
   });
 
   const publishPost = useMutation({
     mutationFn: async (id: string) =>
-      blink.db.scheduledPosts.update(id, {
+      blink.db.table<any>('scheduledPosts').update(id, {
         status: 'published',
         updatedAt: new Date().toISOString(),
       }),

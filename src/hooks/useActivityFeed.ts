@@ -43,12 +43,12 @@ export function useActivityFeed() {
       if (!user?.id) return STATIC_FALLBACKS;
 
       const [messages, posts] = await Promise.all([
-        blink.db.messages.list({
+        blink.db.table<any>('messages').list({
           where: { userId: user.id },
           orderBy: { createdAt: 'desc' },
           limit: 3,
         }),
-        blink.db.scheduledPosts.list({
+        blink.db.table<any>('scheduledPosts').list({
           where: { userId: user.id },
           orderBy: { createdAt: 'desc' },
           limit: 3,
@@ -104,7 +104,7 @@ export function useActivityFeed() {
     queryFn: async () => {
       if (!user?.id) return 0;
       const today = new Date().toISOString();
-      const posts = await blink.db.scheduledPosts.list({
+      const posts = await blink.db.table<any>('scheduledPosts').list({
         where: { userId: user.id },
         orderBy: { scheduledAt: 'desc' },
         limit: 50,
@@ -123,7 +123,7 @@ export function useActivityFeed() {
     queryKey: ['unread-messages-count', user?.id],
     queryFn: async () => {
       if (!user?.id) return 0;
-      const msgs = await blink.db.messages.list({
+      const msgs = await blink.db.table<any>('messages').list({
         where: { userId: user.id },
         limit: 50,
       });

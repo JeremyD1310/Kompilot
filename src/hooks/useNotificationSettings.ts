@@ -74,7 +74,7 @@ export function useNotificationSettings(userId: string | undefined) {
 
     (async () => {
       try {
-        const rows = await blink.db.userNotificationSettings.list({
+        const rows = await blink.db.table<any>('userNotificationSettings').list({
           where: { userId },
           limit: 1,
         });
@@ -97,18 +97,18 @@ export function useNotificationSettings(userId: string | undefined) {
       // localStorage first for instant read
       try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
 
-      const rows = await blink.db.userNotificationSettings.list({
+      const rows = await blink.db.table<any>('userNotificationSettings').list({
         where: { userId: uid },
         limit: 1,
       });
 
       if (rows && rows.length > 0) {
-        await blink.db.userNotificationSettings.update(
+        await blink.db.table<any>('userNotificationSettings').update(
           (rows[0] as { id: string }).id,
           { ...toDB(next), updatedAt: new Date().toISOString() }
         );
       } else {
-        await blink.db.userNotificationSettings.create({
+        await blink.db.table<any>('userNotificationSettings').create({
           userId: uid,
           ...toDB(next),
         });

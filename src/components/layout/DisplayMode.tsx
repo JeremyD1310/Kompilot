@@ -198,7 +198,7 @@ export function DisplayMode({ open, onClose }: DisplayModeProps) {
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 7);
 
-        const postsResult = await blink.db.scheduledPosts.list({
+        const postsResult = await blink.db.table<any>('scheduledPosts').list({
           where: { status: 'scheduled' },
           orderBy: { scheduledAt: 'asc' },
           limit: 4,

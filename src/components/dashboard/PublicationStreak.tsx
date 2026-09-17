@@ -57,7 +57,7 @@ function computeStreak(prev: StreakData): StreakData {
 /* ── DB helpers ───────────────────────────────────────────────── */
 async function loadStreakFromDB(userId: string): Promise<StreakData | null> {
   try {
-    const rows = await blink.db.dailyAnalytics.list({
+    const rows = await blink.db.table<any>('dailyAnalytics').list({
       where: { userId },
       orderBy: { snapshotDate: 'desc' },
       limit: 1,
@@ -75,7 +75,7 @@ async function loadStreakFromDB(userId: string): Promise<StreakData | null> {
 async function saveStreakToDB(userId: string, streak: StreakData) {
   try {
     const t = today();
-    const rows = await blink.db.dailyAnalytics.list({
+    const rows = await blink.db.table<any>('dailyAnalytics').list({
       where: { userId, snapshotDate: t },
       limit: 1,
     } as any);
@@ -84,12 +84,12 @@ async function saveStreakToDB(userId: string, streak: StreakData) {
       const row = (rows as any[])[0];
       const ext = JSON.parse(row.extendedData || '{}');
       ext.streak = streak;
-      await blink.db.dailyAnalytics.update(row.id, {
+      await blink.db.table<any>('dailyAnalytics').update(row.id, {
         extendedData: JSON.stringify(ext),
       } as any);
     } else {
       // Create minimal snapshot to carry the streak
-      await blink.db.dailyAnalytics.create({
+      await blink.db.table<any>('dailyAnalytics').create({
         id: `da_streak_${userId.slice(0, 8)}_${t}`,
         userId,
         establishmentId: 'default',

@@ -224,7 +224,7 @@ export function KPICards() {
     queryKey: ['published-posts-count', user?.id, monthStart],
     queryFn: async () => {
       if (!user?.id) return [];
-      return blink.db.scheduledPosts.list({
+      return blink.db.table<any>('scheduledPosts').list({
         where: { userId: user.id, status: 'published' },
         limit: 100,
       });

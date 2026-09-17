@@ -66,7 +66,7 @@ export function useDailyAnalytics(establishmentId: string | undefined, days = 30
 
       const since = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
 
-      const rows = await blink.db.dailyAnalytics.list({
+      const rows = await blink.db.table<any>('dailyAnalytics').list({
         where: { establishmentId },
         orderBy: { snapshotDate: 'desc' },
         limit: days + 5, // petit buffer

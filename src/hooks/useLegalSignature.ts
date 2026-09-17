@@ -45,7 +45,7 @@ export function useLegalSignatureStatus(userId: string | undefined) {
     queryFn: async (): Promise<SignatureStatus> => {
       if (!userId) return { hasSigned: false, isCurrentVersion: false, latestSignature: null };
 
-      const rows = await blink.db.legalSignatures.list({
+      const rows = await blink.db.table<any>('legalSignatures').list({
         where: { userId },
         orderBy: { signedAt: 'desc' },
         limit: 1,

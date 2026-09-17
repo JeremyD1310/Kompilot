@@ -50,7 +50,7 @@ export const WhiteLabelInstantPreview: React.FC<WhiteLabelInstantPreviewProps> =
       }
     } catch { /* noop */ }
     // Also load from DB (authoritative)
-    blink.db.establishments.list({ where: { userId: user.id }, limit: 1 })
+    blink.db.table<any>('establishments').list({ where: { userId: user.id }, limit: 1 })
       .then(rows => {
         const row = rows[0];
         if (row?.name && !agencyName) setAgencyName(row.name);

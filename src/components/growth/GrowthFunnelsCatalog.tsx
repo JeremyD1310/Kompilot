@@ -87,7 +87,7 @@ export const GrowthFunnelsCatalog = () => {
     try {
       // Persist as a scheduled_post record with status='active_funnel'
       if (user?.id) {
-        await blink.db.posts.create({
+        await blink.db.table<any>('posts').create({
           id: `funnel_${index}_${user.id}`,
           userId: user.id,
           title: `[FUNNEL] ${title}`,

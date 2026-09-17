@@ -123,7 +123,7 @@ export function RealTimeStatusBar() {
     queryKey: ['status-bar-messages', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      return blink.db.messages.list({
+      return blink.db.table<any>('messages').list({
         where: { userId: user.id, isRead: false, isArchived: 0 },
         limit: 50,
       });
@@ -138,7 +138,7 @@ export function RealTimeStatusBar() {
     queryKey: ['status-bar-posts', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      return blink.db.scheduledPosts.list({
+      return blink.db.table<any>('scheduledPosts').list({
         where: { userId: user.id, status: 'scheduled' },
         limit: 100,
       });
