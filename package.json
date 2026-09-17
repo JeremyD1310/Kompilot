@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint:css": "stylelint \"src/**/*.css\" --fix --quiet",
-    "lint:js": "eslint . --ext ts,tsx --report-unused-disable-directives",
+    "lint:js": "eslint . --ext ts,tsx",
     "lint:types": "tsc --noEmit",
     "lint": "bun run lint:types && bun run lint:js && bun run lint:css",
     "test:e2e": "bunx playwright test",
