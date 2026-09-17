@@ -5,6 +5,7 @@
  * POST /api/notifications/send           — Send push notification to user
  * POST /api/notifications/broadcast      — Send push to all subscribed users
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
@@ -28,7 +29,7 @@ app.post('/api/notifications/register-token', async (c) => {
 
     // Store the FCM token — we use a dedicated table for push tokens
     const { createClient } = await import('@blinkdotnew/sdk');
-    const serverBlink = createClient({ projectId: 'presence-manager-saas-gbrhsehk', secretKey });
+    const serverBlink = createClient({ projectId: requireBlinkProjectId(env), secretKey });
 
     await serverBlink.db.table('user_push_tokens').upsert({
       id: `fcm_${userId}_${Date.now()}`,
@@ -71,7 +72,7 @@ app.post('/api/notifications/send', async (c) => {
     if (!secretKey) return c.json({ error: 'Server misconfigured' }, 500);
 
     const { createClient } = await import('@blinkdotnew/sdk');
-    const serverBlink = createClient({ projectId: 'presence-manager-saas-gbrhsehk', secretKey });
+    const serverBlink = createClient({ projectId: requireBlinkProjectId(env), secretKey });
 
     // Get user's FCM tokens
     const tokens = await serverBlink.db.table<{ id: string; fcmToken: string }>('user_push_tokens')
@@ -128,7 +129,7 @@ app.post('/api/notifications/broadcast', async (c) => {
     if (!secretKey) return c.json({ error: 'Server misconfigured' }, 500);
 
     const { createClient } = await import('@blinkdotnew/sdk');
-    const serverBlink = createClient({ projectId: 'presence-manager-saas-gbrhsehk', secretKey });
+    const serverBlink = createClient({ projectId: requireBlinkProjectId(env), secretKey });
 
     // Get all unique user IDs with registered tokens
     const allTokens = await serverBlink.db.table<{ userId: string }>('user_push_tokens').list({});

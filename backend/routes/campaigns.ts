@@ -16,6 +16,7 @@
  *   POST   /api/campaigns/:id/schedule    — schedule campaign for later
  *   GET    /api/campaigns/:id/report      — detailed per-contact report
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import * as brevo from '../lib/brevoService';
@@ -26,7 +27,7 @@ const router = new Hono();
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function getBlink(env: Record<string, string>) {
-  return createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  return createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 }
 
 async function getAuth(c: any) {

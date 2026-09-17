@@ -21,6 +21,7 @@
  *   - 200 toujours si le pipeline réussit, même partiellement
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono }               from 'hono';
 import { createClient }        from '@blinkdotnew/sdk';
 import type { Env }            from '../lib/types';
@@ -43,7 +44,7 @@ router.use('/api/aio/sync/*', async (c, next) => {
     return c.json({ error: 'Non autorisé — JWT Blink requis.' }, 401);
   }
   const blink = createClient({
-    projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(c.env),
     secretKey:  c.env.BLINK_SECRET_KEY,
   });
   try {
@@ -138,7 +139,7 @@ router.post('/api/aio/sync/track', async (c) => {
 
   try {
     const charged = await consumeExecuteRefund(
-      createClient({ projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: c.env.BLINK_SECRET_KEY }),
+      createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY }),
       userId,
       'serpapi_visibility_sync',
       'AIO visibility sync',
@@ -147,7 +148,7 @@ router.post('/api/aio/sync/track', async (c) => {
         if (useQueue) {
           try {
             const blink = createClient({
-              projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+              projectId: requireBlinkProjectId(c.env),
               secretKey: c.env.BLINK_SECRET_KEY,
             });
             const queueFn = (blink as any).queue;

@@ -1,3 +1,5 @@
+import { requireBackendUrl } from '../lib/blinkConfig';
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -9,11 +11,11 @@ export const router = new Hono();
 const provider = 'google_search_console';
 const GSC_SCOPE = 'https://www.googleapis.com/auth/webmasters.readonly';
 const GSC_DEFAULT_END_LAG_DAYS = 3;
-async function user(c: any) { const a = await createClient({ projectId: c.env.BLINK_PROJECT_ID, secretKey: c.env.BLINK_SECRET_KEY }).auth.verifyToken(c.req.header('Authorization')); return a.valid ? a.userId : null; }
-function store(c: any) { const b = createClient({ projectId: c.env.BLINK_PROJECT_ID, secretKey: c.env.BLINK_SECRET_KEY }); return { b, s: createSecureTokenStore(b, c.env.TOKEN_ENCRYPTION_KEY) }; }
+async function user(c: any) { const a = await createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY }).auth.verifyToken(c.req.header('Authorization')); return a.valid ? a.userId : null; }
+function store(c: any) { const b = createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY }); return { b, s: createSecureTokenStore(b, c.env.TOKEN_ENCRYPTION_KEY) }; }
 function config(c: any) { return c.env.GOOGLE_BUSINESS_CLIENT_ID && c.env.GOOGLE_BUSINESS_CLIENT_SECRET; }
 function searchConsoleConfig(c: any) { return config(c) && c.env.TOKEN_ENCRYPTION_KEY; }
-function redirect(c: any) { return c.env.SEARCH_CONSOLE_REDIRECT_URI || `${c.env.BACKEND_URL || 'https://gbrhsehk.backend.blink.new'}/api/search-console/oauth/callback`; }
+function redirect(c: any) { return c.env.SEARCH_CONSOLE_REDIRECT_URI || `${requireBackendUrl(c.env)}/api/search-console/oauth/callback`; }
 
 router.get('/api/search-console/oauth/connect', async c => {
   const uid = await user(c); if (!uid) return c.json({ error: 'Unauthorized' }, 401); if (!searchConsoleConfig(c)) return c.json({ error: 'GSC_NOT_CONFIGURED' }, 503);
@@ -25,7 +27,7 @@ router.get('/api/search-console/oauth/connect', async c => {
 router.get('/api/search-console/oauth/callback', async c => {
   const code = c.req.query('code'), state = c.req.query('state'); if (!code || !state) return c.json({ error: 'Missing parameters' }, 400);
   try { const uid = await readOAuthState(state, c.env.GOOGLE_BUSINESS_CLIENT_SECRET); const t = await exchangeCode(code, c.env.GOOGLE_BUSINESS_CLIENT_ID, c.env.GOOGLE_BUSINESS_CLIENT_SECRET, redirect(c));
-    await createSecureTokenStore(createClient({ projectId: c.env.BLINK_PROJECT_ID, secretKey: c.env.BLINK_SECRET_KEY }), c.env.TOKEN_ENCRYPTION_KEY).save({ userId: uid, provider, accessToken: t.access_token, refreshToken: t.refresh_token, expiresAt: new Date(Date.now() + (t.expires_in || 3600) * 1000).toISOString(), scopes: [GSC_SCOPE] });
+    await createSecureTokenStore(createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY }), c.env.TOKEN_ENCRYPTION_KEY).save({ userId: uid, provider, accessToken: t.access_token, refreshToken: t.refresh_token, expiresAt: new Date(Date.now() + (t.expires_in || 3600) * 1000).toISOString(), scopes: [GSC_SCOPE] });
     return c.redirect(`${c.env.APP_URL || 'https://kompilot.fr'}/organic-audit?gsc_connected=true`);
   } catch (e) { return c.json({ error: 'GSC_UPSTREAM_ERROR', details: e instanceof Error ? e.message : 'OAuth failed' }, 502); }
 });

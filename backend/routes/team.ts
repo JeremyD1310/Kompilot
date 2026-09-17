@@ -1,10 +1,11 @@
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 
 export const router = new Hono<{ Bindings: Env }>();
 const roles = ['owner', 'admin', 'editor', 'member', 'guest', 'viewer'];
-const get = async (c: any) => { const h = c.req.header('Authorization'); if (!h) return null; const blink = createClient({ projectId: c.env.BLINK_PROJECT_ID, secretKey: c.env.BLINK_SECRET_KEY }); const v = await blink.auth.verifyToken(h); return v.valid ? { id: v.userId, email: v.email, blink } : null; };
+const get = async (c: any) => { const h = c.req.header('Authorization'); if (!h) return null; const blink = createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY }); const v = await blink.auth.verifyToken(h); return v.valid ? { id: v.userId, email: v.email, blink } : null; };
 const membership = async (u: any, workspaceOwnerId = u.id) => { const rows = await u.blink.db.table<any>('team_members').list({ where: { workspaceOwnerId }, limit: 500 }); return rows.find((m: any) => m.memberUserId === u.id || (m.workspaceOwnerId === u.id && ['owner', 'admin'].includes(m.role))) ?? (workspaceOwnerId === u.id ? { workspaceOwnerId: u.id, memberUserId: u.id, role: 'owner', status: 'active' } : null); };
 const canManage = (m: any) => m && ['owner', 'admin'].includes(m.role);
 router.get('/api/team', async c => { const u = await get(c); if (!u) return c.json({ error: 'Unauthorized' }, 401); const own = await membership(u); const workspace = own?.workspaceOwnerId || u.id; const rows = await u.blink.db.table<any>('team_members').list({ where: { workspaceOwnerId: workspace }, orderBy: { createdAt: 'asc' } }); if (!rows.some((m: any) => m.memberUserId === u.id)) rows.unshift({ id: `self:${u.id}`, workspaceOwnerId: workspace, memberUserId: u.id, memberEmail: u.email || '', role: 'owner', status: 'active' }); return c.json({ members: rows }); });

@@ -7,6 +7,8 @@
  * POST /api/tiktok/oauth/disconnect — Revoke connection
  */
 
+import { requireBackendUrl } from '../lib/blinkConfig';
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -14,7 +16,7 @@ import { createOAuthState, readOAuthState } from '../lib/oauthState';
 import { exchangeCodeForToken, getCreatorInfo } from '../lib/tiktokService';
 
 async function verifyUserId(c: any): Promise<string | null> {
-  const auth = await createClient({ projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: c.env.BLINK_SECRET_KEY }).auth.verifyToken(c.req.header('Authorization'));
+  const auth = await createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY }).auth.verifyToken(c.req.header('Authorization'));
   return auth.valid ? auth.userId : null;
 }
 import type { Env } from '../lib/types';
@@ -35,7 +37,7 @@ router.get('/api/tiktok/oauth/connect', async (c) => {
 
   const env = c.env as unknown as Env;
   const clientKey = (env as any).TIKTOK_CLIENT_KEY;
-  const redirectUri = (env as any).TIKTOK_REDIRECT_URI || `${(env as any).BACKEND_URL || 'https://gbrhsehk.backend.blink.new'}/api/tiktok/oauth/callback`;
+  const redirectUri = (env as any).TIKTOK_REDIRECT_URI || `${(env as any).BACKEND_URL || requireBackendUrl(env)}/api/tiktok/oauth/callback`;
 
   const clientSecret = (env as any).TIKTOK_CLIENT_SECRET;
   if (!clientKey || !clientSecret) return c.json({ error: 'TikTok credentials not configured' }, 500);
@@ -68,7 +70,7 @@ router.get('/api/tiktok/oauth/callback', async (c) => {
   const env = c.env as unknown as Env;
   const clientKey = (env as any).TIKTOK_CLIENT_KEY;
   const clientSecret = (env as any).TIKTOK_CLIENT_SECRET;
-  const redirectUri = (env as any).TIKTOK_REDIRECT_URI || `${(env as any).BACKEND_URL || 'https://gbrhsehk.backend.blink.new'}/api/tiktok/oauth/callback`;
+  const redirectUri = (env as any).TIKTOK_REDIRECT_URI || `${(env as any).BACKEND_URL || requireBackendUrl(env)}/api/tiktok/oauth/callback`;
 
   if (!clientKey || !clientSecret) return c.json({ error: 'TikTok credentials not configured' }, 500);
 
@@ -77,7 +79,7 @@ router.get('/api/tiktok/oauth/callback', async (c) => {
     const tokens = await exchangeCodeForToken(code, clientKey, clientSecret, redirectUri);
 
     const blink = createClient({
-      projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: env.BLINK_SECRET_KEY,
     });
     const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
@@ -118,7 +120,7 @@ router.get('/api/tiktok/oauth/status', async (c) => {
 
   const env = c.env as unknown as Env;
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
@@ -164,7 +166,7 @@ router.post('/api/tiktok/oauth/disconnect', async (c) => {
 
   const env = c.env as unknown as Env;
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);

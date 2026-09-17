@@ -9,6 +9,7 @@
  * POST /api/activity/email/send    — Send a notification email (key events)
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { createClient } from '@blinkdotnew/sdk';
@@ -27,7 +28,7 @@ export const router = new Hono<{ Bindings: Env }>();
 router.use('*', cors());
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 const ADMIN_EMAILS = ['jeremy@kompilot.fr', 'romain@kompilot.fr', 'valentine@kompilot.fr', 'admin@kompilot.com'];
 

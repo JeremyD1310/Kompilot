@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from './blinkConfig';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from './secureTokenStore';
 import type { Env } from './types';
@@ -26,7 +27,7 @@ async function callTikTok(path: string, token: string, body: Row) {
 }
 
 export async function resolveTikTokAdsToken(env: Env, userId: string) {
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokenRow = await store.getByUser(userId, 'tiktok_ads');
   if (tokenRow) {

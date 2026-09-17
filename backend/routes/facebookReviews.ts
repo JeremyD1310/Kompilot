@@ -10,6 +10,7 @@
  *   GET  /api/facebook/reviews/inbox     — Latest reviews from all pages
  *   POST /api/facebook/reviews/reply     — Reply to a review via its story comment
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -81,7 +82,7 @@ router.get('/api/facebook/reviews/status', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokens = await store.getByUser(userId, 'facebook');
 
@@ -107,7 +108,7 @@ router.get('/api/facebook/reviews/summary', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokens = await store.getByUser(userId, 'facebook');
 
@@ -151,7 +152,7 @@ router.get('/api/facebook/reviews/inbox', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokens = await store.getByUser(userId, 'facebook');
 
@@ -194,7 +195,7 @@ router.post('/api/facebook/reviews/reply', async (c) => {
   if (!body.storyId || !body.message || !body.pageId) return c.json({ error: 'storyId, pageId, and message required' }, 400);
 
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokens = await store.getByUser(userId, 'facebook');
   if (!tokens) return c.json({ error: 'Facebook not connected' }, 400);

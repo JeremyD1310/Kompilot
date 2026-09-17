@@ -8,6 +8,7 @@
  * POST   /api/affiliates/convert     — enregistre une conversion (souscription payante)
  * GET    /api/affiliates/history     — historique détaillé des conversions
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -21,7 +22,7 @@ function getUserId(h: string | undefined): string | null {
 
 function getBlink(env: Env) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

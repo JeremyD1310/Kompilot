@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -5,7 +6,7 @@ import type { Env } from '../lib/types';
 export const router = new Hono<{ Bindings: Env }>();
 type Row = Record<string, any>;
 const table = (b: any, n: string) => b.db.table<Row>(n);
-async function actor(c: any) { const b = createClient({ projectId: c.env.BLINK_PROJECT_ID, secretKey: c.env.BLINK_SECRET_KEY }); const a = await b.auth.verifyToken(c.req.header('Authorization')); return a.valid ? { b, id: a.userId, email: a.email } : null; }
+async function actor(c: any) { const b = createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY }); const a = await b.auth.verifyToken(c.req.header('Authorization')); return a.valid ? { b, id: a.userId, email: a.email } : null; }
 const n = (v: any) => Number(v) || 0;
 const escapeHtml = (value: unknown) => String(value ?? '').replace(/[&<>\"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;' }[char] || char));
 

@@ -1,6 +1,7 @@
 /**
  * AI routes — /health, /api/ai/models, /api/ai/generate
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import {
@@ -34,7 +35,7 @@ const VALID_TASK_TYPES: TaskType[] = [
 ];
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 // ── Health ────────────────────────────────────────────────────────────────────
 

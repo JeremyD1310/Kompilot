@@ -8,6 +8,7 @@
  * GET /api/social-analytics/tiktok-metrics — Returns per-post TikTok video metrics
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -20,7 +21,7 @@ export const router = new Hono<{ Bindings: Env }>();
 async function getUserId(authHeader: string | undefined, env: Env): Promise<string | null> {
   if (!authHeader?.startsWith('Bearer ')) return null;
   try {
-    const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+    const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
     const auth = await blink.auth.verifyToken(authHeader);
     return auth.valid && auth.userId ? auth.userId : null;
   } catch { return null; }
@@ -35,7 +36,7 @@ router.get('/api/social-analytics/overview', async (c) => {
   const days = parseInt(c.req.query('days') || '30', 10);
   const env = c.env as unknown as Env;
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 
@@ -175,7 +176,7 @@ router.get('/api/social-analytics/tiktok-metrics', async (c) => {
 
   const env = c.env as unknown as Env;
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 
@@ -277,7 +278,7 @@ router.get('/api/social-analytics/compare', async (c) => {
   const compareDays = parseInt(c.req.query('compareDays') || '60', 10);
   const env = c.env as unknown as Env;
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 
@@ -349,7 +350,7 @@ router.get('/api/social-analytics/instagram-reels-metrics', async (c) => {
 
   const env = c.env as unknown as Env;
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 

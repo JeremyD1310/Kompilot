@@ -7,6 +7,7 @@
  * GET  /api/ugc-video-ad/projects   — List user's UGC projects
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -16,7 +17,7 @@ import { consumeExecuteRefund } from '../lib/creditService';
 export const router = new Hono<{ Bindings: Env }>();
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 function getUserId(h: string | undefined): string | null {
   if (!h?.startsWith('Bearer ')) return null;

@@ -10,6 +10,7 @@
  * IMPORTANT: Never expose the raw access token to the client.
  */
 
+import { requireBlinkProjectId } from './blinkConfig';
 import { encryptToken, decryptToken } from './tokenEncryption';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -258,7 +259,7 @@ export async function triggerCapiConversion(
     // 1. Blink SDK (server-side)
     const { createClient } = await import('@blinkdotnew/sdk');
     const blink = createClient({
-      projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: env.BLINK_SECRET_KEY,
     });
 

@@ -6,6 +6,7 @@
  * crm_contacts, messages (inbox), campaigns.
  * Requires auth (user JWT).
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -36,7 +37,7 @@ router.get('/api/search', async (c) => {
   const limitPerCategory = parseInt(c.req.query('limit') || '5', 10);
   const env = c.env as unknown as Env;
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 

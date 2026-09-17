@@ -12,6 +12,7 @@
  * IMPORTANT: Never mention "Meta" or "Facebook" in user-facing messages.
  * Use "Pixel de conversion" / "Tracking publicitaire" instead.
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -28,7 +29,7 @@ import {
 export const router = new Hono<{ Bindings: Env }>();
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 // ── Auth helper ──────────────────────────────────────────────────────────────
 

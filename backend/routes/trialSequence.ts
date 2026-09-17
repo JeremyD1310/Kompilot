@@ -12,6 +12,7 @@
  */
 import { Hono } from 'hono';
 import type { Env } from '../lib/types';
+import { requireBackendUrl } from '../lib/blinkConfig';
 import { getBlink, getUserMeta, patchUserMeta } from '../lib/stripeHelpers';
 import { TRIAL_DAYS } from '../../shared/pricingCatalog';
 import {
@@ -160,10 +161,10 @@ router.post('/api/trial-sequence/check-and-send', async (c) => {
   const hoursUntilExpiry = (trialEnd.getTime() - Date.now()) / (1000 * 60 * 60);
   if (!sent.j6 && hoursUntilExpiry > 0 && hoursUntilExpiry <= 36 && subscriptionStatus === 'trialing') {
     // Generate magic link
-    const backendUrl = `https://${rawEnv.BLINK_PROJECT_ID || 'gbrhsehk'}.backend.blink.new`;
     let magicLinkUrl = `${BASE_URL}/extend-trial?expired=true`; // fallback
 
     try {
+      const backendUrl = requireBackendUrl(rawEnv);
       const secretKey = rawEnv.BLINK_SECRET_KEY as string | undefined;
       const genRes = await fetch(`${backendUrl}/api/trial/extension/generate`, {
         method: 'POST',

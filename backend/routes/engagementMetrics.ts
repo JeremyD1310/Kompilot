@@ -6,6 +6,7 @@
  * POST /api/engagement/record            — record engagement for a single post
  * POST /api/engagement/sync-campaigns    — recompute campaign_performance from metrics
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -15,7 +16,7 @@ export const router = new Hono<{ Bindings: Env }>();
 /* ── helpers ──────────────────────────────────────────────────────────────── */
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 function getUserId(h: string | undefined): string | null {
   if (!h?.startsWith('Bearer ')) return null;

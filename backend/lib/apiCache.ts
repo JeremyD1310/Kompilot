@@ -10,6 +10,7 @@
  * Stored in scheduled_posts.text_content as JSON with status = 'api_cache'
  */
 
+import { requireBlinkProjectId } from './blinkConfig';
 import { createClient } from '@blinkdotnew/sdk';
 
 export interface CacheEntry<T = unknown> {
@@ -29,7 +30,7 @@ export interface WithCacheResult<T = unknown> {
 
 function getBlink(env: Record<string, string>) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID,
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

@@ -8,6 +8,7 @@
  * Uses secureTokenStore for AES-256-GCM encryption of tokens at rest.
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -62,7 +63,7 @@ router.post('/api/oauth/save-token', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: env.BLINK_SECRET_KEY,
     });
 
@@ -112,7 +113,7 @@ router.post('/api/oauth/revoke-token', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: env.BLINK_SECRET_KEY,
     });
 
@@ -138,7 +139,7 @@ router.get('/api/oauth/status/:provider', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: env.BLINK_SECRET_KEY,
     });
 
@@ -181,7 +182,7 @@ router.post('/api/oauth/migrate-plaintext', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: env.BLINK_SECRET_KEY,
     });
 

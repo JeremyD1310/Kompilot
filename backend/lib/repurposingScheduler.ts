@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from './blinkConfig';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from './types';
 
@@ -12,7 +13,7 @@ function nextSlot(start: Date, index: number) {
 }
 
 export async function scheduleApprovedRepurposing(env: Env, approval: Row, job: Row) {
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const outputRows = (() => { try { const parsed = JSON.parse(job.outputsJson || '[]'); return Array.isArray(parsed) ? parsed : []; } catch { return []; } })();
   const posts = blink.db.table<Row>('scheduled_posts');
   const links = blink.db.table<Row>('repurposing_scheduled_posts');

@@ -44,9 +44,10 @@ export function liveWebhookSecret(env: Record<string, unknown>): string | null {
   return secret.startsWith('whsec_') ? secret : null
 }
 
+// BACKEND_URL is independent, mandatory config — never derived from BLINK_PROJECT_ID.
 export function blinkBackendUrl(env: Record<string, unknown>): string | null {
-  const projectId = String(env.BLINK_PROJECT_ID ?? '').trim()
-  return projectId ? `https://${projectId}.backend.blink.new` : null
+  const backendUrl = String(env.BACKEND_URL ?? '').trim()
+  return backendUrl ? backendUrl.replace(/\/+$/, '') : null
 }
 
 export function liveBillingConfig(env: Record<string, unknown>):

@@ -17,6 +17,7 @@
  *   400 validation     — paramètres de date manquants ou malformés
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono }                       from 'hono';
 import { createClient }               from '@blinkdotnew/sdk';
 import type { Env }                   from '../lib/types';
@@ -39,7 +40,7 @@ router.use('/api/ga4/*', async (c, next) => {
     return c.json({ error: 'Non autorisé — JWT Blink requis.', code: 'UNAUTHORIZED' }, 401);
   }
   const blink = createClient({
-    projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(c.env),
     secretKey:  c.env.BLINK_SECRET_KEY,
   });
   try {

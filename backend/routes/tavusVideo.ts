@@ -7,6 +7,7 @@
  *   GET  /api/videos/history          — user's video generation history
  */
 
+import { requireBackendUrl } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import type { Env } from '../lib/types';
 import { getBlink } from '../lib/stripeHelpers';
@@ -93,7 +94,7 @@ router.post('/api/videos/generate', async (c) => {
     async () => {
     const callbackToken = crypto.randomUUID();
     // 5. Call Tavus API
-      const backendUrl = rawEnv.BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
+      const backendUrl = requireBackendUrl(rawEnv);
       const callbackUrl = `${backendUrl}/api/webhooks/tavus?token=${encodeURIComponent(callbackToken)}`;
 
       const tavusRes = await fetch('https://tavusapi.com/v2/videos', {

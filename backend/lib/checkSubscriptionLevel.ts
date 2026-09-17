@@ -9,6 +9,7 @@
  * Usage:
  *   router.post('/api/campaigns/:id/schedule', checkSubscriptionLevel('agency'), handler);
  */
+import { requireBlinkProjectId } from './blinkConfig';
 import type { Context, Next } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 
@@ -22,7 +23,7 @@ const PLAN_HIERARCHY: Record<PlanType, number> = {
 
 function getBlink(env: Record<string, string>) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID,
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

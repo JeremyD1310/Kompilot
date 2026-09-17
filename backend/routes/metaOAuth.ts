@@ -8,6 +8,8 @@
  * GET  /api/meta/pages              — List user's Facebook Pages + linked IG accounts
  */
 
+import { requireBackendUrl } from '../lib/blinkConfig';
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { getUserPages, exchangeForLongLivedToken, validateToken } from '../lib/metaPublishingService';
@@ -41,7 +43,7 @@ const META_SCOPES = [
 function envOf(c: any): any { return c.env as any; }
 
 function backendRedirect(env: any) {
-  return env.META_REDIRECT_URI || `${env.BACKEND_URL || 'https://gbrhsehk.backend.blink.new'}/api/meta/oauth/callback`;
+  return env.META_REDIRECT_URI || `${env.BACKEND_URL || requireBackendUrl(env)}/api/meta/oauth/callback`;
 }
 
 function appRedirect(env: any, params = '') {
@@ -78,7 +80,7 @@ async function readState(state: string, secret: string) {
 
 async function requireUserId(c: any): Promise<string | null> {
   const env = envOf(c);
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   return auth.valid ? auth.userId : null;
 }
@@ -94,7 +96,7 @@ function oauthUrl(env: any, state: string) {
 }
 
 function getBlink(env: any) {
-  return createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  return createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 }
 
 function accountDto(account: any) {

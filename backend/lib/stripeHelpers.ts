@@ -1,13 +1,14 @@
 /**
  * Shared Stripe utility functions used by billing and webhook routes.
  */
+import { requireBlinkProjectId } from './blinkConfig';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from './types';
 import { SUBSCRIPTION_PLANS, resolveSubscriptionPlan, resolveOneTimeProduct, type SubscriptionPlanId, type BillingInterval } from '../../shared/pricingCatalog';
 
 export const getBlink = (env: Env) =>
   createClient({
-    projectId: env.BLINK_PROJECT_ID,
+    projectId: requireBlinkProjectId(env),
     secretKey:  env.BLINK_SECRET_KEY,
   });
 

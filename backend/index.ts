@@ -133,7 +133,7 @@ import { router as llmTrackerRouter }            from './routes/llmTracker';
 import { router as seoAgentRouter }              from './routes/seoAgent';
 import { router as referralRewardsRouter }        from './routes/referralRewards';
 import { requireRole }                           from './lib/rbacMiddleware';
-import { createClient }                          from '@blinkdotnew/sdk';
+import { createBlinkClient, requireBlinkProjectId, BLINK_PROJECT_CONFIG_MISSING, BlinkProjectConfigError, isBackendDependencyConfigError, backendDependencyUnavailable } from './lib/blinkConfig';
 
 const app = new Hono();
 
@@ -161,6 +161,21 @@ const requireInternalSecret = async (c: any, next: any) => {
   await next();
 };
 
+const requireBlinkProjectConfig = async (c: any, next: any) => {
+  try {
+    requireBlinkProjectId(c.env as { BLINK_PROJECT_ID?: string });
+    await next();
+  } catch (error) {
+    if (error instanceof BlinkProjectConfigError) {
+      return c.json({ error: 'Blink dependency unavailable', code: BLINK_PROJECT_CONFIG_MISSING }, 503);
+    }
+    throw error;
+  }
+};
+
+// Blink configuration must be validated before any route-level client or RBAC lookup.
+app.use('/api/*', requireBlinkProjectConfig);
+
 // Sensitive RBAC checks must run before route modules are mounted.
 // Billing self-service routes authenticate the signed-in customer themselves;
 // applying an admin-only guard to the whole namespace would block checkout,
@@ -176,10 +191,7 @@ app.get('/health', (c) => c.json({ ok: true, ts: Date.now() }));
 // ── Queue initialization (idempotent — creates queues with parallelism) ──────
 app.get('/api/queues/init', async (c) => {
   const env = c.env as any;
-  const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
-    secretKey: env.BLINK_SECRET_KEY,
-  });
+  const blink = createBlinkClient(env);
 
   try {
     const queueFn = (blink as any).queue;
@@ -288,7 +300,7 @@ app.post('/api/queue', async (c) => {
 
   const env = c.env as any;
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey:  env.BLINK_SECRET_KEY,
   });
 
@@ -617,6 +629,9 @@ app.post('/api/queue', async (c) => {
 
 // ── Global error handler ─────────────────────────────────────────────────────
 app.onError((err, c) => {
+  if (isBackendDependencyConfigError(err)) {
+    return c.json(backendDependencyUnavailable(err), 503);
+  }
   console.error('[Backend] Unhandled error:', err.message, err.stack);
   return c.json(
     { error: 'Internal server error', message: err.message ?? 'Unknown error' },

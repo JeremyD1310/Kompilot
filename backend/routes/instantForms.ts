@@ -11,6 +11,7 @@
  *   GET  /api/instant-forms/appointments  — list synced appointments
  *   POST /api/instant-forms/sync-test     — test webhook with sample data
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -18,7 +19,7 @@ import type { Env } from '../lib/types';
 export const router = new Hono<{ Bindings: Env }>();
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

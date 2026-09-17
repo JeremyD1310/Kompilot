@@ -5,6 +5,7 @@
  * GET  /api/creative-studio/reports  — liste les rapports sauvegardés
  * GET  /api/creative-studio/stats    — agrégats mensuels pour le dashboard
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { consumeExecuteRefund } from '../lib/creditService';
@@ -19,7 +20,7 @@ export const router = new Hono<{ Bindings: Env }>();
 
 /* ── Auth helper ─────────────────────────────────────────────────────────── */
 function getDb(env: Env) {
-  return createClient({ projectId: 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  return createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 }
 
 function getUserId(authHeader: string | undefined): string | null {

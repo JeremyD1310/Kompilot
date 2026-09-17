@@ -10,6 +10,8 @@
  * POST /api/instagram/oauth/disconnect — Revoke connection
  */
 
+import { requireBackendUrl, requireAppUrl, isBackendDependencyConfigError, backendDependencyUnavailable } from '../lib/blinkConfig';
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -17,7 +19,7 @@ import { createOAuthState, readOAuthState } from '../lib/oauthState';
 import { exchangeForLongLivedToken, getUserPages } from '../lib/metaPublishingService';
 
 async function verifyUserId(c: any): Promise<string | null> {
-  const auth = await createClient({ projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: c.env.BLINK_SECRET_KEY }).auth.verifyToken(c.req.header('Authorization'));
+  const auth = await createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY }).auth.verifyToken(c.req.header('Authorization'));
   return auth.valid ? auth.userId : null;
 }
 import type { Env } from '../lib/types';
@@ -34,7 +36,7 @@ router.get('/api/instagram/oauth/connect', async (c) => {
 
   const env = c.env as unknown as Env;
   const appId = (env as any).META_APP_ID;
-  const redirectUri = (env as any).INSTAGRAM_REDIRECT_URI || `${(env as any).BACKEND_URL || 'https://gbrhsehk.backend.blink.new'}/api/instagram/oauth/callback`;
+  const redirectUri = (env as any).INSTAGRAM_REDIRECT_URI || `${requireBackendUrl(env)}/api/instagram/oauth/callback`;
 
   if (!appId) return c.json({ error: 'META_APP_ID not configured — required for Instagram API' }, 500);
 
@@ -58,13 +60,16 @@ router.get('/api/instagram/oauth/callback', async (c) => {
   const state = c.req.query('state');
   const error = c.req.query('error');
 
-  if (error) return c.redirect(`${(c.env as any).APP_URL || '/settings'}?instagram_error=${encodeURIComponent(error)}`);
+  if (error) {
+    const appUrl = requireAppUrl(c.env as any);
+    return c.redirect(`${appUrl}/settings?instagram_error=${encodeURIComponent(error)}`);
+  }
   if (!code || !state) return c.json({ error: 'Missing parameters' }, 400);
 
   const env = c.env as unknown as Env;
   const appId = (env as any).META_APP_ID;
   const appSecret = (env as any).META_APP_SECRET;
-  const redirectUri = (env as any).INSTAGRAM_REDIRECT_URI || `${(env as any).BACKEND_URL || 'https://gbrhsehk.backend.blink.new'}/api/instagram/oauth/callback`;
+  const redirectUri = (env as any).INSTAGRAM_REDIRECT_URI || `${requireBackendUrl(env)}/api/instagram/oauth/callback`;
 
   if (!appId || !appSecret) return c.json({ error: 'Meta credentials not configured' }, 500);
 
@@ -84,7 +89,7 @@ router.get('/api/instagram/oauth/callback', async (c) => {
     await getUserPages(longLived.accessToken);
 
     // Store tokens with provider 'instagram'
-    const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+    const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
     const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
     await store.save({
       userId,
@@ -94,9 +99,10 @@ router.get('/api/instagram/oauth/callback', async (c) => {
       scopes: IG_SCOPES.split(','),
     });
 
-    const appUrl = (env as any).APP_URL || 'https://kompilot.fr';
+    const appUrl = requireAppUrl(env);
     return c.redirect(`${appUrl}/settings?instagram_connected=true`);
   } catch (err) {
+    if (isBackendDependencyConfigError(err)) return c.json(backendDependencyUnavailable(err), 503);
     return c.json({ error: 'OAuth flow failed', details: err instanceof Error ? err.message : 'Unknown' }, 500);
   }
 });
@@ -108,7 +114,7 @@ router.get('/api/instagram/oauth/status', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokens = await store.getByUser(userId, 'instagram');
 
@@ -145,7 +151,7 @@ router.post('/api/instagram/oauth/disconnect', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   await store.revoke(userId, 'instagram');
 

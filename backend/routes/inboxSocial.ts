@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -9,7 +10,7 @@ export const router = new Hono<{ Bindings: Env }>();
 
 async function auth(c: any) {
   const env = c.env as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const verified = await blink.auth.verifyToken(c.req.header('Authorization'));
   return verified.valid ? { userId: verified.userId, blink } : null;
 }

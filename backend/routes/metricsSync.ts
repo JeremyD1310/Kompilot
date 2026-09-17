@@ -9,6 +9,7 @@
  * POST /api/metrics-sync/queue-handler — Queue worker (called by Blink Queue)
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -21,7 +22,7 @@ export const router = new Hono<{ Bindings: Env }>();
 async function getUserId(authHeader: string | undefined, env: Env): Promise<string | null> {
   if (!authHeader?.startsWith('Bearer ')) return null;
   try {
-    const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+    const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
     const auth = await blink.auth.verifyToken(authHeader);
     return auth.valid && auth.userId ? auth.userId : null;
   } catch { return null; }
@@ -35,7 +36,7 @@ router.post('/api/metrics-sync/trigger', async (c) => {
 
   const env = c.env as unknown as Env;
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 
@@ -84,7 +85,7 @@ router.get('/api/metrics-sync/status', async (c) => {
 
   const env = c.env as unknown as Env;
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 
@@ -111,7 +112,7 @@ router.post('/api/metrics-sync/queue-handler', async (c) => {
 
   const env = c.env as unknown as Env;
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 

@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -11,7 +12,7 @@ export const router = new Hono<{ Bindings: Env }>();
 async function getUserId(header: string | undefined, env: Env) {
   if (!header?.startsWith('Bearer ')) return null;
   try {
-    const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+    const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
     const verified = await blink.auth.verifyToken(header);
     return verified.valid ? verified.userId : null;
   } catch { return null; }
@@ -24,7 +25,7 @@ router.post('/api/inbox/reply', async c => {
   const body = await c.req.json() as { messageId?: string; text?: string; channel?: string; senderHandle?: string };
   if (!body.messageId || !body.text?.trim()) return c.json({ error: 'messageId and text are required' }, 400);
 
-  const blink = createClient({ projectId: c.env.BLINK_PROJECT_ID, secretKey: c.env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY });
   const messages = await blink.db.table<any>('messages').list({ where: { id: body.messageId, userId }, limit: 1 });
   const message = messages[0];
   if (!message) return c.json({ error: 'Message not found' }, 404);

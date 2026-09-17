@@ -9,6 +9,7 @@
  * GET /api/predictive-scoring/campaign-health  — predict underperforming campaigns
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -25,7 +26,7 @@ async function authenticate(c: any, blink: any) {
 
 function getBlink(env: Env) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

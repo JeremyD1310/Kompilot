@@ -9,6 +9,7 @@
  *   GET  /api/geo/scan/:id      — poll scan status
  *   GET  /api/geo/quota         — check remaining weekly quota for an establishment
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -26,7 +27,7 @@ const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
 
 function getBlink(env: Record<string, string>) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID,
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

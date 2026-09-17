@@ -6,6 +6,7 @@
  * Uses OpenAI TTS API directly (server-side) since Blink SDK's generateSpeech
  * is client-only. Falls back gracefully if OPENAI_API_KEY is not available.
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -68,7 +69,7 @@ router.post('/api/voiceover/generate', async (c) => {
   // Validate provider limits before charging.
   if (text.length > 4096) return c.json({ error: 'TEXT_TOO_LONG', message: `Le texte fait ${text.length} caractères. Maximum : 4096.` }, 400);
 
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const requestId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || body.requestId?.trim() || crypto.randomUUID();
   const referenceId = `voiceover:${userId}:${requestId}`;
 

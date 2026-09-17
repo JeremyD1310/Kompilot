@@ -10,6 +10,7 @@
  * Kill-switch storage: stored as JSON flags inside `users.metadata` so no
  * new table is required. Global switch lives on the admin's own metadata.
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -91,7 +92,7 @@ function getUserIdFromToken(h: string | undefined): string | null {
 
 function getBlink(env: Env) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

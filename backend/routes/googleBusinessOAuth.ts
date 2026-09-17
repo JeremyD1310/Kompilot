@@ -11,6 +11,8 @@
  * POST /api/gbp/posts/:locationId — Create a local post
  */
 
+import { requireBackendUrl, requireAppUrl, isBackendDependencyConfigError, backendDependencyUnavailable } from '../lib/blinkConfig';
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -21,7 +23,7 @@ import {
 } from '../lib/googleBusinessService';
 
 async function verifyUserId(c: any): Promise<string | null> {
-  const auth = await createClient({ projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: c.env.BLINK_SECRET_KEY }).auth.verifyToken(c.req.header('Authorization'));
+  const auth = await createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY }).auth.verifyToken(c.req.header('Authorization'));
   return auth.valid ? auth.userId : null;
 }
 import type { Env } from '../lib/types';
@@ -37,7 +39,7 @@ router.get('/api/gbp/oauth/connect', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
   const env = c.env as unknown as Env;
   const clientId = (env as any).GOOGLE_BUSINESS_CLIENT_ID;
-  const redirectUri = (env as any).GBP_REDIRECT_URI || `${(env as any).BACKEND_URL || 'https://gbrhsehk.backend.blink.new'}/api/gbp/oauth/callback`;
+  const redirectUri = (env as any).GBP_REDIRECT_URI || `${requireBackendUrl(env)}/api/gbp/oauth/callback`;
   const clientSecret = (env as any).GOOGLE_BUSINESS_CLIENT_SECRET;
   if (!clientId || !clientSecret) return c.json({ error: 'Google Business credentials not configured' }, 500);
   const state = await createOAuthState(userId, clientSecret);
@@ -61,18 +63,19 @@ router.get('/api/gbp/oauth/callback', async (c) => {
   const env = c.env as unknown as Env;
   const clientId = (env as any).GOOGLE_BUSINESS_CLIENT_ID;
   const clientSecret = (env as any).GOOGLE_BUSINESS_CLIENT_SECRET;
-  const redirectUri = (env as any).GBP_REDIRECT_URI || `${(env as any).BACKEND_URL || 'https://gbrhsehk.backend.blink.new'}/api/gbp/oauth/callback`;
+  const redirectUri = (env as any).GBP_REDIRECT_URI || `${requireBackendUrl(env)}/api/gbp/oauth/callback`;
   if (!clientId || !clientSecret) return c.json({ error: 'Google Business credentials not configured' }, 500);
   let userId: string;
   try {
     userId = await readOAuthState(state, clientSecret);
     const tokens = await exchangeCodeForToken(code, clientId, clientSecret, redirectUri);
-    const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+    const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
     const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
     await store.save({ userId, provider: 'google_business', accessToken: tokens.accessToken, refreshToken: tokens.refreshToken, expiresAt: new Date(Date.now() + tokens.expiresIn * 1000).toISOString(), scopes: ['business.manage'] });
-    const appUrl = (env as any).APP_URL || 'https://kompilot.fr';
+    const appUrl = requireAppUrl(env);
     return c.redirect(`${appUrl}/settings?gbp_connected=true`);
   } catch (err) {
+    if (isBackendDependencyConfigError(err)) return c.json(backendDependencyUnavailable(err), 503);
     return c.json({ error: 'Token exchange failed', details: err instanceof Error ? err.message : 'Unknown' }, 500);
   }
 });
@@ -83,7 +86,7 @@ router.get('/api/gbp/oauth/status', async (c) => {
   const userId = await verifyUserId(c);
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokens = await store.getByUser(userId, 'google_business');
   if (!tokens) return c.json({ connected: false, accounts: [], locations: [] });
@@ -102,7 +105,7 @@ router.post('/api/gbp/oauth/disconnect', async (c) => {
   const userId = await verifyUserId(c);
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   await store.revoke(userId, 'google_business');
   return c.json({ success: true });
@@ -114,7 +117,7 @@ router.get('/api/gbp/locations', async (c) => {
   const userId = await verifyUserId(c);
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokens = await store.getByUser(userId, 'google_business');
   if (!tokens) return c.json({ error: 'Not connected' }, 400);
@@ -135,7 +138,7 @@ router.get('/api/gbp/reviews/:locationId', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
   const locationId = c.req.param('locationId');
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokens = await store.getByUser(userId, 'google_business');
   if (!tokens) return c.json({ error: 'Not connected' }, 400);
@@ -153,7 +156,7 @@ router.post('/api/gbp/reviews/:locationId/:reviewId/reply', async (c) => {
   const body = await c.req.json() as { replyText: string };
   if (!body.replyText) return c.json({ error: 'replyText is required' }, 400);
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokens = await store.getByUser(userId, 'google_business');
   if (!tokens) return c.json({ error: 'Not connected' }, 400);
@@ -171,7 +174,7 @@ router.post('/api/gbp/posts/:locationId', async (c) => {
   const body = await c.req.json() as { summary: string; imageUrl?: string; callToAction?: { actionType: string; url: string } };
   if (!body.summary) return c.json({ error: 'summary is required' }, 400);
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokens = await store.getByUser(userId, 'google_business');
   if (!tokens) return c.json({ error: 'Not connected' }, 400);

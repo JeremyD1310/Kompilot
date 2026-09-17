@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -8,7 +9,7 @@ export const router = new Hono<{ Bindings: Env }>();
 type Row = Record<string, any>;
 type Output = { channel: string; title: string; content: string; cta: string; hashtags: string[]; formatHint: string };
 
-const blinkFor = (env: Env) => createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+const blinkFor = (env: Env) => createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 async function auth(c: any) {
   const client = blinkFor(c.env as Env);
   const verified = await client.auth.verifyToken(c.req.header('Authorization') || '');

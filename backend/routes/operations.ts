@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -7,7 +8,7 @@ export const router = new Hono<{ Bindings: Env }>();
 type Row = Record<string, any>;
 
 async function admin(c: any) {
-  const blink = createClient({ projectId: c.env.BLINK_PROJECT_ID, secretKey: c.env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY });
   const auth = await blink.auth.verifyToken(c.req.header('Authorization') || '');
   const allowed = auth.valid && (auth.appRole === 'admin' || auth.email?.endsWith('@kompilot.fr') || auth.email === 'admin@kompilot.com');
   return allowed ? { blink, auth } : null;

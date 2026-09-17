@@ -8,6 +8,7 @@
  * POST /api/publish/retry/:id     — Retry a failed post
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -26,7 +27,7 @@ export const router = new Hono<{ Bindings: Env }>();
 async function getUserId(authHeader: string | undefined, env?: Env): Promise<string | null> {
   if (!authHeader || !env) return null;
   try {
-    const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+    const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
     const verified = await blink.auth.verifyToken(authHeader);
     return verified.valid ? verified.userId : null;
   } catch { return null; }
@@ -90,7 +91,7 @@ router.post('/api/publish/now', async (c) => {
   const quota = await consumeContentQuota(env, userId, 1, 'content_publication');
   if (!quota.success) return c.json({ error: 'CONTENT_QUOTA_EXCEEDED', ...quota }, 429);
 
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const tokenStore = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const results: PublishResult[] = [];
 
@@ -292,7 +293,7 @@ router.post('/api/publish/schedule', async (c) => {
   body.scheduledAt = scheduledDate.toISOString();
   const quota = await consumeContentQuota(env, userId, 1, 'content_publication');
   if (!quota.success) return c.json({ error: 'CONTENT_QUOTA_EXCEEDED', ...quota }, 429);
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   // Store videoUrl inside platformVariants as _videoUrl since the table has no dedicated column
   const variants: Record<string, string> = { ...(body.platformVariants || {}) };
   if (body.videoUrl) variants._videoUrl = body.videoUrl;
@@ -313,7 +314,7 @@ router.post('/api/publish/schedule', async (c) => {
 // ── Campaign CRUD ─────────────────────────────────────────────────────────────
 
 function campaignClient(env: Env) {
-  return createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  return createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 }
 
 router.get('/api/publish/campaigns', async (c) => {
@@ -386,7 +387,7 @@ router.post('/api/publish/scheduler/run', async (c) => {
   const schedulerSecret = ((env as any).KOMPILOT_SCHEDULER_SECRET || env.BLINK_SECRET_KEY) as string | undefined;
   const providedSecret = c.req.header('X-Kompilot-Scheduler-Secret');
   if (!schedulerSecret || providedSecret !== schedulerSecret) return c.json({ error: 'Unauthorized scheduler request' }, 401);
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const tokenStore = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const postsTable = blink.db.table<ScheduledPost>('scheduled_posts');
   const campaignsTable = blink.db.table<Campaign>('publishing_campaigns');
@@ -612,7 +613,7 @@ router.get('/api/publish/status/:id', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
   const postId = c.req.param('id');
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const post = await (blink.db.table('scheduled_posts') as any).get(postId);
   if (!post) return c.json({ error: 'Not found' }, 404);
   if ((post as any).userId !== userId) return c.json({ error: 'Unauthorized' }, 403);
@@ -626,7 +627,7 @@ router.post('/api/publish/retry/:id', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
   const postId = c.req.param('id');
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const post = await (blink.db.table('scheduled_posts') as any).get(postId);
   if (!post) return c.json({ error: 'Not found' }, 404);
   if ((post as any).userId !== userId) return c.json({ error: 'Unauthorized' }, 403);

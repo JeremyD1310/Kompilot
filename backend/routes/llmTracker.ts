@@ -14,6 +14,7 @@
  *   DELETE /api/llm-tracker/:id          — soft-delete (is_active = 0)
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -23,7 +24,7 @@ export const router = new Hono<{ Bindings: Env }>();
 // ── Auth helper ──────────────────────────────────────────────────────────────
 
 function getDb(env: Env) {
-  return createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  return createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 }
 
 function getUserId(authHeader: string | undefined): string | null {
@@ -463,7 +464,7 @@ export async function handleLLMVisibilityCheck(env: Env, payload: any): Promise<
   const { trackerId } = payload ?? {};
   if (!trackerId) return { ok: false, error: 'trackerId required' };
 
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
   const trackers = await blink.db.table<LLMTracker>('llm_trackers').list({ where: { id: trackerId, isActive: '1' }, limit: 1 });
   const tracker = trackers[0];

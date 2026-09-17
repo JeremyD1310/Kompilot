@@ -10,6 +10,8 @@
  * POST /api/facebook/oauth/disconnect — Revoke connection
  */
 
+import { requireBackendUrl, requireAppUrl, isBackendDependencyConfigError, backendDependencyUnavailable } from '../lib/blinkConfig';
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -17,7 +19,7 @@ import { createOAuthState, readOAuthState } from '../lib/oauthState';
 import { exchangeForLongLivedToken, getUserPages, validateToken } from '../lib/metaPublishingService';
 
 async function verifyUserId(c: any): Promise<string | null> {
-  const auth = await createClient({ projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: c.env.BLINK_SECRET_KEY }).auth.verifyToken(c.req.header('Authorization'));
+  const auth = await createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY }).auth.verifyToken(c.req.header('Authorization'));
   return auth.valid ? auth.userId : null;
 }
 import type { Env } from '../lib/types';
@@ -34,7 +36,7 @@ router.get('/api/facebook/oauth/connect', async (c) => {
 
   const env = c.env as unknown as Env;
   const appId = (env as any).META_APP_ID;
-  const redirectUri = (env as any).FACEBOOK_REDIRECT_URI || `${(env as any).BACKEND_URL || 'https://gbrhsehk.backend.blink.new'}/api/facebook/oauth/callback`;
+  const redirectUri = (env as any).FACEBOOK_REDIRECT_URI || `${requireBackendUrl(env)}/api/facebook/oauth/callback`;
 
   if (!appId) return c.json({ error: 'META_APP_ID not configured' }, 500);
 
@@ -59,7 +61,7 @@ router.get('/api/facebook/oauth/callback', async (c) => {
   const error = c.req.query('error');
 
   if (error) {
-    const appUrl = (c.env as any).APP_URL || 'https://kompilot.fr';
+    const appUrl = requireAppUrl(c.env as any);
     return c.redirect(`${appUrl}/settings?facebook_error=${encodeURIComponent(c.req.query('error_description') || error)}`);
   }
 
@@ -68,7 +70,7 @@ router.get('/api/facebook/oauth/callback', async (c) => {
   const env = c.env as unknown as Env;
   const appId = (env as any).META_APP_ID;
   const appSecret = (env as any).META_APP_SECRET;
-  const redirectUri = (env as any).FACEBOOK_REDIRECT_URI || `${(env as any).BACKEND_URL || 'https://gbrhsehk.backend.blink.new'}/api/facebook/oauth/callback`;
+  const redirectUri = (env as any).FACEBOOK_REDIRECT_URI || `${requireBackendUrl(env)}/api/facebook/oauth/callback`;
 
   if (!appId || !appSecret) return c.json({ error: 'Meta credentials not configured' }, 500);
 
@@ -88,7 +90,7 @@ router.get('/api/facebook/oauth/callback', async (c) => {
     await getUserPages(longLived.accessToken);
 
     // Store tokens with provider 'facebook'
-    const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+    const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
     const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
     await store.save({
       userId,
@@ -98,9 +100,10 @@ router.get('/api/facebook/oauth/callback', async (c) => {
       scopes: FACEBOOK_SCOPES.split(','),
     });
 
-    const appUrl = (env as any).APP_URL || 'https://kompilot.fr';
+    const appUrl = requireAppUrl(env);
     return c.redirect(`${appUrl}/settings?facebook_connected=true`);
   } catch (err) {
+    if (isBackendDependencyConfigError(err)) return c.json(backendDependencyUnavailable(err), 503);
     return c.json({ error: 'OAuth flow failed', details: err instanceof Error ? err.message : 'Unknown' }, 500);
   }
 });
@@ -112,7 +115,7 @@ router.get('/api/facebook/oauth/status', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokens = await store.getByUser(userId, 'facebook');
 
@@ -145,7 +148,7 @@ router.post('/api/facebook/oauth/disconnect', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   await store.revoke(userId, 'facebook');
 

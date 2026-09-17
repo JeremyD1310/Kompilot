@@ -4,6 +4,7 @@
  *   POST  /api/funnels/detect-stack — scan a URL for tech stack tools
  *   PATCH /api/funnels/:id/watch    — toggle watchlist status on a saved funnel
  */
+import { requireBlinkProjectId } from '../../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { detectTechStack, toTechStackTools } from '../../lib/techDetector';
@@ -23,7 +24,7 @@ app.post('/detect-stack', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 
@@ -59,7 +60,7 @@ app.patch('/:id/watch', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 
