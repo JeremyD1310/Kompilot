@@ -68,11 +68,11 @@ test.describe('États vides (Empty States)', () => {
     expect(body?.trim().length).toBeGreaterThan(20);
   });
 
-  test('1.2 — Page /calendar → pas d\'écran blanc (même sans posts)', async ({ page }) => {
+  test('1.2 — Page /calendrier → pas d\'écran blanc (même sans posts)', async ({ page }) => {
     await loginAsDemo(page);
-    await page.goto('/calendar');
+    await page.goto('/calendrier');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page).toHaveURL(/\/calendar/, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/calendrier/, { timeout: 10_000 });
     // Body must have rendered content — no blank/white screen
     const bodyText = await page.locator('body').textContent();
     expect((bodyText ?? '').length).toBeGreaterThan(10);
@@ -119,7 +119,9 @@ test.describe('Résistance aux clics multiples (stress UI)', () => {
     }
 
     // Only ONE modal/dialog should be open
-    const dialogs = await page.locator('[role="dialog"], [data-radix-popper-content-wrapper]').count();
+    // Radix wrappers are implementation details and can coexist with one
+    // accessible dialog. Count actual dialogs only.
+    const dialogs = await page.getByRole('dialog').count();
     expect(dialogs).toBeLessThanOrEqual(1);
 
     // Close if open

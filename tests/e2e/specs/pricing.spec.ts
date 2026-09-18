@@ -13,32 +13,24 @@ test.describe('Pricing page', () => {
     await expect(page).toHaveTitle(/Tarifs/i);
   });
 
-  test('defaults to annual billing with the correct prices and legal notice', async ({ page }) => {
-    await expect(page.getByRole('button', { name: /Annuel/i })).toBeVisible();
-    await expect(page.getByText(/1 mois offert/i).first()).toBeVisible();
-
-    // Annual total and effective monthly equivalent.
-    await expect(page.getByText(/Facturé\s+759€\s*\/\s*an/i)).toBeVisible();
-    await expect(page.getByText(/Facturé\s+1639€\s*\/\s*an/i)).toBeVisible();
-    await expect(page.getByText(/63(?:[,.]25)?€/i).first()).toBeVisible();
-    await expect(page.getByText(/136(?:[,.]58)?€/i).first()).toBeVisible();
-
-    await expect(
-      page.getByText(/Engagement d'un an ferme à compter de la date de souscription/i),
-    ).toBeVisible();
+  test('defaults to monthly billing with the canonical catalogue prices', async ({ page }) => {
+    await expect(page.getByRole('button', { name: /^Mensuel$/i })).toBeVisible();
+    await expect(page.getByText(/^69€$/).first()).toBeVisible();
+    await expect(page.getByText(/^129€$/).first()).toBeVisible();
+    await expect(page.getByText(/^229€$/).first()).toBeVisible();
+    await expect(page.getByText(/Facturation mensuelle/i).first()).toBeVisible();
   });
 
-  test('switches instantly to monthly billing', async ({ page }) => {
-    await page.getByRole('button', { name: /^Mensuel$/i }).click();
-
-    await expect(page.getByText(/69€\s*HT\s*\/\s*mois/i).first()).toBeVisible();
-    await expect(page.getByText(/149€\s*HT\s*\/\s*mois/i).first()).toBeVisible();
-    await expect(page.getByText(/Facturé\s+759€\s*\/\s*an/i)).toBeHidden();
-    await expect(page.getByText(/Facturé\s+1639€\s*\/\s*an/i)).toBeHidden();
+  test('switches instantly to annual billing', async ({ page }) => {
+    await page.getByRole('button', { name: /Annuel/i }).click();
+    await expect(page.getByText(/^690€$/).first()).toBeVisible();
+    await expect(page.getByText(/^1290€$/).first()).toBeVisible();
+    await expect(page.getByText(/^2290€$/).first()).toBeVisible();
+    await expect(page.getByText(/Facturation annuelle · 2 mois offerts/i).first()).toBeVisible();
   });
 
   test('opens the legal consent step before checkout', async ({ page }) => {
-    const planButton = page.getByRole('button', { name: /Démarrer avec Starter|Choisir l'offre Agency/i }).first();
+    const planButton = page.getByRole('button', { name: /^Choisir Pro$/i });
     await planButton.click();
 
     await expect(page.getByText(/CGV/i).first()).toBeVisible();

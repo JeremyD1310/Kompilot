@@ -24,15 +24,15 @@ test.describe('public interactive demo', () => {
     }
     await page.getByRole('button', { name: /Multi-établissements/ }).click();
     await page.getByRole('button', { name: 'Explorer le cockpit' }).first().click({ force: true });
-    await expect(page.getByRole('heading', { name: 'Aujourd’hui' })).toBeVisible();
-    await expect(page.getByText('Données fictives, actions locales uniquement')).toBeVisible();
-    await expect(page.getByText('Mode démo · aucun email, SMS, publication ou paiement réel')).toBeVisible();
+    await expect(page).toHaveURL(/\/demo\/onboarding$/);
+    await expect(page.getByRole('heading', { name: 'Votre activité' })).toBeVisible();
+    await expect(page.getByText('Démo locale')).toBeVisible();
   });
 
   for (const [route, heading] of demoRoutes) {
     test(`renders ${route}`, async ({ page }) => {
       await page.goto(route);
-      await expect(page.getByText('Données fictives, actions locales uniquement')).toBeVisible();
+      await expect(page.getByText('Mode démo : action simulée, aucun envoi réel.').first()).toBeVisible();
       if (route === '/demo/workspace') {
         await expect(page.getByText('Priorité du jour')).toBeVisible();
         await expect(page.getByRole('heading', { name: 'À valider' })).toBeVisible();

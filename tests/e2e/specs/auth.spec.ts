@@ -69,7 +69,9 @@ test.describe('Tunnel critique : Landing → Connexion → Dashboard', () => {
     await page.goto('/');
     await expect(page).toHaveURL('/');
     await page.waitForLoadState('networkidle');
-    const cta = page.locator('a[href*="signup"], a[href*="inscription"], button:has-text("Essai"), button:has-text("Commencer"), button:has-text("Démarrer"), a:has-text("Démarrer")').first();
+    // The desktop navigation CTA is intentionally hidden on mobile. Target the
+    // responsive hero/sticky CTA instead of whichever matching node comes first.
+    const cta = page.getByTestId('home-signup-cta');
     await expect(cta).toBeVisible({ timeout: 10_000 });
   });
 
