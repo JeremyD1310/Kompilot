@@ -43,7 +43,7 @@ export default defineConfig({
     // },
   ],
   webServer: {
-    command: 'bun run dev --port 3000',
+    command: 'npm run dev -- --host 127.0.0.1 --port 3000',
     url: BASE_URL,
     reuseExistingServer: true,
     timeout: 60_000,

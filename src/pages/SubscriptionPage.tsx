@@ -157,7 +157,9 @@ export default function SubscriptionPage() {
   const [billingMode, setBillingMode] = useState<'b2c' | 'b2b'>(() =>
     profileType === 'b2b' ? 'b2b' : 'b2c'
   );
-  const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
+  const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>(() => {
+    try { return localStorage.getItem('kompilot_pending_billing') === 'yearly' ? 'yearly' : 'monthly'; } catch { return 'monthly'; }
+  });
   const [checkout, setCheckout] = useState<CheckoutTarget | null>(null);
   const [welcomeModal, setWelcomeModal] = useState<{ open: boolean; planName: string }>({ open: false, planName: '' });
   // Detected from localStorage when user checked "skip trial" on signup
@@ -196,6 +198,7 @@ export default function SubscriptionPage() {
       // Clear the stored plan
       try {
         localStorage.removeItem('kompilot_pending_plan');
+        localStorage.removeItem('kompilot_pending_billing');
       } catch {
         // Local storage may be unavailable in privacy mode.
       }

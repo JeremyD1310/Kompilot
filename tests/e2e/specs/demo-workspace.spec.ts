@@ -23,10 +23,10 @@ test.describe('public interactive demo', () => {
       await expect(page.getByRole('button', { name: new RegExp(label) }).first()).toBeVisible();
     }
     await page.getByRole('button', { name: /Multi-établissements/ }).click();
-    await page.getByRole('button', { name: 'Explorer le cockpit' }).first().click({ force: true });
-    await expect(page).toHaveURL(/\/demo\/onboarding$/);
-    await expect(page.getByRole('heading', { name: 'Votre activité' })).toBeVisible();
-    await expect(page.getByText('Démo locale')).toBeVisible();
+    await page.getByTestId('demo-enter-workspace').click();
+    await expect(page).toHaveURL(/\/demo\/workspace$/);
+    await expect(page.getByRole('heading', { name: 'Aujourd’hui' })).toBeVisible();
+    await expect(page.getByText('Démo locale').first()).toBeVisible();
   });
 
   for (const [route, heading] of demoRoutes) {
@@ -166,10 +166,14 @@ test.describe('public interactive demo', () => {
     await expect(page.getByRole('dialog', { name: 'Plus' })).toHaveCount(0);
   });
 
-  test('contains only canonical demo pricing language', async ({ page }) => {
+  test('contains no unsupported result claim or legacy showcase', async ({ page }) => {
     await page.goto('/demo');
-    await expect(page.getByText(/69 € HT|149 € HT|14 jours gratuits/).first()).toBeVisible();
-    await expect(page.getByText(/30 €|39 €|59 €|99 €|299 €|599 €/)).toHaveCount(0);
+    await expect(page.getByText('Visite guidée · environ 3 minutes')).toBeVisible();
+    await expect(page.getByText(/73 % des recherches|\+40 % de trafic|Live Social Feed|Score G\.E\.O\./)).toHaveCount(0);
+    await page.goto('/showcase');
+    await expect(page).toHaveURL(/\/demo$/);
+    await page.goto('/demo/onboarding');
+    await expect(page).toHaveURL(/\/demo\/workspace$/);
   });
 
   test('has no horizontal overflow in compact portrait and landscape sizes', async ({ page }) => {

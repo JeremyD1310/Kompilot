@@ -14,13 +14,12 @@ import {
 } from '@blinkdotnew/ui';
 import {
   CreditCard, ChevronDown, ChevronUp, Zap, Check, Sparkles,
-  ArrowUpCircle, Building2, RefreshCw, AlertTriangle, ExternalLink,
+  ArrowUpCircle, AlertTriangle, ExternalLink,
   ShieldCheck, Loader2,
 } from 'lucide-react';
 import { PLANS, type PlanId, type Plan, useSubscription } from '../../context/SubscriptionContext';
 import { BillingHistorySection } from '../subscription/BillingHistorySection';
 import { CreditsTopUpSection } from '../subscription/CreditsTopUpSection';
-import { ChangePaymentMethodModal } from '../subscription/ChangePaymentMethodModal';
 import { toast } from '@blinkdotnew/ui';
 import { useWelcomeEmail } from '../../hooks/useWelcomeEmail';
 import { useStripeCheckout } from '../../hooks/useStripeCheckout';
@@ -33,11 +32,8 @@ import {
   type LegalConsentState,
 } from '../subscription/LegalConsentBlock';
 import {
-  getActivePaymentMethod,
   getPaymentFailed,
-  setPaymentFailed,
   getGracePeriodEnd,
-  type ActivePaymentMethod,
 } from '../../lib/billingStorage';
 import {
   createBillingPortalSession,
@@ -164,128 +160,12 @@ function CustomerPortalCard() {
   );
 }
 
-// ── Active payment method card ────────────────────────────────────────────────
-
-function ActivePaymentMethodCard() {
-  const [method, setMethod] = useState<ActivePaymentMethod>(getActivePaymentMethod());
-  const [changeOpen, setChangeOpen] = useState(false);
-  const [paymentFailed, setPaymentFailedState] = useState(getPaymentFailed());
-
-  const handleSaved = () => {
-    setMethod(getActivePaymentMethod());
-    if (paymentFailed) {
-      setPaymentFailed(false);
-      setPaymentFailedState(false);
-      toast.success('Moyen de paiement mis à jour — échec résolu ✅');
-    } else {
-      toast.success('Moyen de paiement mis à jour ! ✅');
-    }
-  };
-
-  const isCard = method.type === 'card';
-
-  return (
-    <>
-      <Card className="rounded-2xl border-border bg-card shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              {isCard
-                ? <CreditCard size={14} className="text-primary" />
-                : <Building2 size={14} className="text-primary" />
-              }
-            </div>
-            Moyen de paiement actif
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {paymentFailed && (
-            <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-300/60 px-4 py-3">
-              <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-amber-900">Tentative de prélèvement échouée</p>
-                <p className="text-[11px] text-amber-700 leading-relaxed mt-0.5">
-                  Mettez à jour votre moyen de paiement pour éviter une interruption de service.
-                  Vos services restent actifs <strong>7 jours</strong>.
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between gap-4 rounded-xl bg-muted/40 border border-border px-4 py-3.5">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-7 rounded-md flex items-center justify-center shrink-0 ${
-                isCard ? 'bg-[#1A1F71]' : 'bg-[#0D9488]/10 border border-[#0D9488]/20'
-              }`}>
-                {isCard ? (
-                  <span style={{ fontFamily: 'Georgia,serif', fontStyle: 'italic', fontWeight: 'bold', color: '#fff', fontSize: '9px' }}>
-                    VISA
-                  </span>
-                ) : (
-                  <Building2 size={14} className="text-[#0D9488]" />
-                )}
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">{method.label}</p>
-                <p className="text-[11px] text-muted-foreground">
-                  {isCard ? 'Carte bancaire · Renouvellement automatique' : 'Prélèvement SEPA · Renouvellement automatique'}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] font-semibold text-green-600">Actif</span>
-            </div>
-          </div>
-
-          <Button
-            variant="outline"
-            className="w-full gap-2 rounded-xl h-10 text-sm"
-            onClick={() => setChangeOpen(true)}
-          >
-            <RefreshCw size={14} />
-            Changer de moyen de paiement
-          </Button>
-
-          <div className="flex items-center justify-between pt-1 border-t border-border/40">
-            <p className="text-[10px] text-muted-foreground/60">🧪 Simuler un échec de paiement</p>
-            <button
-              onClick={() => {
-                const next = !paymentFailed;
-                setPaymentFailed(next);
-                setPaymentFailedState(next);
-                window.dispatchEvent(new Event('kompilot:payment-failed-changed'));
-                toast(next ? '⚠️ Échec de paiement simulé (bandeau activé)' : '✅ Simulation désactivée', {
-                  description: next ? 'Rechargez la page pour voir le bandeau.' : undefined,
-                });
-              }}
-              className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer shrink-0 ${
-                paymentFailed ? 'bg-amber-500' : 'bg-gray-200'
-              }`}
-            >
-              <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                paymentFailed ? 'translate-x-5' : 'translate-x-0.5'
-              }`} />
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <ChangePaymentMethodModal
-        open={changeOpen}
-        onClose={() => setChangeOpen(false)}
-        onSaved={handleSaved}
-      />
-    </>
-  );
-}
-
 // ── Plan picker ───────────────────────────────────────────────────────────────
 
 const PLAN_HIGHLIGHTS: Record<string, string[]> = {
-  free:   ['3 posts/mois', '1 réseau social', 'Accès basique'],
-  pro:    ['15 posts/mois', '3 réseaux sociaux', 'IA légendes', 'Boîte de réception', 'Support prioritaire'],
-  expert: ['30 posts/mois', 'Réseaux illimités', 'Stories Instagram & FB', 'Multi-utilisateurs', 'Rapports PDF'],
+  pro:    ['1 établissement', '1 utilisateur', 'Crédits IA inclus', 'Boîte de réception'],
+  multi:  ['3 établissements', '3 utilisateurs', 'Crédits IA renforcés', 'Gestion multi-sites'],
+  agency: ['10 établissements', '5 utilisateurs', 'Crédits IA avancés', 'Rapports PDF'],
 };
 
 function PlanOption({ plan, isCurrent, isRecommended, onSelect, checkoutLoading, isPending }: {
@@ -517,7 +397,6 @@ function ClassicProBilling() {
   return (
     <div className="space-y-6 max-w-2xl">
       <CustomerPortalCard />
-      <ActivePaymentMethodCard />
       <UpgradeSection />
       <CreditsTopUpSection />
       <BillingHistorySection />
@@ -587,7 +466,6 @@ export function BillingTab() {
       {/* Pro-specific: inline invoice list + portal */}
       <ProBillingDashboard />
       {/* Classic: plan picker, credits top-up, payment method */}
-      <ActivePaymentMethodCard />
       <UpgradeSection />
       <CreditsTopUpSection />
     </div>

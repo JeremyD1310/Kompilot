@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router';
-import { Logo } from './LandingNav';
 import { KompilotLogo } from '../brand/KompilotLogo';
 
 export function LandingFooter() {

@@ -17,7 +17,6 @@ import { createKompilotGraph } from '../lib/seoData';
 import { captureUtmParams, getUtmSector, track } from '../lib/tracking';
 import { getSectorConfig } from '../components/landing/UTMSectorAdapter';
 import { useNavigate } from '@tanstack/react-router';
-import { blink } from '../blink/client';
 
 function useScrollReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -70,7 +69,8 @@ export default function LandingPage() {
   const handlePricingCta = async (planId: string, billing: BillingInterval) => {
     if (!user) {
       try { localStorage.setItem('kompilot_pending_plan', planId); } catch {}
-      blink.auth.login(window.location.origin + '/subscription?plan=' + encodeURIComponent(planId));
+      try { localStorage.setItem('kompilot_pending_billing', billing); } catch {}
+      navigate({ to: '/signup' });
       return;
     }
     try {
@@ -117,7 +117,7 @@ export default function LandingPage() {
           <FAQSection onCta={cta} />
           <BetaTestimonialsSection />
           <section className="px-5 py-20" style={{ background: '#0F172A' }}>
-            <div className="mx-auto max-w-4xl text-center"><p className="text-xs font-bold uppercase tracking-[.16em]" style={{ color: '#5EEAD4' }}>Le prochain geste est simple</p><h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white md:text-5xl">Transformez votre visibilité en actions concrètes</h2><p className="mx-auto mt-5 max-w-2xl text-base leading-8" style={{ color: '#CBD5E1' }}>Centralisez vos contenus, avis et performances dans un cockpit conçu pour les entreprises locales.</p><div className="mt-8 flex flex-wrap justify-center gap-3"><button type="button" onClick={cta} className="nc-pill" style={{ background: '#0D9488', boxShadow: '0 12px 30px rgba(13,148,136,.25)' }}>Commencer gratuitement</button><a href="/showcase" className="nc-btn-outline" style={{ color: '#E2E8F0', borderColor: 'rgba(255,255,255,.2)' }}>Réserver une démonstration</a></div></div>
+            <div className="mx-auto max-w-4xl text-center"><p className="text-xs font-bold uppercase tracking-[.16em]" style={{ color: '#5EEAD4' }}>Le prochain geste est simple</p><h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white md:text-5xl">Transformez votre visibilité en actions concrètes</h2><p className="mx-auto mt-5 max-w-2xl text-base leading-8" style={{ color: '#CBD5E1' }}>Centralisez vos contenus, avis et performances dans un cockpit conçu pour les entreprises locales.</p><div className="mt-8 flex flex-wrap justify-center gap-3"><button type="button" onClick={cta} className="nc-pill" style={{ background: '#0D9488', boxShadow: '0 12px 30px rgba(13,148,136,.25)' }}>Commencer gratuitement</button><a href="/demo" className="nc-btn-outline" style={{ color: '#E2E8F0', borderColor: 'rgba(255,255,255,.2)' }}>Explorer la démonstration</a></div></div>
           </section>
         </main>
         <LandingFooter />

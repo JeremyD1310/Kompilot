@@ -22,12 +22,10 @@ const DiagnosticPage       = React.lazy(() => import('../pages/DiagnosticPage'))
 const ReferralLandingPage  = React.lazy(() => import('../pages/ReferralLandingPage'));
 const ClientApprovalPage   = React.lazy(() => import('../pages/ClientApprovalPage'));
 const DemoPage             = React.lazy(() => import('../pages/DemoPage'));
-const DemoOnboardingPage    = React.lazy(() => import('../pages/DemoOnboardingPage'));
 const DemoWorkspacePage     = React.lazy(() => import('../pages/DemoWorkspacePage'));
 const TestimonialsPage      = React.lazy(() => import('../pages/TestimonialsPage'));
 const FAQPage              = React.lazy(() => import('../pages/FAQPage'));
 const TunnelReportPage        = React.lazy(() => import('../pages/TunnelReportPage'));
-const KompilotShowcasePage  = React.lazy(() => import('../pages/demo/KompilotShowcasePage'));
 const KompilotOnboardingPage = React.lazy(() => import('../pages/KompilotOnboardingPage'));
 const KompilotROIDashboardPage = React.lazy(() => import('../pages/KompilotROIDashboardPage'));
 const PricingPage              = React.lazy(() => import('../pages/PricingPage'));
@@ -76,7 +74,7 @@ export const diagnosticRoute = createRoute({ getParentRoute: () => rootRoute, pa
 export const referralLandingRoute = createRoute({ getParentRoute: () => rootRoute, path: '/ref/$code', component: ReferralLandingPage });
 export const clientApprovalRoute = createRoute({ getParentRoute: () => rootRoute, path: '/approve/$token', component: ClientApprovalPage });
 export const demoRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo', component: DemoPage });
-export const demoOnboardingRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/onboarding', component: DemoOnboardingPage });
+export const demoOnboardingRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/onboarding', beforeLoad: () => { throw redirect({ to: '/demo/workspace' }); }, component: DemoWorkspacePage });
 export const demoDashboardRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/dashboard', beforeLoad: () => { throw redirect({ to: '/demo/workspace' }); }, component: DemoWorkspacePage });
 export const demoWorkspaceRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace', component: DemoWorkspacePage });
 export const demoWorkspaceApprovalsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/approvals', component: DemoWorkspacePage });
@@ -92,7 +90,7 @@ export const demoWorkspaceOrganizationRoute = createRoute({ getParentRoute: () =
 export const demoWorkspaceTeamRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/team', component: DemoWorkspacePage });
 export const demoWorkspaceSettingsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/settings', component: DemoWorkspacePage });
 export const tunnelReportRoute = createRoute({ getParentRoute: () => rootRoute, path: '/tunnel-report/$token', component: TunnelReportPage });
-export const showcaseRoute = createRoute({ getParentRoute: () => rootRoute, path: '/showcase', component: KompilotShowcasePage });
+export const showcaseRoute = createRoute({ getParentRoute: () => rootRoute, path: '/showcase', beforeLoad: () => { throw redirect({ to: '/demo' }); }, component: DemoPage });
 export const kompilotOnboardingRoute = createRoute({ getParentRoute: () => rootRoute, path: '/onboarding-copilot', component: KompilotOnboardingPage });
 export const kompilotROIRoute = createRoute({ getParentRoute: () => rootRoute, path: '/roi-dashboard', component: KompilotROIDashboardPage });
 export const pricingRoute      = createRoute({ getParentRoute: () => rootRoute, path: '/pricing',       component: PricingPage });
