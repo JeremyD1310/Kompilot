@@ -268,7 +268,6 @@ export async function createCheckoutSession(
     // Payload Stripe Checkout Session
     // Les champs imbriqués utilisent la notation bracket : line_items[0][price]
     const payload: Record<string, string | number | boolean | undefined> = {
-      'payment_method_types[0]':           'card',
       'mode':                              'subscription',
       'customer':                          params.customerId,
       'line_items[0][price]':              params.priceId,

@@ -4,9 +4,8 @@
  */
 import { blink } from '../blink/client';
 import { isDemoRuntime } from './demoDomain';
+import { backendFetch } from './backend';
 import type { BillingInterval, PricingProductId, SubscriptionPlanId } from '../../shared/pricingCatalog';
-
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -67,7 +66,7 @@ async function getAuthHeader(): Promise<Record<string, string>> {
 export async function createBillingPortalSession(): Promise<PortalResult> {
   try {
     const headers = await getAuthHeader();
-    const res = await fetch(`${BACKEND_URL}/api/billing/portal`, {
+    const res = await backendFetch('/api/billing/portal', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...headers },
     });
@@ -109,7 +108,7 @@ export async function createCheckoutSession(
 ): Promise<{ url: string | null; fallback?: boolean; error?: string; code?: string }> {
   try {
     const headers = await getAuthHeader();
-    const res = await fetch(`${BACKEND_URL}/api/billing/checkout`, {
+    const res = await backendFetch('/api/billing/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify({ planId, billing, legalConsent }),
@@ -132,7 +131,7 @@ export async function createOneTimeCheckout(
   }
   try {
     const headers = await getAuthHeader();
-    const res = await fetch(`${BACKEND_URL}/api/billing/one-time-checkout`, {
+    const res = await backendFetch('/api/billing/one-time-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify({ productId, legalConsent }),
@@ -162,7 +161,7 @@ export async function fetchBillingStatus(): Promise<BillingStatus> {
     const token = await blink.auth.getValidToken().catch(() => null);
     if (!token) return fallback;
 
-    const res = await fetch(`${BACKEND_URL}/api/billing/status`, {
+    const res = await backendFetch('/api/billing/status', {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return fallback;
@@ -183,7 +182,7 @@ export async function fetchCreditBalance(): Promise<CreditBalance> {
     throw new Error('Authentication token not available.');
   }
 
-  const res = await fetch(`${BACKEND_URL}/api/credits/balance`, {
+  const res = await backendFetch('/api/credits/balance', {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
@@ -205,7 +204,7 @@ export async function fetchCreditHistory(): Promise<CreditHistoryEntry[]> {
     throw new Error('Authentication token not available.');
   }
 
-  const res = await fetch(`${BACKEND_URL}/api/credits/history`, {
+  const res = await backendFetch('/api/credits/history', {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
