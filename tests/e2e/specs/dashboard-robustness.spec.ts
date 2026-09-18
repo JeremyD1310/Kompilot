@@ -107,18 +107,17 @@ test.describe('États vides (Empty States)', () => {
 test.describe('Résistance aux clics multiples (stress UI)', () => {
   test('2.1 — Clic frénétique sur "+ Créer un post" → modal ouvre une seule fois', async ({ page }) => {
     await loginAsDemo(page);
-    // Find the create post button
-    // The responsive shell keeps a hidden desktop navigation button mounted on
-    // compact viewports. Target the actionable control, not the first DOM match.
-    const createBtn = page.locator(
-      'button:visible:has-text("Créer"), button:visible:has-text("Nouveau post"), button:visible:has-text("+ Post"), [data-testid="create-post-btn"]:visible'
-    ).first();
+    await page.goto('/demo/workspace/content');
+    const createBtn = page.getByRole('button', { name: 'Créer un brouillon', exact: true }).first();
     await expect(createBtn).toBeVisible({ timeout: 10_000 });
 
-    // Click 5 times rapidly
-    for (let i = 0; i < 5; i++) {
-      await createBtn.click({ force: true });
-    }
+    // Dispatch synchronously so the first render cannot make the button
+    // unreachable before the stress burst completes.
+    await createBtn.evaluate(element => {
+      for (let i = 0; i < 5; i += 1) {
+        element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      }
+    });
 
     // Only ONE create-action dialog should be open. The consent banner is an
     // independent accessible dialog and may legitimately coexist on a fresh CI
