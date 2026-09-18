@@ -18,7 +18,7 @@ const demoRoutes = [
 test.describe('public interactive demo', () => {
   test('offers four profiles and enters the local workspace', async ({ page }) => {
     await page.goto('/demo');
-    await expect(page.getByRole('heading', { name: 'Explorez le cockpit Kompilot' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Découvrez Kompilot simplement' })).toBeVisible();
     for (const label of ['Commerce local', 'Artisan ou PME', 'Agence', 'Multi-établissements']) {
       await expect(page.getByRole('button', { name: new RegExp(label) }).first()).toBeVisible();
     }
