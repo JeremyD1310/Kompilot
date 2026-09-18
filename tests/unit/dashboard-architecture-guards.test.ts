@@ -28,7 +28,7 @@ describe('dashboard architecture guards', () => {
     expect(dashboard).toContain('saveDashboardActionPreference');
     expect(dashboard).toContain('recordedMilestone');
     expect(celebration).toContain('recordedEventId');
-    expect(celebration).toContain('acknowledgeDashboardMilestone');
+    expect(dashboard).toContain('acknowledgeDashboardMilestone');
     expect(backendRoute).toContain("'/api/dashboard/actions/:actionId'");
     expect(migration).toContain('dashboard_action_preferences');
     expect(migration).toContain('dashboard_milestone_events');
