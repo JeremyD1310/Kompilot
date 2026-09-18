@@ -108,8 +108,10 @@ test.describe('Résistance aux clics multiples (stress UI)', () => {
   test('2.1 — Clic frénétique sur "+ Créer un post" → modal ouvre une seule fois', async ({ page }) => {
     await loginAsDemo(page);
     // Find the create post button
+    // The responsive shell keeps a hidden desktop navigation button mounted on
+    // compact viewports. Target the actionable control, not the first DOM match.
     const createBtn = page.locator(
-      'button:has-text("Créer"), button:has-text("Nouveau post"), button:has-text("+ Post"), [data-testid="create-post-btn"]'
+      'button:visible:has-text("Créer"), button:visible:has-text("Nouveau post"), button:visible:has-text("+ Post"), [data-testid="create-post-btn"]:visible'
     ).first();
     await expect(createBtn).toBeVisible({ timeout: 10_000 });
 

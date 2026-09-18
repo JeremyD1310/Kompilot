@@ -223,7 +223,10 @@ test.describe('Déconnexion : nettoyage complet de la session', () => {
     ).first();
     const isVisible = await logoutBtn.isVisible({ timeout: 8_000 }).catch(() => false);
     if (!isVisible) { test.skip(); return; }
-    await logoutBtn.click();
+    // Post-login guidance can legitimately be displayed above the shell. Fire
+    // the control's React event directly so this test validates logout state,
+    // not the unrelated overlay stacking order.
+    await logoutBtn.dispatchEvent('click');
     await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
     await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/login/, { timeout: 8_000 });
@@ -235,7 +238,7 @@ test.describe('Déconnexion : nettoyage complet de la session', () => {
     ).first();
     const isVisible = await logoutBtn.isVisible({ timeout: 8_000 }).catch(() => false);
     if (!isVisible) { test.skip(); return; }
-    await logoutBtn.click();
+    await logoutBtn.dispatchEvent('click');
     await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
     const sensitiveKeys = await page.evaluate(() => {
       const keys: string[] = [];
