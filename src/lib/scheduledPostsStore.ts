@@ -15,6 +15,7 @@ export interface ScheduledPostStore {
   time: string;       // 'HH:mm'
   status: PostStatus;
   platform?: string;
+  imageUrl?: string;
 }
 
 // ── Storage key ────────────────────────────────────────────────────────────────
@@ -215,5 +216,17 @@ export function useScheduledPosts(userId?: string) {
     if (userId) deletePostFromDb(id);
   }, [userId]);
 
-  return { posts, add, updateStatus, remove };
+  const update = useCallback((id: string, patch: Partial<Omit<ScheduledPostStore, 'id'>>): ScheduledPostStore | null => {
+    const current = getScheduledPosts();
+    const index = current.findIndex(post => post.id === id);
+    if (index < 0) return null;
+    const updated = { ...current[index], ...patch };
+    current[index] = updated;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+    setPosts(current);
+    if (userId) syncPostToDb(updated, userId);
+    return updated;
+  }, [userId]);
+
+  return { posts, add, update, updateStatus, remove };
 }

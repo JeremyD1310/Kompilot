@@ -48,7 +48,7 @@ export function GapOpportunityCard({ opportunity, index, onGenerate, dataSource 
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.5, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] as const }}
       className="relative rounded-2xl border border-border bg-card overflow-hidden group hover:border-primary/30 transition-all duration-300"
     >
       {/* Accent bar */}

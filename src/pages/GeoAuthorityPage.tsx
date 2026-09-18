@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Brain, RefreshCw, Sparkles, AlertTriangle, CheckCircle2,
   Globe, Zap, ChevronRight, Target, ArrowRight, Rocket,
-  Search, Bot, MessageCircle, Linkedin, TrendingUp,
+  Search, Bot, MessageCircle, TrendingUp,
 } from 'lucide-react';
 import { useEstablishment } from '../context/EstablishmentContext';
 import { GeoCitationChart } from '../components/geo/GeoCitationChart';

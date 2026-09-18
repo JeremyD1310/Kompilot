@@ -24,15 +24,12 @@ import { AgentsPaywall } from './AgentsPaywall';
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export function AIAgentsModule() {
-  const { currentPlan, subscriptionStatus } = useSubscription();
+  const { currentPlan, isAgentEnabled } = useSubscription();
   const quota = useAgentQuota();
   const { logs: backendLogs, isRunning: agentRunning } = useAgentSprint();
 
-  const isTrialBySubscription =
-    currentPlan.id === 'free' ||
-    subscriptionStatus === 'trialing' ||
-    subscriptionStatus === 'none';
-  const isAgency = currentPlan.id === 'expert';
+  const isTrialBySubscription = !isAgentEnabled;
+  const isAgency = currentPlan.id === 'agency';
   const addonPrice = isAgency ? 'Inclus dans Agency' : 'Disponible dans Agency';
 
   const [aiOptionActivated, setAiOptionActivated] = useState(false);

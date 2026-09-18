@@ -101,7 +101,7 @@ export function CompetitorOnboardingWizard({ isOpen, onComplete, onSkip }: Compe
         initial={{ opacity: 0, scale: 0.96, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 20 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
         className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden"
       >
         {/* Progress bar */}

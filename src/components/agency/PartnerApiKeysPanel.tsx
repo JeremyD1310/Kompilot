@@ -14,7 +14,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { Key, Plus, Trash2, Copy, CheckCircle2, Eye, EyeOff, Clock, ExternalLink } from 'lucide-react';
 import { Button, Card, CardContent, toast } from '@blinkdotnew/ui';
 import { blink } from '@/blink/client';
-import { AddonGate } from '../shared/AddonGate';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'https://gbrhsehk.backend.blink.new';
 const PARTNER_API_BASE = `${BACKEND_URL}/api/v1/partner`;
@@ -133,7 +132,6 @@ export function PartnerApiKeysPanel() {
   }
 
   return (
-    <AddonGate addonId="partner_api" featureName="API Partenaire">
     <div className="space-y-5">
       {/* ── New key generation ── */}
       {newKey && (
@@ -260,6 +258,5 @@ export function PartnerApiKeysPanel() {
         </p>
       </div>
     </div>
-    </AddonGate>
   );
 }

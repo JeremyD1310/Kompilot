@@ -3,7 +3,12 @@ import { BarChart3, CalendarDays, Check, FileText, Plus, Trash2, X } from 'lucid
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label, Textarea, toast } from '@blinkdotnew/ui';
 import { blink } from '../../blink/client';
 import { useAuth } from '../../hooks/useAuth';
-import type { CustomActivityReportsRow } from '../../lib/db-types';
+
+interface CustomActivityReportsRow {
+  id: string; userId: string; name: string; description: string; dateRange: string;
+  startDate: string | null; endDate: string | null; metricsJson: string; channelsJson: string;
+  includeActivity: number; schedule: string; createdAt: string; updatedAt: string;
+}
 
 const METRICS = [
   { id: 'posts', label: 'Publications' },

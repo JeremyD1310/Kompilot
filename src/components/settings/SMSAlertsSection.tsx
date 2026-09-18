@@ -431,7 +431,7 @@ export function SMSAlertsSection() {
   const [phoneError, setPhoneError] = useState('');
   const [testSent, setTestSent]     = useState(false);
 
-  const isPro      = currentPlan.id === 'pro' || currentPlan.id === 'expert';
+  const isPro      = currentPlan.id === 'pro' || currentPlan.id === 'multi' || currentPlan.id === 'agency';
   const firstName  = user?.displayName?.split(' ')[0] ?? 'vous';
   const company    = (profile as any)?.companyName ?? 'votre page';
 
@@ -613,7 +613,7 @@ export function SMSAlertsSection() {
               <>
                 💡 <strong>Les SMS de rappels sont inclus en illimité dans l'offre Pro et Expert.</strong>
                 {' '}En version Free, chaque SMS envoyé consomme <strong>0.5 crédit</strong>.{' '}
-                Solde actuel : <strong>{credits === 'unlimited' ? '∞' : credits} crédit{typeof credits === 'number' && credits !== 1 ? 's' : ''}</strong>.
+                Solde actuel : <strong>{credits} crédit{credits !== 1 ? 's' : ''}</strong>.
               </>
             )}
           </p>

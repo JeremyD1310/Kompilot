@@ -427,8 +427,7 @@ function PresencesPageContent() {
                 </div>
 
                 <Link
-                  to="/presences/$id"
-                  params={{ id: presence.id }}
+                  to="/presences"
                   className="shrink-0 p-1.5 rounded-lg text-muted-foreground/30 hover:text-primary hover:bg-primary/10 opacity-0 group-hover:opacity-100 transition-all duration-200"
                   title="Voir les détails"
                 >

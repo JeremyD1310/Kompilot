@@ -36,7 +36,7 @@ export function AgencyView() {
         <Stat
           label="Crédits IA"
           value="380k / 500k"
-          description={<Progress value={76} className="h-1.5 mt-2" indicatorClassName="bg-indigo-500" />}
+          description="Progression du réseau : 76 %"
         />
         <Stat label="MRR clients" value="8 750€" trend={12} trendLabel="ce mois" icon={<TrendingUp className="text-indigo-500" />} />
       </StatGroup>
@@ -70,7 +70,7 @@ export function AgencyView() {
             <div className="flex justify-between text-xs text-amber-600 mb-1.5">
               <span>Limite mensuelle IA</span><span>76%</span>
             </div>
-            <Progress value={76} className="h-2" indicatorClassName="bg-amber-500" />
+            <Progress value={76} className="h-2" />
             <p className="text-[10px] text-slate-500 italic mt-2">Alerte automatique à 90%</p>
           </Card>
 

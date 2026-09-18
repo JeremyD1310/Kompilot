@@ -125,7 +125,7 @@ export async function sendCampaign(options: SendCampaignOptions): Promise<SendRe
           });
 
           if (!result.success) {
-            throw new Error(result.message || 'Send failed');
+            throw new Error('Send failed');
           }
 
           return { success: true, email: recipient.email };

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PWABanner } from '../components/layout/PWABanner';
 import { createCheckoutSession } from '../lib/billingClient';
+import type { BillingInterval, SubscriptionPlanId } from '../../shared/pricingCatalog';
 import { useAuth } from '../hooks/useAuth';
 import { PricingSection } from '../components/landing/PricingSection';
 import { FAQSection } from '../components/landing/FAQSection';
@@ -66,14 +67,14 @@ export default function LandingPage() {
     track('ViewContent', { sector: detectedSector ?? undefined, userType: audience, eventUrl: window.location.href }).catch(() => {});
   }, [audience, detectedSector, utmParams]);
 
-  const handlePricingCta = async (planId: string) => {
+  const handlePricingCta = async (planId: string, billing: BillingInterval) => {
     if (!user) {
       try { localStorage.setItem('kompilot_pending_plan', planId); } catch {}
       blink.auth.login(window.location.origin + '/subscription?plan=' + encodeURIComponent(planId));
       return;
     }
     try {
-      const result = await createCheckoutSession(planId, {
+      const result = await createCheckoutSession(planId as SubscriptionPlanId, billing, {
         cgvAccepted: true,
         retractionWaived: false,
         cgvVersion: 'public-2026-09-14',

@@ -20,7 +20,7 @@ export function AnniversaryUpsellBanner() {
   if (!showUpsell) return null;
 
   const savings = planSavings[currentPlan.id as keyof typeof planSavings] ?? planSavings.starter;
-  const planLabel = currentPlan.id === 'agency' ? 'Agency' : 'Pro';
+  const planLabel = currentPlan.id === 'agency' ? 'Agency' : currentPlan.id === 'multi' ? 'Multi' : 'Pro';
 
   const handleSwitch = async () => {
     const result = await switchToAnnual(currentPlan.id);

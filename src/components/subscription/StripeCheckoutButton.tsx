@@ -10,10 +10,12 @@ import { Lock, Loader2, Zap } from 'lucide-react';
 import { Button } from '@blinkdotnew/ui';
 import { createCheckoutSession, type CheckoutLegalConsent } from '../../lib/billingClient';
 import { CGV_VERSION } from './LegalConsentBlock';
+import type { BillingInterval, SubscriptionPlanId } from '../../../shared/pricingCatalog';
 
 export interface StripeCheckoutButtonProps {
-  planId: string;
+  planId: SubscriptionPlanId;
   planName: string;
+  billing: BillingInterval;
   /** Stripe price ID — passed through to billingClient (future use) */
   priceId?: string;
   amount: number;
@@ -29,6 +31,7 @@ type CheckoutState = 'idle' | 'loading' | 'redirecting' | 'error';
 export function StripeCheckoutButton({
   planId,
   planName,
+  billing,
   amount,
   legalConsent,
   onSuccess,
@@ -60,7 +63,7 @@ export function StripeCheckoutButton({
         userAgent: navigator.userAgent,
       };
 
-      const result = await createCheckoutSession(planId, consent);
+      const result = await createCheckoutSession(planId, billing, consent);
 
       if (result.url && !result.fallback) {
         setState('redirecting');
@@ -95,7 +98,7 @@ export function StripeCheckoutButton({
         {isLoading ? (
           <><Loader2 size={14} className="animate-spin" />{state === 'redirecting' ? 'Redirection…' : 'Ouverture…'}</>
         ) : (
-          <><Zap size={14} />Choisir {planName} — {amount}€/mois</>
+          <><Zap size={14} />Choisir {planName} — {amount}€/{billing === 'yearly' ? 'an' : 'mois'}</>
         )}
       </Button>
 

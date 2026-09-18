@@ -291,7 +291,7 @@ export default function OnboardingPage() {
         userId:      user.id,
         sector,
         objective:   objectiveStr,
-        displayName: user.display_name ?? user.email ?? '',
+        displayName: user.displayName ?? user.email ?? '',
         email:       user.email ?? '',
       }).catch(() => {});
 
@@ -590,7 +590,7 @@ export default function OnboardingPage() {
         {/* MODULE 3: Pro/Agency banner — shown after successful save */}
         {showProBanner && (
           <ProAgencyOnboardingBanner
-            userName={user?.display_name ?? undefined}
+            userName={user?.displayName ?? undefined}
             onDismiss={() => setShowProBanner(false)}
           />
         )}

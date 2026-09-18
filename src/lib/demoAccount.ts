@@ -36,7 +36,7 @@ export const DEMO_USER = {
   emailVerified:  true,
   role:           'admin',
   metadata: {
-    plan:         'expert',
+    plan:         'agency',
     isDemo:       true,
     agencyMode:   true,
   },

@@ -18,7 +18,7 @@ export interface SectorAIPromptConfig {
   restrictions?: string;
 }
 
-export const SECTOR_AI_PROMPTS: Record<SectorKey, SectorAIPromptConfig> = {
+export const SECTOR_AI_PROMPTS: Partial<Record<SectorKey, SectorAIPromptConfig>> = {
   beaute: {
     sectorKey: 'beaute',
     tone: 'enthusiastic',

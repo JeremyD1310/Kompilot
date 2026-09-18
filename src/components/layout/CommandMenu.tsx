@@ -310,7 +310,7 @@ export function CommandMenu() {
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
-              transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
+              transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] as const }}
               className="fixed left-1/2 top-[18%] z-[1001] w-full max-w-[520px] px-4"
               style={{ transform: 'translateX(-50%)' }}
               role="dialog"

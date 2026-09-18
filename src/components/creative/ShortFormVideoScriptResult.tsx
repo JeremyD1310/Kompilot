@@ -50,7 +50,7 @@ function TimelineCard({ entry, index }: { entry: TimelineEntry; index: number })
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay: index * 0.15, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay: index * 0.15, duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
       className={`relative rounded-2xl border border-white/8 bg-gradient-to-br ${style.gradient} backdrop-blur-sm overflow-hidden`}
     >
       {/* Section badge */}

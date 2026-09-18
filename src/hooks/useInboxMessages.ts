@@ -88,7 +88,7 @@ export function useInboxMessages() {
   const queryClient = useQueryClient();
 
   // Fetch messages from DB
-  const { data: dbMessages, isLoading: loadingMessages } = useQuery({
+  const { data: dbMessages, isLoading: loadingMessages, error } = useQuery({
     queryKey: ['inbox-messages', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -220,6 +220,7 @@ export function useInboxMessages() {
   return {
     messages,
     isLoading: loadingMessages,
+    error,
     markRead: (id: string) => markReadMutation.mutate(id),
     archive: (id: string) => archiveMutation.mutate(id),
     unarchive: (id: string) => unarchiveMutation.mutate(id),

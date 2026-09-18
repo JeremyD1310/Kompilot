@@ -3,7 +3,11 @@ import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, Select
 import { Copy, Loader2, Pencil, Plus, Save, Trash2 } from 'lucide-react';
 import { blink } from '../../blink/client';
 import { useAuth } from '../../hooks/useAuth';
-import type { AgencySectorTemplatesRow } from '../../lib/db-types';
+
+interface AgencySectorTemplatesRow {
+  id: string; userId: string; name: string; sector: string; platform: string;
+  hook: string; body: string; cta: string; createdAt?: string;
+}
 
 const PLATFORMS = [
   ['linkedin', 'LinkedIn'],

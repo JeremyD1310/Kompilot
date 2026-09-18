@@ -20,6 +20,7 @@ const TEAL = '#0D9488';
 
 export default function PricingAgencyPage() {
   const [checkoutPlanId, setCheckoutPlanId] = useState<KompilotPlanId | null>(null);
+  const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
 
   const agencyPlan = PLANS.find(p => p.id === 'agency')!;
   const enterprisePlan = PLANS.find(p => p.id === 'enterprise')!;
@@ -102,7 +103,7 @@ export default function PricingAgencyPage() {
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] as const }}
             className="flex flex-col relative"
             style={{
               borderRadius: 20,
@@ -129,6 +130,14 @@ export default function PricingAgencyPage() {
               </div>
 
               <p className="text-sm mb-5 leading-relaxed" style={{ color: '#64748B' }}>{agencyPlan.tagline}</p>
+
+              <div className="mb-5 flex rounded-xl border border-white/10 p-1" aria-label="Période de facturation">
+                {(['monthly', 'yearly'] as const).map(interval => (
+                  <button key={interval} type="button" onClick={() => setBilling(interval)} className={`flex-1 rounded-lg px-3 py-2 text-xs font-bold ${billing === interval ? 'bg-indigo-500 text-white' : 'text-slate-400'}`}>
+                    {interval === 'monthly' ? 'Mensuel' : 'Annuel'}
+                  </button>
+                ))}
+              </div>
 
               <div className="mb-6 pb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                 <div className="flex items-end gap-1">
@@ -164,6 +173,7 @@ export default function PricingAgencyPage() {
                   <SubscriptionCheckoutPanel
                     planId="agency"
                     planName={agencyPlan.name}
+                    billing={billing}
                     onCancel={() => setCheckoutPlanId(null)}
                   />
                 </motion.div>
@@ -187,7 +197,7 @@ export default function PricingAgencyPage() {
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.45, delay: 0.1, ease: [0.22, 1, 0.36, 1] as const }}
             className="flex flex-col relative"
             style={{
               borderRadius: 20,

@@ -186,7 +186,7 @@ export function GoogleReviewsPanel() {
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
                       className="h-full rounded-full bg-amber-500"
                     />
                   </div>

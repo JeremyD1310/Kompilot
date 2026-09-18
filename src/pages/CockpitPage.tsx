@@ -136,8 +136,8 @@ export default function CockpitPage() {
 
   const cityMatch = activeEstablishment.address.match(/\d{5}\s+(.+)/);
   const city = cityMatch ? cityMatch[1] : (activeEstablishment.address.split(',').pop()?.trim() ?? 'votre ville');
-  const creditsLabel = credits === 'unlimited' ? 'Illimité' : `${credits} crédit${Number(credits) !== 1 ? 's' : ''}`;
-  const isLow = credits !== 'unlimited' && Number(credits) <= 2;
+  const creditsLabel = `${credits} crédit${credits !== 1 ? 's' : ''}`;
+  const isLow = credits <= 2;
   const bookingUrl = activeEstablishment.bookingUrl;
   const hasBooking = !!bookingUrl;
   const detectedPlatform = bookingUrl ? detectPlatformFromUrl(bookingUrl) : null;

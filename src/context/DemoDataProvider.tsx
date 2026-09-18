@@ -104,7 +104,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     } catch { /* use seed */ }
     return createDemoData(initialPersona());
   });
-  const [demoCreditsUsed, setDemoCreditsUsed] = useState(readNumber);
+  const [demoCreditsUsed, setDemoCreditsUsed] = useState(() => readNumber(CREDITS_KEY));
   const [demoSector, setDemoSectorState] = useState<DemoSector>(() => readString(SECTOR_KEY, sectors, 'general'));
   const [demoViewRole, setDemoViewRoleState] = useState<DemoViewRole>(() => readString(VIEW_KEY, ['pro', 'agency'], 'pro'));
   const [lastAction, setLastAction] = useState<string | null>(null);
@@ -237,4 +237,3 @@ export function useDemoData(): DemoDataContextValue {
 }
 
 export function isDemoMode(): boolean { return isDemoRuntime(); }
-export type { DemoApprovalItem };

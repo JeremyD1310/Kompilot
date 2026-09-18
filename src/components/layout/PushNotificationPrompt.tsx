@@ -17,7 +17,7 @@ export function PushNotificationPrompt() {
         initial={{ opacity: 0, y: 12, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -8, scale: 0.97 }}
-        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] as const }}
         className="fixed bottom-20 left-4 z-50 max-w-sm"
       >
         <div className="bg-card border border-border rounded-xl shadow-lg p-4 flex items-start gap-3">

@@ -14,6 +14,7 @@ import {
   type Firestore,
 } from 'firebase/firestore';
 import { getMessaging, isSupported as messagingSupported, type Messaging } from 'firebase/messaging';
+import { getAuth, type Auth } from 'firebase/auth';
 
 // ── Config from env vars ─────────────────────────────────────────────────────
 
@@ -45,6 +46,7 @@ let _app: FirebaseApp | null = null;
 let _analytics: Analytics | null = null;
 let _firestore: Firestore | null = null;
 let _messaging: Messaging | null = null;
+let _auth: Auth | null = null;
 
 export function getFirebaseApp(): FirebaseApp | null {
   if (!isFirebaseConfigured()) return null;
@@ -55,6 +57,13 @@ export function getFirebaseApp(): FirebaseApp | null {
   }
   _app = initializeApp(firebaseConfig);
   return _app;
+}
+
+export function getFirebaseAuth(): Auth | null {
+  const app = getFirebaseApp();
+  if (!app) return null;
+  if (!_auth) _auth = getAuth(app);
+  return _auth;
 }
 
 export async function getFirebaseAnalytics(): Promise<Analytics | null> {

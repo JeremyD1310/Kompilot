@@ -7,11 +7,15 @@ import { useState } from 'react';
 import { Card, CardContent, Button, Badge, toast } from '@blinkdotnew/ui';
 import { Zap, Loader2, Crown, Star } from 'lucide-react';
 import { createOneTimeCheckout } from '../../lib/billingClient';
-import { ONE_TIME_PRODUCTS } from '../../../shared/pricingCatalog';
+import { ONE_TIME_PRODUCTS, type PricingProductId } from '../../../shared/pricingCatalog';
 import { LegalConsentBlock, isLegalConsentValid, type LegalConsentState, CGV_VERSION } from '../subscription/LegalConsentBlock';
 
+type TopupProductId = Extract<PricingProductId,
+  | 'kompilot_ai_250_once' | 'kompilot_ai_750_once' | 'kompilot_ai_2000_once'
+  | 'kompilot_sms_100_once' | 'kompilot_sms_500_once' | 'kompilot_sms_1500_once'>;
+
 interface PackOption {
-  id: 'kompilot_ai_250_once' | 'kompilot_ai_750_once' | 'kompilot_ai_2000_once' | 'sms_topup_100' | 'sms_topup_500' | 'sms_topup_1500';
+  id: TopupProductId;
   name: string;
   credits: number;
   creditType: 'ai' | 'sms';
@@ -22,8 +26,11 @@ interface PackOption {
   badgeLabel?: string;
 }
 
-const PACKS: PackOption[] = ONE_TIME_PRODUCTS.filter((product) => product.productType === 'topup' && (product.creditType === 'ai' || product.creditType === 'sms')).map((product, index) => ({
-  id: product.id as PackOption['id'], creditType: product.creditType!, name: product.name.replace(' crédits IA', '').replace(' SMS', ''), credits: product.creditAmount ?? 0,
+const isTopupProduct = (product: (typeof ONE_TIME_PRODUCTS)[number]): product is (typeof ONE_TIME_PRODUCTS)[number] & { id: TopupProductId; creditType: 'ai' | 'sms' } =>
+  product.productType === 'topup' && (product.creditType === 'ai' || product.creditType === 'sms');
+
+const PACKS: PackOption[] = ONE_TIME_PRODUCTS.filter(isTopupProduct).map((product, index) => ({
+  id: product.id, creditType: product.creditType, name: product.name.replace(' crédits IA', '').replace(' SMS', ''), credits: product.creditAmount ?? 0,
   price: product.amountEurHt ?? 0, priceLabel: `${product.amountEurHt ?? 0} €`, perCredit: `${((product.amountEurHt ?? 0) / (product.creditAmount ?? 1)).toFixed(2).replace('.', ',')} € / unité`,
   highlighted: index === 1, badgeLabel: index === 1 ? 'Meilleure valeur' : undefined,
 }));

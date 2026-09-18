@@ -54,8 +54,8 @@ async function fetchBalance(): Promise<CreditBalance> {
   return {
     balance: normalized.balance,
     planName: normalized.planName ?? 'Plan actuel',
-    monthlyQuota: normalized.monthlyQuota ?? normalized.monthlyLimit ?? 0,
-    usedThisMonth: normalized.usedThisMonth ?? normalized.monthlyUsed ?? 0,
+    monthlyQuota: normalized.monthlyQuota ?? 0,
+    usedThisMonth: normalized.usedThisMonth ?? 0,
     remaining: normalized.remaining ?? normalized.balance,
     percentage: normalized.percentage ?? 0,
   };

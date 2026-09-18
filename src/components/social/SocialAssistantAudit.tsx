@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Badge, Skeleton } from '@blinkdotnew/ui';
 import { blink } from '@/blink/client';
+import { BACKEND_URL } from '@/lib/backend';
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -94,8 +95,7 @@ export function SocialAssistantAudit() {
     setIsLoading(true);
     setError(null);
     try {
-      const base = blink.functions ? `${blink.functions.baseUrl}` : '';
-      const res = await fetch(`${base}/api/social-analytics/overview?days=30`, {
+      const res = await fetch(`${BACKEND_URL}/api/social-analytics/overview?days=30`, {
         headers: { Authorization: `Bearer ${await blink.auth.getValidToken()}` },
       });
       if (res.ok) {

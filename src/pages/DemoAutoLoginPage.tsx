@@ -252,9 +252,9 @@ export default function DemoAutoLoginPage() {
                     exit={{ opacity: 0, y: -16 }}
                     transition={{ duration: 0.3 }}
                   >
-                    {activePersona === 'merchant'  && <MerchantView sector={selectedSector} />}
-                    {activePersona === 'freelance' && <FreelanceView sector={selectedSector} />}
-                    {activePersona === 'agency'    && <AgencyView sector={selectedSector} />}
+                    {activePersona === 'merchant'  && <MerchantView />}
+                    {activePersona === 'freelance' && <FreelanceView />}
+                    {activePersona === 'agency'    && <AgencyView />}
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -280,7 +280,7 @@ export default function DemoAutoLoginPage() {
 
             {/* ── GEO scan section ───────────────────────────────────────── */}
             <div className="mt-16">
-              <GeoScanSection sector={selectedSector} />
+              <GeoScanSection />
             </div>
 
             {/* ── Bottom CTA ─────────────────────────────────────────────── */}

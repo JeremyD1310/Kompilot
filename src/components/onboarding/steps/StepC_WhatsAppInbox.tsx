@@ -45,7 +45,7 @@ export function StepC_WhatsAppInbox({ onComplete }: Props) {
         <motion.div
           initial={{ opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
           className="flex items-start gap-2.5"
         >
           {/* Avatar */}
@@ -109,7 +109,7 @@ export function StepC_WhatsAppInbox({ onComplete }: Props) {
               key="replied"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
               className="space-y-3"
             >
               {/* AI reply bubble — right side */}

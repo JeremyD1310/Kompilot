@@ -239,7 +239,7 @@ export default function AdAuditPage() {
     if (!audit) return null
 
     const { computed, ga4, inputs } = audit
-    const issues: { severity: 'danger' | 'warning' | 'info'; text: string }[] = []
+    const issues: { severity: 'danger' | 'warning' | 'info' | 'success'; text: string }[] = []
 
     // 1. ROAS check
     if (computed.realRoas < inputs.targetRoas * 0.5) {

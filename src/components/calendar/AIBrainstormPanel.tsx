@@ -203,7 +203,7 @@ export function AIBrainstormPanel({
       const { object } = await blink.ai.generateObject({
         prompt: `Tu es expert en content marketing pour TPE/PME.
 Secteur de l'entreprise : ${profile?.sector ?? 'général'}
-Objectif : ${profile?.objective ?? 'augmenter la visibilité'}
+Objectif : ${profile?.objectives.join(', ') || 'augmenter la visibilité'}
 Piliers de contenu : ${pillarList || 'Conseils, Coulisses, Promotion'}
 
 Génère 4 idées de publications originales et concrètes, variées (une par type parmi : tip, story, promo, question, trend).

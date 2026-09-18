@@ -15,7 +15,7 @@ const TypewriterText = ({ text, delay = 0 }: { text: string; delay?: number }) =
   const [displayedText, setDisplayedText] = useState('');
   
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
+    let timeout: ReturnType<typeof setTimeout>;
     let currentIndex = 0;
     
     const timer = setTimeout(() => {

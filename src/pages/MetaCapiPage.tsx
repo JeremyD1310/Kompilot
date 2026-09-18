@@ -70,7 +70,7 @@ const sectionVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
@@ -141,7 +141,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] as const }}
           >
             <div className="px-4 pb-4 text-xs text-slate-400 leading-relaxed border-t border-slate-700/30 pt-3">
               {answer}
@@ -232,7 +232,7 @@ export default function MetaCapiPage() {
     onError: (err: unknown) => {
       if (typeof err === 'object' && err !== null && 'code' in err && (err as { code: string }).code === 'UPGRADE_REQUIRED') {
         toast.error('Offre requise', {
-          description: (err as { message: string }).message || 'Cette fonctionnalité nécessite un forfait supérieur.',
+          description: 'message' in err && typeof err.message === 'string' ? err.message : 'Cette fonctionnalité nécessite un forfait supérieur.',
         });
       } else {
         const msg = err instanceof Error ? err.message : 'Impossible de tester la connexion.';

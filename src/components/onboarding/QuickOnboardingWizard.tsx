@@ -132,7 +132,7 @@ export function QuickOnboardingWizard({ open, onComplete }: Props) {
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 16 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] as const }}
         className="relative w-full max-w-md overflow-hidden rounded-3xl bg-[#0F172A] text-white shadow-2xl"
         style={{ border: '1px solid rgba(13,148,136,0.25)' }}
       >

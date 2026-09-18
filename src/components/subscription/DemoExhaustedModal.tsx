@@ -20,7 +20,7 @@ export function DemoExhaustedModal({ open, onClose }: DemoExhaustedModalProps) {
   const { deactivateDemo } = useDemoMode();
   const [selected, setSelected] = useState<'solo' | 'franchise' | null>(null);
 
-  const handleUpgrade = (plan: 'pro' | 'expert') => {
+  const handleUpgrade = (plan: 'pro' | 'agency') => {
     // Deactivate demo so regular plan takes effect after payment
     deactivateDemo();
     onClose();
@@ -158,7 +158,7 @@ export function DemoExhaustedModal({ open, onClose }: DemoExhaustedModalProps) {
                 {/* CTA */}
                 <button
                   onClick={() => {
-                    if (selected === 'franchise') handleUpgrade('expert');
+                    if (selected === 'franchise') handleUpgrade('agency');
                     else if (selected === 'solo') handleUpgrade('pro');
                   }}
                   disabled={!selected}

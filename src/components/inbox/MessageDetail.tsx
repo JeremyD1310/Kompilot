@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimationControls } from 'framer-motion';
 import { Button, Textarea, toast } from '@blinkdotnew/ui';
 import {

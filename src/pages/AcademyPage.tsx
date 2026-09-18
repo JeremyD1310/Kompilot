@@ -108,7 +108,7 @@ export default function AcademyPage() {
   const { isDemoActive } = useDemoMode();
 
   // Premium = Pro or Expert plan (or demo mode)
-  const canAccessPremium = isDemoActive || currentPlan.id === 'pro' || currentPlan.id === 'expert';
+  const canAccessPremium = isDemoActive || currentPlan.id === 'multi' || currentPlan.id === 'agency';
 
   const [activeChannel, setActiveChannel] = useState<AcademyChannel>('all');
   const [search, setSearch] = useState('');

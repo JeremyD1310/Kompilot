@@ -6,28 +6,27 @@ import { SubscriptionCheckoutPanel } from './SubscriptionCheckoutPanel';
 import { WelcomeModal } from './WelcomeModal';
 import { useWelcomeEmail } from '../../hooks/useWelcomeEmail';
 import { useAuth } from '../../hooks/useAuth';
+import type { BillingInterval } from '../../../shared/pricingCatalog';
 
 // ── Feature table ─────────────────────────────────────────────────────────────
 
-const FEATURES: { label: string; free: boolean | string; pro: boolean | string; expert: boolean | string }[] = [
-  { label: 'Posts / mois',               free: '3 posts',   pro: '50 posts',   expert: 'Illimité'     },
-  { label: 'Réseaux sociaux',            free: '1 réseau',  pro: '5 réseaux',  expert: 'Illimité'     },
-  { label: 'Stories Instagram & Facebook', free: false,     pro: true,         expert: true           },
-  { label: 'Génération IA de légendes',  free: false,       pro: true,         expert: true           },
-  { label: 'Boîte de réception',         free: false,       pro: true,         expert: true           },
-  { label: 'Multi-utilisateurs',         free: false,       pro: false,        expert: true           },
-  { label: 'Rapports PDF',               free: false,       pro: false,        expert: true           },
-  { label: 'Support prioritaire',        free: false,       pro: false,        expert: true           },
+const FEATURES: { label: string; pro: boolean | string; multi: boolean | string; agency: boolean | string }[] = [
+  { label: 'Crédits IA / mois',          pro: '500',        multi: '1 500',    agency: '5 000' },
+  { label: 'SMS / mois',                 pro: '50',         multi: '200',      agency: '500' },
+  { label: 'Établissements',             pro: '1',          multi: '3',        agency: '10' },
+  { label: 'Utilisateurs',               pro: '2',          multi: '5',        agency: '15' },
+  { label: 'Boîte de réception',         pro: true,         multi: true,       agency: true },
+  { label: 'Multi-établissements',       pro: false,        multi: true,       agency: true },
+  { label: 'Gestion multi-clients',      pro: false,        multi: false,      agency: true },
+  { label: 'Support prioritaire',        pro: false,        multi: true,       agency: true },
 ];
 
 // ── Plan descriptions ─────────────────────────────────────────────────────────
 
 const PLAN_SUBTITLES: Record<string, string> = {
-  free:    '3 posts par mois. Idéal pour tester.',
-  starter: 'Jusqu\'à 50 posts par mois. Automatisez votre présence.',
-  agency:  'Posts illimités. Solution complète pour agences.',
-  pro:     'Jusqu\'à 50 posts par mois. Automatisez votre présence.',
-  expert:  'Posts illimités. Solution complète pour agences.',
+  pro: 'Le cockpit essentiel pour votre visibilité locale.',
+  multi: 'Pour les équipes et entreprises multi-établissements.',
+  agency: 'Pour les agences, consultants et réseaux.',
 };
 
 // ── Feature row ───────────────────────────────────────────────────────────────
@@ -57,8 +56,8 @@ interface PlanCardProps {
 }
 
 function PlanCard({ plan, isPopular, isCurrent, onSelect }: PlanCardProps) {
-  const featureValues = FEATURES.map(f => f[(plan.id === 'starter' ? 'pro' : plan.id === 'agency' ? 'expert' : plan.id) as 'free' | 'pro' | 'expert']);
-  const isExpert = plan.id === 'expert';
+  const featureValues = FEATURES.map(f => f[plan.id]);
+  const isExpert = plan.id === 'agency';
 
   return (
     <div
@@ -138,12 +137,7 @@ function PlanCard({ plan, isPopular, isCurrent, onSelect }: PlanCardProps) {
             variant={isExpert ? 'default' : isPopular ? 'default' : 'outline'}
             className={`w-full gap-2 ${isExpert ? 'bg-gradient-to-r from-violet-600 to-purple-500 hover:from-violet-700 hover:to-purple-600 border-0' : ''}`}
           >
-            {plan.price === 0 ? 'Rester sur le gratuit' : (
-              <>
-                <Zap size={14} />
-                Choisir {plan.name}
-              </>
-            )}
+            <><Zap size={14} />Choisir {plan.name}</>
           </Button>
         )}
       </div>
@@ -165,16 +159,12 @@ export function PricingCards() {
   const { user } = useAuth();
   const { sendWelcomeEmail } = useWelcomeEmail();
   const [checkout, setCheckout] = useState<PricingCheckout>(null);
+  const [billing, setBilling] = useState<BillingInterval>('monthly');
   const [welcomeModal, setWelcomeModal] = useState<{ open: boolean; planName: string }>({ open: false, planName: '' });
 
   const handleSelect = (id: PlanId) => {
     if (id === currentPlan.id) return;
     const plan = PLANS.find(p => p.id === id)!;
-    if (plan.price === 0) {
-      setPlan(id);
-      toast.success('Offre gratuite activée.');
-      return;
-    }
     setCheckout({
       planId: id,
       planName: `Offre ${plan.name}`,
@@ -201,7 +191,7 @@ export function PricingCards() {
         <p className="text-muted-foreground text-sm">Passez à une offre supérieure à tout moment. Annulation sans engagement.</p>
         <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-1.5 text-xs font-semibold text-violet-700">
           <Sparkles size={12} />
-          Nouveau : Stories Instagram & Facebook disponibles dans l'offre Expert 🎉
+          Trois offres adaptées aux PME, équipes et agences
         </div>
       </div>
 
@@ -210,7 +200,7 @@ export function PricingCards() {
           <PlanCard
             key={plan.id}
             plan={plan}
-            isPopular={plan.id === 'pro'}
+            isPopular={plan.id === 'multi'}
             isCurrent={currentPlan.id === plan.id}
             onSelect={handleSelect}
           />
@@ -221,10 +211,19 @@ export function PricingCards() {
         Prix TTC • Paiement sécurisé • Résiliation à tout moment
       </p>
 
-      {checkout && checkout.planId !== 'free' && (
+      <div className="mx-auto grid max-w-xs grid-cols-2 gap-2" aria-label="Période de facturation">
+        {(['monthly', 'yearly'] as const).map(interval => (
+          <Button key={interval} type="button" size="sm" variant={billing === interval ? 'default' : 'outline'} onClick={() => setBilling(interval)}>
+            {interval === 'monthly' ? 'Mensuel' : 'Annuel'}
+          </Button>
+        ))}
+      </div>
+
+      {checkout && (
         <SubscriptionCheckoutPanel
-          planId={checkout.planId as 'pro' | 'expert' | 'starter' | 'agency'}
+          planId={checkout.planId}
           planName={checkout.planName}
+          billing={billing}
           onCancel={() => setCheckout(null)}
           onCheckoutOpened={() => setCheckout(null)}
         />

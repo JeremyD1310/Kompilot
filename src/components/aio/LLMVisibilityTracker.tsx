@@ -436,7 +436,7 @@ export function LLMVisibilityTracker({ brandName = '', domainUrl = '' }: LLMVisi
                                       </div>
                                       <SentimentIcon sentiment={r.sentiment} />
                                       {Number(r.urlCited) > 0 && (
-                                        <Globe size={11} className="text-cyan-400" title="URL citée" />
+                                        <span title="URL citée"><Globe size={11} className="text-cyan-400" /></span>
                                       )}
                                     </div>
                                   ))}

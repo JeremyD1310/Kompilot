@@ -15,7 +15,7 @@ export default function FAQPage() {
     'FAQ Kompilot — Questions sur le marketing local par IA',
     'Réponses aux questions fréquentes sur Kompilot, ses fonctionnalités, ses offres et le contrôle humain des contenus générés par IA.',
     '/faq',
-    { structuredData: createFaqGraph('/faq', 'FAQ Kompilot', 'Réponses aux questions fréquentes sur Kompilot, ses fonctionnalités, ses offres et le contrôle humain des contenus générés par IA.', FAQ_ITEMS.map(item => ({ question: item.q, answer: item.a }))) },
+    { structuredData: createFaqGraph('/faq', 'FAQ Kompilot', 'Réponses aux questions fréquentes sur Kompilot, ses fonctionnalités, ses offres et le contrôle humain des contenus générés par IA.', FAQ_ITEMS) },
   );
 
   const handleCta = () => blink.auth.login(window.location.origin + '/dashboard');

@@ -476,7 +476,7 @@ export function DashboardSidebar({
         {/* Bottom pinned section */}
         <div className="shrink-0 border-t border-sidebar-border">
           {/* Plan badge */}
-          {!c && (isDemoActive || currentPlan.id !== 'free') && (
+          {!c && (
             <div className="px-4 pt-3 pb-1">
               <div className={cn('flex items-center gap-2 rounded-xl border px-3 py-2', isDemoActive ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800' : 'bg-primary/8 border-primary/20')}>
                 <span className={cn('w-2 h-2 rounded-full animate-pulse shrink-0', isDemoActive ? 'bg-emerald-500' : 'bg-primary')} />

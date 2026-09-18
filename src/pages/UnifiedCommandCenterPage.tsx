@@ -16,7 +16,7 @@ import {
   Globe, Users, MessageSquare, Zap, BrainCircuit,
   Plus, Rocket, Search, Video, Layers, ShieldAlert, Eye,
   ChevronRight, RefreshCw, Activity, AlertTriangle, Power, PowerOff,
-  BarChart3, Target, Sparkles, Radar,
+  BarChart3, Target, Sparkles, Radar, CalendarClock,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useDemoMode } from '@/context/DemoModeContext';

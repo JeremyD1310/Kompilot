@@ -3,7 +3,7 @@
  *
  * Usage:
  *   const { startCheckout, loading } = useStripeCheckout();
- *   await startCheckout('pro', legalConsent);
+ *   await startCheckout('pro', 'monthly', legalConsent);
  *
  * The legalConsent object (cgvAccepted + retractionWaived) is sent to the backend
  * where it is stored immutably with IP + timestamp for anti-chargeback proof.

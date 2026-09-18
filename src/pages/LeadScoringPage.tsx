@@ -434,6 +434,7 @@ export default function LeadScoringPage() {
   // ── State ──
   const [loading, setLoading] = useState(true);
   const [threads, setThreads] = useState<ScoredThread[]>([]);
+  const unscoredThreads = useMemo(() => threads.filter(t => t.status === 'unscored'), [threads]);
   const [stats, setStats] = useState<LeadStats | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'high'>('all');
   const [minScore, setMinScore] = useState(0);
@@ -618,7 +619,6 @@ export default function LeadScoringPage() {
     return list;
   }, [threads, activeTab]);
 
-  const unscoredThreads = useMemo(() => threads.filter(t => t.status === 'unscored'), [threads]);
   const scoredThreads = useMemo(() => threads.filter(t => t.status === 'scored'), [threads]);
   const highPriorityThreads = useMemo(() => threads.filter(t => t.score >= 70), [threads]);
   const averageScoredScore = useMemo(() => scoredThreads.length > 0 ? Math.round(scoredThreads.reduce((sum, thread) => sum + thread.score, 0) / scoredThreads.length) : 0, [scoredThreads]);

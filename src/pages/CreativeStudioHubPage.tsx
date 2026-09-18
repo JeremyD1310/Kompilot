@@ -401,7 +401,7 @@ export default function CreativeStudioHubPage() {
       type: data.file?.type.startsWith('video') ? 'video' : 'text',
       category: 'text_ai',
       creator: `@${user?.email?.split('@')[0] ?? 'vous'}`,
-      creatorAvatar: user?.avatarUrl ?? `https://i.pravatar.cc/40?u=${user?.id}`,
+      creatorAvatar: `https://i.pravatar.cc/40?u=${user?.id ?? 'kompilot'}`,
       prompt: data.prompt,
       likes: 0,
       liked: false,

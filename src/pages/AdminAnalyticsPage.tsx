@@ -69,13 +69,15 @@ function StatusBadge({ status, trialDaysLeft }: { status: UserRow['status']; tri
 // ── Plan badge ────────────────────────────────────────────────────────────────
 
 function PlanBadge({ planId }: { planId: string }) {
-  const isExpert = planId === 'expert' || planId === 'pro-commerce';
-  const isPro    = planId === 'pro' || planId === 'solo';
-  if (isExpert) return (
+  const isAgency = planId === 'agency';
+  const isMulti = planId === 'multi';
+  const isPro = planId === 'pro';
+  if (isAgency) return (
     <span className="inline-flex items-center gap-1 rounded-full border border-violet-700 bg-violet-900/60 text-violet-300 text-[10px] font-bold px-2 py-0.5">
-      <Zap size={10} /> Expert
+      <Zap size={10} /> Agency
     </span>
   );
+  if (isMulti) return <span className="inline-flex items-center gap-1 rounded-full border border-violet-700 bg-violet-900/60 text-violet-300 text-[10px] font-bold px-2 py-0.5"><Zap size={10} /> Multi</span>;
   if (isPro) return (
     <span className="inline-flex items-center gap-1 rounded-full border border-blue-700 bg-blue-900/60 text-blue-300 text-[10px] font-bold px-2 py-0.5">
       <Crown size={10} /> Pro

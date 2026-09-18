@@ -58,8 +58,8 @@ export function CreditsIndicator() {
     );
   }
 
-  const label = credits === 'unlimited' ? 'Illimité' : `${credits} crédit${(credits as number) !== 1 ? 's' : ''}`;
-  const isLow = credits !== 'unlimited' && (credits as number) <= 5 && !isEmpty;
+  const label = `${credits} crédit${credits !== 1 ? 's' : ''}`;
+  const isLow = credits <= 5 && !isEmpty;
 
   return (
     <>

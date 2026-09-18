@@ -30,7 +30,7 @@ export interface SnapshotData {
 type SnapshotStatus = 'idle' | 'loading' | 'success' | 'error';
 
 /* ── Mapping mots-clés → secteur ────────────────────────────── */
-const SECTOR_KEYWORDS: Record<GranularSector, string[]> = {
+const SECTOR_KEYWORDS: Partial<Record<GranularSector, string[]>> = {
   restauration: ['restaurant', 'brasserie', 'bistrot', 'pizzeria', 'trattoria', 'gastronomique', 'boulangerie', 'café', 'bar', 'food'],
   beaute:       ['coiffeur', 'salon', 'beauté', 'esthétique', 'nail', 'onglerie', 'spa', 'massage', 'institut'],
   medical:      ['médecin', 'docteur', 'dentiste', 'kinésithérapie', 'ostéopathe', 'pharmacie', 'clinique', 'cabinet médical'],

@@ -150,7 +150,7 @@ export function AdvancedAPIKeysPanel() {
   } = useBYOK();
 
   const { currentPlan } = useSubscription();
-  const isEligible = currentPlan.id === 'expert';
+  const isEligible = currentPlan.id === 'agency';
 
   // Wrap provider test functions to match APIKeyValidatorField signature
   const handleTestOpenAI = async (key: string): Promise<ValidationStatus> => {

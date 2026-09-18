@@ -366,7 +366,7 @@ export function MonthlyReportGenerator({ clientName, clientId, metrics = {} }: M
                 </div>
                 <span className="text-[#818CF8] font-bold">{metrics.geoScore ?? 85}/100</span>
               </div>
-              <Progress value={metrics.geoScore ?? 85} className="h-2 bg-slate-100" indicatorClassName="bg-[#818CF8]" />
+              <Progress value={metrics.geoScore ?? 85} className="h-2 bg-slate-100" />
               <p className="text-xs text-slate-500 italic">
                 {(metrics.geoScoreDelta ?? 7) >= 0 ? '+' : ''}{metrics.geoScoreDelta ?? 7} pts vs mois précédent — Visibilité optimisée sur les moteurs IA
               </p>

@@ -191,7 +191,7 @@ export default function ForgotPasswordPage() {
               {/* Resend */}
               <button
                 onClick={() => handleSubmit()}
-                disabled={cooldown > 0 || status === 'loading'}
+                disabled={cooldown > 0}
                 style={{
                   background: 'transparent', border: 'none',
                   cursor: cooldown > 0 ? 'default' : 'pointer',

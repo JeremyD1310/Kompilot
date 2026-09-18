@@ -84,7 +84,7 @@ export function StepD_ROICounter({ onComplete }: Props) {
             key={i}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + i * 0.08, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ delay: 0.1 + i * 0.08, duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
             className={`rounded-2xl border px-2.5 py-3 flex flex-col items-center gap-1.5 ${stat.color}`}
           >
             <div className="opacity-80">{stat.icon}</div>

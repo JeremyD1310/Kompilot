@@ -289,7 +289,7 @@ export function DemoModeProvider({ children }: { children: ReactNode }) {
   return (
     <DemoModeContext.Provider value={{
       isDemoActive: demo.isDemoActive || isDemoRuntime(),
-      demoData: demo.demoData,
+      demoData: DEMO_DATA,
       activateDemo,
       deactivateDemo,
       demoTrialDaysRemaining,

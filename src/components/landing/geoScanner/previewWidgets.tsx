@@ -10,7 +10,7 @@ import type { ActivityItem } from './DashboardPreviewOverlay';
 
 export function useAnimatedCounter(target: number, active: boolean, durationMs = 2400): number {
   const [value, setValue] = useState(0);
-  const raf = useRef<number>();
+  const raf = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (!active) return;

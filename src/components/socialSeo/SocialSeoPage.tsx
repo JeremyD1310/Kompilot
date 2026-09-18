@@ -28,7 +28,7 @@ export default function SocialSeoPage() {
   const [activePlatform, setActivePlatform] = useState<Platform>('all')
   const { data, isLoading, isRefetching, refetch } = useSocialSeoDashboard()
   const { canAccess } = usePlan()
-  const isAgency = canAccess('agency_features') || canAccess('multi_client')
+  const isAgency = canAccess('team_management') || canAccess('multi_establish')
 
   if (isLoading) {
     return (

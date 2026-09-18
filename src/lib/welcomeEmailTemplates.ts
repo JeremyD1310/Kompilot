@@ -101,8 +101,8 @@ export function getPlanSubscribedOptions(planName: string): string[] {
 
   const lower = planName.toLowerCase();
 
-  // Expert / Business — full feature set
-  if (lower.includes('expert') || lower.includes('business')) {
+  // Multi — extended feature set
+  if (lower.includes('multi')) {
     return [
       '🤖 Génération IA de contenu en masse (30 publications/mois)',
       '🌐 Publication automatisée multi-réseaux illimitée',
@@ -367,10 +367,8 @@ export function getAICreditsBonusForPlan(planName: string): number {
   const lower = planName.toLowerCase();
   // B2B franchise gets premium credits
   if (detectWelcomeEmailType(planName) === 'b2b-franchise') return 200;
-  if (lower.includes('business')) return 100;
-  if (lower.includes('expert')) return 50;
-  if (lower.includes('starter')) return 20;
-  if (lower.includes('creator')) return 20;
+  if (lower.includes('multi')) return 100;
+  if (lower.includes('agency')) return 200;
   if (lower.includes('pro')) return 30;
   return 10;
 }

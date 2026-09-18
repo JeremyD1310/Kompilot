@@ -129,12 +129,12 @@ export default function DashboardPage() {
   const unread = isDemoActive ? demo.demoData.messages.filter(item => !item.read).length : (messages ?? []).filter((item: any) => !item.isRead).length;
   const pendingReviews = isDemoActive ? demoReviews.length : activeEstablishment?.pendingReviews ?? 0;
   const allPosts = isDemoActive ? demo.demoData.publications : (posts ?? []);
-  const actions: CockpitAction[] = [
+  const actions = ([
     { id: 'review', title: 'Répondre à un nouvel avis Google', detail: `${pendingReviews} avis en attente`, benefit: 'entretenir la confiance locale', time: '3 min', priority: pendingReviews ? 'Urgent' : 'À suivre', channel: 'Réputation', kind: 'review' },
     { id: 'post', title: profile === 'agency' ? 'Valider le contenu d’un client' : 'Préparer une publication locale', detail: `${allPosts.length} contenu${allPosts.length > 1 ? 's' : ''} dans le cockpit`, benefit: 'rester visible avec un contenu relu', time: '5 min', priority: 'Important', channel: 'Contenus', kind: 'post' },
     { id: 'local', title: 'Vérifier une information locale', detail: activeEstablishment?.name ?? demo.data.establishment, benefit: 'éviter une information incohérente', time: '4 min', priority: profile === 'network' ? 'Urgent' : 'À suivre', channel: 'Visibilité locale', kind: 'local' },
     { id: 'message', title: 'Consulter un message sans réponse', detail: `${unread} message${unread > 1 ? 's' : ''} non lu${unread > 1 ? 's' : ''}`, benefit: 'ne pas laisser passer une demande', time: '2 min', priority: unread ? 'Important' : 'À suivre', channel: 'Messages', kind: 'message' },
-  ].filter(item => !dismissed.includes(item.id));
+  ] satisfies CockpitAction[]).filter(item => !dismissed.includes(item.id));
 
   const todayActions = actions.slice(0, 2);
   const prepared = actions.filter(item => item.kind === 'post' || item.kind === 'local');

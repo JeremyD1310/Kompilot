@@ -37,7 +37,7 @@ interface BenchmarkData {
   /** Deep link for the weakest metric */
   deepLinks: Record<'noShow' | 'dms' | 'reviews', string>;
   /** Features that drive each metric */
-  leverLabels: Record<'noShow' | 'dms' | 'reviews', string>;
+  leverLabels?: Record<'noShow' | 'dms' | 'reviews', string>;
 }
 
 const BENCHMARKS: Record<string, BenchmarkData> = {

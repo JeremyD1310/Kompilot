@@ -90,10 +90,9 @@ export function useTrialGate(
         // Active subscription bypass
         if (
           subscriptionStatus === 'active' ||
-          currentPlanId === 'starter' ||
-          currentPlanId === 'agency' ||
           currentPlanId === 'pro' ||
-          currentPlanId === 'expert'
+          currentPlanId === 'multi' ||
+          currentPlanId === 'agency'
         ) {
           setState({ status: 'subscribed', trialEnd: null, daysRemaining: Infinity });
           return;

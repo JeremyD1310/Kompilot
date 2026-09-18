@@ -48,7 +48,7 @@ export function FeatureLock({
 
   const upgradePlan = getUpgradePlan(feature);
   const upgradeCTA = label ?? getUpgradeCTA(feature);
-  const targetTierLabel = upgradePlan === 'expert' ? 'Franchise & Réseau' : 'Solo Business';
+  const targetTierLabel = upgradePlan === 'agency' ? 'Agency' : 'Multi';
 
   return (
     <div className={`relative ${className}`}>

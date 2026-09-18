@@ -63,7 +63,7 @@ export function PostComments({ postId, workspaceOwnerId, defaultOpen = false }: 
         orderBy: { createdAt: 'asc' },
         limit: 50,
       });
-      return (rows as Record<string, unknown>[]).map(normalise).filter(c => !c.isResolved || c.isResolved === false);
+      return (rows as Record<string, unknown>[]).map(normalise).filter(c => !c.isResolved);
     },
     enabled: !!postId && open,
     staleTime: 15_000,

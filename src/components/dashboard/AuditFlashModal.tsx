@@ -978,7 +978,7 @@ export function AuditFlashModal({ open, onClose, bookingUrl, bookingPlatformName
                     <br />Propulsez votre commerce dès aujourd'hui !
                   </p>
                   <button
-                    onClick={handleCTA}
+                    onClick={() => handleCTA()}
                     className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-teal-500 hover:from-violet-700 hover:to-teal-600 text-white text-sm font-extrabold py-3.5 shadow-lg shadow-violet-500/20 transition-all active:scale-[0.98]"
                   >
                     <Rocket size={15} />

@@ -214,7 +214,7 @@ export default function SocialAnalyticsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Publications', value: fmt(s.totalPosts), sub: `${s.publishedPosts} publiés · ${s.scheduledPosts} planifiés`, icon: <Calendar className="h-5 w-5 text-primary" />, bg: 'bg-primary/10', trendCur: s.totalPosts, trendPrev: comparison?.previous?.totalPosts ?? 0 },
-            { label: 'Impressions', value: fmt(s.totalImpressions), sub: `${fmt(s.totalReach)} portée`, icon: <Eye className="h-5 w-5 text-blue-500" />, bg: 'bg-blue-500/10', trendCur: s.totalImpressions, trendPrev: comparison?.previous?.totalImpressions ?? 0 },
+            { label: 'Impressions', value: fmt(s.totalImpressions), sub: 'Portée consolidée', icon: <Eye className="h-5 w-5 text-blue-500" />, bg: 'bg-blue-500/10', trendCur: s.totalImpressions, trendPrev: comparison?.previous?.totalImpressions ?? 0 },
             { label: 'Clics', value: fmt(s.totalClicks), sub: `${fmt(s.totalShares)} partages`, icon: <MousePointerClick className="h-5 w-5 text-emerald-500" />, bg: 'bg-emerald-500/10', trendCur: s.totalClicks, trendPrev: comparison?.previous?.totalClicks ?? 0 },
             { label: 'Engagement', value: fmtPct(s.avgEngagementRate), sub: `${fmt(s.totalComments)} commentaires`, icon: <Zap className="h-5 w-5 text-orange-500" />, bg: 'bg-orange-500/10', trendCur: s.avgEngagementRate, trendPrev: comparison?.previous?.avgEngagementRate ?? 0 },
           ].map((kpi, i) => (

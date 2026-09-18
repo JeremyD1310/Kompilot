@@ -1094,7 +1094,8 @@ export function CancellationTab() {
 
   // Load alreadyBenefited from user metadata
   useEffect(() => {
-    if (user?.metadata?.alreadyBenefited) {
+    const metadata = user && 'metadata' in user ? user.metadata : undefined;
+    if (metadata && typeof metadata === 'object' && 'alreadyBenefited' in metadata && metadata.alreadyBenefited) {
       setAlreadyBenefited(true);
     }
   }, [user]);
@@ -1113,7 +1114,7 @@ export function CancellationTab() {
   const isFranchise = establishments.length > 1 && currentPlan.hasMultiUser;
   const isAgency = (user as { role?: string } | null)?.role === 'agency'
     || (currentPlan.id || '').includes('agency');
-  const isFree = currentPlan.id === 'free';
+  const isFree = false;
   const subAccountCount = establishments.length > 0 ? establishments.length : 3;
 
   // MODULE 4: Start with G.E.O. warning before exit survey
@@ -1389,7 +1390,7 @@ export function CancellationTab() {
         <AgencyTransferModal
           subAccountCount={subAccountCount}
           onConfirm={handleAgencyConfirm}
-          onBack={() => setStep('retention')}
+          onBack={() => setStep(isAnnual ? 'retention_annual' : 'retention_monthly')}
         />
       )}
 

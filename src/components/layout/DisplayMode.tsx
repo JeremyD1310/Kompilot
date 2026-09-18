@@ -322,7 +322,7 @@ export function DisplayMode({ open, onClose }: DisplayModeProps) {
               initial={{ opacity: 0, y: 30, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.97 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
               className="w-full flex items-center justify-center px-4"
             >
               {currentSlide?.type === 'review' && <ReviewCard slide={currentSlide} />}

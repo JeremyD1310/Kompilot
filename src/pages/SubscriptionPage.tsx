@@ -60,6 +60,7 @@ type CheckoutTarget = {
   isSubscription: boolean;
   /** For real Stripe subscription checkout via SubscriptionCheckoutPanel */
   stripePlanId?: 'pro' | 'multi' | 'agency';
+  billing: 'monthly' | 'yearly';
 };
 
 // ── Plan card ─────────────────────────────────────────────────────────────────
@@ -156,6 +157,7 @@ export default function SubscriptionPage() {
   const [billingMode, setBillingMode] = useState<'b2c' | 'b2b'>(() =>
     profileType === 'b2b' ? 'b2b' : 'b2c'
   );
+  const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
   const [checkout, setCheckout] = useState<CheckoutTarget | null>(null);
   const [welcomeModal, setWelcomeModal] = useState<{ open: boolean; planName: string }>({ open: false, planName: '' });
   // Detected from localStorage when user checked "skip trial" on signup
@@ -218,6 +220,7 @@ export default function SubscriptionPage() {
         invoiceDesc: `Abonnement ${found.name} – ${monthYearLabel()}`,
         isSubscription: true,
         stripePlanId: found.id === 'pro' || found.id === 'multi' || found.id === 'agency' ? found.id : undefined,
+        billing: billingInterval,
       });
       const msg = skipTrial ? `⚡ Accès immédiat — finalisez votre abonnement` : `Plan ${found.name} sélectionné`;
       toast.success(msg, { description: 'Finalisez votre abonnement ci-dessous.' });
@@ -229,10 +232,11 @@ export default function SubscriptionPage() {
         invoiceDesc: `Abonnement Pro – ${monthYearLabel()}`,
         isSubscription: true,
         stripePlanId: 'pro',
+        billing: billingInterval,
       });
       toast.success('⚡ Accès immédiat activé', { description: 'Cochez la case de renonciation pour confirmer.' });
     }
-  }, []);
+  }, [billingInterval]);
 
   const creditsLabel = 'Consommation gérée par la facturation';
 
@@ -252,6 +256,7 @@ export default function SubscriptionPage() {
       invoiceDesc: `Abonnement ${plan.name} – ${monthYearLabel()}`,
       isSubscription: true,
       stripePlanId: plan.id === 'pro' || plan.id === 'multi' || plan.id === 'agency' ? plan.id : undefined,
+      billing: billingInterval,
     });
   };
 
@@ -276,6 +281,7 @@ export default function SubscriptionPage() {
       invoiceDesc: `Abonnement ${plan.name} – ${monthYearLabel()}`,
       isSubscription: true,
       stripePlanId,
+      billing: billingInterval,
     });
   };
 
@@ -344,22 +350,20 @@ export default function SubscriptionPage() {
               <p className="text-xs text-muted-foreground font-medium">Offre actuelle</p>
               <p className="text-sm font-bold text-foreground">
                 {isDemoActive ? 'Agency' : currentPlan.name}
-                {isDemoActive ? (
-                  <span className="ml-1 text-muted-foreground font-normal">· accès démo</span>
-) : currentPlan.price > 0 ? (
-                  <span className="ml-1 text-muted-foreground font-normal">· {currentPlan.price}€/mois</span>
-                ) : null}
+                <span className="ml-1 text-muted-foreground font-normal">
+                  {isDemoActive ? '· accès démo' : `· ${currentPlan.price}€/mois`}
+                </span>
               </p>
             </div>
             {isDemoActive ? (
               <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-bold text-emerald-700 ml-2">
                 <span className='w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse' /> Plan Actif 🟢
               </span>
-            ) : currentPlan.id !== 'free' ? (
+            ) : (
               <span className="flex items-center gap-1.5 rounded-full bg-green-50 border border-green-200 px-3 py-1 text-xs font-bold text-green-700 ml-2">
                 <span className='w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse' /> Actif
               </span>
-            ) : null}
+            )}
           </div>
 
           <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-5 py-4">
@@ -407,6 +411,14 @@ export default function SubscriptionPage() {
               💼 Agency / Enterprise{' '}
               <span className="ml-1 text-[10px] font-bold opacity-70">HT</span>
             </button>
+          </div>
+
+          <div className="flex rounded-xl border border-border overflow-hidden w-fit mb-7" aria-label="Période de facturation">
+            {(['monthly', 'yearly'] as const).map(interval => (
+              <button key={interval} type="button" onClick={() => setBillingInterval(interval)} className={cn('px-5 py-2.5 text-sm font-semibold transition-all', billingInterval === interval ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/70')}>
+                {interval === 'monthly' ? 'Mensuel' : 'Annuel'}
+              </button>
+            ))}
           </div>
 
           {/* B2C pre-selection banner */}
@@ -495,6 +507,7 @@ export default function SubscriptionPage() {
             <SubscriptionCheckoutPanel
               planId={checkout.stripePlanId}
               planName={checkout.planName}
+              billing={checkout.billing}
               onCancel={() => setCheckout(null)}
               onCheckoutOpened={() => { setCheckout(null); setShowTrialRenunciation(false); }}
               showTrialRenunciation={showTrialRenunciation}

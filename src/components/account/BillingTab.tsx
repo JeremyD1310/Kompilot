@@ -49,6 +49,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { ProBillingDashboard } from './ProBillingDashboard';
 import { AgencyBillingDashboard } from './AgencyBillingDashboard';
 import { CurrentPlanBadge } from '../subscription/CurrentPlanBadge';
+import type { BillingInterval } from '../../../shared/pricingCatalog';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -290,7 +291,7 @@ const PLAN_HIGHLIGHTS: Record<string, string[]> = {
 function PlanOption({ plan, isCurrent, isRecommended, onSelect, checkoutLoading, isPending }: {
   plan: Plan; isCurrent: boolean; isRecommended?: boolean; onSelect: (id: PlanId) => void; checkoutLoading?: boolean; isPending?: boolean;
 }) {
-  const isExpert = plan.id === 'expert';
+  const isExpert = plan.id === 'agency';
   const highlights = PLAN_HIGHLIGHTS[plan.id] ?? [];
 
   return (
@@ -355,11 +356,12 @@ function PlanOption({ plan, isCurrent, isRecommended, onSelect, checkoutLoading,
 }
 
 function UpgradeSection() {
-  const { currentPlan, setPlan } = useSubscription();
+  const { currentPlan } = useSubscription();
   const { sendWelcomeEmail } = useWelcomeEmail();
   const { startCheckout, loading: checkoutLoading } = useStripeCheckout();
-  const [expanded, setExpanded] = useState(currentPlan.id === 'free');
-  const [pendingPlanId, setPendingPlanId] = useState<'pro' | 'expert' | 'starter' | 'agency' | null>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [pendingPlanId, setPendingPlanId] = useState<PlanId | null>(null);
+  const [billing, setBilling] = useState<BillingInterval>('monthly');
   const [legalConsent, setLegalConsent] = useState<LegalConsentState>({
     cgvAccepted: false,
     retractionWaived: false,
@@ -368,21 +370,15 @@ function UpgradeSection() {
   const handleSelect = async (id: PlanId) => {
     if (id === currentPlan.id) return;
     const plan = PLANS.find(p => p.id === id)!;
-    // Free plan downgrade — no Stripe needed
-    if (plan.price === 0) {
-      setPlan(id);
-      toast.success('Offre gratuite activée.');
-      return;
-    }
     // Paid plan → show legal consent block first, then checkout
-    setPendingPlanId(id as 'pro' | 'expert' | 'starter' | 'agency');
+    setPendingPlanId(id);
     setLegalConsent({ cgvAccepted: false, retractionWaived: false });
   };
 
   const handleConfirmCheckout = async () => {
     if (!pendingPlanId || !isLegalConsentValid(legalConsent)) return;
     const plan = PLANS.find(p => p.id === pendingPlanId)!;
-    await startCheckout(pendingPlanId, legalConsent);
+    await startCheckout(pendingPlanId, billing, legalConsent);
     sendWelcomeEmail(`Offre ${plan.name}`);
   };
 
@@ -413,17 +409,15 @@ function UpgradeSection() {
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-base font-bold text-foreground">{currentPlan.name}</p>
-                <Badge variant={currentPlan.id === 'free' ? 'secondary' : (currentPlan.id === 'starter' || currentPlan.id === 'pro') ? 'default' : 'outline'} className="rounded-full text-xs">
-                  {currentPlan.id === 'free' ? 'Gratuit' : (currentPlan.id === 'starter' || currentPlan.id === 'pro') ? 'Pro' : 'Agency'}
+                <Badge variant={currentPlan.id === 'pro' ? 'default' : 'outline'} className="rounded-full text-xs">
+                  {currentPlan.name}
                 </Badge>
                 <span className="flex items-center gap-1 rounded-full bg-green-100 text-green-700 text-[10px] font-semibold px-2 py-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Actif
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                {currentPlan.id === 'free'
-                  ? `${currentPlan.maxNetworks} réseau max · ${currentPlan.maxPosts} posts/mois · Gratuit`
-                  : currentPlan.unlimited
+                {currentPlan.unlimited
                     ? `Réseaux illimités · ${currentPlan.maxPosts} posts/mois · ${currentPlan.price}€/mois`
                     : `${currentPlan.maxNetworks} réseaux · ${currentPlan.maxPosts} posts/mois · ${currentPlan.price}€/mois`}
               </p>
@@ -435,14 +429,6 @@ function UpgradeSection() {
             )}
           </div>
 
-          {currentPlan.id === 'free' && !expanded && (
-            <div className="rounded-xl bg-primary/5 border border-primary/20 px-4 py-3 flex items-start gap-3">
-              <ArrowUpCircle size={16} className="text-primary shrink-0 mt-0.5" />
-              <p className="text-xs text-foreground/80 leading-relaxed">
-                <span className="font-semibold text-primary">Passez à Pro pour 69€/mois HT</span> — connectez 3 réseaux, planifiez 15 posts par mois et accédez à la génération IA.
-              </p>
-            </div>
-          )}
 
           {expanded && (
             <div className="space-y-3 pt-1">
@@ -450,7 +436,7 @@ function UpgradeSection() {
               <div className="grid grid-cols-1 gap-3">
                 {PLANS.map(plan => (
                   <PlanOption key={plan.id} plan={plan} isCurrent={currentPlan.id === plan.id}
-                    isRecommended={plan.id === 'starter' || plan.id === 'pro'} onSelect={handleSelect}
+                    isRecommended={plan.id === 'multi'} onSelect={handleSelect}
                     checkoutLoading={checkoutLoading && plan.id === pendingPlanId}
                     isPending={pendingPlanId === plan.id} />
                 ))}
@@ -464,6 +450,21 @@ function UpgradeSection() {
                     <p className="text-xs font-semibold text-foreground">
                       Offre {PLANS.find(p => p.id === pendingPlanId)?.name} sélectionnée — validez votre consentement pour continuer
                     </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2" aria-label="Période de facturation">
+                    {(['monthly', 'yearly'] as const).map(interval => (
+                      <Button
+                        key={interval}
+                        type="button"
+                        size="sm"
+                        variant={billing === interval ? 'default' : 'outline'}
+                        onClick={() => setBilling(interval)}
+                        disabled={checkoutLoading}
+                      >
+                        {interval === 'monthly' ? 'Mensuel' : 'Annuel'}
+                      </Button>
+                    ))}
                   </div>
 
                   <LegalConsentBlock

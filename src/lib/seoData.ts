@@ -87,14 +87,14 @@ export function createBreadcrumbList(path: string, title: string) {
   return { '@type': 'BreadcrumbList', itemListElement: items };
 }
 
-export function createKompilotGraph(path: string, title: string, includeFaq = false, description = KOMPILOT_IDENTITY.shortDefinition) {
+export function createKompilotGraph(path: string, title: string, includeFaq = false, description: string = KOMPILOT_IDENTITY.shortDefinition) {
   const graph: GraphNode[] = [createOrganization(), createWebSite(), createWebPage(path, title, description), createBreadcrumbList(path, title)];
   if (path === '/' || path === '/pricing') graph.push(createSoftwareApplication());
   if (includeFaq) graph.push({ '@type': 'FAQPage', '@id': `${KOMPILOT_IDENTITY.domain}/faq#faqpage`, url: `${KOMPILOT_IDENTITY.domain}/faq`, inLanguage: 'fr-FR', mainEntity: FAQ_ITEMS.map(faq => ({ '@type': 'Question', name: faq.question, acceptedAnswer: { '@type': 'Answer', text: faq.answer } })) });
   return { '@context': 'https://schema.org', '@graph': graph };
 }
 
-export function createFaqGraph(path: string, title: string, description: string, faqs = FAQ_ITEMS) {
+export function createFaqGraph(path: string, title: string, description: string, faqs: ReadonlyArray<{ question: string; answer: string }> = FAQ_ITEMS) {
   return { '@context': 'https://schema.org', '@graph': [createOrganization(), createWebSite(), createWebPage(path, title, description), createBreadcrumbList(path, title), { '@type': 'FAQPage', '@id': `${KOMPILOT_IDENTITY.domain}/faq#faqpage`, url: `${KOMPILOT_IDENTITY.domain}/faq`, inLanguage: 'fr-FR', mainEntity: faqs.map(faq => ({ '@type': 'Question', name: faq.question, acceptedAnswer: { '@type': 'Answer', text: faq.answer } })) }] };
 }
 

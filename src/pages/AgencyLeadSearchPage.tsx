@@ -151,7 +151,7 @@ export default function AgencyLeadSearchPage() {
   const [pendingSearch, setPendingSearch] = useState(false);
 
   // Agency-only gating: show upsell for non-agency users
-  const isAgency = (currentPlan.id === 'expert') || (currentPlan.id as string).includes('agency');
+  const isAgency = currentPlan.id === 'agency';
   if (!isAgency) {
     return <AgencyUpsellWall onUpgrade={() => navigate({ to: '/subscription' })} />;
   }

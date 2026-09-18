@@ -226,7 +226,7 @@ export const EstablishmentProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!est) return false;
     // Demo mode unlocks all establishments for full presentation access
     if (isDemoActive) return true;
-    if (est.isLocked && currentPlan.id !== 'expert') return false;
+    if (est.isLocked && currentPlan.id !== 'multi' && currentPlan.id !== 'agency') return false;
     return true;
   }, [establishments, currentPlan, isDemoActive]);
 

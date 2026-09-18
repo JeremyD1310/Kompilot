@@ -110,7 +110,7 @@ export function SocialConnectionsPreview() {
             {connectedCount}/{platforms.length}
           </span>
         </div>
-        <Link to="/settings" search={{ tab: 'connexions' }} aria-label="Gérer plusieurs comptes sociaux">
+        <Link to="/settings" aria-label="Gérer plusieurs comptes sociaux">
           <span className="text-[11px] font-semibold text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors">
             Gérer les comptes <ArrowRight size={11} />
           </span>

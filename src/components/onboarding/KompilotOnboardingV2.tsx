@@ -61,7 +61,7 @@ const fadeUp = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.12, duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.12, duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
@@ -261,7 +261,7 @@ export function KompilotOnboardingV2({ userId = 'unknown', onComplete }: Kompilo
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
             >
               <Card className="p-5 sm:p-8 lg:p-10 shadow-lg border-border/60">
                 <div className="flex items-center gap-2 mb-2">
@@ -333,7 +333,7 @@ export function KompilotOnboardingV2({ userId = 'unknown', onComplete }: Kompilo
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
             >
               <Card className="p-5 sm:p-8 lg:p-10 shadow-lg border-border/60">
                 <div className="flex items-center gap-2 mb-2">
@@ -423,7 +423,7 @@ export function KompilotOnboardingV2({ userId = 'unknown', onComplete }: Kompilo
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
             >
               <Card className="p-5 sm:p-8 lg:p-10 shadow-lg border-border/60">
                 <div className="flex items-center gap-2 mb-2">
@@ -506,7 +506,7 @@ export function KompilotOnboardingV2({ userId = 'unknown', onComplete }: Kompilo
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
             >
               <Card className="p-8 sm:p-10 shadow-lg border-border/60 text-center">
                 {/* Success icon */}

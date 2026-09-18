@@ -434,7 +434,7 @@ export default function DemoDashboardPage() {
                           initial={{ width: 0 }}
                           whileInView={{ width: `${platform.width}%` }}
                           viewport={{ once: true }}
-                          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+                          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] as const, delay: 0.1 }}
                         />
                       </div>
                     </div>

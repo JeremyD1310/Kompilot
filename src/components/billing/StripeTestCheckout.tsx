@@ -26,11 +26,12 @@ import {
 } from 'lucide-react';
 import { createCheckoutSession, fetchBillingStatus, type BillingStatus } from '../../lib/billingClient';
 import { CGV_VERSION } from '../subscription/LegalConsentBlock';
+import type { BillingInterval, SubscriptionPlanId } from '../../../shared/pricingCatalog';
 
 // ── Plan de test ──────────────────────────────────────────────────────────────
 
 interface TestPlan {
-  id: 'starter' | 'agency';
+  id: SubscriptionPlanId;
   name: string;
   price: string;
   description: string;
@@ -40,7 +41,7 @@ interface TestPlan {
 
 const TEST_PLANS: TestPlan[] = [
   {
-    id: 'starter',
+    id: 'pro',
     name: 'Pro — 69€/mois',
     price: '69€ HT/mois',
     description: 'Forfait B2B pour consultants solos, freelances et commerçants',
@@ -73,10 +74,11 @@ export function StripeTestCheckout() {
   const [status, setStatus]           = useState<BillingStatus | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
   const [lastCheckoutUrl, setLastCheckoutUrl] = useState<string | null>(null);
+  const [billing, setBilling] = useState<BillingInterval>('monthly');
 
   // ── Lancer le tunnel de checkout de test ─────────────────────────────────
 
-  async function handleCheckout(planId: 'starter' | 'agency') {
+  async function handleCheckout(planId: SubscriptionPlanId) {
     if (loadingPlan) return;
     setLoadingPlan(planId);
     setLastCheckoutUrl(null);
@@ -92,7 +94,7 @@ export function StripeTestCheckout() {
         renouncedTrial:   false,
       };
 
-      const result = await createCheckoutSession(planId, legalConsent);
+      const result = await createCheckoutSession(planId, billing, legalConsent);
 
       if (result.url && !result.fallback) {
         // ✅ URL Checkout reçue → ouvrir dans un nouvel onglet
@@ -191,6 +193,14 @@ export function StripeTestCheckout() {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-2" aria-label="Période de facturation de test">
+        {(['monthly', 'yearly'] as const).map(interval => (
+          <Button key={interval} type="button" size="sm" variant={billing === interval ? 'default' : 'outline'} onClick={() => setBilling(interval)}>
+            {interval === 'monthly' ? 'Mensuel' : 'Annuel'}
+          </Button>
+        ))}
+      </div>
+
       {/* ── Plans B2B ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {TEST_PLANS.map(plan => (
@@ -216,7 +226,7 @@ export function StripeTestCheckout() {
                 disabled={loadingPlan !== null}
                 size="sm"
                 className={`w-full gap-2 ${
-                  plan.id === 'expert'
+                  plan.id === 'agency'
                     ? 'bg-amber-600 hover:bg-amber-700 text-white'
                     : 'bg-violet-600 hover:bg-violet-700 text-white'
                 }`}

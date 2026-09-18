@@ -601,7 +601,7 @@ export function RefundEligibilityModal({ onClose, className }: Props) {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   const isB2B = status?.isB2B ?? false;
-  const planIsFree = currentPlan.id === 'free';
+  const planIsFree = false;
 
   return (
     <div className={cn('bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden', className)}>

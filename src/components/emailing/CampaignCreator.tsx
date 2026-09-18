@@ -146,7 +146,6 @@ export function CampaignCreator() {
   };
 
   const handleSend = async () => {
-    if (plan === 'free') { setShowPaywall(true); return; }
     setSending(true);
     await new Promise(r => setTimeout(r, 1000));
     setSending(false);
@@ -161,14 +160,14 @@ export function CampaignCreator() {
   return (
     <div className="space-y-6">
       {/* Email usage gauge */}
-      {plan !== 'free' && (
+      {(
         <div className="rounded-2xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-foreground">Emails envoyés ce mois</span>
             <span className="text-muted-foreground tabular-nums">
               <strong className="text-foreground">{sent.toLocaleString('fr-FR')}</strong> / {limit.toLocaleString('fr-FR')}
-              {plan === 'expert' && (
-                <Badge className="ml-2 text-[10px] bg-violet-100 text-violet-700 border-violet-200">Expert</Badge>
+              {plan === 'agency' && (
+                <Badge className="ml-2 text-[10px] bg-violet-100 text-violet-700 border-violet-200">Agency</Badge>
               )}
             </span>
           </div>
@@ -386,7 +385,7 @@ export function CampaignCreator() {
 
       {/* Expert auto-scenarios section */}
       <div className="relative rounded-2xl border border-border overflow-hidden">
-        <div className={`p-5 space-y-3 ${plan !== 'expert' ? 'blur-[2px] select-none pointer-events-none' : ''}`}>
+        <div className={`p-5 space-y-3 ${plan !== 'agency' ? 'blur-[2px] select-none pointer-events-none' : ''}`}>
           <CardHeader className="p-0">
             <CardTitle className="text-sm flex items-center gap-2">
               🤖 Scénarios de relance automatiques
@@ -400,17 +399,17 @@ export function CampaignCreator() {
             ))}
           </div>
         </div>
-        {plan !== 'expert' && (
+        {plan !== 'agency' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-card/70 backdrop-blur-[1px]">
             <Lock size={18} className="text-muted-foreground" />
             <Badge className="bg-violet-100 text-violet-700 border-violet-200 text-xs font-bold">
-              Expert uniquement
+              Agency uniquement
             </Badge>
             <button
               onClick={() => setShowPaywall(true)}
               className="text-xs text-primary hover:underline underline-offset-2"
             >
-              Passer à Expert →
+              Passer à Agency →
             </button>
           </div>
         )}

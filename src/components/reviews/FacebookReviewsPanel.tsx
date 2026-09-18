@@ -187,7 +187,7 @@ export function FacebookReviewsPanel() {
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
                       className="h-full rounded-full bg-[#1877F2]"
                     />
                   </div>

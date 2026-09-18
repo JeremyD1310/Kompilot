@@ -57,7 +57,7 @@ export function TestDriveBanner() {
   };
 
   // Only show for free/trial users and if not dismissed
-  if (currentPlan.id !== 'free' || dismissed) {
+  if (currentPlan.id !== 'pro' || dismissed) {
     return null;
   }
 

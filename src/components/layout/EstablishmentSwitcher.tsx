@@ -68,7 +68,7 @@ export const EstablishmentSwitcher: React.FC = () => {
   };
 
   const handleAdd = () => {
-    if (currentPlan.id !== 'expert') {
+    if (currentPlan.id !== 'multi' && currentPlan.id !== 'agency') {
       setPaywallOpen(true);
     } else {
       setAddModalOpen(true);

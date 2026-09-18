@@ -19,7 +19,7 @@ export function CreditsTopUpSection() {
   const [consent, setConsent] = useState<LegalConsentState>({ cgvAccepted: false, retractionWaived: false });
   const [loading, setLoading] = useState(false);
 
-  const remaining = credits === 'unlimited' ? limit : Math.max(0, limit - usage);
+  const remaining = Math.max(0, limit - usage);
   const pct = Math.round((remaining / limit) * 100);
   const isLow = remaining <= 2;
 

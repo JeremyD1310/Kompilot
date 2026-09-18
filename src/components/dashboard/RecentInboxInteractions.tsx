@@ -80,7 +80,7 @@ function MsgRow({ senderName, subject, body, isRead, date, isStarred, channel }:
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export function RecentInboxInteractions() {
-  const { messages: dbMessages, isLoading, messagesError } = useInboxMessages();
+  const { messages: dbMessages, isLoading, error: messagesError } = useInboxMessages();
 
   // The dashboard uses the same remote inbox source as /inbox; no fixture fallback.
   const messages = dbMessages;

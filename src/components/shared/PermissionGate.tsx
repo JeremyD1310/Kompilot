@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { Navigate } from '@tanstack/react-router';
-import { LoadingOverlay } from '@blinkdotnew/ui';
 import { useUserRole } from '../../context/UserRoleContext';
 
 interface PermissionGateProps {
@@ -10,14 +9,15 @@ interface PermissionGateProps {
   redirect?: boolean;
 }
 
-export function PermissionGate({ permission, children, fallback = null, redirect = false }: PermissionGateProps) {
-  const { can, isRbacReady } = useUserRole();
-  if (!isRbacReady) return <LoadingOverlay loading />;
-  if (!can(permission)) return redirect ? <Navigate to="/dashboard" /> : <>{fallback}</>;
+export function PermissionGate({ permission: _permission, children, fallback = null, redirect = false }: PermissionGateProps) {
+  const { role } = useUserRole();
+  const allowed = role === 'owner' || role === 'admin';
+  if (!allowed) return redirect ? <Navigate to="/dashboard" /> : <>{fallback}</>;
   return <>{children}</>;
 }
 
 export function usePermission(permission: string) {
-  const { can, isRbacReady } = useUserRole();
-  return { allowed: isRbacReady && can(permission), isRbacReady };
+  void permission;
+  const { role } = useUserRole();
+  return { allowed: role === 'owner' || role === 'admin', isRbacReady: true };
 }
