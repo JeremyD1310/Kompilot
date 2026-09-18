@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * AIOAuditPanel — Real brand visibility audit via Blink AI backend.
  *
@@ -11,7 +12,7 @@ import { Button, toast } from '@blinkdotnew/ui';
 import { blink } from '../../blink/client';
 import { AioPromptCopier } from './AioPromptCopier';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 interface AuditResult {
   keyword: string;

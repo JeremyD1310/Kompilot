@@ -132,6 +132,7 @@ import { router as oauthTokensRouter }           from './routes/oauthTokens';
 import { router as llmTrackerRouter }            from './routes/llmTracker';
 import { router as seoAgentRouter }              from './routes/seoAgent';
 import { router as referralRewardsRouter }        from './routes/referralRewards';
+import { router as dashboardStateRouter }          from './routes/dashboardState';
 import { requireRole }                           from './lib/rbacMiddleware';
 import { createBlinkClient, requireBlinkProjectId, BLINK_PROJECT_CONFIG_MISSING, BlinkProjectConfigError, isBackendDependencyConfigError, backendDependencyUnavailable } from './lib/blinkConfig';
 
@@ -148,7 +149,7 @@ app.use('*', cors({
     /^https:\/\/3000-[a-z0-9-]+\.preview-blink\.com$/,
     /^https:\/\/[a-z0-9-]+\.blink\.new$/,
   ],
-  allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Kompilot-Internal-Secret'],
 }));
 
@@ -283,6 +284,7 @@ app.route('/', oauthTokensRouter);
 app.route('/', llmTrackerRouter);
 app.route('/', seoAgentRouter);
 app.route('/', referralRewardsRouter);
+app.route('/', dashboardStateRouter);
 
 // ── RBAC enforcement on sensitive routes ─────────────────────────────────────
 // Billing: admin only (prevents members/guests from changing plans)

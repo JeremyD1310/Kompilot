@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * Client-Side Tracking — Kompilot
  *
@@ -12,7 +13,7 @@
 
 import { hasAnalyticsConsent } from './cookieConsent';
 
-const BACKEND_URL = (import.meta as any).env?.VITE_BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = (import.meta as any).env?.VITE_BACKEND_URL || KOMPILOT_BACKEND_URL;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type TrackingEvent =

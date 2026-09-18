@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * AgencyDashboardPage — /agence/dashboard
  * Bird's-eye view of all agency clients with GEO scores and quick actions.
@@ -36,7 +37,7 @@ import { useQuery } from '@tanstack/react-query';
 import { blink } from '../blink/client';
 import { Download, Globe, MessageSquare, Star } from 'lucide-react';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? KOMPILOT_BACKEND_URL;
 
 /** Fetch aggregated stats for all sub-accounts */
 function useAgencyAggregate(userId: string | undefined, skip: boolean) {

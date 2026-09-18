@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * activityClient — Standalone client-side activity logger.
  *
@@ -11,7 +12,7 @@
 
 import { blink } from '../blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 interface LogOptions {
   actionCategory?: string;

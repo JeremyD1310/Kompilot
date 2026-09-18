@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * CancellationTab — Tunnel de résiliation avec Churn Saver
  *
@@ -1144,7 +1145,7 @@ export function CancellationTab() {
     setDiscountLoading(true);
     try {
       const token = await blink.auth.getValidToken();
-      const res = await fetch(`https://gbrhsehk.backend.blink.new/api/billing/apply-retention-discount`, {
+      const res = await fetch(`${KOMPILOT_BACKEND_URL}/api/billing/apply-retention-discount`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       });
@@ -1182,7 +1183,7 @@ export function CancellationTab() {
     setDiscountLoading(true);
     try {
       const token = await blink.auth.getValidToken();
-      const res = await fetch(`https://gbrhsehk.backend.blink.new/api/billing/apply-retention-extension`, {
+      const res = await fetch(`${KOMPILOT_BACKEND_URL}/api/billing/apply-retention-extension`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       });

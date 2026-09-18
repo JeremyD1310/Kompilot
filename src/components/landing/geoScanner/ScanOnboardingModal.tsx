@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * ScanOnboardingModal — Sector-adaptive post-scan onboarding
  *
@@ -53,7 +54,7 @@ export function ScanOnboardingModal({ open, onClose, query, scanData, onFinish }
         });
         if (navigator.sendBeacon) {
           navigator.sendBeacon(
-            `${(import.meta as any).env?.VITE_BACKEND_URL || 'https://gbrhsehk.backend.blink.new'}/api/tracking/conversion`,
+            `${(import.meta as any).env?.VITE_BACKEND_URL || KOMPILOT_BACKEND_URL}/api/tracking/conversion`,
             new Blob([payload], { type: 'application/json' }),
           );
         }

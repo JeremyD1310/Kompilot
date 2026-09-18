@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * BillingCreditsPage — Main Credits & Billing dashboard page.
  * Tabs: Vue d'ensemble, Historique, Recharger, Vidéo IA.
@@ -31,7 +32,7 @@ const TavusVideoGenerator = lazy(() =>
 
 // ── API helpers ─────────────────────────────────────────────────────────────
 
-const API_BASE = 'https://gbrhsehk.backend.blink.new';
+const API_BASE = KOMPILOT_BACKEND_URL;
 
 interface CreditBalance {
   balance: number;

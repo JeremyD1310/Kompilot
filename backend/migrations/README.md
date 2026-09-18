@@ -15,6 +15,11 @@ La migration `001_create_establishments_and_onboarding_profiles.sql` utilise `CR
 
 Le backend n'execute pas automatiquement ces migrations. Cette migration n'a pas ete executee depuis Codespaces.
 
+`002_dashboard_state.sql` ajoute uniquement la persistance propriétaire des actions
+ignorées/reportées et la file des jalons réellement enregistrés. Elle doit être
+appliquée dans Blink avant d'activer ces fonctions en production. Le frontend
+échoue proprement si la migration n'est pas encore présente.
+
 ## Verification apres application
 
 Relancer `sqlite_master`, `pragma_table_info` et `pragma_index_list`, puis comparer les noms, types, valeurs par defaut et index avec le fichier SQL. Verifier aussi qu'aucune table ou colonne existante n'a ete supprimee.

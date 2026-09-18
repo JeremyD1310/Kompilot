@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * TechnicalSEOAgentPanel — Module 4: Autonomous SEO Agent
  *
@@ -14,7 +15,7 @@ import {
   Download, Wand2, Eye,
 } from 'lucide-react';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

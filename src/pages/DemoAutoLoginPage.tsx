@@ -4,7 +4,7 @@
  * Page demo integree au layout de la landing page (LandingNav + LandingFooter).
  *
  * Le bouton "Se connecter" dans LandingNav redirige vers /login.
- * Le CTA "Accéder à la démo" écrit la session sandbox et ouvre /demo/dashboard
+ * Le CTA "Accéder à la démo" écrit la session sandbox et ouvre /demo/workspace
  * via rechargement complet.
  *
  * ISOLATION: Aucun appel Blink Auth ou Firebase n'est effectue par le bypass.
@@ -67,7 +67,7 @@ export default function DemoAutoLoginPage() {
       window.dispatchEvent(new CustomEvent('kompilot:sector-change', { detail: selectedSector }));
       // Start the demo in a fresh module/runtime so main.tsx installs the
       // local DB, auth, AI and backend-fetch guards before dashboard providers mount.
-      window.location.assign('/demo/dashboard');
+      window.location.assign('/demo/workspace');
     } catch (err) {
       console.error('[Demo] Failed to activate:', err);
     }

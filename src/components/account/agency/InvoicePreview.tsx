@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * InvoicePreview — Agency consolidated invoice preview with:
  * - Multi-currency support (EUR, GBP, CHF, CAD, USD…)
@@ -10,7 +11,7 @@ import { Card, CardContent, Button, Badge, toast } from '@blinkdotnew/ui';
 import { FileText, Loader2, Info, Globe } from 'lucide-react';
 import { blink } from '../../../blink/client';
 
-const BACKEND = 'https://gbrhsehk.backend.blink.new';
+const BACKEND = KOMPILOT_BACKEND_URL;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

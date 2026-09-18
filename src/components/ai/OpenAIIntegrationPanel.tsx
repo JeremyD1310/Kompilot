@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * OpenAIIntegrationPanel — Panneau d'intégration OpenAI pour Kompilot
  *
@@ -20,7 +21,7 @@ import {
   Sparkles, Zap, Megaphone, Search, FileText,
 } from 'lucide-react';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

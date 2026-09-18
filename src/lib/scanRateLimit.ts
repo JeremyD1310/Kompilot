@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * scanRateLimit.ts — Client-side scan rate limit enforcement
  *
@@ -13,7 +14,7 @@
 
 const STORAGE_KEY = 'kompilot_scan_rl';
 const MAX_FREE_SCANS = 3;
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 interface ScanRecord {
   count: number;

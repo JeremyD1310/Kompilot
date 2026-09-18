@@ -228,5 +228,5 @@ export function useScheduledPosts(userId?: string) {
     return updated;
   }, [userId]);
 
-  return { posts, add, update, updateStatus, remove };
+  return { posts, add, update, updateStatus, remove, isSynced: Boolean(userId) && dbSynced };
 }

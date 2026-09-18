@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * MetaIntegrationPanel — Panneau d'intégration API Marketing Meta
  * Permet de tester la connexion, lister les comptes pub et consulter les métriques.
@@ -45,7 +46,7 @@ interface MetaInsight {
   date_stop: string;
 }
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 async function backendGet<T>(path: string): Promise<T> {
   const token = await blink.auth.getValidToken();

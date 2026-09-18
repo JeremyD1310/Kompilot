@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 import { useEffect, useState } from 'react';
 import { AlertTriangle, ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@blinkdotnew/ui';
@@ -28,7 +29,7 @@ export function StripeConnectStatusWidget() {
         const token = await blink.auth.getValidToken().catch(() => null);
         if (!token) return;
         const res = await fetch(
-          'https://gbrhsehk.backend.blink.new/api/stripe-connect/status',
+          `${KOMPILOT_BACKEND_URL}/api/stripe-connect/status`,
           { headers: { Authorization: `Bearer ${token}` } },
         );
         if (!res.ok) throw new Error('fetch failed');
@@ -51,7 +52,7 @@ export function StripeConnectStatusWidget() {
       const token = await blink.auth.getValidToken().catch(() => null);
       if (!token) { setActionLoading(false); return; }
       const res = await fetch(
-        'https://gbrhsehk.backend.blink.new/api/stripe-connect/account-link',
+        `${KOMPILOT_BACKEND_URL}/api/stripe-connect/account-link`,
         {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },

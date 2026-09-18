@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * AIO Checker Page — Public free tool for checking AI visibility.
  * No auth required. Rate-limited to 1 check per IP per day.
@@ -16,7 +17,7 @@ import {
 } from 'lucide-react';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 interface CheckResult {
   keyword: string;

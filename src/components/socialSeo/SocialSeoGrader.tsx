@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * Social & AI SEO Grader — Lead Magnet Widget
  * 
@@ -62,7 +63,7 @@ export function SocialSeoGrader() {
 
     // Fetch actual grader result from API
     try {
-      const API_BASE = 'https://gbrhsehk.backend.blink.new'
+      const API_BASE = KOMPILOT_BACKEND_URL
       const res = await fetch(`${API_BASE}/api/social-seo/grader?domain=${encodeURIComponent(domain.trim())}`)
       if (!res.ok) throw new Error('Scan failed')
       const data = await res.json()

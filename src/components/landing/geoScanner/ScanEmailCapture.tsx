@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * ScanEmailCapture — Non-intrusive email capture form shown during the
  * 35-second scanning phase of GeoScannerFlash.
@@ -43,7 +44,7 @@ export function ScanEmailCapture({ visible, query, onCaptured }: Props) {
     setSaving(true);
     try {
       // Save to backend leads table (fire-and-forget)
-      const backendUrl = (import.meta as any).env?.VITE_BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
+      const backendUrl = (import.meta as any).env?.VITE_BACKEND_URL || KOMPILOT_BACKEND_URL;
       await fetch(`${backendUrl}/api/scanner/lead-capture`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

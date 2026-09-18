@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useLegalSignature — logging clickwrap immuable
  *
@@ -8,7 +9,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? KOMPILOT_BACKEND_URL;
 
 export const CURRENT_CGV_VERSION = '2.1.0';
 

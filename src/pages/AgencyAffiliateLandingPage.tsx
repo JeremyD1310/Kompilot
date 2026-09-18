@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * AgencyAffiliateLandingPage — /affilies/:code
  *
@@ -11,7 +12,7 @@ import { Link, useParams } from '@tanstack/react-router';
 import { Gift, Star, ArrowRight, Copy, Check, Sparkles, Zap, Shield, Users } from 'lucide-react';
 import { KompilotLogo } from '../components/brand/KompilotLogo';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || KOMPILOT_BACKEND_URL;
 
 function Logo() { return <KompilotLogo variant="icon" height={32} />; }
 

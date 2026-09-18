@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useActivityLogger — Frontend hook for logging user activities.
  *
@@ -92,7 +93,7 @@ export const ACTIVITY_ACTIONS = {
  * Get the backend URL for the current project.
  */
 function getBackendUrl(): string {
-  return 'https://gbrhsehk.backend.blink.new';
+  return KOMPILOT_BACKEND_URL;
 }
 
 export function useActivityLogger() {

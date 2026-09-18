@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * UGCVideoAdGenerator — Chat-to-Video conversational UX for UGC video ad creation.
  *
@@ -31,7 +32,7 @@ import {
   type AnalyzeResponse, type StatusResponse,
 } from './UGCVideoAdGeneratorTypes';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 const STEPS = ['Produit', 'Analyse', 'Scripts', 'Génération'];
 
 // ── Script cache (P2: avoid re-generation for same product image) ──────────────

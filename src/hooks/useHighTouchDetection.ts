@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useHighTouchDetection — fires high-touch lead check once per user session.
  *
@@ -7,7 +8,7 @@
 import { useEffect, useRef } from 'react';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = `https://gbrhsehk.backend.blink.new`;
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 const SESSION_KEY = 'high_touch_checked_v1';
 
 export function useHighTouchDetection(

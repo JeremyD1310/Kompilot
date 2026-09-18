@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * MetaConnectionPanel — Official Meta (Facebook + Instagram) OAuth 2.0 connection flow.
  *
@@ -14,7 +15,7 @@ import { WhatsAppSupportButton } from '../shared/WhatsAppSupportButton';
 import { useConnectionErrorTracker } from '../../hooks/useConnectionErrorTracker';
 import { blink } from '../../blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

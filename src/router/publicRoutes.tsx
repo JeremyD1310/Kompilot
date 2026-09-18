@@ -3,7 +3,7 @@
  * All public (no-auth) route definitions.
  */
 import React from 'react';
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, redirect } from '@tanstack/react-router';
 import { rootRoute } from './rootRoute';
 
 // ── Pages (lazy-loaded) ───────────────────────────────────────────────────────
@@ -23,7 +23,6 @@ const ReferralLandingPage  = React.lazy(() => import('../pages/ReferralLandingPa
 const ClientApprovalPage   = React.lazy(() => import('../pages/ClientApprovalPage'));
 const DemoPage             = React.lazy(() => import('../pages/DemoPage'));
 const DemoOnboardingPage    = React.lazy(() => import('../pages/DemoOnboardingPage'));
-const DemoDashboardPage     = React.lazy(() => import('../pages/DemoDashboardPage'));
 const DemoWorkspacePage     = React.lazy(() => import('../pages/DemoWorkspacePage'));
 const TestimonialsPage      = React.lazy(() => import('../pages/TestimonialsPage'));
 const FAQPage              = React.lazy(() => import('../pages/FAQPage'));
@@ -78,7 +77,7 @@ export const referralLandingRoute = createRoute({ getParentRoute: () => rootRout
 export const clientApprovalRoute = createRoute({ getParentRoute: () => rootRoute, path: '/approve/$token', component: ClientApprovalPage });
 export const demoRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo', component: DemoPage });
 export const demoOnboardingRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/onboarding', component: DemoOnboardingPage });
-export const demoDashboardRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/dashboard', component: DemoDashboardPage });
+export const demoDashboardRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/dashboard', beforeLoad: () => { throw redirect({ to: '/demo/workspace' }); }, component: DemoWorkspacePage });
 export const demoWorkspaceRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace', component: DemoWorkspacePage });
 export const demoWorkspaceApprovalsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/approvals', component: DemoWorkspacePage });
 export const demoWorkspaceCalendarRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/calendar', component: DemoWorkspacePage });

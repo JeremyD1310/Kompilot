@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * AdminAnalyticsPage — /admin/analytics
  * Financial KPIs + user plan management table (Stripe live data).
@@ -157,7 +158,7 @@ export default function AdminAnalyticsPage() {
     setError(null);
     try {
       const token = await blink.auth.getValidToken();
-      const res = await fetch('https://gbrhsehk.backend.blink.new/api/admin/analytics-data', {
+      const res = await fetch(`${KOMPILOT_BACKEND_URL}/api/admin/analytics-data`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {

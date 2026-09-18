@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * PaidMediaDashboard — Vue Admin /admin (onglet Paid Media)
  *
@@ -15,7 +16,7 @@ import {
 } from 'lucide-react';
 import { blink } from '@/blink/client';
 
-const BACKEND_URL = (import.meta as any).env?.VITE_BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = (import.meta as any).env?.VITE_BACKEND_URL || KOMPILOT_BACKEND_URL;
 
 interface PaidMediaStats {
   paidActiveUsers: number;

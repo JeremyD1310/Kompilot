@@ -2,6 +2,7 @@ import { blink } from '../blink/client';
 
 const configuredBackendUrl = (import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_BACKEND_URL?.trim() ?? '';
 export const BACKEND_URL = configuredBackendUrl.replace(/\/$/, '');
+export const BACKEND_HOST = BACKEND_URL ? new URL(BACKEND_URL).host : '';
 
 export const BACKEND_URL_CONFIG_MISSING = 'BACKEND_URL_CONFIG_MISSING';
 

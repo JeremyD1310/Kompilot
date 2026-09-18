@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useAnnualPlanSwitch — Hook for switching from monthly to annual billing.
  *
@@ -11,7 +12,7 @@
 import { useState, useCallback } from 'react';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 export interface AnnualPlanInfo {
   planId: string;

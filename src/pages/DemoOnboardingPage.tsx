@@ -41,7 +41,7 @@ export default function DemoOnboardingPage() {
     sessionStorage.setItem('kompilot_demo_active_session', 'true');
     localStorage.setItem('kompilot_switcher_unlocked', '1');
     localStorage.setItem('kompilot_demo_sector', state.profile);
-    navigate({ to: '/demo/dashboard' });
+    navigate({ to: '/demo/workspace' });
   };
   const progress = useMemo(() => `${((state.step + 1) / steps.length) * 100}%`, [state.step]);
 

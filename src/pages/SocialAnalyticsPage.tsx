@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * SocialAnalyticsPage — Dashboard de performance des posts sociaux
  *
@@ -34,7 +35,7 @@ import { InstagramReelsMetricsTable } from '@/components/socialAnalytics/Instagr
 import { UnifiedCrossPlatformTable } from '@/components/socialAnalytics/UnifiedCrossPlatformTable';
 import { ConnectionStatusWidget } from '@/components/socialAnalytics/ConnectionStatusWidget';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── API fetch ────────────────────────────────────────────────────────────────
 

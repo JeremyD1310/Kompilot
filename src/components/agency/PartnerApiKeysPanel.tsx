@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * PartnerApiKeysPanel — 🔑 Gestion des clés API Partenaire
  *
@@ -15,7 +16,7 @@ import { Key, Plus, Trash2, Copy, CheckCircle2, Eye, EyeOff, Clock, ExternalLink
 import { Button, Card, CardContent, toast } from '@blinkdotnew/ui';
 import { blink } from '@/blink/client';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? KOMPILOT_BACKEND_URL;
 const PARTNER_API_BASE = `${BACKEND_URL}/api/v1/partner`;
 
 interface ApiKeyEntry {

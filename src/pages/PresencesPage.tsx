@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * PresencesPage — Dashboard de présence d'équipe
  *
@@ -29,7 +30,7 @@ import {
   type PresenceRecord,
 } from '@/hooks/usePresences';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

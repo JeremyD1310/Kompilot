@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * AgencyLeadSearchPage — /agence/lead-search
  *
@@ -19,7 +20,7 @@ import { blink } from '../blink/client';
 import { useSubscription } from '../context/SubscriptionContext';
 import { DeepScanProgressModal } from '../components/onboarding/DeepScanProgressModal';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? KOMPILOT_BACKEND_URL;
 
 interface PlaceResult {
   placeId:               string;

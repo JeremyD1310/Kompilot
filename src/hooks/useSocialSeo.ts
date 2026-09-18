@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * Social-to-SEO data fetching hooks
  */
@@ -28,7 +29,7 @@ export interface GraderResult {
   message: string
 }
 
-const API_BASE = 'https://gbrhsehk.backend.blink.new'
+const API_BASE = KOMPILOT_BACKEND_URL
 
 async function fetchWithAuth(path: string, options: RequestInit = {}) {
   const token = await blink.auth.getValidToken()

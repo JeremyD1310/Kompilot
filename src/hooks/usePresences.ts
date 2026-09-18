@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * usePresences — React Query hook for presence management (check-in/check-out).
  *
@@ -10,7 +11,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { blink } from '@/blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 const STALE_TIME = 2 * 60 * 1000; // 2 minutes
 
 export interface PresenceRecord {

@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * CustomDomainPanel — 🌐 Nom de domaine personnalisé (White-Label)
  *
@@ -11,7 +12,7 @@ import { Globe, Copy, CheckCircle2, Clock, AlertCircle, RefreshCw, Lock, Chevron
 import { Button, toast } from '@blinkdotnew/ui';
 
 const CNAME_TARGET = 'ssl.kompilot.com';
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? KOMPILOT_BACKEND_URL;
 
 type DnsStatus = 'idle' | 'pending' | 'propagating' | 'active' | 'error';
 

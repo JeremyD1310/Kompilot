@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 import { useState, useEffect, useCallback } from 'react';
 import {
   Shield, AlertTriangle, Activity, Users, Zap,
@@ -71,7 +72,7 @@ interface KillSwitchState {
 
 // ── Backend URL ────────────────────────────────────────────────────────────────
 
-const API_BASE = (import.meta as any).env?.VITE_BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
+const API_BASE = (import.meta as any).env?.VITE_BACKEND_URL || KOMPILOT_BACKEND_URL;
 
 // ── Demo data ──────────────────────────────────────────────────────────────────
 

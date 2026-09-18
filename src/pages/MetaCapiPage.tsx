@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * MetaCapiPage — Pixel de conversion
  * Configuration du tracking publicitaire automatisé des conversions.
@@ -22,7 +23,7 @@ import { blink } from '../blink/client';
 
 // ── API Helper ─────────────────────────────────────────────────────────────
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 async function capiApi(path: string, options: RequestInit = {}) {
   const token = await blink.auth.getValidToken().catch(() => null);

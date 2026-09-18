@@ -1,10 +1,11 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useNavigate, useParams } from '@tanstack/react-router';
 import { Building2, CheckCircle2, Clock, Loader2, ShieldCheck } from 'lucide-react';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? KOMPILOT_BACKEND_URL;
 
 type Invite = { clientName: string; clientEmail: string; agencyName: string; expiresAt: string };
 

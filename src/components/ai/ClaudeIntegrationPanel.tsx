@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * ClaudeIntegrationPanel — Panneau d'intégration Anthropic Claude pour Kompilot
  *
@@ -21,7 +22,7 @@ import {
   Brain, BarChart2, Calendar, Star, Zap, Shield,
 } from 'lucide-react';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

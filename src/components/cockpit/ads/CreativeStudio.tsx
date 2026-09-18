@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * CreativeStudio — Analyse Meta Ads via Claude Sonnet
  *
@@ -14,7 +15,7 @@ import {
 } from 'lucide-react';
 import { blink } from '../../../blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 interface AnalysisResult {
   winners: string;

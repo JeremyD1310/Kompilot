@@ -1,9 +1,10 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 import { useState } from 'react';
 import { AlertCircle, ExternalLink, Loader2, Search, ShieldCheck } from 'lucide-react';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input } from '@blinkdotnew/ui';
 import { blink } from '../../blink/client';
 
-const BACKEND = 'https://gbrhsehk.backend.blink.new';
+const BACKEND = KOMPILOT_BACKEND_URL;
 type Report = { brandName: string; sector: string; location: string; siteUrl: string; questions: Array<{ id: number; question: string }>; engines: string[]; responses: Array<{ questionId: number; engine: string; answer: string; brands: string[]; sources: string[]; brandMentioned: boolean; error?: string }>; citation: { citedQuestions: number; totalQuestions: number; rate: number }; competitors: Array<{ brand: string; citations: number }>; topSources: Array<{ url: string; citations: number; profile?: { wordCount: number; format: string; headings: string[]; hasFaq: boolean; hasNumericData: boolean; latestYear: number | null }; error?: string }>; brandProfile?: { wordCount: number; format: string; headings: string[] }; contentGaps: string[]; prioritizedPages: Array<{ priority: number; title: string; type: string; reason: string }>; methodology?: { sourceResearch: string; citationDenominator: string; sourcePolicy: string } };
 
 function pct(value: number) { return `${value > 0 ? '+' : ''}${value.toFixed(1)} %`; }

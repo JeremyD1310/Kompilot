@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * AntiNoShowShield — Orchestrateur principal du module Bouclier Anti-No-Show.
  * Compose : slider pénalité · conseils IA · fidélité · re-remplissage flash · heures chaudes · activation Stripe
@@ -16,7 +17,7 @@ import { NoShowAccountingExport } from './antiNoShow/NoShowAccountingExport';
 import { useEstablishment } from '../../context/EstablishmentContext';
 import { useTracking } from '../../hooks/useTracking';
 
-const BACKEND = 'https://gbrhsehk.backend.blink.new';
+const BACKEND = KOMPILOT_BACKEND_URL;
 
 interface ConnectStatus {
   connected: boolean;

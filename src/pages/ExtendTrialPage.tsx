@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * ExtendTrialPage — /extend-trial?token=xxx
  *
@@ -14,7 +15,7 @@ import { KompilotLogo } from '../components/brand/KompilotLogo';
 
 type Status = 'loading' | 'valid' | 'invalid' | 'extending' | 'extended' | 'error';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 export default function ExtendTrialPage() {
   const [status, setStatus] = useState<Status>('loading');

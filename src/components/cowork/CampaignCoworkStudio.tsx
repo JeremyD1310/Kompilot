@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * CampaignCoworkStudio — Interface de collaboration IA OpenAI × Claude
  *
@@ -25,7 +26,7 @@ import {
   Clock, Target, Package, Palette, RefreshCw,
 } from 'lucide-react';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
