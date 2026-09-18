@@ -120,11 +120,11 @@ test.describe('Résistance aux clics multiples (stress UI)', () => {
       await createBtn.click({ force: true });
     }
 
-    // Only ONE modal/dialog should be open
-    // Radix wrappers are implementation details and can coexist with one
-    // accessible dialog. Count actual dialogs only.
-    const dialogs = await page.getByRole('dialog').count();
-    expect(dialogs).toBeLessThanOrEqual(1);
+    // Only ONE create-action dialog should be open. The consent banner is an
+    // independent accessible dialog and may legitimately coexist on a fresh CI
+    // browser profile, so a global role count would produce a false failure.
+    const createDialogs = page.locator('[role="dialog"]:has-text("Simulation locale · étape 3 sur 5")');
+    await expect(createDialogs).toHaveCount(1);
 
     // Close if open
     const closeBtn = page.locator('[role="dialog"] button:has-text("Annuler"), [role="dialog"] button[aria-label*="fermer"], [role="dialog"] button[aria-label*="close"]').first();
