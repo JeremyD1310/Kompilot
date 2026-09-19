@@ -38,6 +38,7 @@ export function GrowthAttributionWidget() {
     queryKey: ['dashboard-growth-attribution', user?.id],
     enabled: Boolean(user?.id) && !isDemoActive,
     staleTime: 60_000,
+    refetchInterval: 60_000,
     queryFn: async () => {
       const [metrics, leads, conversions, posts] = await Promise.all([
         blink.db.table<MetricRow>('post_engagement_metrics').list({ where: { userId: user!.id }, orderBy: { recordedAt: 'desc' }, limit: 200 }),
