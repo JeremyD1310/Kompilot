@@ -81,4 +81,27 @@ test.describe('commercial navigation integrity', () => {
       await expectRendered(page);
     }
   });
+
+  test('website visibility audit shows evidence and remains usable on mobile', async ({ page }) => {
+    await loginAsDemo(page);
+    await page.route('**/api/geo/website-audit', async route => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        auditId: 'audit-e2e', requestedUrl: 'https://example.com/', canonicalOrigin: 'https://example.com', observedAt: new Date().toISOString(), persisted: true,
+        pages: [{ url: 'https://example.com/', status: 200, title: 'Entreprise exemple', wordCount: 180, schemaTypes: ['LocalBusiness'] }],
+        scores: { overall: 78, technical: 88, content: 64, local: 75, trust: 80, geo: 83 },
+        findings: [{ id: 'finding-1', category: 'content', priority: 'P1', pageUrl: 'https://example.com/', title: 'Contenu éditorial limité', evidence: '180 mots observés.', impact: 'Contexte insuffisant.', recommendation: 'Décrire les services avec des preuves vérifiables.', effort: 'moyen', status: 'todo' }],
+        limitations: [], methodology: { maxPages: 8, maxDepth: 1, maxResponseBytes: 750000, robotsPolicy: 'robots.txt respecté.', scoringPolicy: 'Scores déterministes fondés sur les constats observés.' },
+      }),
+    }));
+    await page.goto('/website-scan');
+    await page.getByLabel('Site professionnel à analyser').fill('https://example.com');
+    await page.getByText('Je confirme être autorisé').click();
+    await page.getByRole('button', { name: 'Lancer l’audit' }).click();
+    await expect(page.getByText('Plan d’amélioration priorisé')).toBeVisible();
+    await expect(page.getByText('180 mots observés.')).toBeVisible();
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+  });
 });
