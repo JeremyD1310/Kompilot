@@ -22,11 +22,7 @@ import {
 } from '../lib/billingStorage';
 import { fireMentorTrigger } from '../hooks/useMentorTriggers';
 import { ChangePaymentMethodModal } from '../components/subscription/ChangePaymentMethodModal';
-import { OnboardingGuideModal, useOnboardingGuideModal } from '../components/onboarding/OnboardingGuideModal';
-import { ExhaustiveOnboardingModal, useExhaustiveOnboarding } from '../components/onboarding/ExhaustiveOnboardingModal';
-import { UnifiedOnboardingFlow } from '../components/onboarding/UnifiedOnboardingFlow';
-import { SectorWalkthroughEngine } from '../components/onboarding/SectorWalkthroughEngine';
-import { useUserProfile } from '../context/UserProfileContext';
+// Onboarding is a dedicated route; dashboard layout intentionally has no onboarding modal imports.
 import { AuditFlashModal } from '../components/dashboard/AuditFlashModal';
 import { ProactiveNotificationBanner } from '../components/layout/ProactiveNotificationBanner';
 import { ExternalApiOutageBanner } from '../components/layout/ExternalApiOutageBanner';
@@ -147,11 +143,6 @@ export function DashboardLayout() {
   }, [isDemoCreditsExhausted]);
 
   const { isSwitching } = useEstablishment();
-  const { onboardingCompleted, markOnboardingCompleted, masterProfile } = useUserProfile();
-  const [smartWizardOpen, setSmartWizardOpen] = useState(() => !onboardingCompleted);
-  const [walkthroughOpen, setWalkthroughOpen] = useState(false);
-  const { show: showGuide, close: closeGuide } = useOnboardingGuideModal(user?.id);
-  const { show: showOnboarding, close: closeOnboarding } = useExhaustiveOnboarding(user?.id);
   const [auditFlashOpen, setAuditFlashOpen] = useState(false);
   const [displayModeOpen, setDisplayModeOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -159,20 +150,13 @@ export function DashboardLayout() {
   const [apiKeyWizardOpen, setApiKeyWizardOpen] = useState(false);
   const { latestToast, clearToast } = useNotifications();
 
-  useEffect(() => {
-    if (!onboardingCompleted && masterProfile && localStorage.getItem('walkthrough_shown') !== '1') {
-      setWalkthroughOpen(true);
-      localStorage.setItem('walkthrough_shown', '1');
-    }
-  }, [onboardingCompleted, masterProfile]);
-
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try { return localStorage.getItem('kompilot_sidebar_collapsed') === '1'; } catch { return false; }
   });
 
   const toggleSidebar = () => setSidebarCollapsed(v => {
     const next = !v;
-    try { localStorage.setItem('kompilot_sidebar_collapsed', next ? '1' : '0'); } catch {}
+    try { localStorage.setItem('kompilot_sidebar_collapsed', next ? '1' : '0'); } catch { /* storage can be unavailable */ }
     return next;
   });
 
@@ -330,7 +314,7 @@ export function DashboardLayout() {
         <GuidedTour />
         {/* Launch checklist widget — shown to new users who completed the competitor wizard */}
         {user && <LaunchChecklistWidget userId={user.id} />}
-        {showGuide && user && <OnboardingGuideModal userId={user.id} onClose={closeGuide} />}
+        {/* Onboarding is canonical at /onboarding; dashboard never mounts a competing flow. */}
         <AuditFlashModal open={auditFlashOpen} onClose={() => setAuditFlashOpen(false)} />
         <TrialEndModal open={trialEndOpen} onClose={() => setTrialEndOpen(false)} />
         <DisplayMode open={displayModeOpen} onClose={() => setDisplayModeOpen(false)} />
@@ -354,17 +338,7 @@ export function DashboardLayout() {
 
         <NotificationToast notification={latestToast} onDismiss={clearToast} />
         <DailyRefundToast />
-        {showOnboarding && user && !smartWizardOpen && <ExhaustiveOnboardingModal open={showOnboarding} onClose={closeOnboarding} />}
-        <SectorWalkthroughEngine open={walkthroughOpen} onClose={() => setWalkthroughOpen(false)} />
-        {/* P0-3: Unified flow replaces QuickOnboardingWizard */}
-        <UnifiedOnboardingFlow
-          open={smartWizardOpen && !onboardingCompleted}
-          onComplete={() => {
-            markOnboardingCompleted();
-            setSmartWizardOpen(false);
-            closeOnboarding(); // Also dismiss ExhaustiveOnboardingModal — one flow only
-          }}
-        />
+        {/* Onboarding overlays intentionally live only on the canonical /onboarding route. */}
         <WhatsAppSupportButton variant="floating" userId={user?.id} />
         <AcademyContextualToast />
         <HelpButton onClick={() => setHelpOpen(v => !v)} active={helpOpen} />

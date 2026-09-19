@@ -82,7 +82,7 @@ function AlertCard({ alert, onDismiss, onAction }: AlertCardProps) {
       initial={{ opacity: 0, x: 320, scale: 0.94 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 320, scale: 0.96 }}
-      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] as const }}
       className="relative rounded-2xl overflow-hidden shadow-2xl"
       style={{
         background: 'linear-gradient(135deg, #0F1629 0%, #1a2235 100%)',
@@ -164,7 +164,7 @@ function PermissionBanner({ onAllow, onDismiss }: PermissionBannerProps) {
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 12 }}
-      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] as const }}
       className="fixed bottom-6 left-1/2 z-[9000] w-[calc(100vw-2rem)] max-w-sm"
       style={{ x: '-50%' } as React.CSSProperties}
     >

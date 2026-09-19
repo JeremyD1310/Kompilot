@@ -7,7 +7,7 @@ import { useDemoMode } from '../../context/DemoModeContext';
 const DISMISSED_KEY = 'kompilot_savework_dismissed';
 
 export function SaveWorkPopup() {
-  const { demoActionCount, isDemoActive } = useDemoMode();
+  const { isDemoActive } = useDemoMode();
   const navigate = useNavigate();
 
   const [dismissed, setDismissed] = useState<boolean>(() => {
@@ -21,7 +21,7 @@ export function SaveWorkPopup() {
   const [rgpdChecked, setRgpdChecked] = useState(false);
   const [rgpdError, setRgpdError] = useState(false);
 
-  const visible = isDemoActive && demoActionCount >= 3 && !dismissed;
+  const visible = isDemoActive && !dismissed;
 
   const handleDismiss = () => {
     setDismissed(true);

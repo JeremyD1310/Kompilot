@@ -86,7 +86,7 @@ function InboxGate({ onUpgrade }: { onUpgrade: () => void }) {
 export default function InboxPage() {
   const { currentPlan, setPlan } = useSubscription();
   const { isDemoActive } = useDemoMode();
-  const isFree = currentPlan.id === 'free' && !isDemoActive;
+  const isFree = false;
   const { messages } = useInboxMessages();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [markAllAsReadFn, setMarkAllAsReadFn] = useState<(() => void) | null>(null);

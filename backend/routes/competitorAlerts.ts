@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -35,7 +36,7 @@ function isTriggered(alert: any, metrics: Record<string, number>) {
 
 async function session(c: any) {
   const env = c.env as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   return auth.valid ? { userId: auth.userId, blink } : null;
 }

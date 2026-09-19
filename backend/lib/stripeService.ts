@@ -268,7 +268,6 @@ export async function createCheckoutSession(
     // Payload Stripe Checkout Session
     // Les champs imbriqués utilisent la notation bracket : line_items[0][price]
     const payload: Record<string, string | number | boolean | undefined> = {
-      'payment_method_types[0]':           'card',
       'mode':                              'subscription',
       'customer':                          params.customerId,
       'line_items[0][price]':              params.priceId,
@@ -284,7 +283,10 @@ export async function createCheckoutSession(
       'subscription_data[metadata][planId]':  params.planId,
       // Codes promo
       'allow_promotion_codes':             params.allowPromoCodes ?? true,
-      // Politique de facturation : collecter la TVA automatiquement
+      // ATTENTION : Stripe Tax est désactivé ici — cette fonction n'est câblée à aucune
+      // route. Le checkout réel (backend/routes/billing/checkout.ts) active
+      // automatic_tax. Toute route qui utiliserait cet helper doit passer à `true`,
+      // sinon elle encaisserait les montants HT du catalogue sans TVA.
       'automatic_tax[enabled]':            false,
     };
 

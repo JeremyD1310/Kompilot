@@ -63,7 +63,7 @@ async function logEmail(blink: BlinkClient, entry: EmailLogEntry): Promise<void>
 // ── Templates ─────────────────────────────────────────────────────────────────
 
 const KOMPILOT_BRAND = {
-  logoUrl: 'https://storage.googleapis.com/blink-core-storage/projects/presence-manager-saas-gbrhsehk/ai-images/1783666700085-d86a169a-5d36-415f-87e4-f367a8335913.png',
+  logoUrl: 'https://kompilot.fr/og-image.png',
   primaryColor: '#0D9488',
   backgroundColor: '#0F172A',
   textColor: '#E2E8F0',

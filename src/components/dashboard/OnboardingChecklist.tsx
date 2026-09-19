@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Check, ArrowRight } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { useConnectedAccounts } from '../../context/ConnectedAccountsContext';
-import { isFirstPost } from '../../lib/weeklyActivity';
 
 // ── Storage ───────────────────────────────────────────────────────────────────
 
@@ -85,53 +84,61 @@ function TaskItem({ done, label, description, href, onClick, index }: TaskItemPr
 interface OnboardingChecklistProps {
   onConnectAccount: () => void;
   onCreatePost: () => void;
+  hasEstablishment: boolean;
+  billingActive: boolean;
+  firstContentApproved: boolean;
+  hasMeasuredResult: boolean;
 }
 
-export function OnboardingChecklist({ onConnectAccount, onCreatePost }: OnboardingChecklistProps) {
+export function OnboardingChecklist({ onConnectAccount, onCreatePost, hasEstablishment, billingActive, firstContentApproved, hasMeasuredResult }: OnboardingChecklistProps) {
   const { isConnected } = useConnectedAccounts();
 
   // Derive task states
   const googleConnected  = isConnected('google');
-  const scanLaunched     = !!localStorage.getItem('kompilot_scan_launched');
   const socialConnected  = isConnected('instagram') || isConnected('facebook');
-  const postCreated      = !isFirstPost(); // isFirstPost() returns true BEFORE first post
-  const alertsConfigured = !!localStorage.getItem('kompilot_alerts_configured');
 
   const tasks = [
     {
+      done: hasEstablishment,
+      label: 'Créer votre établissement',
+      description: 'Ajoutez la fiche qui servira de périmètre à vos données et actions.',
+      weight: 15,
+      href: hasEstablishment ? undefined : '/establishments',
+    },
+    {
       done: googleConnected,
-      label: 'Connecter Google Business',
-      description: 'Synchronisez votre fiche, vos avis et vos statistiques locales. (+10 crédits bonus)',
-      weight: 30,
+      label: 'Connecter votre fiche Google',
+      description: 'Synchronisez les informations et avis de votre établissement.',
+      weight: 20,
       onClick: googleConnected ? undefined : onConnectAccount,
     },
     {
-      done: scanLaunched,
-      label: 'Lancer le scan d\'acquisition local',
-      description: 'Notre scanner IA identifie vos opportunités manquées en 35 secondes.',
-      weight: 25,
-      href: scanLaunched ? undefined : '/scan/fast',
-    },
-    {
       done: socialConnected,
-      label: 'Connecter Instagram ou Facebook',
-      description: 'Activez le calendrier de publication et publiez sur vos réseaux en 1 clic.',
-      weight: 20,
+      label: 'Connecter un réseau social',
+      description: 'Reliez Instagram ou Facebook pour préparer vos contenus.',
+      weight: 15,
       onClick: socialConnected ? undefined : onConnectAccount,
     },
     {
-      done: postCreated,
-      label: 'Générer votre premier post IA',
-      description: 'L\'IA rédige un post professionnel adapté à votre secteur en quelques secondes.',
+      done: billingActive,
+      label: 'Valider la facturation',
+      description: 'Confirmez votre abonnement et l’accès au portail de facturation.',
       weight: 15,
-      onClick: postCreated ? undefined : onCreatePost,
+      href: billingActive ? undefined : '/settings',
     },
     {
-      done: alertsConfigured,
-      label: 'Configurer les alertes avis',
-      description: 'Recevez une notification instantanée dès qu\'un nouvel avis Google arrive.',
-      weight: 10,
-      href: alertsConfigured ? undefined : '/settings',
+      done: firstContentApproved,
+      label: 'Valider votre premier contenu',
+      description: 'Préparez puis approuvez un contenu avant toute publication.',
+      weight: 20,
+      onClick: firstContentApproved ? undefined : onCreatePost,
+    },
+    {
+      done: hasMeasuredResult,
+      label: 'Obtenir un premier résultat mesuré',
+      description: 'Un résultat n’est validé qu’après synchronisation d’une source réelle.',
+      weight: 15,
+      href: hasMeasuredResult ? undefined : '/performance',
     },
   ];
 
@@ -180,12 +187,12 @@ export function OnboardingChecklist({ onConnectAccount, onCreatePost }: Onboardi
           <p className="text-sm font-bold text-foreground leading-tight">
             {allDone
               ? 'Compte configuré à 100% ! Vous êtes prêt à cartonner.'
-              : `Vos premiers pas sur Kompilot (${done}/${total} accomplis)`
+              : `Activation commerciale (${done}/${total} étapes)`
             }
           </p>
           {!allDone && (
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              Complétez ces étapes pour tirer le meilleur de l'application.
+              Chaque étape est calculée depuis une donnée réelle ou une connexion vérifiée.
             </p>
           )}
         </div>
@@ -238,7 +245,7 @@ export function OnboardingChecklist({ onConnectAccount, onCreatePost }: Onboardi
               <div className="text-3xl animate-bounce">🎉</div>
               <p className="text-sm font-bold text-green-800">Félicitations ! Votre compte est configuré à 100%.</p>
               <p className="text-xs text-green-700 leading-snug max-w-xs">
-                Google Business connecté, scan lancé, réseaux actifs, premier post IA créé et alertes avis configurées. Vous êtes prêt à dominer votre visibilité locale !
+                Établissement, canaux, facturation, premier contenu et première mesure sont maintenant vérifiés.
               </p>
               <button
                 onClick={handleDismiss}

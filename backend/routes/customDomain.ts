@@ -6,6 +6,7 @@
  * DELETE /api/agency/custom-domain    — remove domain config
  * POST   /api/agency/custom-domain/check — force DNS verification
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -14,7 +15,7 @@ export const router = new Hono<{ Bindings: Env }>();
 
 function getBlink(env: Env) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

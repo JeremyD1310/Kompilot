@@ -44,7 +44,7 @@ export function useTeamMessages(workspaceOwnerId: string) {
     queryKey: ['team-messages', workspaceOwnerId],
     queryFn: async () => {
       if (!workspaceOwnerId) return [];
-      const rows = await blink.db.teamMessages.list({ where: { workspaceOwnerId }, orderBy: { createdAt: 'asc' }, limit: 100 });
+      const rows = await blink.db.table<any>('teamMessages').list({ where: { workspaceOwnerId }, orderBy: { createdAt: 'asc' }, limit: 100 });
       return (rows as Record<string, unknown>[]).map(normalise).filter(m => !m.isDeleted);
     },
     enabled: !!workspaceOwnerId,
@@ -55,7 +55,7 @@ export function useTeamMessages(workspaceOwnerId: string) {
   const sendMutation = useMutation({
     mutationFn: async (content: string) => {
       if (!user?.id || !workspaceOwnerId || !content.trim()) return;
-      await blink.db.teamMessages.create({ id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, workspaceOwnerId, senderId: user.id, senderName: user.displayName ?? user.email ?? 'Moi', senderAvatar: '', content: content.trim(), messageType: 'text', replyToId: '', attachments: '[]', reactions: '{}', isEdited: 0, isDeleted: 0 });
+      await blink.db.table<any>('teamMessages').create({ id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, workspaceOwnerId, senderId: user.id, senderName: user.displayName ?? user.email ?? 'Moi', senderAvatar: '', content: content.trim(), messageType: 'text', replyToId: '', attachments: '[]', reactions: '{}', isEdited: 0, isDeleted: 0 });
     },
     onMutate: async (content) => {
       await qc.cancelQueries({ queryKey: ['team-messages', workspaceOwnerId] });
@@ -76,13 +76,13 @@ export function useTeamMessages(workspaceOwnerId: string) {
       const reactions = { ...msg.reactions };
       const users = reactions[emoji] ?? [];
       if (users.includes(user.id)) { reactions[emoji] = users.filter(u => u !== user.id); if (reactions[emoji].length === 0) delete reactions[emoji]; } else { reactions[emoji] = [...users, user.id]; }
-      await blink.db.teamMessages.update(messageId, { reactions: JSON.stringify(reactions) });
+      await blink.db.table<any>('teamMessages').update(messageId, { reactions: JSON.stringify(reactions) });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ['team-messages', workspaceOwnerId] }),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (messageId: string) => { await blink.db.teamMessages.update(messageId, { isDeleted: 1 }); },
+    mutationFn: async (messageId: string) => { await blink.db.table<any>('teamMessages').update(messageId, { isDeleted: 1 }); },
     onSettled: () => qc.invalidateQueries({ queryKey: ['team-messages', workspaceOwnerId] }),
   });
 

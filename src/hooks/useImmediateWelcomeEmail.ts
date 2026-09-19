@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useImmediateWelcomeEmail — Fires a welcome email immediately on first signup.
  *
@@ -11,7 +12,7 @@
 import { useEffect, useRef } from 'react';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 const SENT_KEY = (userId: string) => `immediate_welcome_sent_${userId}`;
 
 export function useImmediateWelcomeEmail(userId: string | null | undefined) {

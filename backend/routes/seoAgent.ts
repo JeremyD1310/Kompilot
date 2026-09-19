@@ -15,6 +15,7 @@
  *   PUT  /api/seo-agent/page/:pageId  — update page status (applied/dismissed)
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -24,7 +25,7 @@ export const router = new Hono<{ Bindings: Env }>();
 // ── Auth helper ──────────────────────────────────────────────────────────────
 
 function getDb(env: Env) {
-  return createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  return createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 }
 
 function getUserId(authHeader: string | undefined): string | null {
@@ -625,7 +626,7 @@ export async function handleSeoAgentCrawl(env: Env, payload: any): Promise<{ ok:
   const { siteId, userId } = payload ?? {};
   if (!siteId || !userId) return { ok: false, error: 'siteId and userId required' };
 
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
   const sites = await blink.db.table<SeoAgentSite>('seo_agent_sites').list({ where: { id: siteId, userId }, limit: 1 });
   const site = sites[0];

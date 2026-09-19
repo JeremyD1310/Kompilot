@@ -171,7 +171,7 @@ export function useCreditGuard({ cost, action }: CreditGuardOptions) {
   const { hasEnoughCredits, deductCredits, credits } = useCredits();
   const { isDemoActive } = useDemoMode();
 
-  const currentBalance = isDemoActive ? 999 : (typeof credits === 'number' ? credits : 999);
+  const currentBalance = isDemoActive ? 999 : (typeof credits === 'number' ? credits : 0);
 
   const guard = (callback: () => void) => {
     if (!hasEnoughCredits(cost)) {

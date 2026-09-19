@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -7,7 +8,7 @@ type Row = Record<string, any>;
 interface TrendSource { url?: string; title?: string; }
 
 async function actor(c: any) {
-  const blink = createClient({ projectId: c.env.BLINK_PROJECT_ID, secretKey: c.env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY });
   const verified = await blink.auth.verifyToken(c.req.header('Authorization'));
   return verified.valid ? { blink, userId: verified.userId } : null;
 }

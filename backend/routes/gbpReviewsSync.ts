@@ -9,6 +9,7 @@
  *   GET  /api/gbp/reviews-inbox         — Reviews formatted for the unified inbox
  *   POST /api/gbp/reviews-reply         — Reply to a Google review
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -26,7 +27,7 @@ function getUserId(authHeader: string | undefined): string | null {
 }
 
 async function getValidGbpToken(env: Env, userId: string): Promise<string | null> {
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokens = await store.getByUser(userId, 'google_business');
   if (!tokens) return null;
@@ -67,7 +68,7 @@ router.post('/api/gbp/reviews-sync', async (c) => {
   const accessToken = await getValidGbpToken(env, userId);
   if (!accessToken) return c.json({ error: 'Google Business not connected or token expired' }, 400);
 
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
   try {
     // 1. Discover accounts and locations
@@ -143,7 +144,7 @@ router.get('/api/gbp/reviews-summary', async (c) => {
   const accessToken = await getValidGbpToken(env, userId);
   if (!accessToken) return c.json({ connected: false });
 
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
   try {
     const accounts = await getAccounts(accessToken);
@@ -194,7 +195,7 @@ router.get('/api/gbp/reviews-inbox', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
   const env = c.env as unknown as Env;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
   try {
     // Fetch Google reviews from the messages table (synced by reviews-sync)
@@ -254,7 +255,7 @@ router.post('/api/gbp/reviews-reply', async (c) => {
     await replyToReview(accessToken, `locations/${body.locationId}/reviews/${body.reviewId}`, body.replyText);
 
     // Mark the review as replied in our inbox
-    const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+    const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
     const messages = await (blink as any).db.table('messages').list({
       where: { user_id: userId },
       limit: 100,

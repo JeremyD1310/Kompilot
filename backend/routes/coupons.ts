@@ -6,6 +6,7 @@
  * POST /api/coupons/validate     — validate a coupon code (used by CaissePage)
  * DELETE /api/coupons/:id       — deactivate a coupon
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -24,7 +25,7 @@ function getUserId(h: string | undefined): string | null {
 
 function getBlink(env: Env) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

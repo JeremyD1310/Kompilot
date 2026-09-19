@@ -167,7 +167,7 @@ export function SuperPatronScore({ className, recentGain }: SuperPatronScoreProp
           }}
           initial={false}
           animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] }}
+          transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] as const }}
         />
         {/* Shine overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full pointer-events-none" />

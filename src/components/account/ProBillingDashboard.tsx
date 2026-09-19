@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * ProBillingDashboard — Facturation & Abonnements for regular Pro users (non-agency).
  * Sections:
@@ -272,7 +273,7 @@ function InvoiceHistoryCard() {
       setError(null);
       try {
         const token = await blink.auth.getValidToken();
-        const res = await fetch('https://gbrhsehk.backend.blink.new/api/billing/invoices', {
+        const res = await fetch(`${KOMPILOT_BACKEND_URL}/api/billing/invoices`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {

@@ -6,15 +6,18 @@
  * Follows strict Hook → Body → CTA architecture with voiceover direction.
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { generateAIResponse } from '../lib/aiRouter';
+import { consumeExecuteRefund } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 
 export const router = new Hono<{ Bindings: Env }>();
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 function getUserId(h: string | undefined): string | null {
   if (!h?.startsWith('Bearer ')) return null;
@@ -60,17 +63,7 @@ router.post('/api/ugc-script/generate', async (c) => {
     return c.json({ error: 'AI keys not configured' }, 503);
   }
 
-  // Check and deduct 1 credit
   const blink = getBlink(env);
-  const establishments = await blink.db.establishments.list({ where: { userId }, limit: 1 });
-  const est = (establishments[0] as any) ?? {};
-  const creditsUsed = Number(est.aiCreditsUsed) || 0;
-  const creditsLimit = Number(est.aiCreditsLimit) || 50;
-  const creditsLeft = Math.max(0, creditsLimit - creditsUsed);
-  if (creditsLeft <= 0) {
-    return c.json({ error: 'NO_CREDITS', message: 'Crédits épuisés.', creditsLeft: 0 }, 402);
-  }
-
   let body: {
     topic?: string;
     tone?: 'expert' | 'energetic' | 'seducer';
@@ -79,11 +72,14 @@ router.post('/api/ugc-script/generate', async (c) => {
   } = {};
   try { body = await c.req.json(); } catch { /* empty */ }
 
-  if (!body.topic) {
+  if (!body.topic || body.topic.trim().length < 3) {
     return c.json({ error: 'topic is required' }, 400);
   }
 
+  const establishments = await blink.db.establishments.list({ where: { userId }, limit: 1 });
+  const est = (establishments[0] as any) ?? {};
   const tone = body.tone ?? 'expert';
+  const referenceId = c.req.header('Idempotency-Key')?.trim() || `ugc-script:${crypto.randomUUID()}`;
 
   try {
     const establishmentName = est.name ?? 'votre établissement';
@@ -155,16 +151,15 @@ Retourne un JSON avec cette structure EXACTE:
 }`;
 
     // 3. Call AI
-    const aiResult = await generateAIResponse(
-      {
-        taskType: 'CREATIVE_CONTENT',
-        prompt: userPrompt,
-        systemContext,
-        forceJson: true,
-        maxTokens: 2000,
-      },
-      { OPENAI_API_KEY: env.OPENAI_API_KEY, ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY },
-      userId,
+    const { result: aiResult, balanceAfter } = await consumeExecuteRefund(
+      blink, userId, 'text_generation', 'UGC script generation', referenceId,
+      () => generateAIResponse(
+        {
+          taskType: 'CREATIVE_CONTENT', prompt: userPrompt, systemContext,
+          forceJson: true, maxTokens: 2000,
+        },
+        { OPENAI_API_KEY: env.OPENAI_API_KEY, ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY }, userId,
+      ),
     );
 
     // 4. Parse AI response
@@ -252,19 +247,9 @@ Retourne un JSON avec cette structure EXACTE:
       });
     } catch { /* non-critical */ }
 
-    // 8. Deduct 1 credit
-    try {
-      await blink.db.establishments.update(est.id, {
-        aiCreditsUsed: creditsUsed + 1,
-        updatedAt: new Date().toISOString(),
-      });
-    } catch (creditErr) {
-      console.warn('[UgcScript] credit deduction failed:', creditErr);
-    }
-
     return c.json({
       script,
-      creditsLeft: creditsLeft - 1,
+      creditsLeft: balanceAfter,
       meta: {
         provider: aiResult.provider,
         model: aiResult.model,
@@ -272,6 +257,9 @@ Retourne un JSON avec cette structure EXACTE:
       },
     });
   } catch (err: any) {
+    // Scripts are returned inline (only an observability log is written), so a replay
+    // has no durable result: report the conflict instead of a retryable 500.
+    if (isIdempotentReplayError(err)) return c.json(replayConflictBody(err, 'script UGC'), 409);
     console.error('[UgcScript] generate error:', err);
     return c.json({ error: err.message ?? 'Script generation failed' }, 500);
   }

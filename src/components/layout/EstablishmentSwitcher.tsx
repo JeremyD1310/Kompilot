@@ -40,7 +40,7 @@ export const EstablishmentSwitcher: React.FC = () => {
     queryFn: async () => {
       if (!activeEstablishment?.id || activeEstablishment.id.startsWith('est-')) return null;
       try {
-        const rows = await blink.db.establishments.list({
+        const rows = await blink.db.table<any>('establishments').list({
           where: { id: activeEstablishment.id },
           limit: 1,
         });
@@ -68,7 +68,7 @@ export const EstablishmentSwitcher: React.FC = () => {
   };
 
   const handleAdd = () => {
-    if (currentPlan.id !== 'expert') {
+    if (currentPlan.id !== 'multi' && currentPlan.id !== 'agency') {
       setPaywallOpen(true);
     } else {
       setAddModalOpen(true);

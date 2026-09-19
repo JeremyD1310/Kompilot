@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useCampaignHealth — React Query hook for the Campaign Health KPI widget.
  *
@@ -9,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { blink } from '@/blink/client';
 import { useMetaStatus, useTiktokStatus } from './useSocialPublish';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 export interface PlatformHealth {
   connected: boolean;

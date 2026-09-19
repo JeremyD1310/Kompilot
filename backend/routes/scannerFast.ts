@@ -4,6 +4,7 @@
  * POST /api/scanner/scan-fast  — compute a real visibility score based on
  *                                 business name + city + sector + optional data
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -12,7 +13,7 @@ export const router = new Hono<{ Bindings: Env }>();
 
 function getBlink(env: Env) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

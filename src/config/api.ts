@@ -5,16 +5,16 @@
  * Used by all frontend service calls to avoid hardcoded URLs.
  */
 
-export const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL ||
-  'https://gbrhsehk.backend.blink.new';
+import { BACKEND_URL, backendUrl } from '../lib/backend';
+
+export { BACKEND_URL };
 
 /** Default request timeout in milliseconds */
 const DEFAULT_TIMEOUT_MS = 10_000;
 
 /** Build a full backend API URL */
 export function apiUrl(path: string): string {
-  return `${BACKEND_URL}${path.startsWith('/') ? path : `/${path}`}`;
+  return backendUrl(path);
 }
 
 /**

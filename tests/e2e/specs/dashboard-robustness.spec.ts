@@ -68,11 +68,11 @@ test.describe('États vides (Empty States)', () => {
     expect(body?.trim().length).toBeGreaterThan(20);
   });
 
-  test('1.2 — Page /calendar → pas d\'écran blanc (même sans posts)', async ({ page }) => {
+  test('1.2 — Page /calendrier → pas d\'écran blanc (même sans posts)', async ({ page }) => {
     await loginAsDemo(page);
-    await page.goto('/calendar');
+    await page.goto('/calendrier');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page).toHaveURL(/\/calendar/, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/calendrier/, { timeout: 10_000 });
     // Body must have rendered content — no blank/white screen
     const bodyText = await page.locator('body').textContent();
     expect((bodyText ?? '').length).toBeGreaterThan(10);
@@ -107,20 +107,23 @@ test.describe('États vides (Empty States)', () => {
 test.describe('Résistance aux clics multiples (stress UI)', () => {
   test('2.1 — Clic frénétique sur "+ Créer un post" → modal ouvre une seule fois', async ({ page }) => {
     await loginAsDemo(page);
-    // Find the create post button
-    const createBtn = page.locator(
-      'button:has-text("Créer"), button:has-text("Nouveau post"), button:has-text("+ Post"), [data-testid="create-post-btn"]'
-    ).first();
+    await page.goto('/demo/workspace/content');
+    const createBtn = page.getByRole('button', { name: 'Créer un brouillon', exact: true }).first();
     await expect(createBtn).toBeVisible({ timeout: 10_000 });
 
-    // Click 5 times rapidly
-    for (let i = 0; i < 5; i++) {
-      await createBtn.click({ force: true });
-    }
+    // Dispatch synchronously so the first render cannot make the button
+    // unreachable before the stress burst completes.
+    await createBtn.evaluate(element => {
+      for (let i = 0; i < 5; i += 1) {
+        element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      }
+    });
 
-    // Only ONE modal/dialog should be open
-    const dialogs = await page.locator('[role="dialog"], [data-radix-popper-content-wrapper]').count();
-    expect(dialogs).toBeLessThanOrEqual(1);
+    // Only ONE create-action dialog should be open. The consent banner is an
+    // independent accessible dialog and may legitimately coexist on a fresh CI
+    // browser profile, so a global role count would produce a false failure.
+    const createDialogs = page.locator('[role="dialog"]:has-text("Simulation locale · étape 3 sur 5")');
+    await expect(createDialogs).toHaveCount(1);
 
     // Close if open
     const closeBtn = page.locator('[role="dialog"] button:has-text("Annuler"), [role="dialog"] button[aria-label*="fermer"], [role="dialog"] button[aria-label*="close"]').first();

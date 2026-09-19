@@ -6,6 +6,7 @@
  *   DELETE /api/funnels/personas/:personaId   — delete persona
  *   POST   /api/funnels/personas/simulate     — score competitor vs user ad (0-100)
  */
+import { requireBlinkProjectId } from '../../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 
@@ -20,7 +21,7 @@ app.get('/personas', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 
@@ -49,7 +50,7 @@ app.post('/personas', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 
@@ -101,7 +102,7 @@ app.delete('/personas/:personaId', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 
@@ -138,7 +139,7 @@ app.post('/personas/simulate', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 

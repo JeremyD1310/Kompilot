@@ -35,6 +35,7 @@
  *   GET  /api/cowork/health              — santé des deux clés API
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono }              from 'hono';
 import { createClient }      from '@blinkdotnew/sdk';
 import { chatCompletion }    from '../lib/openaiService';
@@ -145,7 +146,7 @@ router.use('/api/cowork/*', async (c, next) => {
     return c.json({ error: 'Non autorisé — JWT Blink requis.' }, 401);
   }
   const blink = createClient({
-    projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(c.env),
     secretKey: c.env.BLINK_SECRET_KEY,
   });
   try {

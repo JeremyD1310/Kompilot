@@ -14,6 +14,7 @@
  *   GMB_ACCESS_TOKEN         — Google My Business OAuth token
  *   GMB_ACCOUNT_ID           — GMB account ID (accounts/XXXXX)
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -25,7 +26,7 @@ export const router = new Hono<{ Bindings: Env }>();
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 function dateRange(since?: string, until?: string) {
   const now = new Date();

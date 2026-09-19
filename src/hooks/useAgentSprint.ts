@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useAgentSprint — hook to call the Kompilot backend agent endpoints.
  *
@@ -12,7 +13,7 @@
 import { useState, useCallback } from 'react';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -43,6 +44,27 @@ export interface ReportResult {
   functionCall: { tool: string; result: unknown };
   logs: string[];
   meta: AgentMeta;
+}
+
+export type WorkflowStep = 'idle' | 'media_planner' | 'ad_spy' | 'account_manager' | 'completed' | 'failed';
+
+export interface SequentialWorkflowParams {
+  brief: string;
+  sector: string;
+  tone: string;
+  platforms: string[];
+  postCount: number;
+  clientName: string;
+  competitor: string;
+  period: string;
+  satisfaction: number;
+  highlights: string;
+}
+
+export interface SequentialWorkflowResult {
+  sprint: SprintResult;
+  adSpy: AdSpyResult;
+  report: ReportResult;
 }
 
 // ── Helper: get auth token ─────────────────────────────────────────────────────
@@ -85,6 +107,7 @@ export function useAgentSprint() {
   const [isRunning, setIsRunning] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
   const [lastMeta, setLastMeta] = useState<AgentMeta | null>(null);
+  const [workflowStep, setWorkflowStep] = useState<WorkflowStep>('idle');
 
   const appendLog = (newLogs: string[]) => {
     setLogs(prev => [...prev.slice(-50), ...newLogs]);
@@ -173,5 +196,39 @@ export function useAgentSprint() {
 
   const clearLogs = useCallback(() => setLogs([]), []);
 
-  return { runSprint, runAdSpy, runReport, isRunning, logs, lastMeta, clearLogs };
+  const runSequentialWorkflow = useCallback(async (
+    params: SequentialWorkflowParams,
+  ): Promise<SequentialWorkflowResult> => {
+    try {
+      setWorkflowStep('media_planner');
+      const sprint = await runSprint({
+        brief: params.brief,
+        sector: params.sector,
+        tone: params.tone,
+        platforms: params.platforms,
+        postCount: params.postCount,
+      });
+      setWorkflowStep('ad_spy');
+      const adSpy = await runAdSpy({
+        competitor: params.competitor,
+        myBusiness: params.clientName,
+        sector: params.sector,
+      });
+      setWorkflowStep('account_manager');
+      const report = await runReport({
+        clientName: params.clientName,
+        period: params.period,
+        sector: params.sector,
+        highlights: [params.highlights, sprint.content, adSpy.content].filter(Boolean).join('\n\n'),
+        satisfaction: params.satisfaction,
+      });
+      setWorkflowStep('completed');
+      return { sprint, adSpy, report };
+    } catch (error) {
+      setWorkflowStep('failed');
+      throw error;
+    }
+  }, [runAdSpy, runReport, runSprint]);
+
+  return { runSprint, runAdSpy, runReport, runSequentialWorkflow, workflowStep, isRunning, logs, lastMeta, clearLogs };
 }

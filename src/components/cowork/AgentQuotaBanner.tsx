@@ -161,7 +161,7 @@ function ExhaustedBanner({
   onBuy: () => void;
 }) {
   const { currentPlan } = useSubscription();
-  const isAgency = currentPlan.id === 'expert';
+  const isAgency = currentPlan.id === 'agency';
 
   return (
     <div className="rounded-2xl border border-red-500/30 bg-red-500/5 overflow-hidden">

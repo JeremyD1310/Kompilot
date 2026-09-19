@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * Client-Side Tracking — Kompilot
  *
@@ -12,7 +13,7 @@
 
 import { hasAnalyticsConsent } from './cookieConsent';
 
-const BACKEND_URL = (import.meta as any).env?.VITE_BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = (import.meta as any).env?.VITE_BACKEND_URL || KOMPILOT_BACKEND_URL;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type TrackingEvent =
@@ -28,7 +29,8 @@ export type TrackingEvent =
   | 'Agency_Purchase'
   | 'ViewContent'
   | 'InitiateCheckout'
-  | 'testimonial_cta_click';
+  | 'testimonial_cta_click'
+  | 'testimonial_section_view';
 
 export interface TrackingOptions {
   email?: string;
@@ -110,6 +112,7 @@ const META_MAP: Record<TrackingEvent, string> = {
   ViewContent: 'ViewContent',
   InitiateCheckout: 'InitiateCheckout',
   testimonial_cta_click: 'CustomEvent',
+  testimonial_section_view: 'CustomEvent',
 };
 
 const GA4_MAP: Record<TrackingEvent, string> = {
@@ -126,6 +129,7 @@ const GA4_MAP: Record<TrackingEvent, string> = {
   ViewContent: 'view_item',
   InitiateCheckout: 'begin_checkout',
   testimonial_cta_click: 'testimonial_cta_click',
+  testimonial_section_view: 'testimonial_section_view',
 };
 
 const TIKTOK_MAP: Record<TrackingEvent, string> = {
@@ -142,6 +146,7 @@ const TIKTOK_MAP: Record<TrackingEvent, string> = {
   ViewContent: 'ViewContent',
   InitiateCheckout: 'InitiateCheckout',
   testimonial_cta_click: 'CustomEvent',
+  testimonial_section_view: 'CustomEvent',
 };
 
 // ── Fonction principale ───────────────────────────────────────────────────────
@@ -349,7 +354,9 @@ export function injectPixelScripts(config: {
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', '${ga4MeasurementId}', { send_page_view: true });
+      // Page views are emitted by the consent-aware GoogleAnalyticsLoader.
+      // Keep the config passive to avoid duplicate GA4 page_view events.
+      gtag('config', '${ga4MeasurementId}', { send_page_view: false });
     `;
     document.head.appendChild(script2);
   }

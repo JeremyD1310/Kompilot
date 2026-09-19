@@ -11,6 +11,7 @@ import { Navigate } from '@tanstack/react-router';
 import { useAuth } from '../hooks/useAuth';
 import { useDemoMode } from '../context/DemoModeContext';
 import { useTrialSequence } from '../hooks/useTrialSequence';
+import { blink } from '../blink/client';
 import { useImmediateWelcomeEmail } from '../hooks/useImmediateWelcomeEmail';
 import { useHighTouchDetection } from '../hooks/useHighTouchDetection';
 import { useCrispChat } from '../hooks/useCrispChat';
@@ -23,13 +24,14 @@ import { isKompilotTeam } from '../context/AdminContext';
 export async function hasCompletedOnboarding(userId: string): Promise<boolean> {
   if (localStorage.getItem(`onboarding_done_${userId}`) === '1') return true;
   try {
-    const rows = await blink.db.onboardingProfiles.list({ where: { userId } });
+    const profiles = blink.db.table<Record<string, unknown>>('onboarding_profiles');
+    const rows = await profiles.list({ where: { userId } });
     if (rows.length > 0) {
       localStorage.setItem(`onboarding_done_${userId}`, '1');
       return true;
     }
   } catch {
-    return true; // If DB check fails, don't block the user
+    return false; // Fail closed: a backend outage must not bypass onboarding.
   }
   return false;
 }
@@ -64,24 +66,28 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   useCrispChat(user, isLoading);
 
   useEffect(() => {
+    let cancelled = false;
+    setOnboardingChecked(false);
+    setNeedsOnboarding(false);
+
     // Demo users skip onboarding entirely
     if (isDemoActive && !user) {
-      setNeedsOnboarding(false);
       setOnboardingChecked(true);
-      return;
+      return () => { cancelled = true; };
     }
-    if (!user) return;
+    if (!user) return () => { cancelled = true; };
     // Admin/Kompilot team members skip onboarding — smart routing sends them to /admin
     if (isKompilotTeam(user.email)) {
-      setNeedsOnboarding(false);
       setOnboardingChecked(true);
-      return;
+      return () => { cancelled = true; };
     }
     hasCompletedOnboarding(user.id).then(done => {
+      if (cancelled) return;
       setNeedsOnboarding(!done);
       setOnboardingChecked(true);
     });
-  }, [user, isDemoActive]);
+    return () => { cancelled = true; };
+  }, [user?.id, user?.email, isDemoActive]);
 
   // ── 1. Auth still loading — ALWAYS show spinner, NEVER return null ──────────
   // Returning null here causes TanStack Router to render the error boundary
@@ -107,7 +113,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   // After login, team members (jeremy, romain, valentine @kompilot.fr) are
   // automatically redirected to the admin dashboard instead of the client view.
   // The /admin route uses AdminGuard (not AuthGuard), so this won't loop.
-  if (user && isKompilotTeam(user.email)) return <Navigate to="/admin" />;
+  if (user && !isDemoActive && isKompilotTeam(user.email)) return <Navigate to="/admin" />;
 
   // ── 6. All clear ─────────────────────────────────────────────────────────────
   return <>{children}</>;
@@ -116,7 +122,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 // ── OnboardingGuard ───────────────────────────────────────────────────────────
 // Prevents already-onboarded users from revisiting /onboarding.
 
-export function OnboardingGuard() {
+export function OnboardingGuard({ children }: { children?: React.ReactNode }) {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [checked, setChecked] = useState(false);
   const [done, setDone] = useState(false);
@@ -142,7 +148,7 @@ export function OnboardingGuard() {
   if (user && isKompilotTeam(user.email)) return <Navigate to="/admin" />;
   if (done) return <Navigate to="/dashboard" />;
 
-  return <OnboardingPage />;
+  return <>{children ?? <OnboardingPage />}</>;
 }
 
 // ── AdminGuard ───────────────────────────────────────────────────────────────

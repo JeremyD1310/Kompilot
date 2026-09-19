@@ -8,6 +8,7 @@
  *   POST /api/siret/join-request              — request to join a company (auth)
  *   GET  /api/siret/join-requests/:siret      — list join requests (auth, admin)
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 
@@ -17,7 +18,7 @@ export const router = new Hono();
 
 function getBlink(env: Record<string, string>) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

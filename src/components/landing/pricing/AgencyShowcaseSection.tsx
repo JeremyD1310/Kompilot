@@ -103,7 +103,7 @@ const fadeUp = {
   initial: { opacity: 0, y: 28 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: '-60px' },
-  transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+  transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
 };
 
 const stagger = {
@@ -121,7 +121,7 @@ function FeatureCard({ card, index }: { card: FeatureCard; index: number }) {
   return (
     <motion.div
       {...stagger}
-      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] as const }}
       className={`relative group flex flex-col rounded-2xl overflow-hidden ${
         isWide ? 'md:col-span-2' : 'md:col-span-1'
       }`}
@@ -280,7 +280,7 @@ export function AgencyShowcaseSection() {
             >
               <Zap size={16} className="fill-white" />
               Développer mon agence
-              <span className="text-white/60 text-xs font-normal">(Essai gratuit de 7 jours)</span>
+              <span className="text-white/60 text-xs font-normal">(Essai gratuit de 14 jours)</span>
               <ArrowRight size={16} />
             </Button>
           </Link>

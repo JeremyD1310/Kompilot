@@ -72,7 +72,7 @@ function useROIStats(): { stats: ROIStats; loading: boolean } {
         const since = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
 
         // Fetch daily analytics for the past 30 days
-        const analytics = await blink.db.dailyAnalytics.list({
+        const analytics = await blink.db.table<any>('dailyAnalytics').list({
           where: { userId: user.id },
           orderBy: { snapshotDate: 'desc' },
           limit: 35,
@@ -91,7 +91,7 @@ function useROIStats(): { stats: ROIStats; loading: boolean } {
 
         // Fallback: count posts from scheduled_posts table
         if (totals.postsPublished === 0) {
-          const posts = await blink.db.scheduledPosts.list({
+          const posts = await blink.db.table<any>('scheduledPosts').list({
             where: { userId: user.id, status: 'published' },
           } as any);
           totals.postsPublished = (posts as any[]).length;

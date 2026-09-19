@@ -26,13 +26,14 @@ interface FeaturePreviewProps {
   /** Short description of what the feature does */
   description?: string;
   /** Required plan — used for the CTA label */
-  requiredPlan?: 'starter' | 'agency' | 'enterprise';
+  requiredPlan?: 'pro' | 'multi' | 'agency' | 'enterprise';
   /** If true, dismisses the overlay to show a peek (re-blurs after 5s) */
   allowPeek?: boolean;
 }
 
 const PLAN_LABELS: Record<string, string> = {
-  starter: 'Starter',
+  pro: 'Pro',
+  multi: 'Multi',
   agency: 'Agency',
   enterprise: 'Enterprise',
 };

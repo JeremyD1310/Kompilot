@@ -22,7 +22,7 @@ function captureSnapshot(): BugSnapshot {
     url: window.location.href,
     path: window.location.pathname,
     userAgent: navigator.userAgent,
-    plan: localStorage.getItem('kompilot_plan') ?? 'free',
+    plan: localStorage.getItem('kompilot_plan') ?? 'pro',
     demoActive: localStorage.getItem('kompilot_demo_active') === 'true',
     apiErrors: logs,
     sessionKeys: Object.keys(sessionStorage).filter(k => k.startsWith('safeapi_')),
@@ -79,7 +79,6 @@ const PATH_LABELS: Record<string, string> = {
   '/google-maps': 'Google Maps',
   '/local-ads': 'Publicité Locale',
   '/reviews': 'Avis Google',
-  '/inbox': 'Boîte de réception',
   '/account': 'Mon Compte',
   '/subscription': 'Mon Abonnement',
 };

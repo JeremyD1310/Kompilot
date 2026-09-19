@@ -71,10 +71,15 @@ export interface LexiconDictionary {
 
 /** Étape de guide interactif "clic-par-clic" */
 export interface WalkthroughStep {
-  anchor: string;
+  /** CSS/data-tour selector highlighted by ClickByClickGuide. Absent on the
+   *  standalone steps declared in SectorWalkthroughEngine, which are narrative
+   *  only and highlight nothing. */
+  anchor?: string;
   title: string;
   content: string;
   action?: string;
+  /** Lucide icon name resolved by SectorWalkthroughEngine ('Bell' | 'Zap' | …). */
+  icon?: string;
 }
 
 /** Configuration complète d'un profil maître */

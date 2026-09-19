@@ -10,6 +10,8 @@
  *   POST /api/tiktok/messages/send            — Send a message to a user
  *   POST /api/tiktok/messages/webhook         — Webhook receiver for new messages
  */
+import { requireBackendUrl } from '../lib/blinkConfig';
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -19,7 +21,7 @@ import type { Env } from '../lib/types';
 export const router = new Hono<{ Bindings: Env }>();
 
 async function verifyUserId(c: any): Promise<string | null> {
-  const blink = createClient({ projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: c.env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY });
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   return auth.valid ? auth.userId : null;
 }
@@ -28,7 +30,7 @@ async function getValidTikTokToken(
   env: Env,
   userId: string,
 ): Promise<{ accessToken: string; openId: string } | null> {
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
   const tokens = await store.getByUser(userId, 'tiktok');
   if (!tokens) return null;
@@ -178,7 +180,7 @@ router.post('/api/tiktok/messages/send', async (c) => {
 
     // Keep the reply attached to the original canonical inbox message.
     try {
-      const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+      const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
       const replyId = `reply_tiktok_${userId}_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
       await blink.db.table('inbox_replies').create({
         id: replyId,
@@ -207,7 +209,7 @@ router.post('/api/tiktok/messages/webhook/register', async (c) => {
   const businessApiKey = (env as any).TIKTOK_BUSINESS_API_KEY;
   if (!businessApiKey) return c.json({ error: 'TIKTOK_BUSINESS_API_KEY not configured' }, 500);
 
-  const backendUrl = (env as any).BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
+  const backendUrl = (env as any).BACKEND_URL || requireBackendUrl(env);
   const webhookUrl = `${backendUrl}/api/tiktok/messages/webhook`;
 
   try {
@@ -280,7 +282,7 @@ router.post('/api/tiktok/messages/webhook', async (c) => {
     const signature = c.req.header('X-TikTok-Signature') || '';
     if (configuredSecret && signature !== configuredSecret) return c.json({ error: 'Invalid webhook signature' }, 401);
 
-    const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+    const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
     // Handle incoming message event
     if (payload.event === 'message_received' || payload.type === 'message') {

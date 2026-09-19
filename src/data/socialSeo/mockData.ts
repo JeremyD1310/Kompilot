@@ -15,7 +15,7 @@
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export type Platform = 'all' | 'instagram' | 'tiktok' | 'linkedin' | 'youtube'
+export type Platform = 'all' | 'instagram' | 'facebook' | 'tiktok' | 'linkedin' | 'youtube'
 
 export interface QueryData {
   query: string        // The search term people typed into Google

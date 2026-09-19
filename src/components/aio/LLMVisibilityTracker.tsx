@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * LLMVisibilityTracker — Module 3: Real-time LLM Visibility Tracking
  *
@@ -15,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -436,7 +437,7 @@ export function LLMVisibilityTracker({ brandName = '', domainUrl = '' }: LLMVisi
                                       </div>
                                       <SentimentIcon sentiment={r.sentiment} />
                                       {Number(r.urlCited) > 0 && (
-                                        <Globe size={11} className="text-cyan-400" title="URL citée" />
+                                        <span title="URL citée"><Globe size={11} className="text-cyan-400" /></span>
                                       )}
                                     </div>
                                   ))}

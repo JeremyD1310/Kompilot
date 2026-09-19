@@ -74,7 +74,7 @@ export function ClickwrapModal({
         initial={{ opacity: 0, scale: 0.94, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.94, y: 10 }}
-        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] as const }}
         className="w-full max-w-lg bg-card border border-border rounded-3xl shadow-2xl overflow-hidden"
         role="dialog"
         aria-modal="true"

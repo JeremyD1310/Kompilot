@@ -88,11 +88,11 @@ export function useInboxMessages() {
   const queryClient = useQueryClient();
 
   // Fetch messages from DB
-  const { data: dbMessages, isLoading: loadingMessages } = useQuery({
+  const { data: dbMessages, isLoading: loadingMessages, error } = useQuery({
     queryKey: ['inbox-messages', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const results = await blink.db.messages.list({
+      const results = await blink.db.table<any>('messages').list({
         where: { userId: user.id },
         orderBy: { createdAt: 'desc' },
         limit: 100,
@@ -107,7 +107,7 @@ export function useInboxMessages() {
     queryKey: ['inbox-replies', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const results = await blink.db.inboxReplies.list({
+      const results = await blink.db.table<any>('inboxReplies').list({
         where: { userId: user.id },
         orderBy: { createdAt: 'asc' },
         limit: 500,
@@ -135,7 +135,7 @@ export function useInboxMessages() {
     mutationFn: async (messageId: string) => {
       if (!user?.id) return;
       if (dbMessages?.find(m => m.id === messageId)) {
-        await blink.db.messages.update(messageId, { isRead: true });
+        await blink.db.table<any>('messages').update(messageId, { isRead: true });
       }
     },
     onSuccess: () => {
@@ -148,7 +148,7 @@ export function useInboxMessages() {
     mutationFn: async (messageId: string) => {
       if (!user?.id) return;
       if (dbMessages?.find(m => m.id === messageId)) {
-        await blink.db.messages.update(messageId, { isArchived: true, isRead: true });
+        await blink.db.table<any>('messages').update(messageId, { isArchived: true, isRead: true });
       }
     },
     onSuccess: () => {
@@ -161,7 +161,7 @@ export function useInboxMessages() {
     mutationFn: async (messageId: string) => {
       if (!user?.id) return;
       if (dbMessages?.find(m => m.id === messageId)) {
-        await blink.db.messages.update(messageId, { isArchived: false });
+        await blink.db.table<any>('messages').update(messageId, { isArchived: false });
       }
     },
     onSuccess: () => {
@@ -175,7 +175,7 @@ export function useInboxMessages() {
       if (!user?.id) return;
       const msg = dbMessages?.find(m => m.id === messageId);
       if (msg) {
-        await blink.db.messages.update(messageId, { isStarred: !Number(msg.isStarred) });
+        await blink.db.table<any>('messages').update(messageId, { isStarred: !Number(msg.isStarred) });
       }
     },
     onSuccess: () => {
@@ -188,7 +188,7 @@ export function useInboxMessages() {
     mutationFn: async (messageId: string) => {
       if (!user?.id) return;
       if (dbMessages?.find(m => m.id === messageId)) {
-        await blink.db.messages.delete(messageId);
+        await blink.db.table<any>('messages').delete(messageId);
       }
     },
     onSuccess: () => {
@@ -200,7 +200,7 @@ export function useInboxMessages() {
   const saveReplyMutation = useMutation({
     mutationFn: async ({ messageId, text, from }: { messageId: string; text: string; from: 'me' | 'sender' }) => {
       if (!user?.id) return;
-      await blink.db.inboxReplies.create({
+      await blink.db.table<any>('inboxReplies').create({
         id: `reply_${Date.now()}`,
         messageId,
         userId: user.id,
@@ -208,7 +208,7 @@ export function useInboxMessages() {
         textContent: text,
       });
       if (dbMessages?.find(m => m.id === messageId)) {
-        await blink.db.messages.update(messageId, { isRead: true });
+        await blink.db.table<any>('messages').update(messageId, { isRead: true });
       }
     },
     onSuccess: () => {
@@ -220,6 +220,7 @@ export function useInboxMessages() {
   return {
     messages,
     isLoading: loadingMessages,
+    error,
     markRead: (id: string) => markReadMutation.mutate(id),
     archive: (id: string) => archiveMutation.mutate(id),
     unarchive: (id: string) => unarchiveMutation.mutate(id),

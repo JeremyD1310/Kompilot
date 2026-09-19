@@ -35,7 +35,7 @@ export function QuickReplyTemplates({ onSelect }: QuickReplyTemplatesProps) {
     queryKey: ['quick-reply-templates', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      return blink.db.quickReplyTemplates.list({
+      return blink.db.table<any>('quickReplyTemplates').list({
         where: { userId: user.id },
         orderBy: { createdAt: 'asc' },
       }) as Promise<Template[]>;
@@ -46,7 +46,7 @@ export function QuickReplyTemplates({ onSelect }: QuickReplyTemplatesProps) {
   const addMutation = useMutation({
     mutationFn: async ({ label, content }: { label: string; content: string }) => {
       if (!user?.id) return;
-      await blink.db.quickReplyTemplates.create({
+      await blink.db.table<any>('quickReplyTemplates').create({
         id: `tpl_${Date.now()}`,
         userId: user.id,
         label,
@@ -64,7 +64,7 @@ export function QuickReplyTemplates({ onSelect }: QuickReplyTemplatesProps) {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await blink.db.quickReplyTemplates.delete(id);
+      await blink.db.table<any>('quickReplyTemplates').delete(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quick-reply-templates', user?.id] });

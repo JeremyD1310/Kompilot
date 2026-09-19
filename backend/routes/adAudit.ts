@@ -12,6 +12,7 @@
  * Auth: JWT Blink required on all routes.
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono }           from 'hono';
 import { createClient }   from '@blinkdotnew/sdk';
 import type { Env }       from '../lib/types';
@@ -42,7 +43,7 @@ async function logAuditError(
 ) {
   try {
     const blink = createClient({
-      projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey:  env.BLINK_SECRET_KEY,
     });
     await blink.db.table<{ id: string }>('observability_logs').create({
@@ -70,7 +71,7 @@ router.use('/api/ad-audit/*', async (c, next) => {
     return c.json({ error: 'Non autorisé — JWT Blink requis.', code: 'UNAUTHORIZED' }, 401);
   }
   const blink = createClient({
-    projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(c.env),
     secretKey:  c.env.BLINK_SECRET_KEY,
   });
   try {

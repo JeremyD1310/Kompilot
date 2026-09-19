@@ -59,7 +59,7 @@ export function useAgencyRealTimeKPIs(userId: string | undefined, subAccountUser
       await Promise.all(
         subAccountUserIds.map(async (uid) => {
           try {
-            const rows = await blink.db.dailyAnalytics.list({
+            const rows = await blink.db.table<any>('dailyAnalytics').list({
               where: { userId: uid },
               orderBy: { snapshotDate: 'desc' },
               limit: 7,

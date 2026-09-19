@@ -14,6 +14,7 @@
  *      and haven't connected Meta OR TikTok → send "connect your ads" email.
  *      One-time per user (flag: campaign_reminder_sent in meta).
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -60,7 +61,7 @@ async function sendEmail(
 // ── 1. Check health + send alert ──────────────────────────────────────────────
 
 async function runCampaignHealthAlerts(env: Env & { BLINK_PROJECT_ID?: string; BLINK_SECRET_KEY?: string }) {
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const results: { userId: string; email: string; platform: string; sent: boolean; reason: string }[] = [];
   const metaTokens = await blink.db.table<any>('oauth_tokens').list({ where: { provider: 'meta', status: 'active' }, select: ['userId'], limit: 500 });
   const tiktokTokens = await blink.db.table<any>('oauth_tokens').list({ where: { provider: 'tiktok_ads', status: 'active' }, select: ['userId'], limit: 500 });
@@ -109,7 +110,7 @@ router.post('/api/campaign-health/alerts/check-and-send', async (c) => {
 router.post('/api/campaign-health/alerts/no-account-reminder', async (c) => {
   const env = c.env as unknown as Env & { BLINK_PROJECT_ID?: string; BLINK_SECRET_KEY?: string };
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 

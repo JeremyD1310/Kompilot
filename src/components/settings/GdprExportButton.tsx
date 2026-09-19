@@ -18,10 +18,10 @@ export function GdprExportButton({ userId, userEmail }: GdprExportButtonProps) {
     try {
       // Fetch all user data in parallel
       const [establishments, posts, messages, scheduledPosts] = await Promise.allSettled([
-        blink.db.establishments.list({ where: { userId } }),
-        blink.db.posts.list({ where: { userId } }),
-        blink.db.messages.list({ where: { userId } }),
-        blink.db.scheduledPosts.list({ where: { userId } }),
+        blink.db.table<any>('establishments').list({ where: { userId } }),
+        blink.db.table<any>('posts').list({ where: { userId } }),
+        blink.db.table<any>('messages').list({ where: { userId } }),
+        blink.db.table<any>('scheduledPosts').list({ where: { userId } }),
       ]);
 
       const exportData = {

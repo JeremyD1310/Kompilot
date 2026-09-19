@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * UGCVideoAdGenerator — Chat-to-Video conversational UX for UGC video ad creation.
  *
@@ -31,7 +32,7 @@ import {
   type AnalyzeResponse, type StatusResponse,
 } from './UGCVideoAdGeneratorTypes';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 const STEPS = ['Produit', 'Analyse', 'Scripts', 'Génération'];
 
 // ── Script cache (P2: avoid re-generation for same product image) ──────────────
@@ -462,7 +463,7 @@ export function UGCVideoAdGenerator() {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
         className="rounded-2xl border border-border bg-card overflow-hidden"
       >
         {/* Header */}

@@ -38,19 +38,10 @@ interface SendGridStats {
   unsubscribes: number;
 }
 
-// ── Storage helpers ────────────────────────────────────────────────────────────
-
-function saveKeys(keys: { mailchimp?: string; sendgrid?: string }) {
-  if (keys.mailchimp !== undefined) localStorage.setItem('nc_mailchimp_key', keys.mailchimp);
-  if (keys.sendgrid !== undefined) localStorage.setItem('nc_sendgrid_key', keys.sendgrid);
-}
-
-function loadKeys() {
-  return {
-    mailchimp: localStorage.getItem('nc_mailchimp_key') ?? '',
-    sendgrid: localStorage.getItem('nc_sendgrid_key') ?? '',
-  };
-}
+// Provider keys are intentionally kept in React memory for the current page
+// session only. Persistent credentials must use a server-side encrypted secret
+// store or OAuth; browser storage is not an acceptable boundary for API keys.
+const EMPTY_KEYS = { mailchimp: '', sendgrid: '' };
 
 // ── Small components ───────────────────────────────────────────────────────────
 
@@ -99,9 +90,9 @@ export default function EmailMarketingPage() {
   const [showAbTest, setShowAbTest] = useState(false);
 
   // ── Keys state ──────────────────────────────────────────────────────────────
-  const [keys, setKeys] = useState(loadKeys);
-  const [mailchimpInput, setMailchimpInput] = useState(() => loadKeys().mailchimp);
-  const [sendgridInput, setSendgridInput] = useState(() => loadKeys().sendgrid);
+  const [keys, setKeys] = useState(EMPTY_KEYS);
+  const [mailchimpInput, setMailchimpInput] = useState('');
+  const [sendgridInput, setSendgridInput] = useState('');
 
   const [mcStatus, setMcStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
   const [sgStatus, setSgStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
@@ -142,7 +133,6 @@ export default function EmailMarketingPage() {
         body: JSON.stringify({ apiKey: mailchimpInput }),
       });
       setKeys(k => ({ ...k, mailchimp: mailchimpInput }));
-      saveKeys({ mailchimp: mailchimpInput });
       setMcStatus('ok');
       toast.success('Mailchimp connecté avec succès !');
       // Auto-load lists
@@ -166,7 +156,6 @@ export default function EmailMarketingPage() {
         body: JSON.stringify({ apiKey: sendgridInput }),
       });
       setKeys(k => ({ ...k, sendgrid: sendgridInput }));
-      saveKeys({ sendgrid: sendgridInput });
       setSgStatus('ok');
       toast.success(`SendGrid connecté${(res as any).username ? ` (${(res as any).username})` : ''} !`);
     } catch (e: any) {
@@ -188,14 +177,11 @@ export default function EmailMarketingPage() {
     } catch { /* silent */ }
   }, [token]);
 
-  // Auto-load if key already saved
+  // Remove credentials persisted by older versions. This is a one-way cleanup:
+  // the current version never writes provider credentials to browser storage.
   useEffect(() => {
-    const saved = loadKeys();
-    if (saved.mailchimp) {
-      setMcStatus('ok');
-      loadMailchimpLists(saved.mailchimp);
-    }
-    if (saved.sendgrid) setSgStatus('ok');
+    localStorage.removeItem('nc_mailchimp_key');
+    localStorage.removeItem('nc_sendgrid_key');
   }, []);
 
   // ── Load contacts from list ─────────────────────────────────────────────────
@@ -341,6 +327,9 @@ export default function EmailMarketingPage() {
                 <p className="text-[11px] text-muted-foreground">
                   Trouvez votre clé dans <strong>Profile → Extras → API Keys</strong>
                 </p>
+                <p className="text-[11px] text-amber-700 dark:text-amber-400">
+                  La clé reste uniquement en mémoire pendant cette session et n'est jamais enregistrée dans le navigateur.
+                </p>
               </div>
 
               {mcError && (
@@ -399,6 +388,9 @@ export default function EmailMarketingPage() {
                 />
                 <p className="text-[11px] text-muted-foreground">
                   Créez votre clé dans <strong>Settings → API Keys → Create</strong>
+                </p>
+                <p className="text-[11px] text-amber-700 dark:text-amber-400">
+                  La clé reste uniquement en mémoire pendant cette session et n'est jamais enregistrée dans le navigateur.
                 </p>
               </div>
 

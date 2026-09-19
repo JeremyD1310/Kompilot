@@ -3,13 +3,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, Button 
 import { Zap, ArrowRight, Sparkles } from 'lucide-react';
 import { useSubscription, PLANS } from '../../context/SubscriptionContext';
 import { SubscriptionCheckoutPanel } from './SubscriptionCheckoutPanel';
+import type { BillingInterval, SubscriptionPlanId } from '../../../shared/pricingCatalog';
 
 interface UpgradeModalProps {
   open: boolean;
   onClose: () => void;
   title?: string;
   description?: string;
-  targetPlan?: 'starter' | 'agency';
+  targetPlan?: SubscriptionPlanId;
   /** Special mode: shows Stories-specific messaging */
   storiesPaywall?: boolean;
 }
@@ -19,14 +20,15 @@ export function UpgradeModal({
   onClose,
   title,
   description,
-  targetPlan = 'starter',
+  targetPlan = 'pro',
   storiesPaywall = false,
 }: UpgradeModalProps) {
   const { setPlan } = useSubscription();
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [billing, setBilling] = useState<BillingInterval>('monthly');
 
   const plan = PLANS.find(p => p.id === targetPlan)!;
-  const planLabel = targetPlan === 'starter' ? 'Pro — 69€/mois HT' : 'Agency — 149€/mois HT';
+  const planLabel = `${plan.name} — ${plan.price}€/mois HT`;
 
   // Stories paywall overrides defaults
   const modalTitle = storiesPaywall ? '🔒 Fonctionnalité Premium' : (title ?? 'Limite atteinte');
@@ -65,14 +67,14 @@ export function UpgradeModal({
 
           {/* Feature highlight */}
           <div className={`my-4 rounded-xl border px-4 py-3 text-left space-y-2 ${
-            storiesPaywall || targetPlan === 'expert'
+            storiesPaywall || targetPlan === 'agency'
               ? 'bg-violet-50 border-violet-200'
               : 'bg-primary/5 border-primary/20'
           }`}>
             <p className={`text-xs font-semibold uppercase tracking-wide ${
               storiesPaywall || targetPlan === 'agency' ? 'text-violet-600' : 'text-primary'
             }`}>
-              Offre {targetPlan === 'starter' ? 'Pro — 69€/mois HT' : 'Agency — 149€/mois HT'}
+              Offre {planLabel}
             </p>
 
             {storiesPaywall ? (
@@ -83,7 +85,7 @@ export function UpgradeModal({
                 <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Réseaux illimités</li>
                 <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Rapports PDF & multi-utilisateurs</li>
               </ul>
-            ) : targetPlan === 'starter' ? (
+            ) : targetPlan === 'pro' ? (
               <ul className="space-y-1 text-sm text-foreground">
                 <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Pilotage de présence locale</li>
                 <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Calendrier éditorial</li>
@@ -124,9 +126,17 @@ export function UpgradeModal({
       {paymentOpen && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="w-full max-w-md bg-background rounded-2xl shadow-2xl p-6 space-y-4">
+            <div className="grid grid-cols-2 gap-2" aria-label="Période de facturation">
+              {(['monthly', 'yearly'] as const).map(interval => (
+                <Button key={interval} type="button" size="sm" variant={billing === interval ? 'default' : 'outline'} onClick={() => setBilling(interval)}>
+                  {interval === 'monthly' ? 'Mensuel' : 'Annuel'}
+                </Button>
+              ))}
+            </div>
             <SubscriptionCheckoutPanel
               planId={targetPlan}
               planName={`Offre ${plan.name}`}
+              billing={billing}
               onCancel={() => setPaymentOpen(false)}
               onCheckoutOpened={handleCheckoutOpened}
             />

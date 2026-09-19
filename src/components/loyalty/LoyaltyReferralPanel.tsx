@@ -75,7 +75,7 @@ export function LoyaltyReferralPanel() {
 
   const handleSaveConfig = async () => {
     await saveCampaign({
-      isActive: isActive ? 1 : 0,
+      isActive,
       discountPercent, sponsorDiscountPercent: sponsorDiscount,
       avgBasketAmount: avgBasket,
       messageTemplate: customTemplate || getSectorTemplate(sector),

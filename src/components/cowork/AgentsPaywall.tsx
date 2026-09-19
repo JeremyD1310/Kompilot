@@ -15,7 +15,8 @@ const GHOST_GRADIENTS = [
 ];
 
 export function AgentsPaywall({ planName }: Props) {
-  const isAgency = planName.toLowerCase().includes('expert') || planName.toLowerCase().includes('agence');
+  const normalizedPlan = planName.toLowerCase();
+  const isAgency = normalizedPlan.includes('agency') || normalizedPlan.includes('agence');
 
   return (
     <div className="relative rounded-2xl border border-slate-700/60 bg-slate-900/60 overflow-hidden">

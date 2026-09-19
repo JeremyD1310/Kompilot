@@ -12,6 +12,7 @@
  *   POST /api/scanner/raid/clear        — manually clear raid alert
  */
 import { Hono } from 'hono';
+import { requireBlinkProjectId, requireBackendUrl } from '../lib/blinkConfig';
 import {
   checkAndIncrementScanQuota,
   getScanQuota,
@@ -147,7 +148,7 @@ router.post('/api/scanner/raid/check', async (c) => {
   // 🚨 If a raid is newly detected, fire critical alert (SMS + push)
   if (result.raidDetected) {
     try {
-      const backendUrl = `https://${env.BLINK_PROJECT_ID || 'gbrhsehk'}.backend.blink.new`;
+      const backendUrl = requireBackendUrl(env);
       await fetch(`${backendUrl}/api/alerts/critical`, {
         method:  'POST',
         headers: {

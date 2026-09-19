@@ -14,9 +14,9 @@ export function UsageProgressBar() {
 
   // Dynamic label per plan
   const limitLabel =
-    currentPlan.id === 'expert'
+    currentPlan.id === 'agency'
       ? `${usage} / ${limit} contenus (Posts & Stories) utilisés ce mois-ci`
-      : currentPlan.id === 'pro'
+      : currentPlan.id === 'pro' || currentPlan.id === 'multi'
         ? `${usage} / ${limit} posts utilisés ce mois-ci`
         : `${usage} / ${limit} posts utilisés ce mois-ci`;
 
@@ -98,12 +98,11 @@ export function UsageProgressBar() {
             Voir les offres →
           </Link>
         </div>
-      ) : currentPlan.id !== 'expert' ? (
+      ) : currentPlan.id !== 'agency' ? (
         <p className="mt-2 text-[11px] text-muted-foreground/70 leading-snug">
-          {currentPlan.id === 'free'
-            ? 'Passez à Pro (69€/mois HT) pour piloter votre présence locale, ou Agency (149€/mois HT) pour les équipes et multi-établissements.'
-            : 'Passez à Agency (149€/mois HT) pour les équipes, multi-établissements et contenus préparés par l’IA.'
-          }
+          {currentPlan.id === 'pro'
+            ? 'Passez à Multi (129€/mois HT) pour les équipes et multi-établissements.'
+            : 'Passez à Agency (229€/mois HT) pour la gestion multi-clients et le support dédié.'}
         </p>
       ) : (
         <p className="mt-2 text-[11px] text-muted-foreground/70 leading-snug">

@@ -1,10 +1,11 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useLinkedInGenerator — React Query mutation for LinkedIn post generation.
  */
 import { useMutation } from '@tanstack/react-query'
 import { blink } from '@/blink/client'
 
-const API_BASE = 'https://gbrhsehk.backend.blink.new'
+const API_BASE = KOMPILOT_BACKEND_URL
 
 export interface LinkedInGenerateRequest {
   sourceContent: string

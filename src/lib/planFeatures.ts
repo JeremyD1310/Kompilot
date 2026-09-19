@@ -1,7 +1,7 @@
 /**
  * planFeatures.ts — Kompilot plan tier system
  *
- * Maps internal plan IDs (free / pro / expert) to marketing tiers
+ * Maps canonical subscription plan IDs to product-access tiers.
  * (Starter / Business / Franchise) and exposes a feature access matrix.
  *
  * Usage:
@@ -15,9 +15,9 @@ export type PlanTier = 'starter' | 'business' | 'franchise';
 
 /** Maps internal DB plan ID → marketing tier */
 export const PLAN_TIER_MAP: Record<string, PlanTier> = {
-  free:   'starter',
-  pro:    'business',
-  expert: 'franchise',
+  pro:    'starter',
+  multi:  'business',
+  agency: 'franchise',
 };
 
 /**
@@ -103,8 +103,8 @@ export function getUpgradeCTA(feature: FeatureKey): string {
 }
 
 /** Returns the Stripe pre-select query param for the required upgrade */
-export function getUpgradePlan(feature: FeatureKey): 'pro' | 'expert' {
-  return requiredTierFor(feature) === 'franchise' ? 'expert' : 'pro';
+export function getUpgradePlan(feature: FeatureKey): 'multi' | 'agency' {
+  return requiredTierFor(feature) === 'franchise' ? 'agency' : 'multi';
 }
 
 // ── Onboarding step visibility ────────────────────────────────────────────────

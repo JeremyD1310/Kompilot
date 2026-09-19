@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useDailyAnalytics — suivi quotidien des métriques d'établissement
  *
@@ -8,7 +9,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? KOMPILOT_BACKEND_URL;
 
 export interface DailySnapshot {
   id: string;
@@ -66,7 +67,7 @@ export function useDailyAnalytics(establishmentId: string | undefined, days = 30
 
       const since = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
 
-      const rows = await blink.db.dailyAnalytics.list({
+      const rows = await blink.db.table<any>('dailyAnalytics').list({
         where: { establishmentId },
         orderBy: { snapshotDate: 'desc' },
         limit: days + 5, // petit buffer

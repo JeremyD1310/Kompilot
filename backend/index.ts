@@ -102,6 +102,8 @@ import { router as sequencesRouter }           from './routes/sequences';
 import { router as aioAuditRouter }            from './routes/aioAudit';
 import { router as aioSyncRouter }             from './routes/aioSync';
 import { router as ga4AnalyticsRouter }        from './routes/ga4Analytics';
+import { router as geoCitationAuditRouter }    from './routes/geoCitationAudit';
+import { router as websiteVisibilityAuditRouter } from './routes/websiteVisibilityAudit';
 import { router as agentsRouter }              from './routes/agents';
 import { router as creativeStudioRouter }      from './routes/creativeStudio';
 import { router as metaMarketingRouter }        from './routes/metaMarketing';
@@ -121,6 +123,10 @@ import { platformWebhooksRouter }                 from './routes/platformWebhook
 import { router as weeklyReportRouter }           from './routes/weeklyReport';
 import { router as addonCheckoutRouter }          from './routes/addonCheckout';
 import { router as creditPackAioRouter }          from './routes/billing/creditPackAio';
+import { router as creditPacksRouter }             from './routes/creditPacks';
+import { router as creditsRouter }                 from './routes/credits';
+import { router as smsCreditsRouter }              from './routes/smsCredits';
+import { router as contentQuotaRouter }            from './routes/contentQuota';
 import { router as trialExtensionRouter }        from './routes/trialExtension';
 import { router as trialSequenceRouter }         from './routes/trialSequence';
 import { router as highTouchRouter }             from './routes/highTouch';
@@ -128,8 +134,10 @@ import { router as oauthTokensRouter }           from './routes/oauthTokens';
 import { router as llmTrackerRouter }            from './routes/llmTracker';
 import { router as seoAgentRouter }              from './routes/seoAgent';
 import { router as referralRewardsRouter }        from './routes/referralRewards';
+import { router as dashboardStateRouter }          from './routes/dashboardState';
+import { router as cancellationRouter }             from './routes/cancellation';
 import { requireRole }                           from './lib/rbacMiddleware';
-import { createClient }                          from '@blinkdotnew/sdk';
+import { createBlinkClient, requireBlinkProjectId, BLINK_PROJECT_CONFIG_MISSING, BlinkProjectConfigError, isBackendDependencyConfigError, backendDependencyUnavailable } from './lib/blinkConfig';
 
 const app = new Hono();
 
@@ -139,12 +147,10 @@ app.use('*', cors({
     'https://kompilot.fr',
     'https://www.kompilot.fr',
     'https://demo.kompilot.fr',
-    'https://kompilot.blinkpowered.com',
-    // Allow the current Blink preview/backend origins only; never every blink.new origin.
+    // Allow the current Blink preview origin without opening CORS to every blink.new site.
     /^https:\/\/3000-[a-z0-9-]+\.preview-blink\.com$/,
-    /^https:\/\/[a-z0-9-]+\.blink\.new$/,
   ],
-  allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Kompilot-Internal-Secret'],
 }));
 
@@ -157,8 +163,25 @@ const requireInternalSecret = async (c: any, next: any) => {
   await next();
 };
 
+const requireBlinkProjectConfig = async (c: any, next: any) => {
+  try {
+    requireBlinkProjectId(c.env as { BLINK_PROJECT_ID?: string });
+    await next();
+  } catch (error) {
+    if (error instanceof BlinkProjectConfigError) {
+      return c.json({ error: 'Blink dependency unavailable', code: BLINK_PROJECT_CONFIG_MISSING }, 503);
+    }
+    throw error;
+  }
+};
+
+// Blink configuration must be validated before any route-level client or RBAC lookup.
+app.use('/api/*', requireBlinkProjectConfig);
+
 // Sensitive RBAC checks must run before route modules are mounted.
-app.use('/api/billing/*', requireRole('admin'));
+// Billing self-service routes authenticate the signed-in customer themselves;
+// applying an admin-only guard to the whole namespace would block checkout,
+// portal and plan changes for ordinary workspace owners.
 app.use('/api/team/*', requireRole('admin'));
 app.use('/api/admin/*', requireRole('admin'));
 app.use('/api/queues/init', requireInternalSecret);
@@ -170,10 +193,7 @@ app.get('/health', (c) => c.json({ ok: true, ts: Date.now() }));
 // ── Queue initialization (idempotent — creates queues with parallelism) ──────
 app.get('/api/queues/init', async (c) => {
   const env = c.env as any;
-  const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
-    secretKey: env.BLINK_SECRET_KEY,
-  });
+  const blink = createBlinkClient(env);
 
   try {
     const queueFn = (blink as any).queue;
@@ -236,6 +256,8 @@ app.route('/', sequencesRouter);
 app.route('/', aioAuditRouter);
 app.route('/', aioSyncRouter);
 app.route('/', ga4AnalyticsRouter);
+app.route('/', geoCitationAuditRouter);
+app.route('/', websiteVisibilityAuditRouter);
 app.route('/', agentsRouter);
 app.route('/', creativeStudioRouter);
 app.route('/', metaMarketingRouter);
@@ -254,6 +276,10 @@ app.route('/', platformWebhooksRouter);
 app.route('/', weeklyReportRouter);
 app.route('/', addonCheckoutRouter);
 app.route('/', creditPackAioRouter);
+app.route('/', creditPacksRouter);
+app.route('/', creditsRouter);
+app.route('/', smsCreditsRouter);
+app.route('/', contentQuotaRouter);
 app.route('/', trialExtensionRouter);
 app.route('/', trialSequenceRouter);
 app.route('/', highTouchRouter);
@@ -261,6 +287,8 @@ app.route('/', oauthTokensRouter);
 app.route('/', llmTrackerRouter);
 app.route('/', seoAgentRouter);
 app.route('/', referralRewardsRouter);
+app.route('/', dashboardStateRouter);
+app.route('/', cancellationRouter);
 
 // ── RBAC enforcement on sensitive routes ─────────────────────────────────────
 // Billing: admin only (prevents members/guests from changing plans)
@@ -278,7 +306,7 @@ app.post('/api/queue', async (c) => {
 
   const env = c.env as any;
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey:  env.BLINK_SECRET_KEY,
   });
 
@@ -395,7 +423,7 @@ app.post('/api/queue', async (c) => {
     // ── Data Deletion Warning (J+60 cron) ─────────────────────────────
     case 'data-deletion-warning': {
       const { getDataDeletionWarningHtml } = await import('./lib/emailTemplates/dataDeletion');
-      const DASHBOARD_URL = 'https://kompilot.blinkpowered.com/dashboard';
+      const DASHBOARD_URL = 'https://www.kompilot.fr/dashboard';
 
       try {
         // Find users with metadata.last_sign_in older than 55 days
@@ -546,7 +574,7 @@ app.post('/api/queue', async (c) => {
                 ` : ''}
                 
                 <p style="margin-top: 24px;">
-                  <a href="https://kompilot.blinkpowered.com/dashboard" 
+                  <a href="https://www.kompilot.fr/dashboard" 
                      style="background: #0D9488; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
                     Voir mon dashboard →
                   </a>
@@ -607,6 +635,9 @@ app.post('/api/queue', async (c) => {
 
 // ── Global error handler ─────────────────────────────────────────────────────
 app.onError((err, c) => {
+  if (isBackendDependencyConfigError(err)) {
+    return c.json(backendDependencyUnavailable(err), 503);
+  }
   console.error('[Backend] Unhandled error:', err.message, err.stack);
   return c.json(
     { error: 'Internal server error', message: err.message ?? 'Unknown error' },

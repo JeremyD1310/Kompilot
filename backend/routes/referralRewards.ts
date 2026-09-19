@@ -16,6 +16,7 @@
  *   POST /api/referral-rewards/redeem  — redeem earned free months
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -23,7 +24,7 @@ import type { Env } from '../lib/types';
 export const router = new Hono<{ Bindings: Env }>();
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 function getUserId(authHeader: string | undefined): string | null {
   if (!authHeader?.startsWith('Bearer ')) return null;
@@ -74,7 +75,7 @@ router.get('/api/referral-rewards/link', async (c) => {
 
   if (existing.length > 0 && existing[0].referralCode) {
     const r = existing[0];
-    const baseUrl = 'https://kompilot.blinkpowered.com';
+    const baseUrl = 'https://www.kompilot.fr';
     return c.json({
       code: r.referralCode,
       link: `${baseUrl}/ref/${r.referralCode}`,
@@ -85,7 +86,7 @@ router.get('/api/referral-rewards/link', async (c) => {
   const users = await blink.db.table<any>('users').list({ where: { id: userId }, limit: 1 });
   const displayName = users[0]?.displayName || '';
   const code = generateReferralCode(displayName);
-  const baseUrl = 'https://kompilot.blinkpowered.com';
+  const baseUrl = 'https://www.kompilot.fr';
 
   if (existing.length > 0) {
     await blink.db.table<any>('referral_rewards').update(existing[0].id, { referralCode: code });

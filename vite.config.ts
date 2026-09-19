@@ -3,12 +3,14 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 import { blinkTaggerPlugin } from './blink-tagger.plugin.mjs'; // BLINK_TAGGER_HASH:049a079d501a
+import { publicPrerenderPlugin } from './scripts/publicPrerenderPlugin.mjs';
 export default defineConfig({
-  plugins: [blinkTaggerPlugin(), react()],
+  plugins: [blinkTaggerPlugin(), react(), publicPrerenderPlugin()],
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
     },
+    dedupe: ['react', 'react-dom'],
   },
   optimizeDeps: {
     include: [
@@ -16,9 +18,13 @@ export default defineConfig({
       'firebase/analytics',
       'firebase/firestore',
       'firebase/messaging',
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'framer-motion',
     ],
   },
-  server: {
+    server: {
     port: 3000,
     strictPort: true,
     host: true,

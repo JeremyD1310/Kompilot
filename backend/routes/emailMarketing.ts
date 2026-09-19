@@ -9,6 +9,7 @@
  * POST /api/email-marketing/sendgrid/send               — send a marketing campaign
  * GET  /api/email-marketing/sendgrid/stats              — get sending stats
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 
@@ -18,7 +19,7 @@ const router = new Hono();
 
 function getBlink(env: Record<string, string>) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID,
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

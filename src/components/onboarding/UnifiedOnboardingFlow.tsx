@@ -21,6 +21,8 @@ import { track, getUtmSector } from '../../lib/tracking';
 import { blink } from '../../blink/client';
 
 import type { Step, OnboardingData } from './unified/types';
+import type { GranularSector } from '../../lib/sectors/types';
+import { persistOnboarding, type EstablishmentRecord, type OnboardingProfileRecord } from '../../lib/onboardingPersistence';
 import { StepIdentity } from './unified/StepIdentity';
 import { StepGoal } from './unified/StepGoal';
 import { StepConnect } from './unified/StepConnect';
@@ -44,6 +46,8 @@ export function UnifiedOnboardingFlow({ open, onComplete }: Props) {
   const [data, setData] = useState<OnboardingData>({
     businessName: '', city: '', sector: '', profileType: 'commerce', goal: '', connectorDone: false,
   });
+  const [persistenceError, setPersistenceError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const update = (patch: Partial<OnboardingData>) => setData(prev => ({ ...prev, ...patch }));
 
@@ -73,24 +77,55 @@ export function UnifiedOnboardingFlow({ open, onComplete }: Props) {
   };
 
   const handleFirstActionComplete = async () => {
+    if (!user?.id || isSaving) return;
+    setIsSaving(true);
+    setPersistenceError('');
     try {
+      const objective = GOAL_TO_OBJECTIVE[data.goal] ?? 'geo';
+      const establishments = blink.db.table<EstablishmentRecord>('establishments');
+      const onboardingProfiles = blink.db.table<OnboardingProfileRecord>('onboarding_profiles');
+      await persistOnboarding({
+        listEstablishments: () => establishments.list({
+          where: { userId: user.id },
+          orderBy: { createdAt: 'asc' },
+          limit: 100,
+        }),
+        createEstablishment: payload => establishments.create(payload),
+        updateEstablishment: (id, payload) => establishments.update(id, payload),
+        listProfiles: () => onboardingProfiles.list({
+          where: { userId: user.id },
+          orderBy: { createdAt: 'desc' },
+          limit: 100,
+        }),
+        createProfile: payload => onboardingProfiles.create(payload),
+        updateProfile: (id, payload) => onboardingProfiles.update(id, payload),
+      }, {
+        userId: user.id,
+        businessName: data.businessName,
+        city: data.city,
+        sector: data.sector,
+        objective: data.goal,
+        establishmentId: crypto.randomUUID(),
+        profileId: `onb_${user.id}`,
+      });
+
       setSmartProfile({
         smartProfileType: data.profileType,
-        objective: GOAL_TO_OBJECTIVE[data.goal] ?? 'geo',
-        granularSector: data.sector as any,
+        objective,
+        granularSector: data.sector as GranularSector,
         followLocalEvents: true,
       });
-      if (user?.id) {
-        await (blink.db as any).onboarding_profiles.create({
-          id: `onb_${user.id}`,
-          userId: user.id,
-          sector: data.sector,
-          objective: data.goal,
-          companyName: data.businessName,
-          city: data.city,
-        }).catch(() => {});
-      }
-    } catch { /* non-fatal */ }
+    } catch (error) {
+      console.error('[onboarding] persistence failed', {
+        code: 'ONBOARDING_PERSISTENCE_FAILED',
+        operation: 'save_profile_and_establishment',
+        error: error instanceof Error ? error.name : 'unknown',
+      });
+      setPersistenceError('Nous n’avons pas pu enregistrer votre onboarding. Vérifiez votre connexion puis réessayez.');
+      setIsSaving(false);
+      return;
+    }
+    setIsSaving(false);
     // Fire Lead event — user completed the full onboarding funnel
     track('Lead', {
       sector: data.sector || getUtmSector() || undefined,
@@ -156,6 +191,12 @@ export function UnifiedOnboardingFlow({ open, onComplete }: Props) {
               {step === 4 && <StepVictory data={data} onComplete={onComplete} />}
             </motion.div>
           </AnimatePresence>
+
+          {persistenceError && (
+            <p role="alert" style={{ color: '#FCA5A5', fontSize: '.82rem', lineHeight: 1.5, marginTop: 18 }}>
+              {persistenceError}
+            </p>
+          )}
 
           {/* Nav buttons (hidden on connect/first-action/victory) */}
           {step < 2 && (

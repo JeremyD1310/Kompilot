@@ -11,6 +11,7 @@
  *   3. Match conversion click IDs (fbclid, ttclid) against ad data
  *   4. Return match rate % + alert if gap > 10%
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -56,7 +57,7 @@ router.get('/api/campaign-health', async (c) => {
 
   const env = c.env as unknown as Env;
   const blink = createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);

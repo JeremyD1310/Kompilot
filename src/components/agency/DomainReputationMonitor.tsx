@@ -99,7 +99,7 @@ function ScoreArc({ score }: { score: number }) {
   );
 }
 
-function WarmupProgress({ phase, daysActive, dailyQuota, maxQuota }: Pick<DomainMetrics, 'warmupPhase' | 'daysActive' | 'dailyQuota' | 'maxQuota'>) {
+function WarmupProgress({ warmupPhase: phase, daysActive, dailyQuota, maxQuota }: Pick<DomainMetrics, 'warmupPhase' | 'daysActive' | 'dailyQuota' | 'maxQuota'>) {
   const phases = [
     { label: 'Démarrage', quota: '20/j', days: '0-3j', active: phase === 1 || phase === 2 || phase === 3 || phase === 'complete' },
     { label: 'Montée', quota: '80/j', days: '4-14j', active: phase === 2 || phase === 3 || phase === 'complete' },
@@ -255,7 +255,7 @@ export function DomainReputationMonitor({ domain = 'app.mon-agence.fr' }: Domain
           {/* Warm-up */}
           <div style={{ background: 'hsl(var(--muted))', borderRadius: 14, padding: '14px 16px' }}>
             <WarmupProgress
-              phase={metrics.warmupPhase}
+              warmupPhase={metrics.warmupPhase}
               daysActive={metrics.daysActive}
               dailyQuota={metrics.dailyQuota}
               maxQuota={metrics.maxQuota}

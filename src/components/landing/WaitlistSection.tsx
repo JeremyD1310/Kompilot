@@ -82,7 +82,7 @@ export function WaitlistSection() {
       <div style={{ position: 'relative', maxWidth: 580, margin: '0 auto', textAlign: 'center' }}>
 
         {/* Badge pill */}
-        <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+        <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(139,92,246,.1)', border: '1px solid rgba(139,92,246,.25)', borderRadius: 9999, padding: '7px 18px', marginBottom: 24 }}>
             <Sparkles size={13} style={{ color: '#A78BFA' }} />
             <span style={{ color: '#A78BFA', fontSize: '.72rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>
@@ -92,18 +92,18 @@ export function WaitlistSection() {
         </motion.div>
 
         {/* Headline */}
-        <motion.h2 initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.55, delay: 0.06, ease: [0.22, 1, 0.36, 1] }} style={{ fontSize: 'clamp(1.6rem,4.5vw,2.8rem)', fontWeight: 900, color: '#F1F5F9', lineHeight: 1.15, margin: '0 0 14px', letterSpacing: '-.035em' }}>
+        <motion.h2 initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.55, delay: 0.06, ease: [0.22, 1, 0.36, 1] as const }} style={{ fontSize: 'clamp(1.6rem,4.5vw,2.8rem)', fontWeight: 900, color: '#F1F5F9', lineHeight: 1.15, margin: '0 0 14px', letterSpacing: '-.035em' }}>
           Rejoignez la liste d&#39;attente{' '}
           <span style={{ background: 'linear-gradient(135deg,#A78BFA 0%,#7C3AED 40%,#22D3EE 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>exclusive</span>
         </motion.h2>
 
         {/* Subtitle */}
-        <motion.p initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.5, delay: 0.12, ease: [0.22, 1, 0.36, 1] }} style={{ color: '#64748B', fontSize: 'clamp(.88rem,2vw,1.05rem)', lineHeight: 1.7, margin: '0 auto 36px', maxWidth: 440 }}>
+        <motion.p initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.5, delay: 0.12, ease: [0.22, 1, 0.36, 1] as const }} style={{ color: '#64748B', fontSize: 'clamp(.88rem,2vw,1.05rem)', lineHeight: 1.7, margin: '0 auto 36px', maxWidth: 440 }}>
           Lancement officiel le <strong style={{ color: '#A78BFA' }}>7 septembre 2026</strong>. Soyez parmi les premiers à exploiter la puissance de l&#39;IA locale.
         </motion.p>
 
         {/* ── Brevo Form Container ──────────────────────────────────────── */}
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.6, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.6, delay: 0.18, ease: [0.22, 1, 0.36, 1] as const }}>
           <div style={{ position: 'relative', background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 20, padding: 'clamp(28px,5vw,44px) clamp(24px,4vw,40px)', backdropFilter: 'blur(16px)', boxShadow: '0 0 0 1px rgba(139,92,246,.06),0 32px 80px -16px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.04)' }}>
             {/* Animated gradient accent line */}
             <div style={{ position: 'absolute', top: -1, left: '10%', right: '10%', height: 1, background: 'linear-gradient(90deg,transparent,#A78BFA,#22D3EE,transparent)', borderRadius: 9999, opacity: 0.5, animation: 'subtlePulse 4s ease-in-out infinite' }} />

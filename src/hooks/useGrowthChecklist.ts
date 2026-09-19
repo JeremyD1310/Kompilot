@@ -102,7 +102,7 @@ export function useGrowthChecklist(userId: string | undefined): ChecklistState {
     async function checkAll() {
       const [geoResult, leadsResult, stripeResult, creativeResult, smsResult] = await Promise.allSettled([
         // Step 1 — Geo: establishment has google_maps_url
-        blink.db.establishments.list({ where: { userId } }).then(rows =>
+        blink.db.table<any>('establishments').list({ where: { userId } }).then(rows =>
           (rows ?? []).some((r: any) => !!(r.googleMapsUrl || r.google_maps_url))
         ),
 
@@ -111,13 +111,13 @@ export function useGrowthChecklist(userId: string | undefined): ChecklistState {
           localStorage.getItem(`meta_audit_launched_${userId}`) === '1'
         ).then(async (metaLaunched) => {
           if (metaLaunched) return true;
-          const rows = await blink.db.capturedLeads.list({ where: { userId }, limit: 1 });
+          const rows = await blink.db.table<any>('capturedLeads').list({ where: { userId }, limit: 1 });
           return (rows ?? []).length > 0;
         }),
 
         // Step 3 — Stripe Connect: stripe_connect_account_id in metadata (KYC completed)
         // OR fallback: stripe_customer_id + no-show flag (legacy check)
-        blink.db.users.list({ where: { id: userId } }).then(rows => {
+        blink.db.table<any>('users').list({ where: { id: userId } }).then(rows => {
           const u = rows?.[0] as any;
           if (!u) return false;
           try {
@@ -140,7 +140,7 @@ export function useGrowthChecklist(userId: string | undefined): ChecklistState {
           localStorage.getItem(`video_story_exported_${userId}`) === '1'
         ).then(async (aiGenerated) => {
           if (aiGenerated) return true;
-          const rows = await blink.db.scheduledPosts.list({ where: { userId }, limit: 10 });
+          const rows = await blink.db.table<any>('scheduledPosts').list({ where: { userId }, limit: 10 });
           return (rows ?? []).some((p: any) =>
             p.status === 'published' ||
             p.status === 'approved' ||
@@ -150,7 +150,7 @@ export function useGrowthChecklist(userId: string | undefined): ChecklistState {
         }),
 
         // Step 5 — SMS: total_used > 0
-        blink.db.smsCredits.list({ where: { userId }, limit: 1 }).then(rows => {
+        blink.db.table<any>('smsCredits').list({ where: { userId }, limit: 1 }).then(rows => {
           const row = rows?.[0] as any;
           if (!row) return false;
           return Number(row.totalUsed ?? row.total_used ?? 0) > 0;

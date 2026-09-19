@@ -230,7 +230,7 @@ export function GlobalSearch() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const filterRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const navigate = useNavigate();
 
@@ -246,9 +246,9 @@ export function GlobalSearch() {
     setIsDebouncing(false);
     setIsLoading(true);
     try {
-      const res = await blink.functions.invoke<{ results: SearchResult[] }>('api/search', {
+      const query = new URLSearchParams({ q, limit: '5' });
+      const res = await blink.functions.invoke<{ results: SearchResult[] }>(`api/search?${query}`, {
         method: 'GET',
-        params: { q, limit: '5' },
       });
       const data = (res as any)?.data ?? res;
       setAllResults(data.results || []);

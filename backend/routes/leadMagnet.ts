@@ -5,6 +5,7 @@
  * GET  /api/lead-magnet/list     — list des simulations (auth)
  * POST /api/pricing/abandon      — enregistre un abandon de page pricing
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -18,7 +19,7 @@ function getUserId(h: string | undefined): string | null {
 
 function getBlink(env: Env) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }
@@ -79,7 +80,7 @@ Sois concret, chiffré, et orienté business. Réponds UNIQUEMENT avec le JSON.`
         pain_points: ['Visibilité en ligne non optimisée', 'Temps perdu en tâches répétitives'],
         recommendations: ['Centraliser la gestion de présence en ligne', 'Automatiser la publication de contenu'],
         roi_summary: 'Kompilot vous fait économiser 380€/mois en automatisation de votre présence locale.',
-        next_step: 'Essayez Kompilot gratuitement pendant 7 jours',
+        next_step: 'Essayez Kompilot gratuitement pendant 14 jours',
       };
     }
 

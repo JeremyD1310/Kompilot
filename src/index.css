@@ -12,6 +12,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Blink injects its attribution badge outside the React tree. Keep the badge
+   visible, but never let it block application controls on compact screens. */
+#blink-badge-container {
+  pointer-events: none !important;
+}
+
+#blink-badge-container * {
+  pointer-events: none !important;
+}
+
 @layer base {
   * {
     @apply border-border;

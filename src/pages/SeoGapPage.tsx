@@ -196,7 +196,6 @@ export default function SeoGapPage() {
         {showPaywall && (
           <EspionPaywall
             plan={status?.plan ?? 'starter'}
-            onRecharge={handleRecharge}
             onUpgrade={handleUpgrade}
           />
         )}

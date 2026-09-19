@@ -5,6 +5,7 @@
  *   GET  /api/funnels/:id/ghost-emails/analytics       — aggregate stats per email
  *   GET  /api/funnels/track-pixel/:token               — 1x1 pixel tracking for opens
  */
+import { requireBlinkProjectId } from '../../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 
@@ -21,7 +22,7 @@ app.get('/:id/ghost-emails/analytics', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 
@@ -76,7 +77,7 @@ app.post('/:id/ghost-emails/:emailId/track', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 
@@ -120,7 +121,7 @@ app.post('/:id/ghost-emails/bulk-event', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 

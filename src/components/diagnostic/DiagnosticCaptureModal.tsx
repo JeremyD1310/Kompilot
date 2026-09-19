@@ -36,7 +36,7 @@ export function DiagnosticCaptureModal({ formData, score, open, onClose }: Props
       setLoading(true);
       try {
         // 1. Save lead to DB
-        await blink.db.leads.create({
+        await blink.db.table<any>('leads').create({
           id: generateId(),
           businessName: formData.businessName,
           email: formData.email,
@@ -135,7 +135,7 @@ export function DiagnosticCaptureModal({ formData, score, open, onClose }: Props
               'Copilote IA activé immédiatement',
               'Gestion Google Maps + Réseaux sociaux',
               'Réponses automatiques aux avis clients',
-              '7 jours d\'essai gratuit — Sans CB',
+              '14 jours d\'essai gratuit — Sans CB',
             ].map(item => (
               <div key={item} className="flex items-center gap-2.5">
                 <CheckCircle2 size={13} className="text-primary shrink-0" />

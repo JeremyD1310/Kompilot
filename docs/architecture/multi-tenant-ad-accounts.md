@@ -33,7 +33,7 @@ Chaque connexion est portée par un couple `(organization_id, provider)`. Le nav
 Le callback OAuth à déclarer dans Meta et Google est :
 
 ```text
-https://gbrhsehk.backend.blink.new/api/auth/ad-accounts/callback
+https://xxifv5sr.backend.blink.new/api/auth/ad-accounts/callback
 ```
 
 Pour un autre projet, utiliser son URL backend réelle ; ne jamais dériver ce callback depuis `window.location.origin`.

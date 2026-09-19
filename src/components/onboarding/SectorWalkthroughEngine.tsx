@@ -112,7 +112,7 @@ function WelcomePopup({ onContinue }: { onContinue: () => void }) {
         initial={{ opacity: 0, scale: 0.92, y: 16 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 8 }}
-        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] as const }}
         className="w-full max-w-md rounded-2xl bg-[#0F172A] border border-amber-500/30 shadow-2xl overflow-hidden"
       >
         {/* Header */}

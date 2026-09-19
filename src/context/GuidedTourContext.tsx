@@ -71,12 +71,12 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'team-collaboration',
     target: '[data-tour="nav-team"]',
-    title: 'Étape 5 — Gérez votre équipe depuis un seul endroit',
+    title: 'Étape 5 — Gérez votre équipe humaine depuis un seul endroit',
     description: 'Invitez vos collaborateurs, attribuez des rôles (admin, éditeur, membre) et coordonnez-vous dans le chat d\'équipe intégré. Toutes les actions sont tracées dans le fil d\'activité commun.',
     placement: 'right',
     icon: '👥',
-    nextLabel: 'Configurer mon équipe →',
-    route: '/mon-equipe',
+    nextLabel: 'Configurer mon équipe humaine →',
+    route: '/equipe',
   },
   {
     id: 'ai-agents-cowork',
@@ -106,7 +106,7 @@ async function saveTourProgress(userId: string, step: number): Promise<void> {
   try {
     localStorage.setItem(`${TOUR_PROGRESS_KEY}_${userId}`, String(step));
     // Also persist to DB so it survives across devices / browsers
-    await blink.db.onboardingProfiles.upsert({
+    await blink.db.table<any>('onboardingProfiles').upsert({
       id: `tour_progress_${userId}`,
       userId,
       sector: `__tour_step__${step}`,
@@ -121,7 +121,7 @@ async function loadTourProgress(userId: string): Promise<number | null> {
     const local = localStorage.getItem(localKey);
     if (local !== null) return parseInt(local, 10);
     // Fallback to DB
-    const rows = await blink.db.onboardingProfiles.list({
+    const rows = await blink.db.table<any>('onboardingProfiles').list({
       where: { userId, objective: '__tour_progress__' },
       limit: 1,
     });

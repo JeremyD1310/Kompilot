@@ -7,13 +7,14 @@
  * GET  /api/ab-tests/:id           — get single test with results
  * POST /api/ab-tests/:id/winner    — mark a winner variant
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 
 const router = new Hono();
 
 function getBlink(env: Record<string, string>) {
-  return createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  return createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 }
 
 async function getAuth(c: any) {

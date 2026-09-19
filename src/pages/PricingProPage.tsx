@@ -11,14 +11,14 @@ import { ArrowLeft, Zap, Check, Shield, Lock, RefreshCw } from 'lucide-react';
 import { KompilotLogo } from '../components/brand/KompilotLogo';
 import { SubscriptionCheckoutPanel } from '../components/subscription/SubscriptionCheckoutPanel';
 import { PLANS } from '../components/pricing/PricingPageParts';
-import type { KompilotPlanId } from '../components/landing/pricing/PricingData';
 import { PricingFAQ } from '../components/pricing/PricingPageParts';
 
 const TEAL = '#0D9488';
 
 export default function PricingProPage() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const plan = PLANS.find(p => p.id === 'starter')!;
+  const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
+  const plan = PLANS.find(p => p.id === 'pro')!;
 
   return (
     <div className="min-h-screen" style={{ background: '#0F172A', color: '#F1F5F9' }}>
@@ -75,7 +75,7 @@ export default function PricingProPage() {
         </h1>
 
         <p className="text-base max-w-lg mx-auto leading-relaxed" style={{ color: '#64748B' }}>
-          Essai 7 jours inclus · Résiliation sans frais · Paiement sécurisé Stripe
+          Essai gratuit 14 jours · Sans carte bancaire · Résiliation sans frais · Paiement sécurisé Stripe
         </p>
       </motion.div>
 
@@ -105,6 +105,14 @@ export default function PricingProPage() {
             </div>
 
             <p className="text-sm mb-5 leading-relaxed" style={{ color: '#64748B' }}>{plan.tagline}</p>
+
+            <div className="mb-5 flex rounded-xl border border-white/10 p-1" aria-label="Période de facturation">
+              {(['monthly', 'yearly'] as const).map(interval => (
+                <button key={interval} type="button" onClick={() => setBilling(interval)} className={`flex-1 rounded-lg px-3 py-2 text-xs font-bold ${billing === interval ? 'bg-teal-600 text-white' : 'text-slate-400'}`}>
+                  {interval === 'monthly' ? 'Mensuel' : 'Annuel'}
+                </button>
+              ))}
+            </div>
 
             {/* Prix */}
             <div className="mb-6 pb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -141,8 +149,9 @@ export default function PricingProPage() {
                 className="mb-5 overflow-hidden"
               >
                 <SubscriptionCheckoutPanel
-                  planId="starter"
+                  planId="pro"
                   planName={plan.name}
+                  billing={billing}
                   onCancel={() => setCheckoutOpen(false)}
                 />
               </motion.div>

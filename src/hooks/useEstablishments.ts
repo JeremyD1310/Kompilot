@@ -31,7 +31,7 @@ export function useEstablishments(userId: string) {
     queryKey: [QUERY_KEY, userId],
     queryFn: async () => {
       if (!userId) return [];
-      const rows = await blink.db.establishments.list({
+      const rows = await blink.db.table<any>('establishments').list({
         where: { userId },
         orderBy: { createdAt: 'desc' },
       });
@@ -42,7 +42,7 @@ export function useEstablishments(userId: string) {
 
   const createEstablishment = useMutation({
     mutationFn: async (data: EstablishmentCreate) => {
-      return blink.db.establishments.create({ ...data, userId });
+      return blink.db.table<any>('establishments').create({ ...data, userId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, userId] });
@@ -51,7 +51,7 @@ export function useEstablishments(userId: string) {
 
   const updateEstablishment = useMutation({
     mutationFn: async ({ id, patch }: { id: string; patch: EstablishmentUpdate }) => {
-      return blink.db.establishments.update(id, patch);
+      return blink.db.table<any>('establishments').update(id, patch);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, userId] });
@@ -60,7 +60,7 @@ export function useEstablishments(userId: string) {
 
   const deleteEstablishment = useMutation({
     mutationFn: async (id: string) => {
-      return blink.db.establishments.delete(id);
+      return blink.db.table<any>('establishments').delete(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, userId] });

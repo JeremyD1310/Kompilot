@@ -17,6 +17,7 @@
  *   - Validation des paramètres avant tout appel à l'API Graph
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono }          from 'hono';
 import { createClient }  from '@blinkdotnew/sdk';
 import {
@@ -47,7 +48,7 @@ router.use('/api/meta/*', async (c, next) => {
     return c.json({ error: 'Non autorisé — JWT Blink requis.' }, 401);
   }
   const blink = createClient({
-    projectId: 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: c.env.BLINK_SECRET_KEY,
   });
   try {

@@ -9,6 +9,7 @@
  *   POST /api/legal/signature           — log clickwrap immutable
  *   GET  /api/legal/signature/:userId   — vérifie la signature d'un utilisateur
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -16,7 +17,7 @@ import type { Env } from '../lib/types';
 export const router = new Hono<{ Bindings: Env }>();
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 // ── Auth helper ───────────────────────────────────────────────────────────────
 async function requireAuth(c: any, blink: ReturnType<typeof getBlink>): Promise<string | null> {

@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * AIOSyncPanel — Suivi de visibilité IA via SerpApi (Google + Bing)
  *
@@ -23,7 +24,7 @@ import {
 } from 'lucide-react';
 import { ShareCaseStudy } from '../shared/ShareCaseStudy';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Palette inline (cohérente avec SOVModule) ─────────────────────────────────
 

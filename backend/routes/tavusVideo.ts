@@ -7,10 +7,13 @@
  *   GET  /api/videos/history          — user's video generation history
  */
 
+import { requireBackendUrl } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import type { Env } from '../lib/types';
-import { getBlink, getUserMeta } from '../lib/stripeHelpers';
-import { consumeCredits, refundCredits } from '../lib/creditService';
+import { getBlink } from '../lib/stripeHelpers';
+import { consumeExecuteRefund, refundCredits } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
+import { AI_CREDIT_COSTS } from '../../shared/pricingCatalog';
 
 export const router = new Hono();
 
@@ -34,20 +37,7 @@ interface VideoGeneration {
   callbackToken: string;
 }
 
-interface CreditTransaction {
-  id: string;
-  userId: string;
-  type: string;
-  actionType: string;
-  creditsDelta: number;
-  balanceAfter: number;
-  description: string;
-  referenceId: string;
-  metadata: string;
-  createdAt: string;
-}
-
-const VIDEO_GENERATION_COST = 10;
+const VIDEO_GENERATION_COST = AI_CREDIT_COSTS.tavus_video_generation;
 const MAX_SCRIPT_LENGTH = 300; // ~30 seconds of speech
 
 // ── POST /api/videos/generate ──────────────────────────────────────────────────
@@ -85,117 +75,99 @@ router.post('/api/videos/generate', async (c) => {
   }
 
   const replicaId = body.replicaId || rawEnv.TAVUS_DEFAULT_REPLICA_ID as string || '';
-  const callbackToken = crypto.randomUUID();
-  // Use the durable video record id as the credit reference so webhook refunds
-  // remain linked to the exact charge even when callbacks arrive later.
-  const videoId = `vid_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  if (!replicaId) return c.json({ error: 'replicaId is required', code: 'NO_REPLICA_ID' }, 400);
+  const requestId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || crypto.randomUUID();
+  // The durable video id is also the ledger reference, so webhook refunds remain
+  // linked to the exact charge and retries cannot create a second charge.
+  const videoId = `tavus:${auth.userId}:${requestId}`.replace(/[^a-zA-Z0-9:_-]/g, '_').slice(0, 255);
+  const videoTable = blink.db.table<VideoGeneration>('video_generations');
+  const existingVideo = await videoTable.get(videoId);
+  if (existingVideo?.userId === auth.userId) return c.json(existingVideo);
 
-  // 4. Deduct credits
+  // 4. Deduct credits and execute the Tavus API call and persistence
   const creditReferenceId = videoId;
-  const creditResult = await consumeCredits(
+  const charged = await consumeExecuteRefund(
     blink,
     auth.userId,
-    'video_generation',
+    'tavus_video_generation',
     'Tavus video generation',
     creditReferenceId,
-  );
-  if (!creditResult.success) {
-    return c.json({ error: creditResult.error }, 402);
-  }
+    async () => {
+    const callbackToken = crypto.randomUUID();
+    // 5. Call Tavus API
+      const backendUrl = requireBackendUrl(rawEnv);
+      const callbackUrl = `${backendUrl}/api/webhooks/tavus?token=${encodeURIComponent(callbackToken)}`;
 
-  // 5. Call Tavus API
-  const backendUrl = rawEnv.BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
-  const callbackUrl = `${backendUrl}/api/webhooks/tavus?token=${encodeURIComponent(callbackToken)}`;
+      const tavusRes = await fetch('https://tavusapi.com/v2/videos', {
+        method: 'POST',
+        headers: {
+          'x-api-key': tavusKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ replica_id: replicaId, script, callback_url: callbackUrl }),
+        signal: AbortSignal.timeout(15000),
+      });
 
-  try {
-    const tavusRes = await fetch('https://tavusapi.com/v2/videos', {
-      method: 'POST',
-      headers: {
-        'x-api-key': tavusKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        replica_id: replicaId,
-        script,
-        callback_url: callbackUrl,
-      }),
-      signal: AbortSignal.timeout(15000),
-    });
-
-    if (!tavusRes.ok) {
-      const errText = await tavusRes.text();
-      console.error('[videos/generate] Tavus API error:', errText);
-
-      // Refund credits on Tavus API failure
-      try {
-        await refundCredits(
-          blink,
-          auth.userId,
-          VIDEO_GENERATION_COST,
-          `Auto-refund: Tavus API error (${tavusRes.status})`,
-          creditReferenceId,
-        );
-      } catch (refundError) {
-        console.error('[videos/generate] Refund failed; reconciliation required:', refundError);
+      if (!tavusRes.ok) {
+        const errText = await tavusRes.text();
+        console.error('[videos/generate] Tavus API error:', errText);
+        throw new Error(`Tavus API error (${tavusRes.status}): ${errText}`);
       }
 
-      return c.json({ error: 'Video generation failed', detail: errText }, 502);
-    }
+      const tavusData = await tavusRes.json() as {
+        video_id: string;
+        status: string;
+        stream_url?: string;
+        hosted_url?: string;
+      };
 
-    const tavusData = await tavusRes.json() as {
-      video_id: string;
-      status: string;
-      stream_url?: string;
-      hosted_url?: string;
-    };
+      if (!tavusData.video_id) {
+        throw new Error('Tavus accepted no usable video identifier');
+      }
 
-    // 6. Save record in video_generations table
-    const videoTable = blink.db.table<VideoGeneration>('video_generations');
+      // 6. Save record in video_generations table
+      await videoTable.create({
+        id: videoId,
+        userId: auth.userId,
+        tavusVideoId: tavusData.video_id || '',
+        replicaId,
+        script,
+        videoUrl: '',
+        thumbnailUrl: '',
+        status: 'processing',
+        creditsCharged: VIDEO_GENERATION_COST,
+        creditsRefunded: 0,
+        errorMessage: '',
+        callbackReceivedAt: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        callbackToken,
+      });
 
-    await videoTable.create({
-      id: videoId,
-      userId: auth.userId,
-      tavusVideoId: tavusData.video_id || '',
-      replicaId,
-      script,
-      videoUrl: '',
-      thumbnailUrl: '',
-      status: 'processing',
-      creditsCharged: VIDEO_GENERATION_COST,
-      creditsRefunded: 0,
-      errorMessage: '',
-      callbackReceivedAt: '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      callbackToken,
-    });
+      return {
+        success: true,
+        videoId,
+        tavusVideoId: tavusData.video_id,
+        status: 'processing',
+        creditsCharged: VIDEO_GENERATION_COST,
+      };
+    },
+    'ai',
+    { provider: 'tavus', replicaId },
+  ).catch((err: unknown) => {
+    if (isIdempotentReplayError(err)) return { replayError: err } as const;
+    throw err;
+  });
 
-    return c.json({
-      success: true,
-      videoId,
-      tavusVideoId: tavusData.video_id,
-      status: 'processing',
-      creditsCharged: VIDEO_GENERATION_COST,
-      balanceAfter: creditResult.balanceAfter,
-    });
-  } catch (err: any) {
-    console.error('[videos/generate] Error:', err.message);
-
-    // Refund on unexpected error
-    try {
-      await refundCredits(
-        blink,
-        auth.userId,
-        VIDEO_GENERATION_COST,
-        `Auto-refund: unexpected error — ${err.message}`,
-        creditReferenceId,
-      );
-    } catch (refundError) {
-      console.error('[videos/generate] Refund failed; reconciliation required:', refundError);
-    }
-
-    return c.json({ error: 'Video generation failed', detail: err.message }, 500);
+  if ('replayError' in charged) {
+    // The pre-check above misses the row only when the first attempt failed after the
+    // charge (and was refunded) or before persistence, so re-read once then report.
+    const durable = await videoTable.get(videoId);
+    if (durable?.userId === auth.userId) return c.json(durable);
+    return c.json(replayConflictBody(charged.replayError, 'génération vidéo Tavus'), 409);
   }
+
+  return c.json({ ...charged.result, balanceAfter: charged.balanceAfter });
 });
 
 // ── POST /api/webhooks/tavus — Public webhook (no auth) ───────────────────────
@@ -257,6 +229,7 @@ router.post('/api/webhooks/tavus', async (c) => {
             video.creditsCharged,
             `Auto-refund: Tavus video failed — ${errorMsg}`,
             video.id,
+            'ai',
           );
           refunded = true;
           await videoTable.update(video.id, {

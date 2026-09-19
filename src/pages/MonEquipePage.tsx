@@ -102,7 +102,7 @@ function TeamRoster({ onSelectAgent }: { onSelectAgent: (agent: Agent) => void }
             key={agent.id}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.08, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ delay: i * 0.08, duration: 0.45, ease: [0.22, 1, 0.36, 1] as const }}
             onClick={() => onSelectAgent(agent)}
             className="group relative rounded-2xl overflow-hidden cursor-pointer transition-all hover:translate-y-[-2px]"
             style={{

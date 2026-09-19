@@ -7,6 +7,12 @@ import { useInboxMessages } from '../../hooks/useInboxMessages';
 // ── Channel config ────────────────────────────────────────────────────────────
 
 const CHANNEL_CONFIG: Record<Channel, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
+  google: {
+    label: 'Google', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', icon: <MessageSquare size={12} />,
+  },
+  facebook: {
+    label: 'Facebook', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', icon: <MessageSquare size={12} />,
+  },
   website: {
     label: 'Site web',
     color: 'text-teal-700',

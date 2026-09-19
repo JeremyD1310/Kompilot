@@ -47,7 +47,7 @@ export function useTeamActivity(workspaceOwnerId?: string) {
     queryKey: ['team-activity', ownerId],
     queryFn: async () => {
       if (!ownerId) return [];
-      const rows = await blink.db.teamActivityFeed.list({ where: { workspaceOwnerId: ownerId }, orderBy: { createdAt: 'desc' }, limit: 30 });
+      const rows = await blink.db.table<any>('teamActivityFeed').list({ where: { workspaceOwnerId: ownerId }, orderBy: { createdAt: 'desc' }, limit: 30 });
       return (rows as Record<string, unknown>[]).map(r => ({ id: String(r.id ?? ''), actorName: String(r.actorName ?? r.actor_name ?? ''), actorAvatar: String(r.actorAvatar ?? r.actor_avatar ?? ''), actionType: String(r.actionType ?? r.action_type ?? ''), entityType: String(r.entityType ?? r.entity_type ?? ''), entityLabel: String(r.entityLabel ?? r.entity_label ?? ''), createdAt: String(r.createdAt ?? r.created_at ?? new Date().toISOString()) }));
     },
     enabled: !!ownerId,

@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -14,7 +15,7 @@ const AXES = [
   ['pricingOffer', 'Pricing / Offre'], ['productFunctioning', 'Fonctionnement produit'], ['arguments', 'Arguments'], ['brand', 'La marque'],
 ] as const;
 
-function getBlink(c: any) { return createClient({ projectId: c.env.BLINK_PROJECT_ID, secretKey: c.env.BLINK_SECRET_KEY }); }
+function getBlink(c: any) { return createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY }); }
 async function auth(c: any) {
   const blink = getBlink(c);
   const result = await blink.auth.verifyToken(c.req.header('Authorization'));

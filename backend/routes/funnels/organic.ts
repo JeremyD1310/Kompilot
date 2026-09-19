@@ -3,6 +3,7 @@
  *
  *   GET /api/funnels/:id/organic — deterministic SEO + referring domain data for a funnel
  */
+import { requireBlinkProjectId } from '../../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 
@@ -60,7 +61,7 @@ app.get('/:id/organic', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 

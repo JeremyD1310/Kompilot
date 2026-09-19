@@ -48,9 +48,9 @@ export function useTrialMetrics(): TrialMetrics {
 
       // Fetch in parallel, fall back gracefully on error
       const [postsResult, repliesResult, leadsResult] = await Promise.allSettled([
-        blink.db.scheduledPosts.list({ limit: 200 }),
-        blink.db.inboxReplies.list({ limit: 200 }),
-        blink.db.leads.list({ limit: 200 }),
+        blink.db.table<any>('scheduledPosts').list({ limit: 200 }),
+        blink.db.table<any>('inboxReplies').list({ limit: 200 }),
+        blink.db.table<any>('leads').list({ limit: 200 }),
       ]);
 
       // Count records created after trialStart

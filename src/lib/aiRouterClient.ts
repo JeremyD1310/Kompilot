@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * aiRouterClient.ts — Frontend helper for the Kompilot AI Model Router
  *
@@ -20,7 +21,7 @@ import { isAgentEnabled } from './billingStorage';
 import { reportApiOutage } from './externalApiInterceptor';
 
 /** Backend URL — Cloudflare Workers deployment */
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Types (mirrors backend RouterRequest / RouterResponse) ────────────────────
 

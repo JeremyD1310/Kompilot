@@ -9,6 +9,7 @@
  *   GET  /api/tiktok/ads/campaigns     — List campaigns with metrics
  *   GET  /api/tiktok/ads/report        — Aggregated performance report
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createSecureTokenStore } from '../lib/secureTokenStore';
@@ -22,7 +23,7 @@ const TIKTOK_ADS_API = 'https://business-api.tiktok.com/open_api/v1.3';
 async function getUserId(authHeader: string | undefined, env: Env): Promise<string | null> {
   if (!authHeader) return null;
   try {
-    const client = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+    const client = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
     const auth = await client.auth.verifyToken(authHeader);
     return auth.valid && auth.userId ? auth.userId : null;
   } catch { return null; }
@@ -65,7 +66,7 @@ async function resolveAdsToken(
   env: Env,
   userId: string,
 ): Promise<string | null> {
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const store = createSecureTokenStore(blink, (env as any).TOKEN_ENCRYPTION_KEY);
 
   // 1. Try user OAuth token

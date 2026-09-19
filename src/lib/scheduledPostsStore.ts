@@ -15,6 +15,7 @@ export interface ScheduledPostStore {
   time: string;       // 'HH:mm'
   status: PostStatus;
   platform?: string;
+  imageUrl?: string;
 }
 
 // ── Storage key ────────────────────────────────────────────────────────────────
@@ -106,9 +107,9 @@ function statusToDb(status: PostStatus): 'draft' | 'scheduled' | 'published' {
 
 async function syncPostToDb(post: ScheduledPostStore, userId: string): Promise<void> {
   try {
-    // Try upsert — blink.db.scheduledPosts.upsert by id
+    // Try upsert — blink.db.table<any>('scheduledPosts').upsert by id
     const scheduledAt = post.date && post.time ? `${post.date}T${post.time}:00` : null;
-    await blink.db.scheduledPosts.upsert({
+    await blink.db.table<any>('scheduledPosts').upsert({
       id: post.id,
       userId,
       textContent: post.text,
@@ -123,7 +124,7 @@ async function syncPostToDb(post: ScheduledPostStore, userId: string): Promise<v
 
 async function deletePostFromDb(id: string): Promise<void> {
   try {
-    await blink.db.scheduledPosts.delete(id);
+    await blink.db.table<any>('scheduledPosts').delete(id);
   } catch {
     // Non-blocking
   }
@@ -162,7 +163,7 @@ export function useScheduledPosts(userId?: string) {
   useEffect(() => {
     if (!userId || dbSynced) return;
     let cancelled = false;
-    blink.db.scheduledPosts
+    blink.db.table<any>('scheduledPosts')
       .list({ where: { userId }, orderBy: { createdAt: 'desc' }, limit: 200 })
       .then((rows: any[]) => {
         if (cancelled) return;
@@ -215,5 +216,17 @@ export function useScheduledPosts(userId?: string) {
     if (userId) deletePostFromDb(id);
   }, [userId]);
 
-  return { posts, add, updateStatus, remove };
+  const update = useCallback((id: string, patch: Partial<Omit<ScheduledPostStore, 'id'>>): ScheduledPostStore | null => {
+    const current = getScheduledPosts();
+    const index = current.findIndex(post => post.id === id);
+    if (index < 0) return null;
+    const updated = { ...current[index], ...patch };
+    current[index] = updated;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+    setPosts(current);
+    if (userId) syncPostToDb(updated, userId);
+    return updated;
+  }, [userId]);
+
+  return { posts, add, update, updateStatus, remove, isSynced: Boolean(userId) && dbSynced };
 }

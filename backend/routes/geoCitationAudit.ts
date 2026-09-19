@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -7,7 +8,7 @@ export const router = new Hono<{ Bindings: Env }>();
 
 router.post('/api/geo/citation-audit', async c => {
   const env = c.env as Env & Record<string, string | undefined>;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
   const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid || !auth.userId) return c.json({ error: 'Non autorisé' }, 401);
   let body: { brandName?: string; sector?: string; location?: string; siteUrl?: string };

@@ -1,3 +1,5 @@
+/* global __ENV, __VU, __ITER */
+
 /**
  * ═══════════════════════════════════════════════════════════════════════════
  * Kompilot — K6 Load Test Script (Launch Day Simulation)
@@ -26,7 +28,7 @@ import { Counter, Rate, Trend } from 'k6/metrics';
 // ═══════════════════════════════════════════════════════════════════════════
 
 // URL de base — override via --env BASE_URL=https://...
-const BASE_URL = __ENV.BASE_URL || 'https://kompilot.blinkpowered.com';
+const BASE_URL = __ENV.BASE_URL || 'https://www.kompilot.fr';
 
 // Clé secrète Stripe (test mode) — pour signer les webhooks fictifs
 const STRIPE_WEBHOOK_SECRET = __ENV.STRIPE_WEBHOOK_SECRET || '';
@@ -250,11 +252,12 @@ export default function () {
       tags: { step: 'landing', page: 'home' },
     });
 
-    check(res.response, {
+    const checksPassed = check(res.response, {
       'Landing page — HTTP 200': (r) => r && r.status === 200,
       'Landing page — réponse < 2s': (r) => r && r.timings.duration < 2000,
       'Landing page — contient du HTML': (r) => r && r.body && r.body.length > 1000,
-    }) || errors.add(1);
+    });
+    if (!checksPassed) errors.add(1);
 
     // Simulation du temps de lecture de la landing (3–8s)
     sleep(Math.random() * 5 + 3);

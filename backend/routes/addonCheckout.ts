@@ -11,6 +11,7 @@
 import { Hono } from 'hono';
 import type { Env } from '../lib/types';
 import { getBlink, getUserMeta, patchUserMeta } from '../lib/stripeHelpers';
+import { resolveOneTimeProduct } from '../lib/pricingCatalog';
 import {
   ADDON_DEFINITIONS,
   type AddonId,
@@ -21,6 +22,37 @@ import {
 } from '../lib/addonHelpers';
 
 export const router = new Hono();
+
+/**
+ * Stripe exposes no `automatic_tax` parameter on the subscription-item endpoints, so
+ * VAT is enabled on the parent subscription before its items are mutated. Invoices
+ * produced by `proration_behavior: 'always_invoice'` then inherit Stripe Tax.
+ * `proration_behavior: 'none'` keeps this call from generating any proration by itself.
+ */
+async function enableSubscriptionAutomaticTax(stripeKey: string, subscriptionId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`https://api.stripe.com/v1/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${stripeKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        'automatic_tax[enabled]': 'true',
+        'proration_behavior': 'none',
+      }).toString(),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) {
+      console.error('[addon] enabling Stripe Tax failed:', res.status, await res.text());
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('[addon] enabling Stripe Tax errored:', err);
+    return false;
+  }
+}
 
 // ── POST /api/billing/addon/checkout ─────────────────────────────────────────
 
@@ -45,6 +77,18 @@ router.post('/api/billing/addon/checkout', async (c) => {
   }
 
   const def = ADDON_DEFINITIONS[addonId];
+  const canonicalProduct = resolveOneTimeProduct(body?.addonId);
+  if (canonicalProduct?.definition.productType === 'addon') {
+    const meta = await getUserMeta(blink, auth.userId);
+    const planId = String(meta.plan_id ?? '');
+    if (canonicalProduct.definition.planId && planId !== canonicalProduct.definition.planId && planId !== 'enterprise') {
+      return c.json({ error: 'Cet add-on nécessite un forfait compatible.', code: 'PLAN_REQUIRED', requiredPlan: canonicalProduct.definition.planId }, 403);
+    }
+    if (canonicalProduct.definition.maxTotal) {
+      const existing = await blink.db.user_addons.list({ where: { userId: auth.userId, status: 'active' }, limit: 100 }) as any[];
+      if (existing.length >= canonicalProduct.definition.maxTotal) return c.json({ error: 'Limite d’add-ons atteinte.', code: 'ADDON_LIMIT_REACHED' }, 409);
+    }
+  }
 
   // 4. Check plan restriction (white_label requires agency)
   const meta = await getUserMeta(blink, auth.userId);
@@ -72,7 +116,13 @@ router.post('/api/billing/addon/checkout', async (c) => {
   }
 
   // 7. Resolve addon price ID
-  const priceId = getAddonPriceId(rawEnv, addonId);
+  const canonicalAddon = resolveOneTimeProduct(body?.addonId)
+  const priceId = canonicalAddon?.definition.productType === 'addon' ? await (async () => {
+    const r = await fetch(`https://api.stripe.com/v1/prices?${new URLSearchParams({ lookup_keys: canonicalAddon.lookupKey ?? '', active: 'true', limit: '10' })}`, { headers: { Authorization: `Bearer ${stripeKey}` } });
+    const d = await r.json() as { data?: Array<{ id: string; tax_behavior?: string }> };
+    // Catalog amounts are HT, so only tax-exclusive prices may be billed.
+    return d.data?.find((p) => p.tax_behavior === 'exclusive')?.id ?? null
+  })() : getAddonPriceId(rawEnv, addonId);
   if (!priceId) {
     return c.json({
       error: 'Prix de l\'add-on non configuré côté serveur.',
@@ -80,7 +130,16 @@ router.post('/api/billing/addon/checkout', async (c) => {
     }, 503);
   }
 
-  // 8. Add the addon as a new item on the existing subscription
+  // 8. Enable Stripe Tax on the subscription before invoicing the addon (fail-closed:
+  //    never bill the HT amount without VAT).
+  if (!(await enableSubscriptionAutomaticTax(stripeKey, subscriptionId))) {
+    return c.json({
+      error: 'La TVA ne peut pas être calculée pour cet abonnement. Aucun add-on n\'a été facturé.',
+      code: 'TAX_NOT_CONFIGURED',
+    }, 503);
+  }
+
+  // 9. Add the addon as a new item on the existing subscription
   try {
     const stripeRes = await fetch(`https://api.stripe.com/v1/subscriptions/${subscriptionId}/items`, {
       method: 'POST',
@@ -105,7 +164,7 @@ router.post('/api/billing/addon/checkout', async (c) => {
 
     const item = await stripeRes.json() as any;
 
-    // 9. Immediately update user metadata (optimistic — webhook will confirm)
+    // 10. Immediately update user metadata (optimistic — webhook will confirm)
     const now = new Date().toISOString();
     const addons = getAddonsFromMeta(meta);
     addons[addonId] = {
@@ -115,7 +174,7 @@ router.post('/api/billing/addon/checkout', async (c) => {
     };
     await patchUserMeta(blink, auth.userId, { addons });
 
-    // 10. Insert into audit table
+    // 11. Insert into audit table
     try {
       await blink.db.user_addons.create({
         id: `addon_${auth.userId.slice(0, 8)}_${addonId}_${Date.now()}`,
@@ -182,6 +241,8 @@ router.post('/api/billing/addon/remove', async (c) => {
         [`items[0][id]`]: addon.stripe_item_id,
         [`items[0][deleted]`]: 'true',
         'proration_behavior': 'always_invoice',
+        // The proration credit must carry the same VAT that was charged.
+        'automatic_tax[enabled]': 'true',
       }).toString(),
     });
 

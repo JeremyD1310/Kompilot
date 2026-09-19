@@ -51,7 +51,7 @@ export function DemoConfigurator({
               : 'text-slate-400 hover:text-slate-200 border border-transparent',
           )}
         >
-          Essai 7j
+          Essai 14j
         </button>
         <button
           data-testid="qa-active"

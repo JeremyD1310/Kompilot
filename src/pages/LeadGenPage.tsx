@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * LeadGenPage — /lead-gen
  *
@@ -7,7 +8,7 @@
  * 3. Dedicated landing page URL for the merchant to share
  * 4. List of captured leads with SMS status
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   Page, PageHeader, PageTitle, PageDescription, PageBody,
   Button, Badge, Card, toast,
@@ -20,7 +21,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { blink } from '../blink/client';
 import { useEstablishment } from '../context/EstablishmentContext';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? KOMPILOT_BACKEND_URL;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -151,7 +152,7 @@ function EmbedScriptCard({ userId, establishmentId, offerLabel }: {
 <script>
   (function() {
     var s = document.createElement('script');
-    s.src = 'https://kompilot.blinkpowered.com/widget/leadgen.js';
+    s.src = 'https://www.kompilot.fr/widget/leadgen.js';
     s.dataset.userId = '${userId}';
     s.dataset.estId = '${establishmentId || 'default'}';
     s.dataset.offer = '${(offerLabel || 'Offre exclusive').replace(/'/g, "\\'")}';
@@ -202,7 +203,7 @@ function LandingPageCard({ userId, establishmentId, offerLabel }: {
     eid: establishmentId || 'default',
     offer: offerLabel || 'Offre exclusive',
   });
-  const url = `https://kompilot.blinkpowered.com/capture?${params}`;
+  const url = `https://www.kompilot.fr/capture?${params}`;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(url);
@@ -309,7 +310,7 @@ function LeadsTable({ leads }: { leads: CapturedLead[] }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function LeadGenPage() {
-  const { user } = useEstablishment ? useEstablishment() as any : { user: null };
+  const { user } = useEstablishment() as any;
   const [offerLabel,  setOfferLabel]  = useState('');
   const [couponCode,  setCouponCode]  = useState('');
   const [activeTab,  setActiveTab]    = useState<'widget' | 'leads'>('widget');
@@ -317,9 +318,9 @@ export default function LeadGenPage() {
 
   // Get auth user id
   const [userId, setUserId] = useState('');
-  useState(() => {
+  useEffect(() => {
     blink.auth.me().then(u => { if (u?.id) setUserId(u.id); }).catch(() => {});
-  });
+  }, []);
 
   const establishmentId = (user as any)?.id ?? '';
 

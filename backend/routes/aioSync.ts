@@ -21,10 +21,12 @@
  *   - 200 toujours si le pipeline réussit, même partiellement
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono }               from 'hono';
 import { createClient }        from '@blinkdotnew/sdk';
 import type { Env }            from '../lib/types';
-import { checkUserQuota }     from '../lib/quotaMiddleware';
+import { consumeExecuteRefund } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 import { trackAiVisibility }  from '../lib/aioSyncService';
 
 // ── Codes d'erreur (constantes — évite la confusion avec les noms de secrets) ─
@@ -43,7 +45,7 @@ router.use('/api/aio/sync/*', async (c, next) => {
     return c.json({ error: 'Non autorisé — JWT Blink requis.' }, 401);
   }
   const blink = createClient({
-    projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(c.env),
     secretKey:  c.env.BLINK_SECRET_KEY,
   });
   try {
@@ -92,7 +94,7 @@ router.use('/api/aio/sync/*', async (c, next) => {
  *   "totalDurationMs": 3200
  * }
  */
-router.post('/api/aio/sync/track', checkUserQuota('serpapi_queries', 1), async (c) => {
+router.post('/api/aio/sync/track', async (c) => {
   const serpKey = (c.env as unknown as { SERP_API_KEY?: string }).SERP_API_KEY ?? '';
 
   // ── Vérification de la clé SerpApi ────────────────────────────────────────
@@ -130,37 +132,51 @@ router.post('/api/aio/sync/track', checkUserQuota('serpapi_queries', 1), async (
     } catch { /* ignore */ }
   }
 
-  // ── Async queue mode ─────────────────────────────────────────────────────
-  if (useQueue) {
-    try {
-      const blink = createClient({
-        projectId: c.env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk',
-        secretKey:  c.env.BLINK_SECRET_KEY,
-      });
-      const queueFn = (blink as any).queue;
-      if (queueFn?.enqueue) {
-        await queueFn.enqueue('aio-sync-track', { userId, keyword, brandName });
-        return c.json({
-          mode: 'async',
-          status: 'queued',
-          keyword,
-          brandName,
-          message: 'AIO sync queued. Results will be available shortly.',
-        }, 200);
-      }
-    } catch (queueErr) {
-      console.warn('[aioSync] Queue enqueue failed, falling back to sync:', queueErr);
-    }
-  }
-
   // ── Appel au service AIO Sync (sync fallback) ─────────────────────────────
   console.log(`[aioSync route] POST /api/aio/sync/track — keyword="${keyword}" brand="${brandName}"`);
 
+  const requestId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || crypto.randomUUID();
+  const referenceId = `aio-sync:${userId}:${requestId}`;
+
   try {
-    const result = await trackAiVisibility(keyword, brandName, serpKey);
-    return c.json(result, 200);
+    const charged = await consumeExecuteRefund(
+      createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY }),
+      userId,
+      'serpapi_visibility_sync',
+      'AIO visibility sync',
+      referenceId,
+      async () => {
+        if (useQueue) {
+          try {
+            const blink = createClient({
+              projectId: requireBlinkProjectId(c.env),
+              secretKey: c.env.BLINK_SECRET_KEY,
+            });
+            const queueFn = (blink as any).queue;
+            if (queueFn?.enqueue) {
+              await queueFn.enqueue('aio-sync-track', { userId, keyword, brandName });
+              return {
+                mode: 'async',
+                status: 'queued',
+                keyword,
+                brandName,
+                message: 'AIO sync queued. Results will be available shortly.',
+              };
+            }
+          } catch (queueErr) {
+            console.warn('[aioSync] Queue enqueue failed, falling back to sync:', queueErr);
+          }
+        }
+        return await trackAiVisibility(keyword, brandName, serpKey);
+      },
+      'serpapi',
+      { provider: 'serpapi', route: 'aioSync.track', keyword, brandName },
+    );
+    return c.json({ ...charged.result, creditsLeft: charged.balanceAfter }, 200);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    // Tracking results are returned inline, so a replay has no durable row to reload.
+    if (isIdempotentReplayError(err)) return c.json(replayConflictBody(err, 'sync AIO'), 409);
     console.error('[aioSync route] trackAiVisibility error:', msg);
 
     // Distinguer erreur SerpApi (quota, clé…) vs erreur réseau

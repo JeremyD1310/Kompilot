@@ -95,7 +95,7 @@ const ALERT_ROWS: AlertRow[] = [
 export function AlertPreferencesPanel() {
   const { user } = useAuth();
   const { currentPlan } = useSubscription();
-  const isAgency = currentPlan.id === 'expert' || (user?.role === 'agency');
+  const isAgency = currentPlan.id === 'agency' || (user?.role === 'agency');
   const { settings, isLoading, isSaving, updateSetting, updateAll } = useNotificationSettings(user?.id);
 
   const handleToggle = useCallback(

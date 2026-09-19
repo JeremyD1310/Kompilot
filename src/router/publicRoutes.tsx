@@ -3,7 +3,7 @@
  * All public (no-auth) route definitions.
  */
 import React from 'react';
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, redirect } from '@tanstack/react-router';
 import { rootRoute } from './rootRoute';
 
 // ── Pages (lazy-loaded) ───────────────────────────────────────────────────────
@@ -26,7 +26,6 @@ const DemoWorkspacePage     = React.lazy(() => import('../pages/DemoWorkspacePag
 const TestimonialsPage      = React.lazy(() => import('../pages/TestimonialsPage'));
 const FAQPage              = React.lazy(() => import('../pages/FAQPage'));
 const TunnelReportPage        = React.lazy(() => import('../pages/TunnelReportPage'));
-const KompilotShowcasePage  = React.lazy(() => import('../pages/demo/KompilotShowcasePage'));
 const KompilotOnboardingPage = React.lazy(() => import('../pages/KompilotOnboardingPage'));
 const KompilotROIDashboardPage = React.lazy(() => import('../pages/KompilotROIDashboardPage'));
 const PricingPage              = React.lazy(() => import('../pages/PricingPage'));
@@ -39,6 +38,13 @@ const ExtendTrialPage          = React.lazy(() => import('../pages/ExtendTrialPa
 const SectorPage               = React.lazy(() => import('../pages/SectorPage'));
 const MarketingInfoPage        = React.lazy(() => import('../pages/MarketingInfoPage'));
 const InformationsKompilotPage = React.lazy(() => import('../pages/InformationsKompilotPage'));
+const AboutPage                = React.lazy(() => import('../pages/AboutPage'));
+const EditorialPolicyPage      = React.lazy(() => import('../pages/EditorialPolicyPage'));
+const PublicResourceCenterPage = React.lazy(() => import('../pages/PublicResourceCenterPage'));
+const PublicResourceGuidePage  = React.lazy(() => import('../pages/PublicResourceGuidePage'));
+const PublicComparativePage    = React.lazy(() => import('../pages/PublicComparativePage'));
+const CaseStudiesPage          = React.lazy(() => import('../pages/CaseStudiesPage'));
+const CaseStudyDraftPage       = React.lazy(() => import('../pages/CaseStudyDraftPage'));
 
 export const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: LandingPage });
 export const loginRoute = createRoute({ getParentRoute: () => rootRoute, path: '/login', component: LoginPage });
@@ -47,7 +53,13 @@ export const privacyRoute = createRoute({ getParentRoute: () => rootRoute, path:
 export const legalRoute = createRoute({ getParentRoute: () => rootRoute, path: '/legal', component: LegalPage });
 export const cgvRoute = createRoute({ getParentRoute: () => rootRoute, path: '/cgv', component: CGVPage });
 export const informationsKompilotRoute = createRoute({ getParentRoute: () => rootRoute, path: '/informations-kompilot', component: InformationsKompilotPage });
-export const aProposRoute = createRoute({ getParentRoute: () => rootRoute, path: '/a-propos', component: InformationsKompilotPage });
+export const aProposRoute = createRoute({ getParentRoute: () => rootRoute, path: '/a-propos', component: AboutPage });
+export const editorialPolicyRoute = createRoute({ getParentRoute: () => rootRoute, path: '/politique-editoriale', component: EditorialPolicyPage });
+export const resourcesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/ressources', component: PublicResourceCenterPage });
+export const resourceGuideRoute = createRoute({ getParentRoute: () => rootRoute, path: '/ressources/$slug', component: PublicResourceGuidePage });
+export const comparativeRoute = createRoute({ getParentRoute: () => rootRoute, path: '/comparatifs/$slug', component: PublicComparativePage });
+export const caseStudiesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/cas-clients', component: CaseStudiesPage });
+export const caseStudyDraftRoute = createRoute({ getParentRoute: () => rootRoute, path: '/cas-clients/$slug', component: CaseStudyDraftPage });
 // Alias routes for Stripe/payment compliance
 export const confidentialiteRoute = createRoute({ getParentRoute: () => rootRoute, path: '/confidentialite', component: PrivacyPage });
 export const politiqueConfidentialiteRoute = createRoute({ getParentRoute: () => rootRoute, path: '/politique-de-confidentialite', component: PrivacyPage });
@@ -62,6 +74,8 @@ export const diagnosticRoute = createRoute({ getParentRoute: () => rootRoute, pa
 export const referralLandingRoute = createRoute({ getParentRoute: () => rootRoute, path: '/ref/$code', component: ReferralLandingPage });
 export const clientApprovalRoute = createRoute({ getParentRoute: () => rootRoute, path: '/approve/$token', component: ClientApprovalPage });
 export const demoRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo', component: DemoPage });
+export const demoOnboardingRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/onboarding', beforeLoad: () => { throw redirect({ to: '/demo/workspace' }); }, component: DemoWorkspacePage });
+export const demoDashboardRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/dashboard', beforeLoad: () => { throw redirect({ to: '/demo/workspace' }); }, component: DemoWorkspacePage });
 export const demoWorkspaceRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace', component: DemoWorkspacePage });
 export const demoWorkspaceApprovalsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/approvals', component: DemoWorkspacePage });
 export const demoWorkspaceCalendarRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/calendar', component: DemoWorkspacePage });
@@ -76,7 +90,7 @@ export const demoWorkspaceOrganizationRoute = createRoute({ getParentRoute: () =
 export const demoWorkspaceTeamRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/team', component: DemoWorkspacePage });
 export const demoWorkspaceSettingsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/demo/workspace/settings', component: DemoWorkspacePage });
 export const tunnelReportRoute = createRoute({ getParentRoute: () => rootRoute, path: '/tunnel-report/$token', component: TunnelReportPage });
-export const showcaseRoute = createRoute({ getParentRoute: () => rootRoute, path: '/showcase', component: KompilotShowcasePage });
+export const showcaseRoute = createRoute({ getParentRoute: () => rootRoute, path: '/showcase', beforeLoad: () => { throw redirect({ to: '/demo' }); }, component: DemoPage });
 export const kompilotOnboardingRoute = createRoute({ getParentRoute: () => rootRoute, path: '/onboarding-copilot', component: KompilotOnboardingPage });
 export const kompilotROIRoute = createRoute({ getParentRoute: () => rootRoute, path: '/roi-dashboard', component: KompilotROIDashboardPage });
 export const pricingRoute      = createRoute({ getParentRoute: () => rootRoute, path: '/pricing',       component: PricingPage });
@@ -101,6 +115,12 @@ export const publicRoutes = [
   cgvRoute,
   informationsKompilotRoute,
   aProposRoute,
+  editorialPolicyRoute,
+  resourcesRoute,
+  resourceGuideRoute,
+  comparativeRoute,
+  caseStudiesRoute,
+  caseStudyDraftRoute,
   cguAliasRoute,
   confidentialiteRoute,
   politiqueConfidentialiteRoute,
@@ -114,6 +134,8 @@ export const publicRoutes = [
   referralLandingRoute,
   clientApprovalRoute,
   demoRoute,
+  demoOnboardingRoute,
+  demoDashboardRoute,
   demoWorkspaceRoute,
   demoWorkspaceApprovalsRoute,
   demoWorkspaceCalendarRoute,

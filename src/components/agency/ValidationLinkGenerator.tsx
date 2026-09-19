@@ -323,7 +323,7 @@ export function ValidationLinkGenerator() {
         status: 'pending' as const,
         expiresAt,
       };
-      await blink.db.clientApprovalTokens.create(record);
+      await blink.db.table<any>('clientApprovalTokens').create(record);
       setTokens(prev => [record, ...prev]);
     } catch (err) {
       setError('Erreur lors de la génération du lien. Veuillez réessayer.');
@@ -341,7 +341,7 @@ export function ValidationLinkGenerator() {
 
   const handleDelete = async (id: string) => {
     try {
-      await blink.db.clientApprovalTokens.delete(id);
+      await blink.db.table<any>('clientApprovalTokens').delete(id);
       setTokens(prev => prev.filter(t => t.id !== id));
     } catch {
       // optimistic deletion

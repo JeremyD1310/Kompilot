@@ -60,7 +60,7 @@ export function DailyRefundToast() {
           initial={{ opacity: 0, y: -12, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.97 }}
-          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] as const }}
           className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] w-full max-w-sm px-4 sm:px-0"
         >
           <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800/60 bg-white dark:bg-slate-900 shadow-xl shadow-emerald-500/10 overflow-hidden">

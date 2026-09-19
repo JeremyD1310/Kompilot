@@ -5,6 +5,7 @@
  * GET    /api/agency/invites              — list pending/accepted invites
  * DELETE /api/agency/invites/:id          — cancel a pending invite
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -21,7 +22,7 @@ type AgencySubAccount = {
 };
 
 function getBlink(env: Env) {
-  return createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY });
+  return createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 }
 
 async function verify(c: any) {

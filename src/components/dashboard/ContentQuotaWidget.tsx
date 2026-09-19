@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Button, Card, CardContent, CardHeader, CardTitle, toast } from '@blinkdotnew/ui';
 import { AlertTriangle, CheckCircle2, FileText, Loader2, Plus } from 'lucide-react';
 import { useContentQuota } from '../../hooks/useContentQuota';
-import { createContentPackCheckout } from '../../lib/billingClient';
+import { useNavigate } from '@tanstack/react-router';
 
 export function ContentQuotaWidget() {
+  const navigate = useNavigate();
   const quota = useContentQuota();
   const [showPacks, setShowPacks] = useState(false);
   const [loadingPack, setLoadingPack] = useState<string | null>(null);
@@ -15,17 +16,9 @@ export function ContentQuotaWidget() {
     if (loadingPack) return;
     setLoadingPack(packId);
     try {
-      const result = await createContentPackCheckout(packId);
-      if (!result.url) {
-        toast.error('Paiement indisponible', { description: result.error || 'Réessayez dans un instant.' });
-        return;
-      }
-      const paymentWindow = window.open(result.url, '_blank', 'noopener,noreferrer');
-      if (!paymentWindow) {
-        toast.error('Fenêtre de paiement bloquée', { description: 'Autorisez les pop-ups puis réessayez.' });
-        return;
-      }
-      toast.success('Redirection vers Stripe…', { description: 'Votre solde sera crédité après confirmation du paiement.' });
+      void packId;
+      await navigate({ to: '/subscription' });
+      toast.info('Choisissez votre pack', { description: 'Le consentement et le paiement sont finalisés sur la page sécurisée.' });
     } catch (error) {
       toast.error('Paiement indisponible', { description: error instanceof Error ? error.message : 'Réessayez dans un instant.' });
     } finally {

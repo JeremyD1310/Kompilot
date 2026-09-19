@@ -166,7 +166,7 @@ export function DashboardHomeGrid() {
     queryKey: ['dashboard-recent-posts', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const rows = await blink.db.scheduledPosts.list({
+      const rows = await blink.db.table<any>('scheduledPosts').list({
         where: { userId: user.id },
         orderBy: { createdAt: 'desc' },
         limit: 3,
@@ -185,7 +185,7 @@ export function DashboardHomeGrid() {
     queryKey: ['dashboard-unread-messages', user?.id],
     queryFn: async () => {
       if (!user?.id) return 0;
-      const rows = await blink.db.messages.list({
+      const rows = await blink.db.table<any>('messages').list({
         where: { userId: user.id },
         orderBy: { createdAt: 'desc' },
         limit: 100,
@@ -204,7 +204,7 @@ export function DashboardHomeGrid() {
     queryKey: ['dashboard-post-stats', user?.id],
     queryFn: async () => {
       if (!user?.id) return { scheduled: 0, pending: 0 };
-      const rows = await blink.db.scheduledPosts.list({
+      const rows = await blink.db.table<any>('scheduledPosts').list({
         where: { userId: user.id },
         limit: 500,
       });

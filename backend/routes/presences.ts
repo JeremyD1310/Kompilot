@@ -7,6 +7,7 @@
  * GET    /api/presences/:id      — Get a single presence record (detail view)
  * DELETE /api/presences/:id      — Delete a presence record
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -25,7 +26,7 @@ function getUserId(h: string | undefined): string | null {
 }
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 // ── Types ──────────────────────────────────────────────────────────────────
 

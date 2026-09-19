@@ -4,6 +4,8 @@
  *   POST /api/funnels/:id/export        — generate export (returns token + PDF-ready data)
  *   GET  /api/funnels/export/:token     — public endpoint, serves report data (no auth)
  */
+import { requireBackendUrl } from '../../lib/blinkConfig';
+import { requireBlinkProjectId } from '../../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 
@@ -18,7 +20,7 @@ app.post('/:id/export', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 
@@ -107,7 +109,7 @@ app.post('/:id/export', async (c) => {
     const referer = c.req.header('Referer') ?? c.req.header('Origin') ?? '';
     let frontendOrigin = '';
     try {
-      frontendOrigin = referer ? new URL(referer).origin : backendOrigin.replace('gbrhsehk.backend.', '');
+      frontendOrigin = referer ? new URL(referer).origin : backendOrigin;
     } catch {
       frontendOrigin = backendOrigin;
     }
@@ -131,7 +133,7 @@ app.post('/:id/export', async (c) => {
 app.get('/export/:token', async (c) => {
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 

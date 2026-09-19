@@ -3,6 +3,7 @@
  *
  *   POST /api/funnels/onboarding-seed — save business info + create competitor funnels
  */
+import { requireBlinkProjectId } from '../../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 
@@ -16,7 +17,7 @@ app.post('/onboarding-seed', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 

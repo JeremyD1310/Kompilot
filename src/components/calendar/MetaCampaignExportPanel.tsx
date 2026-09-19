@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * MetaCampaignExportPanel — Export Calendar Kompilot → Meta Ads Manager
  *
@@ -27,7 +28,7 @@ import {
   UploadCloud, BarChart3, X,
 } from 'lucide-react';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

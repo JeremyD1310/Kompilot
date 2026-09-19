@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useAdAudit.ts — React Query hooks for Ad Performance Audit
  */
@@ -5,7 +6,7 @@
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { blink } from '@/blink/client'
 
-const API_BASE = 'https://gbrhsehk.backend.blink.new'
+const API_BASE = KOMPILOT_BACKEND_URL
 
 async function fetchWithAuth(path: string, options: RequestInit = {}) {
   const token = await blink.auth.getValidToken()

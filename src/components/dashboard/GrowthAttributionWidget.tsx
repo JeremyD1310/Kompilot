@@ -10,6 +10,7 @@ interface MetricRow { postId: string; platform: string; impressions: number | st
 interface LeadRow { id: string; firstName: string; lastName: string; email?: string; source?: string; offerLabel?: string; createdAt: string; }
 interface ConversionRow { id: string; eventType: string; funnelStep?: string; source?: string; metadata?: string; createdAt: string; }
 interface PostRow { id: string; textContent?: string; title?: string; channels?: string; }
+interface AttributionData { metrics: MetricRow[]; leads: LeadRow[]; conversions: ConversionRow[]; posts: PostRow[]; }
 
 const n = (value: number | string | undefined) => Number(value ?? 0) || 0;
 const format = (value: number) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value.toLocaleString('fr-FR');
@@ -20,6 +21,15 @@ const DEMO_LEADS: LeadRow[] = [
   { id: 'demo-lead-2', firstName: 'Nicolas', lastName: 'Roux', source: 'google_business', offerLabel: 'Demande de devis', createdAt: new Date(Date.now() - 86400000).toISOString() },
   { id: 'demo-lead-3', firstName: 'Sarah', lastName: 'Martin', source: 'meta_ads', offerLabel: 'Offre découverte', createdAt: new Date(Date.now() - 2 * 86400000).toISOString() },
 ];
+
+const DEMO_DATA: AttributionData = {
+  metrics: [],
+  leads: DEMO_LEADS,
+  conversions: [{ id: 'demo-c1', eventType: 'Lead', metadata: '{"postId":"demo-post-1"}', createdAt: new Date().toISOString() }],
+  posts: [{ id: 'demo-post-1', textContent: '5 idées pour gagner en visibilité locale' }],
+};
+
+const EMPTY_DATA: AttributionData = { metrics: [], leads: [], conversions: [], posts: [] };
 
 export function GrowthAttributionWidget() {
   const { user } = useAuth();
@@ -39,7 +49,10 @@ export function GrowthAttributionWidget() {
     },
   });
 
-  const data = isDemoActive ? { metrics: [], leads: DEMO_LEADS, conversions: [{ id: 'demo-c1', eventType: 'Lead', metadata: '{"postId":"demo-post-1"}' }], posts: [{ id: 'demo-post-1', textContent: '5 idées pour gagner en visibilité locale' }] } : (query.data ?? { metrics: [], leads: [], conversions: [], posts: [] });
+  // Annotated: the inline demo literal used to widen `data` into a union of two
+  // different shapes, which made every reduce/map below resolve to the wrong
+  // overload (`sum` inferred as MetricRow, postMap values as unknown).
+  const data: AttributionData = isDemoActive ? DEMO_DATA : (query.data ?? EMPTY_DATA);
   const postMap = useMemo(() => new Map(data.posts.map(post => [post.id, post])), [data.posts]);
   const leadPostCounts = useMemo(() => {
     const counts = new Map<string, number>();

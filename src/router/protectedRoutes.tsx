@@ -7,6 +7,7 @@ import { createRoute, Navigate } from '@tanstack/react-router';
 import { dashboardLayoutRoute } from './dashboardLayoutRoute';
 import { rootRoute } from './rootRoute';
 import { OnboardingGuard, AdminGuard } from './guards';
+import KompilotB2BOnboardingPage from '../pages/KompilotB2BOnboardingPage';
 
 // ── Pages (lazy-loaded) ───────────────────────────────────────────────────────
 const DashboardPage        = React.lazy(() => import('../pages/DashboardPage'));
@@ -16,6 +17,7 @@ const SettingsPage         = React.lazy(() => import('../pages/SettingsPage'));
 const ProfilePage          = React.lazy(() => import('../pages/ProfilePage'));
 const GuidePage            = React.lazy(() => import('../pages/GuidePage'));
 const SubscriptionPage     = React.lazy(() => import('../pages/SubscriptionPage'));
+const BillingCreditsPage   = React.lazy(() => import('../pages/BillingCreditsPage'));
 const AdminPage            = React.lazy(() => import('../pages/AdminPage'));
 const AdminAnalyticsPage   = React.lazy(() => import('../pages/AdminAnalyticsPage'));
 const ReferralPage         = React.lazy(() => import('../pages/ReferralPage'));
@@ -67,17 +69,26 @@ const SeoGapPage           = React.lazy(() => import('../pages/SeoGapPage'));
 export const onboardingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/onboarding',
-  component: OnboardingGuard,
+  component: () => <OnboardingGuard><KompilotB2BOnboardingPage /></OnboardingGuard>,
 });
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
+/**
+ * `createRoute` takes a `RouteComponent`, i.e. a callable `(props) => ReactNode`.
+ * `React.ComponentType` is the union `FunctionComponent | ComponentClass`, and the
+ * class branch is a constructor with no call signature — so it is not assignable.
+ * Every page below is a `React.lazy()` result (callable), so narrowing the
+ * annotation to a function component is enough; no call site changes.
+ */
+type RoutePageComponent = (props: Record<string, unknown>) => React.ReactNode;
+
 const d = dashboardLayoutRoute;
-const r = (path: string, component: React.ComponentType) =>
+const r = (path: string, component: RoutePageComponent) =>
   createRoute({ getParentRoute: () => d, path, component });
 
 // Admin-only route — wrapped with AdminGuard for RBAC
-const ra = (path: string, AdminComponent: React.ComponentType) =>
+const ra = (path: string, AdminComponent: RoutePageComponent) =>
   createRoute({
     getParentRoute: () => d,
     path,
@@ -94,6 +105,7 @@ export const settingsRoute         = r('/settings',            SettingsPage);
 export const profileRoute          = r('/profile',             ProfilePage);
 export const guideRoute            = r('/guide',               GuidePage);
 export const subscriptionRoute     = r('/subscription',        SubscriptionPage);
+export const billingCreditsRoute   = r('/billing/credits',      BillingCreditsPage);
 export const adminRoute            = ra('/admin',               AdminPage);
 export const adminAnalyticsRoute   = ra('/admin/analytics',     AdminAnalyticsPage);
 export const referralRoute         = r('/referral',            ReferralPage);
@@ -134,6 +146,7 @@ export const emailMarketingRoute      = r('/email-marketing',      EmailMarketin
 export const creativeStudioHubRoute   = r('/creative-studio-hub',  CreativeStudioHubPage);
 export const websiteScanRoute      = r('/website-scan',         WebsiteScanPage);
 export const emailSequencesRoute   = r('/email-sequences',      EmailSequencesPage);
+export const humanTeamRoute        = r('/equipe',               TeamPage);
 export const monEquipeRoute        = r('/mon-equipe',           MonEquipePage);
 export const engagementRoute       = r('/engagement',           EngagementPage);
 export const seoGapRoute           = r('/espion',               SeoGapPage);
@@ -147,8 +160,7 @@ export const clientMessagesRoute = createRoute({
 // Canonical hubs keep the main navigation focused while preserving old bookmarks.
 export const calendarAliasRoute = createRoute({ getParentRoute: () => d, path: '/calendar', component: () => <Navigate to="/calendrier" /> });
 export const caisseAliasRoute = createRoute({ getParentRoute: () => d, path: '/caissier', component: () => <Navigate to="/caisse" /> });
-export const teamAliasRoute = createRoute({ getParentRoute: () => d, path: '/equipe', component: () => <Navigate to="/mon-equipe" /> });
-export const teamEnglishAliasRoute = createRoute({ getParentRoute: () => d, path: '/team', component: () => <Navigate to="/mon-equipe" /> });
+export const teamEnglishAliasRoute = createRoute({ getParentRoute: () => d, path: '/team', component: () => <Navigate to="/equipe" /> });
 export const creativeFactoryAliasRoute = createRoute({ getParentRoute: () => d, path: '/creative-studio', component: () => <Navigate to="/creative-studio-hub" /> });
 export const emailMarketingAliasRoute = createRoute({ getParentRoute: () => d, path: '/campagnes', component: () => <Navigate to="/email-marketing" /> });
 export const resultsAliasRoute = createRoute({ getParentRoute: () => d, path: '/resultats', component: () => <Navigate to="/performance" /> });
@@ -156,7 +168,7 @@ export const seoAuthorityAliasRoute = createRoute({ getParentRoute: () => d, pat
 
 export const protectedChildRoutes = [
   setupRoute, dashboardRoute, calendarRoute, inboxRoute,
-  settingsRoute, profileRoute, guideRoute, subscriptionRoute,
+  settingsRoute, profileRoute, guideRoute, subscriptionRoute, billingCreditsRoute,
   adminRoute, adminAnalyticsRoute, referralRoute, widgetRoute,
   libraryRoute, analyticsRoute, accountRoute, emailingRoute,
   establishmentsRoute, socialRoute, postsDataRoute, cockpitRoute,
@@ -167,7 +179,7 @@ export const protectedChildRoutes = [
   qrCodeRoute, caisseRoute, brandRoute, creativeFactoryRoute,
   aiCreativeStudioRoute, featuresShowcaseRoute, tunnelsRoute,
   aioRoute, roasRoute, emailMarketingRoute, websiteScanRoute, emailSequencesRoute,
-  creativeStudioHubRoute, monEquipeRoute, engagementRoute, seoGapRoute,
-  calendarAliasRoute, caisseAliasRoute, teamAliasRoute, teamEnglishAliasRoute, creativeFactoryAliasRoute,
+  creativeStudioHubRoute, humanTeamRoute, monEquipeRoute, engagementRoute, seoGapRoute,
+  calendarAliasRoute, caisseAliasRoute, teamEnglishAliasRoute, creativeFactoryAliasRoute,
   emailMarketingAliasRoute, resultsAliasRoute, seoAuthorityAliasRoute,
 ];

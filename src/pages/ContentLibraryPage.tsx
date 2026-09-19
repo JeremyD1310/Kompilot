@@ -171,7 +171,7 @@ const RecycleModal = ({
     if (!post) return;
     setLoading(true);
     try {
-      const response = await blink.ai.generateObject({
+      const { object } = await blink.ai.generateObject({
         prompt: `Réécris ce post avec un angle complètement différent, même thème mais formulation nouvelle, pour republier 3 mois plus tard sans paraître répétitif. Post original: ${post.text}`,
         schema: {
           type: 'object',
@@ -181,7 +181,7 @@ const RecycleModal = ({
           required: ['newText']
         }
       });
-      setNewText(response.newText);
+      setNewText(String((object as { newText?: unknown }).newText ?? ''));
     } catch (error) {
       toast.error("Erreur lors de la génération IA");
     } finally {

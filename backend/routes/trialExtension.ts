@@ -2,17 +2,18 @@
  * Trial Extension via Magic Link
  *
  * POST /api/trial/extension/generate  — Generate a unique magic link for trial extension (called by backend cron)
- * POST /api/trial/extension/validate  — Validate token + extend trial by 7 days (called when user clicks link)
+ * POST /api/trial/extension/validate  — Validate token + extend trial by the canonical 14-day offer (called when user clicks link)
  * GET  /api/trial/extension/check/:token — Check if a token is valid (for frontend pre-display)
  */
 import { Hono } from 'hono';
 import type { Env } from '../lib/types';
 import { getBlink, getUserMeta, patchUserMeta } from '../lib/stripeHelpers';
 import { buildTrialExtensionConfirmEmail } from '../lib/emailTemplates';
+import { TRIAL_DAYS } from '../../shared/pricingCatalog';
 
 export const router = new Hono();
 
-const EXTENSION_DAYS = 7;
+const EXTENSION_DAYS = TRIAL_DAYS;
 const TOKEN_EXPIRY_HOURS = 48;
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -84,7 +85,7 @@ router.post('/api/trial/extension/generate', async (c) => {
   });
 
   // Build the magic link URL
-  const baseUrl = rawEnv.BASE_URL || 'https://kompilot.blinkpowered.com';
+  const baseUrl = rawEnv.BASE_URL || 'https://www.kompilot.fr';
   const magicLinkUrl = `${baseUrl}/extend-trial?token=${plainToken}`;
 
   return c.json({
@@ -150,7 +151,7 @@ router.post('/api/trial/extension/validate', async (c) => {
   // Calculate new trial end date
   const currentEnd = meta.trial_end
     ? new Date(meta.trial_end as string)
-    : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    : new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
 
   const newEndDate = new Date(currentEnd.getTime() + EXTENSION_DAYS * 24 * 60 * 60 * 1000);
 
@@ -191,7 +192,7 @@ router.post('/api/trial/extension/validate', async (c) => {
 
   return c.json({
     success: true,
-    message: 'Essai prolongé de 7 jours',
+    message: `Essai prolongé de ${EXTENSION_DAYS} jours`,
     newEndDate: newEndDate.toISOString(),
     userId: user.id,
   });

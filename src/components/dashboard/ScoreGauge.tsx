@@ -49,7 +49,7 @@ export function ScoreGauge({ score, size = 140 }: ScoreGaugeProps) {
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset }}
-          transition={{ duration: 1.4, ease: [0.34, 1.56, 0.64, 1], delay: 0.4 }}
+          transition={{ duration: 1.4, ease: [0.34, 1.56, 0.64, 1] as const, delay: 0.4 }}
           style={{ filter: `drop-shadow(0 0 8px ${color}60)` }}
         />
       </svg>

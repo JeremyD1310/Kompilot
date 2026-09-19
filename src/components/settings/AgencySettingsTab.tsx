@@ -40,7 +40,13 @@ export function AgencySettingsTab() {
     try {
       const ext = file.name.split('.').pop() || 'png';
       const path = `agency-logos/${Date.now()}.${ext}`;
-      const { publicUrl } = await blink.storage.upload(path, file, { upsert: true });
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+      const { publicUrl } = await blink.storage.upload(path, dataUrl, { upsert: true });
       setConfig(prev => ({ ...prev, logoUrl: publicUrl }));
       toast.success('Logo téléversé avec succès');
     } catch {

@@ -35,7 +35,9 @@ export interface Establishment {
     engagement: number; engagementChange: number;
     posts: number;
   };
+  kpiAvailable?: boolean;
   pendingReviews: number;
+  pendingReviewsAvailable?: boolean;
   pendingMessages: number;
   isLocked?: boolean;
 }
@@ -49,6 +51,8 @@ interface EstablishmentContextType {
   updateEstablishment: (id: string, patch: Partial<Establishment>) => void;
   isUnlocked: (id: string) => boolean;
   isLoadingFromDB: boolean;
+  dataOrigin: 'database' | 'local-fallback' | 'demo';
+  lastSyncedAt: string | null;
 }
 
 // ── Demo fallback (shown when DB has no establishments yet) ────────────────────
@@ -64,7 +68,9 @@ const DEFAULT_ESTABLISHMENTS: Establishment[] = [
     color: 'from-orange-500 to-amber-400',
     bookingUrl: 'https://planity.com/la-mie-doree',
     kpi: { reach: 4350, reachChange: 24, views: 12800, viewsChange: 31, engagement: 6.8, engagementChange: 12, posts: 7 },
+    kpiAvailable: false,
     pendingReviews: 2,
+    pendingReviewsAvailable: false,
     pendingMessages: 3,
   },
   {
@@ -76,7 +82,9 @@ const DEFAULT_ESTABLISHMENTS: Establishment[] = [
     avatar: 'LG',
     color: 'from-rose-500 to-pink-400',
     kpi: { reach: 1820, reachChange: 8, views: 5400, viewsChange: 15, engagement: 4.2, engagementChange: -3, posts: 3 },
+    kpiAvailable: false,
     pendingReviews: 5,
+    pendingReviewsAvailable: false,
     pendingMessages: 1,
     isLocked: true,
   },
@@ -95,20 +103,9 @@ const GRADIENT_COLORS = [
   'from-yellow-500 to-orange-400',
 ];
 
-// ── Deterministic hash → stable KPI values per establishment ID ────────────────
-
-function stableHash(str: string): number {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = Math.imul(31, h) + str.charCodeAt(i) | 0;
-  }
-  return Math.abs(h);
-}
-
 // ── Map DB row → context Establishment ────────────────────────────────────────
 
 function mapDbRow(row: any, index: number): Establishment {
-  const h = stableHash(row.id || row.name || String(index));
   const rawName = String(row.name || 'Établissement');
   const words = rawName.trim().split(/\s+/).filter(Boolean);
   const initials = words.length >= 2
@@ -118,6 +115,30 @@ function mapDbRow(row: any, index: number): Establishment {
     ? rawName
     : (words[0]?.substring(0, 16) ?? rawName.substring(0, 16));
 
+  const rawPendingReviews = row.pendingReviews ?? row.pending_reviews;
+  const hasPendingReviews = Number.isFinite(Number(rawPendingReviews));
+  const isStoredNumber = (value: unknown) => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
+  const rawKpi = {
+    reach: row.reach,
+    reachChange: row.reachChange ?? row.reach_change,
+    views: row.views,
+    viewsChange: row.viewsChange ?? row.views_change,
+    engagement: row.engagement,
+    engagementChange: row.engagementChange ?? row.engagement_change,
+    posts: row.posts,
+  };
+  const measuredKpi = {
+    reach: Number(rawKpi.reach),
+    reachChange: Number(rawKpi.reachChange),
+    views: Number(rawKpi.views),
+    viewsChange: Number(rawKpi.viewsChange),
+    engagement: Number(rawKpi.engagement),
+    engagementChange: Number(rawKpi.engagementChange),
+    posts: Number(rawKpi.posts),
+  };
+  const hasMeasuredKpi = Object.values(rawKpi).every(isStoredNumber);
+  const rawPendingMessages = row.pendingMessages ?? row.pending_messages;
+  const hasPendingMessages = Number.isFinite(Number(rawPendingMessages));
   return {
     id: row.id,
     name: rawName,
@@ -128,17 +149,14 @@ function mapDbRow(row: any, index: number): Establishment {
     color: GRADIENT_COLORS[index % GRADIENT_COLORS.length],
     bookingUrl: row.bookingUrl ?? row.booking_url ?? undefined,
     siret: row.siret ?? undefined,
-    kpi: {
-      reach:          1000 + (h % 5000),
-      reachChange:    ((h >> 3) % 40) - 5,
-      views:          3000 + ((h >> 1) % 15000),
-      viewsChange:    ((h >> 5) % 35) - 3,
-      engagement:     parseFloat((((h >> 7) % 50) / 10 + 2).toFixed(1)),
-      engagementChange: ((h >> 9) % 25) - 5,
-      posts:          3 + (h % 12),
+    kpi: hasMeasuredKpi ? measuredKpi : {
+      reach: 0, reachChange: 0, views: 0, viewsChange: 0,
+      engagement: 0, engagementChange: 0, posts: 0,
     },
-    pendingReviews:  (h >> 11) % 5,
-    pendingMessages: (h >> 13) % 4,
+    kpiAvailable: hasMeasuredKpi,
+    pendingReviews: hasPendingReviews ? Number(rawPendingReviews) : 0,
+    pendingReviewsAvailable: hasPendingReviews,
+    pendingMessages: hasPendingMessages ? Number(rawPendingMessages) : 0,
   };
 }
 
@@ -154,7 +172,7 @@ export const EstablishmentProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // ── 1. Load real establishments from DB ──────────────────────────────────
 
-  const { data: dbRows = [], isLoading: isLoadingFromDB } = useQuery({
+  const { data: dbRows = [], isLoading: isLoadingFromDB, dataUpdatedAt } = useQuery({
     queryKey: ['establishments', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -218,6 +236,12 @@ export const EstablishmentProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const activeEstablishment: Establishment =
     establishments.find(e => e.id === activeId) ?? establishments[0] ?? DEFAULT_ESTABLISHMENTS[0];
+  const dataOrigin: EstablishmentContextType['dataOrigin'] = isDemoActive
+    ? 'demo'
+    : dbEstablishments.length > 0 ? 'database' : 'local-fallback';
+  const lastSyncedAt = dataOrigin === 'database' && dataUpdatedAt
+    ? new Date(dataUpdatedAt).toISOString()
+    : null;
 
   // ── 5. Actions ────────────────────────────────────────────────────────────
 
@@ -226,7 +250,7 @@ export const EstablishmentProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!est) return false;
     // Demo mode unlocks all establishments for full presentation access
     if (isDemoActive) return true;
-    if (est.isLocked && currentPlan.id !== 'expert') return false;
+    if (est.isLocked && currentPlan.id !== 'multi' && currentPlan.id !== 'agency') return false;
     return true;
   }, [establishments, currentPlan, isDemoActive]);
 
@@ -291,7 +315,9 @@ export const EstablishmentProvider: React.FC<{ children: React.ReactNode }> = ({
     updateEstablishment,
     isUnlocked,
     isLoadingFromDB,
-  }), [establishments, activeEstablishment, setActiveEstablishment, isSwitching, addEstablishment, updateEstablishment, isUnlocked, isLoadingFromDB]);
+    dataOrigin,
+    lastSyncedAt,
+  }), [establishments, activeEstablishment, setActiveEstablishment, isSwitching, addEstablishment, updateEstablishment, isUnlocked, isLoadingFromDB, dataOrigin, lastSyncedAt]);
 
   return (
     <EstablishmentContext.Provider value={contextValue}>

@@ -3,7 +3,7 @@
  *
  * Usage:
  *   const { startCheckout, loading } = useStripeCheckout();
- *   await startCheckout('pro', legalConsent);
+ *   await startCheckout('pro', 'monthly', legalConsent);
  *
  * The legalConsent object (cgvAccepted + retractionWaived) is sent to the backend
  * where it is stored immutably with IP + timestamp for anti-chargeback proof.
@@ -17,13 +17,15 @@ import { toast } from '@blinkdotnew/ui';
 import { createCheckoutSession, type CheckoutLegalConsent } from '../lib/billingClient';
 import { CGV_VERSION } from '../components/subscription/LegalConsentBlock';
 import { useRecordLegalSignature } from './useLegalSignature';
+import type { BillingInterval, SubscriptionPlanId } from '../../shared/pricingCatalog';
 
 export function useStripeCheckout() {
   const [loading, setLoading] = useState(false);
   const recordSignature = useRecordLegalSignature();
 
   const startCheckout = async (
-    planId: 'pro' | 'expert' | 'starter' | 'agency',
+    planId: SubscriptionPlanId,
+    billing: BillingInterval,
     consent: Pick<CheckoutLegalConsent, 'cgvAccepted' | 'retractionWaived' | 'renouncedTrial'>,
   ) => {
     if (loading) return;
@@ -63,7 +65,7 @@ export function useStripeCheckout() {
         // Non-blocking: log silently, don't block checkout
       }
 
-      const result = await createCheckoutSession(planId, legalConsent);
+      const result = await createCheckoutSession(planId, billing, legalConsent);
 
       if (result.url && !result.fallback) {
         // Open Stripe Checkout in a new tab (required — preview iframe blocks Stripe)

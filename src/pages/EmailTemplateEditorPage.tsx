@@ -262,7 +262,7 @@ function BlockRenderer({ block, isSelected, onSelect, onContentChange }: {
       return wrapper(
         <div
           className="p-4 outline-none"
-          style={{ fontSize: d.fontSize === 'sm' ? '13px' : d.fontSize === 'lg' ? '18px' : '15px', textAlign: d.align as string, color: d.color as string }}
+          style={{ fontSize: d.fontSize === 'sm' ? '13px' : d.fontSize === 'lg' ? '18px' : '15px', textAlign: d.align as React.CSSProperties['textAlign'], color: d.color as string }}
           contentEditable={isSelected}
           suppressContentEditableWarning
           dangerouslySetInnerHTML={{ __html: d.html as string }}
@@ -273,7 +273,7 @@ function BlockRenderer({ block, isSelected, onSelect, onContentChange }: {
       const Tag = (d.level as string) === 'h1' ? 'h1' : (d.level as string) === 'h3' ? 'h3' : 'h2';
       const sizes: Record<string, string> = { h1: '28px', h2: '22px', h3: '18px' };
       return wrapper(
-        <div className="p-4 outline-none" style={{ textAlign: d.align as string }}>
+        <div className="p-4 outline-none" style={{ textAlign: d.align as React.CSSProperties['textAlign'] }}>
           <Tag
             style={{ fontSize: sizes[d.level as string] ?? '22px', fontWeight: 700, color: d.color as string, margin: 0 }}
             contentEditable={isSelected}
@@ -328,7 +328,7 @@ function BlockRenderer({ block, isSelected, onSelect, onContentChange }: {
       return wrapper(
         <div style={{ height: `${d.height}px` }} className="flex items-center justify-center">
           <span className="text-[10px] text-muted-foreground/40 tracking-wider uppercase opacity-0 group-hover:opacity-100 transition-opacity">
-            Espaceur {d.height}px
+            Espaceur {String(d.height)}px
           </span>
         </div>,
       );

@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint:css": "stylelint \"src/**/*.css\" --fix --quiet",
-    "lint:js": "eslint . --ext ts,tsx --report-unused-disable-directives",
+    "lint:js": "eslint . --ext ts,tsx",
     "lint:types": "tsc --noEmit",
     "lint": "bun run lint:types && bun run lint:js && bun run lint:css",
     "test:e2e": "bunx playwright test",
@@ -17,13 +17,20 @@
     "test:e2e:report": "bunx playwright show-report"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.0",
+    "ajv": "6.14.0",
+    "eslint": "^10.10.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.12.0",
     "typescript": "~6.0.2",
+    "typescript-eslint": "^8.70.0",
     "vite": "^8.0.4"
   },
   "dependencies": {
     "@blinkdotnew/sdk": "^2.5.0",
-    "@blinkdotnew/ui": "0.4.0",
+    "@blinkdotnew/ui": "0.5.2",
     "@dnd-kit/core": "^6.3.1",
     "@google-analytics/data": "^6.1.0",
     "@hookform/resolvers": "^5.2.2",

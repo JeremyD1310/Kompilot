@@ -78,7 +78,7 @@ export function PostInteractionsTracker({ postId: _postId, postText, className }
               key={m.label}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08, duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              transition={{ delay: i * 0.08, duration: 0.35, ease: [0.4, 0, 0.2, 1] as const }}
               className={`${m.bg} rounded-xl p-2.5 text-center`}
             >
               <m.icon size={14} className={`${m.color} mx-auto mb-1`} />
@@ -107,7 +107,7 @@ export function PostInteractionsTracker({ postId: _postId, postText, className }
                     className="w-full rounded-t-sm bg-primary/70"
                     initial={{ height: 0 }}
                     animate={{ height: `${h}%` }}
-                    transition={{ delay: 0.3 + i * 0.06, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                    transition={{ delay: 0.3 + i * 0.06, duration: 0.5, ease: [0.4, 0, 0.2, 1] as const }}
                     title={`${d.day}: ${fmtNum(d.reach)} vues`}
                   />
                   <span className="text-[9px] text-muted-foreground font-medium">{d.day}</span>
@@ -128,7 +128,7 @@ export function PostInteractionsTracker({ postId: _postId, postText, className }
               className="h-full bg-primary rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(Number(avgRate) * 10, 100)}%` }}
-              transition={{ delay: 0.5, duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+              transition={{ delay: 0.5, duration: 0.7, ease: [0.4, 0, 0.2, 1] as const }}
             />
           </div>
           <p className="text-[10px] text-muted-foreground mt-1.5">

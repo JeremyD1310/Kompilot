@@ -45,7 +45,7 @@ export function VideoPerformanceCard({ metrics, loading = false, className = '' 
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
       className={`rounded-2xl border border-border bg-card overflow-hidden ${className}`}
     >
       {/* Header */}
@@ -121,7 +121,7 @@ export function VideoPerformanceCard({ metrics, loading = false, className = '' 
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.min(100, metrics.videoCompletionRate)}%` }}
-                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] as const }}
                 className={`h-full rounded-full ${
                   metrics.videoCompletionRate >= 50
                     ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'

@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router';
-import { Logo } from './LandingNav';
 import { KompilotLogo } from '../brand/KompilotLogo';
 
 export function LandingFooter() {
@@ -15,6 +14,9 @@ export function LandingFooter() {
               {to:'/local',label:'Marketing local'},
               {to:'/temoignages',label:'Témoignages'},
               {to:'/faq',label:'FAQ'},
+              {to:'/ressources',label:'Ressources'},
+              {to:'/a-propos',label:'À propos'},
+              {to:'/politique-editoriale',label:'Politique éditoriale'},
               {to:'/pricing',label:'Tarifs'},
               {to:'/cgv',label:'CGV / CGU'},
               {to:'/confidentialite',label:'Confidentialité & RGPD'},

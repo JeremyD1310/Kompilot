@@ -16,8 +16,9 @@ import {
 import { useStripeCheckout } from '../../hooks/useStripeCheckout';
 
 interface SubscriptionCheckoutPanelProps {
-  planId: 'pro' | 'expert' | 'starter' | 'agency';
+  planId: 'pro' | 'multi' | 'agency';
   planName: string;
+  billing: 'monthly' | 'yearly';
   onCancel: () => void;
   onCheckoutOpened?: () => void;
   /** Show the trial-renunciation checkbox (pass true when user is on an active trial) */
@@ -27,6 +28,7 @@ interface SubscriptionCheckoutPanelProps {
 export function SubscriptionCheckoutPanel({
   planId,
   planName,
+  billing,
   onCancel,
   onCheckoutOpened,
   showTrialRenunciation,
@@ -44,7 +46,7 @@ export function SubscriptionCheckoutPanel({
 
   const handleConfirm = async () => {
     if (!isValid) return;
-    await startCheckout(planId, consent);
+    await startCheckout(planId, billing, consent);
     onCheckoutOpened?.();
   };
 

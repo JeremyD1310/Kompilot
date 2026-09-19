@@ -15,7 +15,7 @@ import {
 } from '@blinkdotnew/ui';
 import {
   Sparkles, Image, RefreshCw, Copy, Check,
-  Instagram, Star, Zap, Share2, ArrowRight,
+  Star, Zap, Share2, ArrowRight,
   CheckCircle2,
 } from 'lucide-react';
 import { blink } from '../../blink/client';

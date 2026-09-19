@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * AgencyBillingDashboard — Billing management for agency / agency_owner roles.
  * ⚠️ White-label rule: Kompilot name NEVER shown on client-facing documents.
@@ -116,7 +117,7 @@ export function AgencyBillingDashboard() {
     (async () => {
       try {
         const token = await blink.auth.getValidToken();
-        const res = await fetch('https://gbrhsehk.backend.blink.new/api/billing/agency/status', {
+        const res = await fetch(`${KOMPILOT_BACKEND_URL}/api/billing/agency/status`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
@@ -134,7 +135,7 @@ export function AgencyBillingDashboard() {
     (async () => {
       try {
         const token = await blink.auth.getValidToken();
-        const res = await fetch('https://gbrhsehk.backend.blink.new/api/billing/agency/sub-accounts', {
+        const res = await fetch(`${KOMPILOT_BACKEND_URL}/api/billing/agency/sub-accounts`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
@@ -154,7 +155,7 @@ export function AgencyBillingDashboard() {
     setBillingMode(mode);
     try {
       const token = await blink.auth.getValidToken();
-      const res = await fetch('https://gbrhsehk.backend.blink.new/api/billing/agency/mode', {
+      const res = await fetch(`${KOMPILOT_BACKEND_URL}/api/billing/agency/mode`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ billingMode: mode }),

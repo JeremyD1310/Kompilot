@@ -4,6 +4,7 @@
  *   POST /api/funnels/generate-swipes — elite copywriter (system prompt + gpt-4.1)
  *   POST /api/funnels/ai-swipes       — simpler angle-based hook generator
  */
+import { requireBlinkProjectId } from '../../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 
@@ -23,7 +24,7 @@ app.post('/generate-swipes', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 
@@ -78,7 +79,7 @@ app.post('/ai-swipes', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 

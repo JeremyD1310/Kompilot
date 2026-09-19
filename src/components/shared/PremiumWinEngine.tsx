@@ -92,7 +92,7 @@ function GoldenParticleOverlay({ active }: { active: boolean }) {
           transition={{
             duration: p.duration,
             delay: p.delay,
-            ease: [0.22, 1, 0.36, 1],
+            ease: [0.22, 1, 0.36, 1] as const,
           }}
         >
           {p.shape === 'star' ? (
@@ -137,7 +137,7 @@ interface PremiumToastProps {
 }
 
 function PremiumToast({ event, onDismiss }: PremiumToastProps) {
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     if (!event) return;
@@ -167,7 +167,7 @@ function PremiumToast({ event, onDismiss }: PremiumToastProps) {
           initial={{ opacity: 0, y: 24, scale: 0.94 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 12, scale: 0.96 }}
-          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] as const }}
         >
           <div
             className="relative overflow-hidden rounded-2xl px-5 py-4 flex items-start gap-4 cursor-pointer select-none"
@@ -245,7 +245,7 @@ export function usePremiumWin() {
 export function PremiumWinProvider({ children }: { children: React.ReactNode }) {
   const [activeEvent, setActiveEvent] = useState<WinEvent | null>(null);
   const [particlesActive, setParticlesActive] = useState(false);
-  const particleTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const particleTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const handleTrigger = useCallback((event: WinEvent) => {
     setActiveEvent(event);

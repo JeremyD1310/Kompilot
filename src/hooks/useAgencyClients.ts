@@ -20,7 +20,7 @@ export function useAgencyClients(userId: string | undefined) {
     enabled: !!userId,
     staleTime: 2 * 60 * 1000,
     queryFn: async () => {
-      const rows = await blink.db.agencySubAccounts.list({
+      const rows = await blink.db.table<any>('agencySubAccounts').list({
         where: { agencyUserId: userId, isActive: '1' },
         orderBy: { createdAt: 'desc' },
       });

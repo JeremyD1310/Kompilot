@@ -1,3 +1,5 @@
+import { requireBackendUrl } from '../lib/blinkConfig';
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { createAdTenantStore, type AdProvider } from '../lib/adTenantStore';
@@ -11,12 +13,12 @@ const META_SCOPES = ['ads_read', 'business_management'];
 const GOOGLE_SCOPES = ['https://www.googleapis.com/auth/adwords'];
 
 function envOf(c: any) { return c.env as Record<string, string>; }
-function blinkOf(env: Record<string, string>) { return createClient({ projectId: env.BLINK_PROJECT_ID || 'presence-manager-saas-gbrhsehk', secretKey: env.BLINK_SECRET_KEY }); }
+function blinkOf(env: Record<string, string>) { return createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY }); }
 async function userIdOf(c: any) {
   const env = envOf(c); const auth = await blinkOf(env).auth.verifyToken(c.req.header('Authorization'));
   return auth.valid && auth.userId ? auth.userId : null;
 }
-function redirectUri(env: Record<string, string>) { return `${env.BACKEND_URL || 'https://gbrhsehk.backend.blink.new'}/api/auth/ad-accounts/callback`; }
+function redirectUri(env: Record<string, string>) { return `${env.BACKEND_URL || requireBackendUrl(env)}/api/auth/ad-accounts/callback`; }
 function callbackTo(env: Record<string, string>) { return env.APP_URL || 'https://kompilot.fr'; }
 function encode(value: unknown) { return btoa(JSON.stringify(value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, ''); }
 function decode(value: string) { const padded = value.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - value.length % 4) % 4); return JSON.parse(atob(padded)); }

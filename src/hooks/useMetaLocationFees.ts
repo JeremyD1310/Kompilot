@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useMetaLocationFees — Hook for fetching Meta Ads location fee data.
  *
@@ -8,7 +9,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 export interface LocationFeeRate {
   country: string;

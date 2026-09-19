@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * GA4CalendarInsights — Bloc de KPIs Google Analytics 4 pour le Campaign Calendar
  *
@@ -23,7 +24,7 @@ import {
   RefreshCw, AlertTriangle, BarChart3, Lock, Zap,
 } from 'lucide-react';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Types (miroir de GA4Summary dans analyticsService.ts) ────────────────────
 

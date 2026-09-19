@@ -13,6 +13,7 @@
  * for extra resilience against IP rotation.
  */
 
+import { requireBlinkProjectId } from './blinkConfig';
 import { createClient } from '@blinkdotnew/sdk';
 
 const MAX_FREE_SCANS_PER_DAY = 3;
@@ -20,7 +21,7 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 function getBlink(env: Record<string, string>) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID,
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

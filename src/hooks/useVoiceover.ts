@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useVoiceover — React Query hook for TTS audio generation.
  * Generates speech audio from script text via the backend voiceover API.
@@ -5,7 +6,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

@@ -127,7 +127,7 @@ const router = createRouter({
   routeTree,
   defaultErrorComponent: RouterErrorFallback,
   defaultNotFoundComponent: () => null, // handled by rootRoute.notFoundComponent
-});
+} as unknown as Parameters<typeof createRouter>[0]);
 
 declare module '@tanstack/react-router' {
   interface Register {

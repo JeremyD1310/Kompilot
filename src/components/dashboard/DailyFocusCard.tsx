@@ -122,7 +122,7 @@ export function DailyFocusCard() {
     if (!mission) return;
     setDone(true);
     saveToday(mission, true);
-    launchGoldenWin({ count: 45, origin: 'top' });
+    launchGoldenWin({ count: 45 });
   };
 
   const handleRefresh = () => {

@@ -111,7 +111,7 @@ function MetricCard({
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
       className="flex items-start gap-3 rounded-2xl bg-white/5 border border-white/8 px-4 py-3.5"
     >
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
@@ -190,7 +190,7 @@ export function TrialEndModal({ open, onClose }: TrialEndModalProps) {
     setScreen('processing');
     // Simulate payment confirmation (replace with real webhook / polling in production)
     setTimeout(() => {
-      setPlan('starter');
+      setPlan('pro');
       deactivateDemo();
       setScreen('success');
       launchEmeraldConfetti();
@@ -333,7 +333,7 @@ export function TrialEndModal({ open, onClose }: TrialEndModalProps) {
                         <div className="flex items-center gap-2 mb-3">
                           <AlertTriangle size={14} className="text-red-400" />
                           <p className="text-[12px] font-bold text-red-400 uppercase tracking-wider">
-                            Ce que vous allez perdre dans 7 jours
+                            Ce que vous allez perdre dans 14 jours
                           </p>
                         </div>
                         <div className="space-y-2.5">

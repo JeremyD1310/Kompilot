@@ -7,6 +7,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { blink } from '../blink/client';
 import { buildMentorSystemPrompt } from '../lib/sectorProfiles';
+import type { MasterProfile, GranularSector } from '../lib/sectors/types';
 import { MENTOR_SYSTEM_PROMPT } from '../lib/aiChatSystemPrompt';
 import {
   getEmotionalContext,
@@ -24,8 +25,8 @@ export interface ChatMessage {
 
 interface UseAIChatMessagesOptions {
   pathname: string;
-  masterProfile: string | null;
-  granularSector: string | null;
+  masterProfile: MasterProfile;
+  granularSector: GranularSector | null;
   establishmentName?: string;
   /** Injected memory context from useChatMemory.buildMemoryContext() */
   memoryContext?: string;

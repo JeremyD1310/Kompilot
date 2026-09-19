@@ -67,7 +67,7 @@ export function SocialSeoOnboarding() {
   const { data: onboardingState, isLoading } = useSocialSeoOnboarding()
   const updateOnboarding = useUpdateOnboarding()
   const { canAccess } = usePlan()
-  const isAgency = canAccess('agency_features') || canAccess('multi_client')
+  const isAgency = canAccess('team_management') || canAccess('multi_establish')
 
   const [isActive, setIsActive] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)

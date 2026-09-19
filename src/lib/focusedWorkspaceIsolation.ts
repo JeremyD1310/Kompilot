@@ -1,9 +1,9 @@
 import { isDemoDomain } from './demoDomain';
+import { BACKEND_HOST } from './backend';
 
 const FOCUSED_PATHS = ['/marketing-attribution', '/repurposing'];
 const FOCUSED_API_PREFIXES = ['/api/marketing-attribution/', '/api/content-repurposing/'];
 const BLOCKED_THIRD_PARTY_HOSTS = ['firebase', 'crisp.chat', 'googletagmanager', 'hotjar', 'plausible'];
-const BACKEND_HOST = 'gbrhsehk.backend.blink.new';
 
 export function isFocusedWorkspacePath(path = window.location.pathname) {
   return FOCUSED_PATHS.includes(path);
@@ -19,7 +19,7 @@ function shouldBlockFocusedRequest(url: string) {
 
   try {
     const parsed = new URL(url, window.location.origin);
-    if (parsed.hostname === BACKEND_HOST) {
+    if (BACKEND_HOST && parsed.hostname === BACKEND_HOST) {
       return !FOCUSED_API_PREFIXES.some(prefix => parsed.pathname.startsWith(prefix));
     }
     // Prevent unrelated same-origin API clients from starting protected reads.

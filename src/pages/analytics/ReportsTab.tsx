@@ -22,7 +22,7 @@ import { useSubscription } from '../../context/SubscriptionContext';
 
 export function ReportsTab() {
   const { currentPlan } = useSubscription();
-  const isExpert = currentPlan?.id === 'expert';
+  const isExpert = currentPlan?.id === 'agency';
 
   if (!isExpert) {
     return (
@@ -32,7 +32,7 @@ export function ReportsTab() {
             <Lock className="h-8 w-8 text-primary" />
             <div className="absolute inset-0 rounded-full border-2 border-primary/30 animate-ping opacity-20" />
           </div>
-          <h3 className="text-2xl font-bold mb-2">Fonctionnalité Expert</h3>
+          <h3 className="text-2xl font-bold mb-2">Fonctionnalité Agency</h3>
           <p className="text-muted-foreground max-w-[500px] mb-8">
             Débloquez les rapports PDF hebdomadaires automatisés pour obtenir un récapitulatif complet de vos performances et celles de vos concurrents directement par email.
           </p>
@@ -55,7 +55,7 @@ export function ReportsTab() {
             </div>
           </div>
           <Button className="w-full max-w-xs h-12 text-lg font-bold" onClick={() => toast.info('Redirection vers la page d\'abonnement')}>
-            Passer à Agency — 149€/mois HT
+            Passer à Agency — 229€/mois HT
           </Button>
         </CardContent>
       </Card>

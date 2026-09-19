@@ -1,8 +1,8 @@
 /**
  * PricingSection — Grille tarifaire B2B Kompilot
  *
- * 3 forfaits uniquement : Starter (69€) · Agency (149€, formule phare) · Enterprise (devis)
- * La grille tarifaire est limitée aux offres Pro, Agency et Enterprise.
+ * Offres publiques : Pro, Multi, Agency et Enterprise sur devis.
+ * La grille reprend les limites de la source de vérité commerciale sans modifier Stripe.
  *
  * Design :
  *   • Fond dark navy (#0F172A) — cohérent avec le reste de la landing
@@ -11,7 +11,8 @@
  */
 
 import { Check, Mail, Zap, Star } from 'lucide-react';
-import { KOMPILOT_PLANS, type KompilotPlan } from './pricing/PricingData';
+import { useState } from 'react';
+import { getPlansForBilling, type BillingInterval, type KompilotPlan } from './pricing/PricingData';
 
 // ── Constantes de style ───────────────────────────────────────────────────────
 
@@ -29,9 +30,11 @@ const INDIGO = '#0D9488';
 function PlanCard({
   plan,
   onCta,
+  billing,
 }: {
   plan: KompilotPlan;
-  onCta: (planId: string) => void;
+  onCta: (planId: string, billing: BillingInterval) => void;
+  billing: BillingInterval;
 }) {
   const isAgency     = plan.id === 'agency';
   const isEnterprise = plan.id === 'enterprise';
@@ -100,7 +103,7 @@ function PlanCard({
 
         {/* Prix */}
         <div style={{ marginBottom: 22, paddingBottom: 20, borderBottom: `1px solid ${BORD}` }}>
-          {plan.price !== null ? (
+          {plan.monthlyPrice !== null ? (
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4 }}>
               <span style={{
                 fontSize: 48, fontWeight: 900, lineHeight: 1,
@@ -109,7 +112,7 @@ function PlanCard({
               }}>
                 {plan.priceLabel}€
               </span>
-              <span style={{ fontSize: 13, color: MUTED, marginBottom: 6 }}>HT / mois</span>
+              <span style={{ fontSize: 13, color: MUTED, marginBottom: 6 }}>HT / {billing === 'yearly' ? 'an' : 'mois'}</span>
             </div>
           ) : (
             <span style={{
@@ -136,7 +139,7 @@ function PlanCard({
           </a>
         ) : (
           <button
-            onClick={() => onCta(plan.id)}
+            onClick={() => onCta(plan.id, billing)}
             style={{
               display: 'block', width: '100%',
               padding: '14px 0', borderRadius: 12, fontSize: 14, fontWeight: 800,
@@ -177,17 +180,19 @@ function PlanCard({
 // ── Composant principal ───────────────────────────────────────────────────────
 
 interface PricingSectionProps {
-  cta: (planId: string) => void;
+  cta: (planId: string, billing: BillingInterval) => void;
   /** Filter plans by audience tab: 'commerce' = Pro only, 'agency' = Agency + Enterprise */
   audience?: 'commerce' | 'agency';
 }
 
 export function PricingSection({ cta, audience }: PricingSectionProps) {
+  const [billing, setBilling] = useState<BillingInterval>('monthly');
+  const plans = getPlansForBilling(billing);
   const filteredPlans = audience === 'commerce'
-    ? KOMPILOT_PLANS.filter(p => p.id === 'starter')
+    ? plans.filter(p => p.id === 'pro' || p.id === 'multi')
     : audience === 'agency'
-      ? KOMPILOT_PLANS.filter(p => p.id === 'agency')
-      : KOMPILOT_PLANS.filter(p => p.id === 'starter' || p.id === 'agency' || p.id === 'enterprise');
+      ? plans.filter(p => p.id === 'agency' || p.id === 'enterprise')
+      : plans.filter(p => p.id === 'pro' || p.id === 'multi' || p.id === 'agency' || p.id === 'enterprise');
 
   return (
     <section
@@ -220,8 +225,15 @@ export function PricingSection({ cta, audience }: PricingSectionProps) {
               : <>L'IA qui gère votre présence,<br />pendant que vous gérez votre business.</>}
           </h2>
           <p style={{ fontSize: '1rem', color: MUTED, maxWidth: 520, margin: '0 auto', lineHeight: 1.6 }}>
-            Prix HT · Facturation mensuelle · Résiliation sans frais à tout moment · Essai 7 jours inclus
+            Prix HT · Facturation {billing === 'monthly' ? 'mensuelle' : 'annuelle'} · Résiliation sans frais à tout moment · Essai 14 jours inclus
           </p>
+          <div style={{ display: 'inline-flex', marginTop: 20, padding: 4, borderRadius: 12, border: `1px solid ${BORD}`, background: BG2 }} aria-label="Période de facturation">
+            {(['monthly', 'yearly'] as const).map(interval => (
+              <button key={interval} type="button" onClick={() => setBilling(interval)} style={{ border: 0, borderRadius: 9, padding: '9px 18px', cursor: 'pointer', fontWeight: 700, background: billing === interval ? TEAL : 'transparent', color: billing === interval ? '#fff' : MUTED }}>
+                {interval === 'monthly' ? 'Mensuel' : 'Annuel'}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Grille des plans filtrés */}
@@ -233,7 +245,7 @@ export function PricingSection({ cta, audience }: PricingSectionProps) {
           alignItems: 'stretch',
         }}>
           {filteredPlans.map(plan => (
-            <PlanCard key={plan.id} plan={plan} onCta={cta} />
+            <PlanCard key={plan.id} plan={plan} onCta={cta} billing={billing} />
           ))}
         </div>
 

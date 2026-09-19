@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * ExtendTrialPage — /extend-trial?token=xxx
  *
@@ -14,7 +15,7 @@ import { KompilotLogo } from '../components/brand/KompilotLogo';
 
 type Status = 'loading' | 'valid' | 'invalid' | 'extending' | 'extended' | 'error';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 export default function ExtendTrialPage() {
   const [status, setStatus] = useState<Status>('loading');
@@ -153,12 +154,12 @@ export default function ExtendTrialPage() {
             </h1>
             <p className="text-sm mb-6" style={{ color: '#94A3B8' }}>
               {email && <span className="block mb-1" style={{ color: '#E2E8F0' }}>{email}</span>}
-              Cliquez ci-dessous pour ajouter 7 jours supplémentaires à votre essai gratuit.
+              Cliquez ci-dessous pour ajouter 14 jours supplémentaires à votre essai gratuit.
             </p>
 
             <div className="space-y-3 mb-6">
               {[
-                { icon: CheckCircle, text: '7 jours d\'accès complet supplémentaires' },
+                { icon: CheckCircle, text: '14 jours d\'accès complet supplémentaires' },
                 { icon: Shield, text: 'Sans carte bancaire, sans engagement' },
                 { icon: ArrowRight, text: 'Toutes les fonctionnalités conservées' },
               ].map(({ icon: Icon, text }) => (
@@ -181,7 +182,7 @@ export default function ExtendTrialPage() {
                 boxShadow: '0 0 24px rgba(13,148,136,.35)',
               }}
             >
-              Prolonger mon essai de 7 jours →
+              Prolonger mon essai de 14 jours →
             </motion.button>
           </motion.div>
         )}

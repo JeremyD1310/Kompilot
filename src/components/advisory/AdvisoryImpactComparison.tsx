@@ -6,9 +6,9 @@ import {
 import { Button, Card, CardContent, toast } from '@blinkdotnew/ui';
 import { useDemoMode } from '../../context/DemoModeContext';
 import { fetchAdvisoryImpact } from '../../lib/advisoryApi';
-import type { AdvisoryImpact, AdvisoryMetricSnapshot } from '../../lib/advisoryTypes';
+import type { AdvisoryImpactReport, AdvisoryMetricSnapshot } from '../../lib/advisoryTypes';
 
-const DEMO_IMPACT: AdvisoryImpact = {
+const DEMO_IMPACT: AdvisoryImpactReport = {
   recommendationAt: '2026-07-18T09:30:00.000Z',
   before: { posts: 8, impressions: 18400, reach: 12100, clicks: 246, engagementRate: 4.2 },
   after: { posts: 11, impressions: 27100, reach: 18900, clicks: 418, engagementRate: 6.8 },
@@ -43,7 +43,7 @@ function Delta({ before, after }: { before: number; after: number }) {
 
 export function AdvisoryImpactComparison() {
   const { isDemoActive } = useDemoMode();
-  const [impact, setImpact] = useState<AdvisoryImpact | null>(isDemoActive ? DEMO_IMPACT : null);
+  const [impact, setImpact] = useState<AdvisoryImpactReport | null>(isDemoActive ? DEMO_IMPACT : null);
   const [loading, setLoading] = useState(!isDemoActive);
 
   const loadImpact = useCallback(async () => {

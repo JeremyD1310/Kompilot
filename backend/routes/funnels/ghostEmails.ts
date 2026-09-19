@@ -4,6 +4,7 @@
  *   GET  /api/funnels/:id/ghost-emails          — list ghost emails for a funnel
  *   POST /api/funnels/:id/ghost-emails/register — register the tracking email address
  */
+import { requireBlinkProjectId } from '../../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 
@@ -22,7 +23,7 @@ app.get('/:id/ghost-emails', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 
@@ -54,7 +55,7 @@ app.post('/:id/ghost-emails/register', async (c) => {
 
   try {
     const blink = createClient({
-      projectId: 'presence-manager-saas-gbrhsehk',
+      projectId: requireBlinkProjectId(env),
       secretKey: c.env.BLINK_SECRET_KEY,
     });
 

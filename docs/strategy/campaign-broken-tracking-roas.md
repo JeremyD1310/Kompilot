@@ -1,7 +1,7 @@
 # Kompilot — Master Prompt : Angle "Capture Publicitaire Cassée" (Tracking & ROAS)
 
 > **Lancement :** 7 septembre 2026
-> **Offres :** Starter 69€ HT/mois | Agency 149€ HT/mois (essai 7 jours)
+> **Offres :** Starter 69€ HT/mois | Agency 149€ HT/mois (essai 14 jours)
 > **Angle stratégique :** La perte de signal post-iOS 14.5+, l'attribution publicitaire défaillante, et l'argent brûlé sur des campagnes sans ROI mesurable.
 > **Cibles :** Agences marketing, consultants growth, e-commerçants, commerçants multi-établissements.
 
@@ -36,7 +36,7 @@ On a construit Kompilot pour ça :
 
 Pour la 1ère fois, vous saurez EXACTEMENT combien rapporte chaque euro dépensé.
 
-🔗 Essai gratuit 7 jours · 149€ HT/mois ensuite
+🔗 Essai gratuit 14 jours · 149€ HT/mois ensuite
 👉 [Lien]
 ```
 
@@ -58,7 +58,7 @@ ont généré 0 ou 3 000€ de rendez-vous.
 
 Plus besoin de faire confiance à l'aveugle.
 
-🔗 Testez 7 jours gratuitement · 69€ HT/mois
+🔗 Testez 14 jours gratuitement · 69€ HT/mois
 👉 [Lien]
 ```
 
@@ -112,7 +112,7 @@ en démonstration irréfutable.
 ║                                                               ║
 ║  ACTION                                                       ║
 ║  ──────                                                       ║
-║  [ESSAI GRATUIT 7 JOURS — SANS CARTE BANCAIRE]                ║
+║  [ESSAI GRATUIT 14 JOURS — SANS CARTE BANCAIRE]               ║
 ║                                                               ║
 ║  «J'ai découvert que 40% de mes leads venaient d'Instagram   ║
 ║   et pas de Google Ads. J'ai réalloué mon budget et gagné    ║
@@ -248,10 +248,10 @@ Outil de diagnostic tracking automatisé :
 ÉTAPE 3 : EMAIL DE RÉSULTAT (Instantané)
 ─────────────────────────────────────────────
 Objet : "Votre diagnostic tracking est prêt — vous perdez X€/mois"
-Contenu : Résumé des failles détectées + CTA "Réparer en 7 jours gratuits"
+Contenu : Résumé des failles détectées + CTA "Réparer en 14 jours gratuits"
     ↓
 
-ÉTAPE 4 : ESSAI GRATUIT (7 jours)
+ÉTAPE 4 : ESSAI GRATUIT (14 jours)
 ─────────────────────────────────────────────
 Création compte → Connexion pixel/Google → Dashboard Santé Campagnes activé
     ↓
@@ -352,7 +352,7 @@ Rappel de ce que vous activez avec le plan Agency (149€ HT/mois) :
 Vous avez déjà votre code SIRET validé.
 Il ne vous reste qu'à confirmer.
 
-→ [Finaliser mon inscription Agency — Essai 7 jours gratuit]
+→ [Finaliser mon inscription Agency — Essai 14 jours gratuit]
 
 À tout de suite,
 
@@ -388,7 +388,7 @@ premier contrat signé."
 
 Ça pourrait être votre agence le mois prochain.
 
-→ [Activer mon essai Agency gratuit — 7 jours]
+→ [Activer mon essai Agency gratuit — 14 jours]
 
 Jérémy
 ```
@@ -436,7 +436,7 @@ voici une offre de lancement :
 
 Expire dans 48 heures.
 
-→ [Activer mon offre Agency à 99€ — Essai 7 jours gratuit]
+→ [Activer mon offre Agency à 99€ — Essai 14 jours gratuit]
 
 ⚠️ Cette offre ne sera pas renouvelée. Dernière chance.
 

@@ -20,6 +20,7 @@
  * shows real-time status: [Agent Content] Processing... → ✅ Success
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -29,7 +30,7 @@ import { getSectorSystemPrompt } from '../lib/sectorPrompts';
 export const router = new Hono();
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 // ── In-memory job log store (per Worker instance, TTL 10 min) ─────────────────
 // Each job accumulates logs and a "done" flag for SSE consumers.

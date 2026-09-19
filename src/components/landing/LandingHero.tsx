@@ -322,7 +322,7 @@ export function HeroChatGPTSimulatorSection({ onCta }: { onCta: () => void }) {
             <ArrowRight size={15} />
           </button>
           <p style={{ color: '#334155', fontSize: '.73rem', marginTop: 10 }}>
-            Sans CB · 7 jours offerts · Accès immédiat
+            Sans CB · 14 jours offerts · Accès immédiat
           </p>
         </div>
       </div>
@@ -339,18 +339,36 @@ export function LandingHero({ onCta, onHeroCta, audience }: LandingHeroProps) {
       <div style={{ maxWidth: 1180, margin: '0 auto', position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0, .84fr) minmax(0, 1.16fr)', gap: 'clamp(36px, 7vw, 92px)', alignItems: 'center' }} className="landing-hero-grid">
         <div className="sr" style={{ textAlign: 'left' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1px solid #99F6E4', color: '#0F766E', background: '#F0FDFA', borderRadius: 9999, padding: '8px 14px', fontSize: '.75rem', fontWeight: 800, letterSpacing: '.04em', marginBottom: 24 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#0D9488' }} />{copy.badge.replace('✦ ', '')}</div>
-          <h1 style={{ fontSize: 'clamp(2.45rem, 5.5vw, 5rem)', fontWeight: 900, lineHeight: 1.02, letterSpacing: '-.055em', color: '#0F172A', margin: '0 0 24px', maxWidth: 680 }}>{copy.h1Main}{' '}<span style={{ color: '#0D9488' }}>{copy.h1Gradient}</span></h1>
+          <h1 style={{ fontSize: 'clamp(2.45rem, 5.5vw, 5rem)', fontWeight: 900, lineHeight: 1.02, letterSpacing: '-.055em', color: '#0F172A', margin: '0 0 24px', maxWidth: 680 }}>{copy.h1Main}{' '}<span style={{ color: '#0F172A' }}>{copy.h1Gradient}</span></h1>
           <p style={{ fontSize: 'clamp(1rem, 1.6vw, 1.15rem)', color: '#475569', lineHeight: 1.75, maxWidth: 560, margin: '0 0 28px' }}>{copy.sub}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 18 }}><button type="button" aria-label="Créer mon espace gratuitement" data-testid="home-signup-cta" className="nc-pill" style={{ background: '#0D9488', color: '#FFFFFF', padding: '16px 25px', fontSize: '.98rem', boxShadow: '0 12px 26px rgba(13,148,136,.20)' }} onClick={onHeroCta ?? onCta}><Zap size={17} /> {copy.cta} <ArrowRight size={16} /></button><a href="/showcase" className="nc-btn-outline" style={{ color: '#0F172A', borderColor: '#CBD5E1', background: '#FFFFFF', padding: '15px 20px' }}>Voir en action <ArrowRight size={15} /></a></div>
-          <p style={{ color: '#64748B', fontSize: '.78rem', lineHeight: 1.7, margin: 0 }}>7 jours gratuits · Sans carte bancaire · Validation humaine avant publication</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 18 }}><button type="button" aria-label="Créer mon espace gratuitement" data-testid="home-signup-cta" className="nc-pill" style={{ background: '#0D9488', color: '#FFFFFF', padding: '16px 25px', fontSize: '.98rem', boxShadow: '0 12px 26px rgba(13,148,136,.20)' }} onClick={onHeroCta ?? onCta}><Zap size={17} /> {copy.cta} <ArrowRight size={16} /></button><a href="/demo" className="nc-btn-outline" style={{ color: '#0F172A', borderColor: '#CBD5E1', background: '#FFFFFF', padding: '15px 20px' }}>Voir la démonstration <ArrowRight size={15} /></a></div>
+          <p style={{ color: '#64748B', fontSize: '.78rem', lineHeight: 1.7, margin: 0 }}>14 jours gratuits · Sans carte bancaire · Validation humaine avant publication</p>
         </div>
         <div className="sr d2" style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, padding: '0 4px' }}><div><p style={{ margin: 0, color: '#0F172A', fontSize: '.86rem', fontWeight: 800 }}>Votre cockpit Kompilot</p><p style={{ margin: '3px 0 0', color: '#64748B', fontSize: '.72rem' }}>Aperçu produit · données de démonstration</p></div><span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#0F766E', fontSize: '.7rem', fontWeight: 700 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#14B8A6' }} /> En activité</span></div>
           <div style={{ perspective: '1400px' }}><div style={{ transform: 'rotateX(5deg)', transformOrigin: '50% 0%', borderRadius: 20, overflow: 'hidden', border: '1px solid #D7E3E5', background: '#FFFFFF', boxShadow: '0 28px 70px rgba(15,23,42,.16), 0 4px 12px rgba(15,23,42,.06)' }}><div style={{ background: '#F8FAFC', padding: '11px 15px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #E2E8F0' }}><div style={{ display: 'flex', gap: 6 }}>{['#F87171', '#FBBF24', '#34D399'].map(color => <span key={color} style={{ width: 9, height: 9, borderRadius: '50%', background: color }} />)}</div><div style={{ flex: 1, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '4px 12px', fontSize: '.68rem', color: '#94A3B8', textAlign: 'center' }}>app.kompilot.fr / cockpit</div></div><HeroDashboardMockup /></div></div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8, marginTop: 14 }} className="landing-hero-kpis">{[['3', 'avis à traiter'], ['4', 'contenus programmés'], ['+18%', 'visibilité Google'], ['72', 'score GEO']].map(([value, label]) => <div key={label} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 12, padding: '11px 12px' }}><strong style={{ display: 'block', color: '#0F172A', fontSize: '1rem' }}>{value}</strong><span style={{ display: 'block', marginTop: 3, color: '#64748B', fontSize: '.66rem', lineHeight: 1.35 }}>{label}</span></div>)}</div>
+          <div className="landing-hero-proof" style={{ marginTop: 14, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 14, padding: '12px 14px' }}>
+              <p style={{ margin: '0 0 8px', color: '#64748B', fontSize: '.68rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase' }}>Avant Kompilot</p>
+              <ul style={{ display: 'grid', gap: 5, margin: 0, padding: 0, listStyle: 'none', color: '#475569', fontSize: '.7rem', lineHeight: 1.35 }}>
+                {['Publications irrégulières', 'Avis sans réponse', 'Outils dispersés', 'Visibilité difficile à mesurer'].map(item => <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}><span aria-hidden="true" style={{ color: '#94A3B8' }}>—</span>{item}</li>)}
+              </ul>
+            </div>
+            <div style={{ background: '#F0FDFA', border: '1px solid #99F6E4', borderRadius: 14, padding: '12px 14px' }}>
+              <p style={{ margin: '0 0 8px', color: '#0F766E', fontSize: '.68rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase' }}>Avec Kompilot</p>
+              <ul style={{ display: 'grid', gap: 5, margin: 0, padding: 0, listStyle: 'none', color: '#475569', fontSize: '.7rem', lineHeight: 1.35 }}>
+                {['Actions centralisées', 'Contenus préparés par l’IA', 'Avis organisés et prêts à traiter', 'Visibilité suivie depuis un seul cockpit'].map(item => <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}><span aria-hidden="true" style={{ color: '#0D9488', fontWeight: 900 }}>✓</span>{item}</li>)}
+              </ul>
+            </div>
+          </div>
+          <div style={{ marginTop: 10, padding: '9px 12px', borderRadius: 10, background: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+            <strong style={{ display: 'block', color: '#0F172A', fontSize: '.78rem', lineHeight: 1.4 }}>Jusqu’à 4 h gagnées chaque semaine sur votre communication.</strong>
+            <span style={{ display: 'block', color: '#64748B', fontSize: '.62rem', lineHeight: 1.4, marginTop: 2 }}>Estimation selon l’utilisation et les outils remplacés.</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8, marginTop: 10 }} className="landing-hero-kpis">{[['3', 'avis à traiter'], ['4', 'contenus programmés'], ['+18%', 'visibilité Google'], ['72', 'score GEO']].map(([value, label]) => <div key={label} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 12, padding: '11px 12px' }}><strong style={{ display: 'block', color: '#0F172A', fontSize: '1rem' }}>{value}</strong><span style={{ display: 'block', marginTop: 3, color: '#64748B', fontSize: '.66rem', lineHeight: 1.35 }}>{label}</span></div>)}</div>
         </div>
       </div>
-      <style>{`@media (max-width: 860px) { .landing-hero-grid { grid-template-columns: 1fr !important; gap: 42px !important; } .landing-hero-grid > div:first-child { text-align: center !important; } .landing-hero-grid > div:first-child p { margin-left: auto !important; margin-right: auto !important; } .landing-hero-grid > div:first-child > div:nth-child(2) { justify-content: center !important; } } @media (max-width: 520px) { .landing-hero-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }`}</style>
+      <style>{`@media (max-width: 860px) { .landing-hero-grid { grid-template-columns: 1fr !important; gap: 42px !important; } .landing-hero-grid > div:first-child { text-align: center !important; } .landing-hero-grid > div:first-child p { margin-left: auto !important; margin-right: auto !important; } .landing-hero-grid > div:first-child > div:nth-child(2) { justify-content: center !important; } } @media (max-width: 520px) { .landing-hero-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } .landing-hero-proof { grid-template-columns: 1fr !important; } }`}</style>
     </section>
   );
 }

@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useStripeWebhookStatus — fetches live subscription status from the backend.
  *
@@ -9,7 +10,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? KOMPILOT_BACKEND_URL;
 
 export type StripeSubStatus = 'active' | 'trialing' | 'past_due' | 'canceled' | 'none';
 

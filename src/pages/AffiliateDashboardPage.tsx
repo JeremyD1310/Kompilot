@@ -1,10 +1,11 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 import { useState, useEffect, useCallback } from 'react';
 import { Page, PageHeader, PageTitle, PageDescription, PageBody, Button, toast, Badge } from '@blinkdotnew/ui';
 import { Users, Euro, Link, Copy, Check, Share2, TrendingUp, ArrowRight, UserPlus, Percent, Clock, Gift, Loader2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useDemoMode } from '../context/DemoModeContext';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || KOMPILOT_BACKEND_URL;
 
 // ── Demo seed data ────────────────────────────────────────────────────────────
 

@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -8,7 +9,7 @@ const table = (blink: any) => blink.db.table<Campaign>('ad_campaigns');
 const auth = async (c: any) => {
   const header = c.req.header('Authorization');
   if (!header) return null;
-  const blink = createClient({ projectId: c.env.BLINK_PROJECT_ID, secretKey: c.env.BLINK_SECRET_KEY });
+  const blink = createClient({ projectId: requireBlinkProjectId(c.env), secretKey: c.env.BLINK_SECRET_KEY });
   const verified = await blink.auth.verifyToken(header);
   return verified.valid ? { id: verified.userId, blink } : null;
 };

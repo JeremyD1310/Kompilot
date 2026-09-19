@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useReferralRewards — React Query hooks for the SaaS referral rewards system.
  *
@@ -14,7 +15,7 @@ import { blink } from '../blink/client';
 import { useAuth } from './useAuth';
 
 const BACKEND_URL =
-  (import.meta as any).env?.VITE_BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
+  (import.meta as any).env?.VITE_BACKEND_URL || KOMPILOT_BACKEND_URL;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

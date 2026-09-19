@@ -62,7 +62,7 @@ export default function SettingsPage() {
       <PageHeader>
         <div className="flex items-center gap-3">
           <PageTitle>Paramètres</PageTitle>
-          <Badge variant={currentPlan.id === 'free' ? 'secondary' : currentPlan.id === 'pro' ? 'default' : 'outline'} className="rounded-full text-xs">
+          <Badge variant={currentPlan.id === 'pro' ? 'default' : 'outline'} className="rounded-full text-xs">
             {currentPlan.name}
           </Badge>
         </div>
@@ -169,9 +169,7 @@ export default function SettingsPage() {
                     : `${connectedCount} / ${currentPlan.unlimited ? '∞' : currentPlan.maxNetworks} plateforme${connectedCount > 1 ? 's' : ''} connectée${connectedCount > 1 ? 's' : ''}`}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {currentPlan.id === 'free'
-                    ? `Offre gratuite : ${currentPlan.maxNetworks} réseau maximum. Passez à Starter pour en connecter plus.`
-                    : 'Connectez vos comptes pour publier directement depuis Kompilot.'}
+                  Connectez vos comptes pour publier directement depuis Kompilot.
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -180,11 +178,6 @@ export default function SettingsPage() {
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                     Actif
                   </span>
-                )}
-                {currentPlan.id === 'free' && (
-                  <Button size="sm" variant="outline" className="gap-1.5 h-7 text-xs" onClick={() => setUpgradeOpen(true)}>
-                    Passer à Starter
-                  </Button>
                 )}
               </div>
             </div>
@@ -582,7 +575,7 @@ export default function SettingsPage() {
         onClose={() => setUpgradeOpen(false)}
         title="Oups ! Limite atteinte 🚧"
         description={`Vous avez atteint la limite de ${currentPlan.maxNetworks} réseau${currentPlan.maxNetworks > 1 ? 'x' : ''} de l'offre gratuite. Passez à l'offre Starter pour connecter jusqu'à 3 réseaux sociaux.`}
-        targetPlan="starter"
+        targetPlan="pro"
       />
     </Page>
   );

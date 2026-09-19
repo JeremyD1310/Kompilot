@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -7,7 +8,7 @@ export const router = new Hono<{ Bindings: Env }>();
 
 type AnyRow = Record<string, unknown>;
 
-function getBlink(env: Env) { return createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY }); }
+function getBlink(env: Env) { return createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY }); }
 
 const VALID_STATUSES = new Set(['critical', 'attention', 'opportunity', 'healthy']);
 const VALID_IMPACTS = new Set(['high', 'medium', 'low']);

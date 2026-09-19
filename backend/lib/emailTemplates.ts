@@ -4,8 +4,8 @@
 
 // ── Shared constants ─────────────────────────────────────────────────────────
 
-const DASHBOARD_URL = 'https://kompilot.blinkpowered.com/dashboard';
-const BASE_URL      = 'https://kompilot.blinkpowered.com';
+const DASHBOARD_URL = 'https://www.kompilot.fr/dashboard';
+const BASE_URL      = 'https://www.kompilot.fr';
 
 const LOGO_SVG = `<svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="32" height="32" rx="8" fill="#0D9488"/>
@@ -586,16 +586,16 @@ export function buildJ6UrgencyEmail(params: J6UrgencyEmailParams): { subject: st
     <div style="background:#EFF6FF;border:2px solid #3B82F6;border-radius:12px;padding:20px;margin:0 0 24px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
         <span style="font-size:20px;">🔗</span>
-        <p style="margin:0;font-size:16px;font-weight:800;color:#0F172A;">Option 2 — Prolonger de 7 jours (offert)</p>
+        <p style="margin:0;font-size:16px;font-weight:800;color:#0F172A;">Option 2 — Prolonger de 14 jours (offert)</p>
       </div>
       <p style="margin:0 0 14px;font-size:14px;color:#475569;line-height:1.6;">
-        Besoin de plus de temps pour évaluer ? Ce lien unique prolonge votre essai de <strong>7 jours supplémentaires</strong>,
+        Besoin de plus de temps pour évaluer ? Ce lien unique prolonge votre essai de <strong>14 jours supplémentaires</strong>,
         sans carte bancaire.
       </p>
       <div style="text-align:center;">
         <a href="${magicLinkUrl}"
            style="display:inline-block;background:#3B82F6;color:white;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:10px;">
-          Prolonger mon essai de 7 jours →
+          Prolonger mon essai de 14 jours →
         </a>
       </div>
       <p style="margin:10px 0 0;font-size:11px;color:#94A3B8;text-align:center;">
@@ -610,7 +610,7 @@ export function buildJ6UrgencyEmail(params: J6UrgencyEmailParams): { subject: st
   const text = `⏰ ${firstName}, votre essai Kompilot expire demain
 
 Option 1 — Activer maintenant : ${subscriptionUrl}
-Option 2 — Prolonger de 7 jours (offert) : ${magicLinkUrl}
+Option 2 — Prolonger de 14 jours (offert) : ${magicLinkUrl}
 
 Ce lien est unique et expire dans 48h.`;
 
@@ -851,7 +851,7 @@ export function buildTrialExtensionConfirmEmail(params: TrialExtensionConfirmEma
   const { firstName, newEndDate } = params;
   const dashboardUrl = params.dashboardUrl ?? DASHBOARD_URL;
 
-  const subject = `✅ ${firstName}, votre essai est prolongé de 7 jours`;
+  const subject = `✅ ${firstName}, votre essai est prolongé de 14 jours`;
 
   const body = `
     <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:20px;margin:0 0 24px;text-align:center;">
@@ -866,7 +866,7 @@ export function buildTrialExtensionConfirmEmail(params: TrialExtensionConfirmEma
       Bonjour ${firstName},
     </p>
     <p style="margin:0 0 20px;font-size:15px;color:#334155;line-height:1.7;">
-      Votre prolongation est active. Vous avez <strong>7 jours supplémentaires</strong> pour explorer
+      Votre prolongation est active. Vous avez <strong>14 jours supplémentaires</strong> pour explorer
       toutes les fonctionnalités de votre plan.
     </p>
 
@@ -877,7 +877,7 @@ export function buildTrialExtensionConfirmEmail(params: TrialExtensionConfirmEma
       </a>
     </div>`;
 
-  const text = `✅ Essai prolongé de 7 jours !
+  const text = `✅ Essai prolongé de 14 jours !
 
 Votre accès complet est étendu jusqu'au ${newEndDate}.
 Accédez à votre cockpit : ${dashboardUrl}`;
@@ -942,7 +942,7 @@ export function getDunningFollowUpHtml(
     </p>
   </div>
   <div style="background:#F8FAFC;padding:16px 32px;text-align:center;border-top:1px solid #E2E8F0">
-    <p style="color:#94A3B8;font-size:11px;margin:0">© ${new Date().getFullYear()} Kompilot · <a href="https://kompilot.blinkpowered.com/cgv" style="color:#94A3B8">CGV</a></p>
+    <p style="color:#94A3B8;font-size:11px;margin:0">© ${new Date().getFullYear()} Kompilot · <a href="https://www.kompilot.fr/cgv" style="color:#94A3B8">CGV</a></p>
   </div>
 </div>
 </body></html>`;

@@ -11,6 +11,7 @@
  * Toutes les routes requièrent un JWT Blink valide.
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import {
@@ -39,7 +40,7 @@ router.use('/api/meta/*', async (c, next) => {
   }
 
   const blink = createClient({
-    projectId: 'presence-manager-saas-gbrhsehk',
+    projectId: requireBlinkProjectId(env),
     secretKey: c.env.BLINK_SECRET_KEY,
   });
 

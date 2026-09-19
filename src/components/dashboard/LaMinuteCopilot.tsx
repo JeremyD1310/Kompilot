@@ -18,7 +18,7 @@ export { LaMinuteCopilotBanner } from './minuteCopilot/LaMinuteCopilotBanner';
 async function saveStrategyToDB(userId: string, strategy: ContentStrategy, transcription: string) {
   try {
     const today = new Date().toISOString().slice(0, 10);
-    const rows = await blink.db.dailyAnalytics.list({
+    const rows = await blink.db.table<any>('dailyAnalytics').list({
       where: { userId, snapshotDate: today },
       limit: 1,
     } as any);
@@ -29,11 +29,11 @@ async function saveStrategyToDB(userId: string, strategy: ContentStrategy, trans
       const row = (rows as any[])[0];
       const ext = JSON.parse(row.extendedData || '{}');
       ext.lastCopilotStrategy = payload;
-      await blink.db.dailyAnalytics.update(row.id, {
+      await blink.db.table<any>('dailyAnalytics').update(row.id, {
         extendedData: JSON.stringify(ext),
       } as any);
     } else {
-      await blink.db.dailyAnalytics.create({
+      await blink.db.table<any>('dailyAnalytics').create({
         id: `da_copilot_${userId.slice(0, 8)}_${today}`,
         userId,
         establishmentId: 'default',

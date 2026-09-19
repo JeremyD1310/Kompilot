@@ -448,7 +448,7 @@ export default function CampaignPage() {
   const [userPlan, setUserPlan] = useState<'starter'|'agency'>('starter');
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const [sendRecipients, setSendRecipients] = useState<CampaignRecipient[]>([]);
-  const { subscriptionStatus } = useSubscription();
+  const { currentPlan } = useSubscription();
 
   const openSendDialog = async (campaign: Campaign) => {
     try {
@@ -473,10 +473,9 @@ export default function CampaignPage() {
 
   // Sync plan from subscription context
   useEffect(() => {
-    const plan = subscriptionStatus;
-    if (plan === 'agency' || plan === 'expert') setUserPlan('agency');
+    if (currentPlan.id === 'agency') setUserPlan('agency');
     else setUserPlan('starter');
-  }, [subscriptionStatus]);
+  }, [currentPlan.id]);
 
   const loadCampaigns = useCallback(async () => {
     setLoading(true);

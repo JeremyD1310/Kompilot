@@ -1,6 +1,7 @@
 /**
  * AI routes — /health, /api/ai/models, /api/ai/generate
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import {
@@ -11,8 +12,19 @@ import {
 import { isMedicalSector, sanitizeMedicalPrompt, anonymizeMedicalPayload } from '../lib/medicalAnonymizer';
 import { getSectorSystemPrompt, ALL_VALID_SECTORS } from '../lib/sectorPrompts';
 import type { Env } from '../lib/types';
+import { consumeExecuteRefund } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 
 export const router = new Hono();
+
+const AI_ACTION_BY_TASK: Record<string, string> = {
+  SEO_AUDIT: 'full_ai_report',
+  STRATEGIC_PLANNING: 'full_ai_report',
+  CREATIVE_CONTENT: 'full_post',
+  MARKETING_COPY: 'short_text',
+  QUICK_REPLY: 'short_text',
+  CHAT_AUTOMATION: 'short_text',
+};
 
 const VALID_TASK_TYPES: TaskType[] = [
   'SEO_AUDIT',
@@ -24,7 +36,7 @@ const VALID_TASK_TYPES: TaskType[] = [
 ];
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 // ── Health ────────────────────────────────────────────────────────────────────
 
@@ -117,24 +129,25 @@ router.post('/api/ai/generate', async (c) => {
     sectorPromptSuffix,
   ].filter(Boolean).join('\n\n') || undefined;
 
-  // 6. Route to the appropriate AI provider
+  // 6. Charge exactly once around provider execution; failed providers are refunded.
+  const requestReference = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || `ai:${auth.userId}:${crypto.randomUUID()}`;
   try {
-    const result = await generateAIResponse(
-      {
-        taskType:      body.taskType,
-        prompt:        finalPrompt,
-        systemContext: enrichedSystemContext,
-        contextData:   finalContextData,
-        forceJson:     body.forceJson,
-        maxTokens:     body.maxTokens,
-        sector,
-      },
-      {
-        OPENAI_API_KEY:    env.OPENAI_API_KEY,
-        ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY,
-      },
+    const charged = await consumeExecuteRefund(
+      blink,
       auth.userId,
+      AI_ACTION_BY_TASK[body.taskType],
+      `AI generation: ${body.taskType}`,
+      requestReference,
+      () => generateAIResponse(
+        {
+          taskType: body.taskType!, prompt: finalPrompt, systemContext: enrichedSystemContext,
+          contextData: finalContextData, forceJson: body.forceJson, maxTokens: body.maxTokens, sector,
+        },
+        { OPENAI_API_KEY: env.OPENAI_API_KEY, ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY },
+        auth.userId,
+      ),
     );
+    const result = charged.result;
 
     return c.json({
       success: true,
@@ -156,6 +169,9 @@ router.post('/api/ai/generate', async (c) => {
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
+    // Generations are not persisted, so a replay has no durable result to reload.
+    // Answer 409 rather than 502 so the client stops retrying the same request id.
+    if (isIdempotentReplayError(err)) return c.json(replayConflictBody(err, 'génération IA'), 409);
     console.error('[/api/ai/generate] Router error:', message);
     return c.json({ error: 'AI generation failed', detail: message }, 502);
   }

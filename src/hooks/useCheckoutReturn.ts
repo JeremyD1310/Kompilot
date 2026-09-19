@@ -37,7 +37,8 @@ export function useCheckoutReturn() {
     // Subscription checkout
     if (checkoutType !== 'success') return;
 
-    const planLabel = params.get('plan') === 'expert' ? 'Expert' : 'Pro';
+    const planId = params.get('plan');
+    const planLabel = planId === 'agency' ? 'Agency' : planId === 'multi' ? 'Multi' : 'Pro';
     trackEvent('purchase', {
       plan: params.get('plan') || 'pro',
       transaction_id: params.get('session_id') || undefined,

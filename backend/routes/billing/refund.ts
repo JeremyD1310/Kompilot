@@ -6,6 +6,7 @@
 import { Hono } from 'hono';
 import type { Env } from '../../lib/types';
 import { getBlink, getUserMeta, patchUserMeta } from '../../lib/stripeHelpers';
+import { liveBillingConfig, isLiveBillingEnabled, liveBillingDisabledResponse } from '../../lib/liveBilling';
 
 export const router = new Hono();
 
@@ -22,10 +23,11 @@ router.get('/api/billing/refund-eligibility', async (c) => {
   const env       = c.env as unknown as Env;
   const rawEnv    = c.env as any;
   const blinkSdk  = getBlink(env);
-  const stripeKey = rawEnv.STRIPE_SECRET_KEY as string | undefined;
+  const stripeKey = liveBillingConfig(rawEnv).config?.stripeKey;
 
   const auth = await blinkSdk.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
+  if (!isLiveBillingEnabled(rawEnv)) return liveBillingDisabledResponse(c);
 
   const meta = await getUserMeta(blinkSdk, auth.userId);
 
@@ -64,7 +66,7 @@ router.get('/api/billing/refund-eligibility', async (c) => {
   // Fetch latest paid invoice to determine purchase date and amount
   const invoiceRes = await fetch(
     `https://api.stripe.com/v1/invoices?customer=${customerId}&status=paid&limit=1`,
-    { headers: { Authorization: `Bearer ${stripeKey}` } },
+    { headers: { Authorization: `Bearer ${stripeKey}` }, signal: AbortSignal.timeout(8000) },
   );
 
   let purchaseDate: string | null = null;
@@ -132,13 +134,14 @@ router.post('/api/billing/process-refund', async (c) => {
   const env       = c.env as unknown as Env;
   const rawEnv    = c.env as any;
   const blinkSdk  = getBlink(env);
-  const stripeKey = rawEnv.STRIPE_SECRET_KEY as string | undefined;
+  const stripeKey = liveBillingConfig(rawEnv).config?.stripeKey;
 
   const auth = await blinkSdk.auth.verifyToken(c.req.header('Authorization'));
   if (!auth.valid) return c.json({ error: 'Unauthorized' }, 401);
 
   const body = await c.req.json<{ action: string }>();
   const action = body?.action;
+  if (!isLiveBillingEnabled(rawEnv) && !['b2b_freeze_request', 'b2b_transfer_request', 'b2b_escalate'].includes(action)) return liveBillingDisabledResponse(c);
 
   // Non-Stripe actions: log and return success
   if (action === 'b2b_freeze_request' || action === 'b2b_transfer_request' || action === 'b2b_escalate') {
@@ -151,19 +154,43 @@ router.post('/api/billing/process-refund', async (c) => {
   }
 
   if (!stripeKey) {
-    return c.json({ success: true, code: 'NO_STRIPE_KEY', message: 'Stripe not configured — action simulated.' });
+    return c.json({ error: 'Stripe billing is not configured' }, 503);
   }
 
   const meta       = await getUserMeta(blinkSdk, auth.userId);
   const customerId = (meta.stripe_customer_id ?? '') as string;
+  if (action === 'refund_now') {
+    const siret = String(meta.siret ?? meta.business_siret ?? '').trim();
+    const vatNumber = String(meta.vat_number ?? '').trim();
+    const planId = String(meta.plan_id ?? '');
+    if (siret || vatNumber || planId.includes('agency')) {
+      return c.json({ error: 'B2B subscriptions require assisted cancellation' }, 403);
+    }
+    if (meta.retraction_used === true || meta.refunded_at) {
+      return c.json({ error: 'Refund already used' }, 409);
+    }
+  }
   if (!customerId) {
     return c.json({ success: true, code: 'NO_SUBSCRIPTION', message: 'No Stripe customer.' });
+  }
+
+  // Refunds are limited to non-B2B customers within the 14-day window.
+  if (action === 'refund_now') {
+    const invoiceRes = await fetch(
+      `https://api.stripe.com/v1/invoices?customer=${customerId}&status=paid&limit=1`,
+      { headers: { Authorization: `Bearer ${stripeKey}` }, signal: AbortSignal.timeout(8000) },
+    );
+    if (!invoiceRes.ok) return c.json({ error: 'Unable to verify refund eligibility' }, 502);
+    const invoicePayload = await invoiceRes.json() as { data?: Array<{ created?: number }> };
+    const created = invoicePayload.data?.[0]?.created;
+    const daysSincePurchase = created ? Math.floor((Date.now() - created * 1000) / 86_400_000) : Number.POSITIVE_INFINITY;
+    if (daysSincePurchase > 14) return c.json({ error: 'Refund window has expired' }, 403);
   }
 
   // Fetch active subscription
   const subsRes = await fetch(
     `https://api.stripe.com/v1/subscriptions?customer=${customerId}&status=active&limit=1`,
-    { headers: { Authorization: `Bearer ${stripeKey}` } },
+    { headers: { Authorization: `Bearer ${stripeKey}` }, signal: AbortSignal.timeout(8000) },
   );
   const subs = await subsRes.json() as { data: Array<{ id: string }> };
   const subscriptionId = subs.data[0]?.id;
@@ -178,6 +205,7 @@ router.post('/api/billing/process-refund', async (c) => {
       method: 'POST',
       headers: { Authorization: `Bearer ${stripeKey}`, 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ cancel_at_period_end: 'true' }).toString(),
+      signal: AbortSignal.timeout(8000),
     });
     if (!cancelRes.ok) {
       const err = await cancelRes.text();
@@ -196,7 +224,7 @@ router.post('/api/billing/process-refund', async (c) => {
     // 1. Get latest paid invoice charge
     const invoiceRes = await fetch(
       `https://api.stripe.com/v1/invoices?customer=${customerId}&status=paid&limit=1`,
-      { headers: { Authorization: `Bearer ${stripeKey}` } },
+      { headers: { Authorization: `Bearer ${stripeKey}` }, signal: AbortSignal.timeout(8000) },
     );
     if (!invoiceRes.ok) {
       return c.json({ error: 'Failed to fetch invoice' }, 502);
@@ -209,6 +237,7 @@ router.post('/api/billing/process-refund', async (c) => {
     const cancelRes = await fetch(`https://api.stripe.com/v1/subscriptions/${subscriptionId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${stripeKey}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+      signal: AbortSignal.timeout(8000),
     });
     if (!cancelRes.ok) {
       const err = await cancelRes.text();
@@ -222,6 +251,7 @@ router.post('/api/billing/process-refund', async (c) => {
         method: 'POST',
         headers: { Authorization: `Bearer ${stripeKey}`, 'Content-Type': 'application/x-www-form-urlencoded' },
         body: refundBody.toString(),
+        signal: AbortSignal.timeout(8000),
       });
       if (!refundRes.ok) {
         const err = await refundRes.text();

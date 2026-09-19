@@ -38,12 +38,18 @@ interface DashboardSidebarProps {
 }
 
 // ── Unified color — all nav items use primary teal ──────────────────────────
+// Keys must match SidebarNavItemProps exactly (`activeStyle`, `hoverStyle`, …).
+// They previously read `active`, `hover`, `activeIcon`, … — since `{...primary}`
+// is spread *after* `active={is(path)}`, the `active` class string overrode the
+// boolean, so every item rendered in the active style and the four style keys
+// were silently dropped (the component fell back to its defaults, which carry
+// these same values).
 const primary = {
-  active: 'bg-primary/10 text-primary',
-  hover: 'hover:bg-primary/8 hover:text-primary',
-  activeIcon: 'bg-primary text-primary-foreground',
-  defaultIcon: 'bg-primary/10 text-primary',
-  hoverIcon: 'group-hover:bg-primary group-hover:text-primary-foreground',
+  activeStyle: 'bg-primary/10 text-primary',
+  hoverStyle: 'hover:bg-primary/8 hover:text-primary',
+  activeIconStyle: 'bg-primary text-primary-foreground',
+  defaultIconStyle: 'bg-primary/10 text-primary',
+  hoverIconStyle: 'group-hover:bg-primary group-hover:text-primary-foreground',
 };
 
 const NavGroupHeader = ({ label, collapsed }: { label: string; collapsed: boolean }) => {
@@ -169,10 +175,13 @@ export function DashboardSidebar({
             {...primary}
           />
           <SidebarNavItem to="/calendrier" icon={Calendar} label="Calendrier" active={is('/calendrier')} collapsed={c} {...primary} />
-          <SidebarNavItem to="/mon-equipe" icon={Users} label="Équipe" sublabel="Membres · Chat · Activité" active={is('/mon-equipe')} collapsed={c} data-tour="nav-team"
+          <SidebarNavItem to="/equipe" icon={UsersRound} label="Équipe humaine" sublabel="Membres · Chat · Activité" active={is('/equipe')} collapsed={c} dataTour="nav-team"
             suffix={!c ? (
               <span className="text-[8px] bg-primary text-primary-foreground font-bold px-1.5 py-0.5 rounded-full shrink-0">NEW</span>
             ) : undefined}
+            {...primary}
+          />
+          <SidebarNavItem to="/mon-equipe" icon={BotMessageSquare} label="Agents IA" sublabel="Automatisations · Cowork" active={is('/mon-equipe')} collapsed={c} dataTour="nav-ai-agents"
             {...primary}
           />
           <SidebarNavItem to="/inbox" icon={Mail} label="Boîte de réception" active={is('/inbox')} collapsed={c} {...primary}
@@ -470,7 +479,7 @@ export function DashboardSidebar({
         {/* Bottom pinned section */}
         <div className="shrink-0 border-t border-sidebar-border">
           {/* Plan badge */}
-          {!c && (isDemoActive || currentPlan.id !== 'free') && (
+          {!c && (
             <div className="px-4 pt-3 pb-1">
               <div className={cn('flex items-center gap-2 rounded-xl border px-3 py-2', isDemoActive ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800' : 'bg-primary/8 border-primary/20')}>
                 <span className={cn('w-2 h-2 rounded-full animate-pulse shrink-0', isDemoActive ? 'bg-emerald-500' : 'bg-primary')} />

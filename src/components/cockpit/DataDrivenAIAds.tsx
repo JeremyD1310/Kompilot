@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * DataDrivenAIAds — Creative Studio: Data-Driven AI Ads
  * ──────────────────────────────────────────────────────
@@ -23,7 +24,7 @@ import {
 } from './ads/adsTypes';
 import { blink } from '../../blink/client';
 
-const BACKEND = 'https://gbrhsehk.backend.blink.new';
+const BACKEND = KOMPILOT_BACKEND_URL;
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -368,14 +369,11 @@ export function DataDrivenAIAds() {
           onActorChange={setActor}
         />
         <ReelPreviewPanel
-          script={script}
-          actor={selectedActor}
           subtitleStyle={subtitleStyle}
           muted={muted}
-          onSubtitleStyleChange={setSubtitleStyle}
-          onMutedChange={setMuted}
-          onGenerateVideo={handleGenerateVideo}
-          isGeneratingVideo={isGeneratingVideo}
+          onSubtitleChange={setSubtitleStyle}
+          onToggleMute={() => setMuted(value => !value)}
+          isGenerating={isGeneratingVideo}
         />
       </div>
 

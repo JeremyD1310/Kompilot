@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * VATNumberSection — Numéro TVA Intracommunautaire field with VIES validation.
  *
@@ -14,7 +15,7 @@ import {
 } from 'lucide-react';
 import { blink } from '../../blink/client';
 
-const BACKEND = 'https://gbrhsehk.backend.blink.new';
+const BACKEND = KOMPILOT_BACKEND_URL;
 
 interface VatInfo {
   vatNumber:     string | null;

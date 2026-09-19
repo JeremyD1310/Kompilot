@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useWelcomeEmailSequence — fires the welcome email sequence after onboarding.
  *
@@ -9,7 +10,7 @@
 import { useCallback, useEffect } from 'react';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── localStorage keys ────────────────────────────────────────────────────────
 

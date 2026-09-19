@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -23,8 +28,16 @@ dist-ssr
 *.sln
 *.sw?
 
-# Generated Playwright artifacts
+# Playwright test artifacts
 playwright-report/
+tests/playwright-report/
 test-results/
 blob-report/
-playwright/.cache/
+
+# Browser captures, media, and traces
+captures/
+**/captures/
+videos/
+**/videos/
+traces/
+**/traces/

@@ -116,7 +116,7 @@ export function AgencyOnboardingFlow({ onComplete, onSkip }: Props) {
           initial={{ opacity: 0, scale: 0.96, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 8 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
           className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-[#0F172A] text-white shadow-2xl"
           style={{ border: '1px solid rgba(79,70,229,0.3)' }}
         >

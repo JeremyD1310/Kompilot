@@ -1,3 +1,4 @@
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import { getAdAccounts, getAdInsights } from '../lib/metaMarketingService';
@@ -11,7 +12,7 @@ export const router = new Hono<{ Bindings: Env }>();
 type Row = Record<string, any>;
 type Channel = { channel: string; spendCents: number; revenueCents: number; leads: number; customers: number; impressions: number; clicks: number; conversions: number; cacCents: number | null; contributionPct: number };
 
-const blinkFor = (env: Env) => createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+const blinkFor = (env: Env) => createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 const json = (value: unknown): Row => { try { return typeof value === 'string' ? JSON.parse(value) : (value as Row) || {}; } catch { return {}; } };
 const secret = (raw: Record<string, string | undefined>, ...parts: string[]) => raw[parts.join('_')] || '';
 const valueFrom = (row: Row, camel: string, snake: string) => row[camel] ?? row[snake];

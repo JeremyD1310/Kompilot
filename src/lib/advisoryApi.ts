@@ -25,6 +25,6 @@ export function generateAdvisory(): Promise<AdvisoryReport> {
   return request<AdvisoryReport>('/api/advisory/analyze', { method: 'POST', body: '{}' });
 }
 
-export function fetchAdvisoryImpact(): Promise<import('./advisoryTypes').AdvisoryImpact> {
-  return request<import('./advisoryTypes').AdvisoryImpact>('/api/advisory/impact');
+export function fetchAdvisoryImpact(): Promise<import('./advisoryTypes').AdvisoryImpactReport> {
+  return request<import('./advisoryTypes').AdvisoryImpactReport>('/api/advisory/impact');
 }

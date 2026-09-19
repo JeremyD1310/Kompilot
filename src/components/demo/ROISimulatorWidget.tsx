@@ -36,7 +36,7 @@ import {
 import { Card, Button, Slider } from '@blinkdotnew/ui';
 import { useNavigate } from '@tanstack/react-router';
 
-export type DemoPersona = 'merchant' | 'freelance' | 'agency';
+export type DemoPersona = 'merchant' | 'freelance' | 'agency' | 'multi_location';
 
 interface Props { persona: DemoPersona }
 
@@ -77,6 +77,13 @@ const PERSONA_CONFIG = {
     formula: (a: number, b: number) => a * b * 4,
     formulaText: (a: number, b: number) => `${a} clients × ${b}h/sem × 4 semaines`,
   },
+  multi_location: {
+    accentColor: 'indigo', headerIcon: Clock, resultLabel: 'Temps libéré par l’IA', resultUnit: 'h', isHours: true,
+    sliderA: { label: 'Nombre de sites gérés', icon: Users, min: 1, max: 50, step: 1, defaultVal: 12, suffix: '' },
+    sliderB: { label: 'Heures par semaine sur visuels et rapports', icon: Clock, min: 1, max: 20, step: 1, defaultVal: 8, suffix: 'h' },
+    formula: (a: number, b: number) => a * b * 4,
+    formulaText: (a: number, b: number) => `${a} sites × ${b}h/sem × 4 semaines`,
+  },
 } as const;
 
 /* ─────────────────────────────────────────────────────────────
@@ -84,7 +91,7 @@ const PERSONA_CONFIG = {
 ───────────────────────────────────────────────────────────── */
 function anchorText(persona: DemoPersona, result: number): string {
   if (result <= 0) return 'Ajustez les curseurs pour visualiser une estimation indicative.';
-  if (persona === 'agency') {
+  if (persona === 'agency' || persona === 'multi_location') {
     const equiv = Math.round(result * 45);
     return `${result} heures libérées · estimation indicative de ${equiv.toLocaleString('fr-FR')}€ de valeur temps, selon les données renseignées.`;
   }
@@ -143,8 +150,8 @@ export default function ROISimulatorWidget({ persona }: Props) {
   const Icon  = cfg.headerIcon;
 
   /* États des sliders — chaque persona a ses propres valeurs */
-  const [valA, setValA] = useState([cfg.sliderA.defaultVal]);
-  const [valB, setValB] = useState([cfg.sliderB.defaultVal]);
+  const [valA, setValA] = useState<number[]>([cfg.sliderA.defaultVal]);
+  const [valB, setValB] = useState<number[]>([cfg.sliderB.defaultVal]);
 
   /* Reset des valeurs quand on change de persona */
   useEffect(() => {
@@ -334,7 +341,7 @@ export default function ROISimulatorWidget({ persona }: Props) {
 
       <p className="text-center text-[10px] text-slate-400 flex items-center justify-center gap-1.5">
       <Sparkles className="w-3 h-3 text-emerald-400" />
-      Exemple de démonstration · estimation indicative · 7 jours gratuits sans carte bancaire
+      Exemple de démonstration · estimation indicative · 14 jours gratuits sans carte bancaire
       </p>
     </Card>
   );

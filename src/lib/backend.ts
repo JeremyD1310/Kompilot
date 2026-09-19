@@ -1,7 +1,20 @@
 import { blink } from '../blink/client';
 
-const DEFAULT_BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
-export const BACKEND_URL = ((import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_BACKEND_URL || DEFAULT_BACKEND_URL).replace(/\/$/, '');
+const configuredBackendUrl = (import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_BACKEND_URL?.trim() ?? '';
+// Blink Backend is project-scoped; keep the preview usable when the optional
+// frontend override is not present in the managed environment.
+const projectBackendUrl = 'https://xxifv5sr.backend.blink.new';
+export const BACKEND_URL = (configuredBackendUrl || projectBackendUrl).replace(/\/$/, '');
+export const BACKEND_HOST = BACKEND_URL ? new URL(BACKEND_URL).host : '';
+
+export const BACKEND_URL_CONFIG_MISSING = 'BACKEND_URL_CONFIG_MISSING';
+
+export function backendUrl(path: string): string {
+  if (!BACKEND_URL) {
+    throw new Error(`${BACKEND_URL_CONFIG_MISSING}: VITE_BACKEND_URL is required.`);
+  }
+  return `${BACKEND_URL}${path.startsWith('/') ? path : `/${path}`}`;
+}
 
 function isPublicRoute(path: string) {
   return path === '/health' || path.startsWith('/api/webhooks/');
@@ -19,7 +32,8 @@ export async function backendFetch(path: string, init: RequestInit = {}, timeout
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(`${BACKEND_URL}${path}`, {
+    const url = backendUrl(path);
+    const response = await fetch(url, {
       ...init,
       signal: init.signal ?? controller.signal,
     });
@@ -32,12 +46,12 @@ export async function backendFetch(path: string, init: RequestInit = {}, timeout
       ? `La requête vers ${path} a dépassé ${timeoutMs} ms.`
       : error instanceof Error ? error.message : String(error);
     console.error('[backendFetch] Request failed', {
-      url: `${BACKEND_URL}${path}`,
+      url: BACKEND_URL ? `${BACKEND_URL}${path}` : path,
       method: init.method ?? 'GET',
       message,
       cause: error,
     });
-    throw new Error(message);
+    throw new Error(message, { cause: error });
   } finally {
     window.clearTimeout(timeout);
   }

@@ -1,10 +1,11 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * analyticsApi — typed client for the Kompilot analytics backend.
  * Fetches real Meta Insights + GMB data, falls back to mock on error/unconfigured.
  */
 import { generateMockPerformance, type PostPerformanceMetrics } from '../components/dashboard/PostPerformanceData';
 
-const BACKEND = 'https://gbrhsehk.backend.blink.new';
+const BACKEND = KOMPILOT_BACKEND_URL;
 
 export interface MetaInsightDay {
   date: string;

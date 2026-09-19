@@ -7,16 +7,18 @@
  * GET  /api/ugc-video-ad/projects   — List user's UGC projects
  */
 
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
 import { generateAIResponse } from '../lib/aiRouter';
-import { consumeCredits } from '../lib/creditService';
+import { consumeExecuteRefund } from '../lib/creditService';
+import { isIdempotentReplayError, replayConflictBody } from '../lib/idempotentReplay';
 
 export const router = new Hono<{ Bindings: Env }>();
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 function getUserId(h: string | undefined): string | null {
   if (!h?.startsWith('Bearer ')) return null;
@@ -83,27 +85,31 @@ router.post('/api/ugc-video-ad/analyze', async (c) => {
   }
 
   const blink = getBlink(env);
-
-  // Deduct 1 credit
-  const creditResult = await consumeCredits(
-    blink, userId, 'text_generation',
-    'UGC Video Ad script analysis',
-    '',
-  );
-  if (!creditResult.success) {
-    return c.json({
-      error: 'NO_CREDITS',
-      message: 'Crédits épuisés.',
-      creditsLeft: creditResult.balanceAfter,
-    }, 402);
+  const requestId = c.req.header('X-Request-Id') || c.req.header('Idempotency-Key') || crypto.randomUUID();
+  const projectId = `ugc:${userId}:${requestId}`.replace(/[^a-zA-Z0-9:_-]/g, '_').slice(0, 255);
+  const productName = body.productName || 'Produit';
+  const creditReferenceId = `ugc-analyze:${userId}:${requestId}`;
+  const projectTable = blink.db.table<UGCVideoProject>('ugc_video_projects');
+  let existingProject: UGCVideoProject | null = null;
+  try { existingProject = await projectTable.get(projectId); } catch { /* first request or unavailable durable row */ }
+  if (existingProject?.userId === userId) {
+    let existingScripts: UGCVideoScript[] = [];
+    let existingVariants: VideoVariant[] = [];
+    try { existingScripts = JSON.parse(existingProject.scripts); } catch { /* durable row is malformed */ }
+    try { existingVariants = JSON.parse(existingProject.videoVariants); } catch { /* durable row is malformed */ }
+    return c.json({ projectId, scripts: existingScripts, videoVariants: existingVariants, creditsCost: existingProject.creditsCost, replayed: true });
   }
 
-  const projectId = crypto.randomUUID();
-  const productName = body.productName || 'Produit';
-
   try {
-    // Build system prompt for multi-angle UGC script generation
-    const systemContext = `Tu es un expert en création de scripts vidéo UGC (User Generated Content) pour des marques et e-commerces.
+    const charged = await consumeExecuteRefund(
+      blink,
+      userId,
+      'text_generation',
+      'UGC Video Ad script analysis',
+      creditReferenceId,
+      async () => {
+        // Build system prompt for multi-angle UGC script generation
+        const systemContext = `Tu es un expert en création de scripts vidéo UGC (User Generated Content) pour des marques et e-commerces.
 
 Tu génères des scripts vidéo UGC multi-angles pour la publicité sur réseaux sociaux (TikTok, Reels, Shorts).
 
@@ -132,7 +138,7 @@ RÈGLES DE TON:
 
 FORMAT DE SORTIE: JSON valide UNIQUEMENT (pas de markdown, pas d'explication).`;
 
-    const userPrompt = `Analyse ce produit et génère 3-4 scripts vidéo UGC avec des angles marketing différents.
+        const userPrompt = `Analyse ce produit et génère 3-4 scripts vidéo UGC avec des angles marketing différents.
 
 PRODUIT: "${productName}"
 DESCRIPTION: ${body.productDescription}
@@ -166,138 +172,86 @@ Retourne un tableau JSON de scripts avec cette structure EXACTE:
   ]
 }`;
 
-    const aiResult = await generateAIResponse(
-      {
-        taskType: 'CREATIVE_CONTENT',
-        prompt: userPrompt,
-        systemContext,
-        forceJson: true,
-        maxTokens: 4000,
+        const aiResult = await generateAIResponse(
+          { taskType: 'CREATIVE_CONTENT', prompt: userPrompt, systemContext, forceJson: true, maxTokens: 4000 },
+          { OPENAI_API_KEY: env.OPENAI_API_KEY, ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY },
+          userId,
+        );
+
+        let parsed: any;
+        try {
+          const raw = aiResult.content.trim().replace(/^```json?\n?/, '').replace(/\n?```$/, '');
+          parsed = JSON.parse(raw);
+        } catch {
+          const jsonMatch = aiResult.content.match(/\{[\s\S]*\}/);
+          if (!jsonMatch) throw new Error('AI response was not valid JSON');
+          parsed = JSON.parse(jsonMatch[0]);
+        }
+
+        const rawScripts: any[] = Array.isArray(parsed.scripts) ? parsed.scripts : (Array.isArray(parsed) ? parsed : []);
+        const scripts: UGCVideoScript[] = rawScripts.map((s: any, i: number) => ({
+          angle: String(s.angle ?? `Angle ${i + 1}`),
+          hook: { text: String(s.hook?.text ?? ''), type: ['question', 'provocation', 'statistic', 'story'].includes(s.hook?.type) ? s.hook.type : 'question' },
+          body: {
+            points: Array.isArray(s.body?.points) ? s.body.points.map((p: any) => ({ text: String(p.text ?? ''), duration: String(p.duration ?? '5s') })) : [{ text: String(s.body?.text ?? ''), duration: '5s' }],
+            transition: String(s.body?.transition ?? ''),
+          },
+          cta: { text: String(s.cta?.text ?? ''), type: ['booking', 'website', 'phone', 'promo'].includes(s.cta?.type) ? s.cta.type : 'booking' },
+          fullScript: String(s.fullScript ?? ''),
+          estimatedDuration: String(s.estimatedDuration ?? '30s'),
+          visualDescription: String(s.visualDescription ?? ''),
+        }));
+
+        for (const script of scripts) {
+          if (!script.fullScript) {
+            script.fullScript = [
+              `[HOOK - ${script.hook.type}] ${script.hook.text}`,
+              `[TRANSITION] ${script.body.transition}`,
+              ...script.body.points.map(point => `(${point.duration}) ${point.text}`),
+              `[CTA] ${script.cta.text}`,
+            ].join('\n\n');
+          }
+          if (!script.visualDescription) script.visualDescription = `UGC style video of ${productName}, natural lighting, handheld phone camera, authentic feel. ${script.hook.text}`;
+        }
+
+        const videoVariants: VideoVariant[] = scripts.map((_, i) => ({ index: i, status: 'pending', generationId: '', videoUrl: '', aspectRatio: '9:16', visualPrompt: '', errorMessage: '' }));
+        await projectTable.create({ id: projectId, userId, productImageUrl: body.productImageUrl, productDescription: body.productDescription, productName, status: 'scripts_ready', scripts: JSON.stringify(scripts), videoVariants: JSON.stringify(videoVariants), creditsCost: 1 });
+
+        try {
+          await blink.db.observability_logs.create({
+            id: `ugcva_${Date.now()}`,
+            userId,
+            action: 'ugc_video_ad_analyzed',
+            provider: aiResult.provider,
+            errorMessage: 'ok',
+            metadata: JSON.stringify({ projectId, productName, scriptCount: scripts.length, model: aiResult.model, tokens: aiResult.inputTokens + aiResult.outputTokens }),
+            severity: 'info',
+          });
+        } catch { /* non-critical */ }
+
+        return { projectId, scripts, videoVariants, creditsCost: 1, meta: { provider: aiResult.provider, model: aiResult.model, latencyMs: aiResult.latencyMs } };
       },
-      { OPENAI_API_KEY: env.OPENAI_API_KEY, ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY },
-      userId,
+      'ai',
+      { provider: 'openai-or-anthropic', phase: 'analysis' },
     );
 
-    // Parse AI response
-    let parsed: any;
-    try {
-      const raw = aiResult.content.trim().replace(/^```json?\n?/, '').replace(/\n?```$/, '');
-      parsed = JSON.parse(raw);
-    } catch {
-      const jsonMatch = aiResult.content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        parsed = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('AI response was not valid JSON');
+    return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
+  } catch (error: any) {
+    console.error('[UgcVideoAd] analyze error:', error);
+    if (isIdempotentReplayError(error)) {
+      // Re-read once: the durable project may have landed after the pre-check above.
+      const durable = await projectTable.get(projectId).catch(() => null);
+      if (durable?.userId === userId) {
+        let scripts: UGCVideoScript[] = [];
+        let variants: VideoVariant[] = [];
+        try { scripts = JSON.parse(durable.scripts); } catch { /* durable row is malformed */ }
+        try { variants = JSON.parse(durable.videoVariants); } catch { /* durable row is malformed */ }
+        return c.json({ projectId, scripts, videoVariants: variants, creditsCost: durable.creditsCost, replayed: true });
       }
+      return c.json(replayConflictBody(error, 'analyse UGC'), 409);
     }
-
-    const rawScripts: any[] = Array.isArray(parsed.scripts) ? parsed.scripts : (Array.isArray(parsed) ? parsed : []);
-
-    // Validate and build scripts
-    const scripts: UGCVideoScript[] = rawScripts.map((s: any, i: number) => ({
-      angle: String(s.angle ?? `Angle ${i + 1}`),
-      hook: {
-        text: String(s.hook?.text ?? ''),
-        type: ['question', 'provocation', 'statistic', 'story'].includes(s.hook?.type)
-          ? s.hook.type : 'question',
-      },
-      body: {
-        points: Array.isArray(s.body?.points)
-          ? s.body.points.map((p: any) => ({
-              text: String(p.text ?? ''),
-              duration: String(p.duration ?? '5s'),
-            }))
-          : [{ text: String(s.body?.text ?? ''), duration: '5s' }],
-        transition: String(s.body?.transition ?? ''),
-      },
-      cta: {
-        text: String(s.cta?.text ?? ''),
-        type: ['booking', 'website', 'phone', 'promo'].includes(s.cta?.type)
-          ? s.cta.type : 'booking',
-      },
-      fullScript: String(s.fullScript ?? ''),
-      estimatedDuration: String(s.estimatedDuration ?? '30s'),
-      visualDescription: String(s.visualDescription ?? ''),
-    }));
-
-    // Fallback: if fullScript is empty, construct from parts
-    for (const script of scripts) {
-      if (!script.fullScript) {
-        const parts: string[] = [];
-        parts.push(`[HOOK - ${script.hook.type}] ${script.hook.text}`);
-        parts.push(`[TRANSITION] ${script.body.transition}`);
-        for (const point of script.body.points) {
-          parts.push(`(${point.duration}) ${point.text}`);
-        }
-        parts.push(`[CTA] ${script.cta.text}`);
-        script.fullScript = parts.join('\n\n');
-      }
-      // Fallback visual description
-      if (!script.visualDescription) {
-        script.visualDescription = `UGC style video of ${productName}, natural lighting, handheld phone camera, authentic feel. ${script.hook.text}`;
-      }
-    }
-
-    // Build initial video variants (empty, ready for generation)
-    const videoVariants: VideoVariant[] = scripts.map((_, i) => ({
-      index: i,
-      status: 'pending',
-      generationId: '',
-      videoUrl: '',
-      aspectRatio: '9:16',
-      visualPrompt: '',
-      errorMessage: '',
-    }));
-
-    // Save project to DB
-    const projectTable = blink.db.table<UGCVideoProject>('ugc_video_projects');
-    await projectTable.create({
-      id: projectId,
-      userId,
-      productImageUrl: body.productImageUrl,
-      productDescription: body.productDescription,
-      productName,
-      status: 'scripts_ready',
-      scripts: JSON.stringify(scripts),
-      videoVariants: JSON.stringify(videoVariants),
-      creditsCost: 1,
-    });
-
-    // Log
-    try {
-      await blink.db.observability_logs.create({
-        id: `ugcva_${Date.now()}`,
-        userId,
-        action: 'ugc_video_ad_analyzed',
-        provider: aiResult.provider,
-        errorMessage: 'ok',
-        metadata: JSON.stringify({
-          projectId,
-          productName,
-          scriptCount: scripts.length,
-          model: aiResult.model,
-          tokens: aiResult.inputTokens + aiResult.outputTokens,
-        }),
-        severity: 'info',
-      });
-    } catch { /* non-critical */ }
-
-    return c.json({
-      projectId,
-      scripts,
-      videoVariants,
-      creditsCost: 1,
-      creditsLeft: creditResult.balanceAfter,
-      meta: {
-        provider: aiResult.provider,
-        model: aiResult.model,
-        latencyMs: aiResult.latencyMs,
-      },
-    });
-  } catch (err: any) {
-    console.error('[UgcVideoAd] analyze error:', err);
-    return c.json({ error: err.message ?? 'Script analysis failed' }, 500);
+    if (error?.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Crédits épuisés.', creditsLeft: 0 }, 402);
+    return c.json({ error: error?.message ?? 'UGC analysis failed' }, 500);
   }
 });
 
@@ -328,13 +282,11 @@ router.post('/api/ugc-video-ad/generate', async (c) => {
   const blink = getBlink(env);
   const projectTable = blink.db.table<UGCVideoProject>('ugc_video_projects');
 
-  // Load project
   const project = await projectTable.get(body.projectId);
   if (!project || project.userId !== userId) {
     return c.json({ error: 'Project not found' }, 404);
   }
 
-  // Parse scripts and variants
   let scripts: UGCVideoScript[] = [];
   let videoVariants: VideoVariant[] = [];
   try { scripts = JSON.parse(project.scripts); } catch { scripts = []; }
@@ -353,108 +305,71 @@ router.post('/api/ugc-video-ad/generate', async (c) => {
   const visualPrompt = script.visualDescription ||
     `UGC style video of ${project.productName}, ${script.hook.text}, natural lighting, authentic feel`;
 
-  // Deduct 10 credits
-  const creditResult = await consumeCredits(
-    blink, userId, 'video_generation',
-    `UGC Video Ad generation: ${project.productName} - ${script.angle}`,
-    body.projectId,
-  );
-  if (!creditResult.success) {
-    return c.json({
-      error: 'NO_CREDITS',
-      message: 'Crédits insuffisants pour la génération vidéo (10 crédits requis).',
-      creditsLeft: creditResult.balanceAfter,
-    }, 402);
-  }
-
-  // Update the variant status
   const generationId = crypto.randomUUID();
-  if (!videoVariants[variantIndex]) {
-    videoVariants[variantIndex] = {
-      index: variantIndex,
-      status: 'queued',
-      generationId: '',
-      videoUrl: '',
-      aspectRatio,
-      visualPrompt: '',
-      errorMessage: '',
-    };
+  const creditReferenceId = `ugc-video:${body.projectId}:${variantIndex}`;
+  const currentVariant = videoVariants[variantIndex];
+  if (currentVariant?.generationId && ['queued', 'processing', 'completed', 'failed'].includes(currentVariant.status)) {
+    return c.json({ mode: 'async', projectId: body.projectId, variantIndex, status: currentVariant.status, generationId: currentVariant.generationId, videoUrl: currentVariant.videoUrl, errorMessage: currentVariant.errorMessage, replayed: true });
   }
-  videoVariants[variantIndex].status = 'queued';
-  videoVariants[variantIndex].generationId = generationId;
-  videoVariants[variantIndex].aspectRatio = aspectRatio;
-  videoVariants[variantIndex].visualPrompt = visualPrompt;
-  videoVariants[variantIndex].errorMessage = '';
 
-  // Update project
-  await projectTable.update(body.projectId, {
-    status: 'generating',
-    videoVariants: JSON.stringify(videoVariants),
-    updatedAt: new Date().toISOString(),
-  });
-
-  // Enqueue async task
   try {
-    const queueFn = (blink as any).queue;
-    if (queueFn?.enqueue) {
-      await queueFn.enqueue('ugc-video-generate', {
-        userId,
-        projectId: body.projectId,
-        variantIndex,
-        visualPrompt,
-        aspectRatio,
-        generationId,
-      });
-    } else {
-      // Fallback: call Luma directly
-      console.warn('[UgcVideoAd] Queue API not available, falling back to sync');
-      const res = await fetch('https://api.lumalabs.ai/dream-machine/v1/generations', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${lumaKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt: visualPrompt, aspect_ratio: aspectRatio }),
-      });
-      if (!res.ok) {
-        const errText = await res.text();
-        videoVariants[variantIndex].status = 'failed';
-        videoVariants[variantIndex].errorMessage = errText;
-        await projectTable.update(body.projectId, {
-          status: 'failed',
-          videoVariants: JSON.stringify(videoVariants),
-          updatedAt: new Date().toISOString(),
-        });
-        return c.json({ error: `Luma AI error: ${errText}` }, 502);
-      }
-      const data = await res.json() as { id: string; state: string; video?: { url: string } };
-      videoVariants[variantIndex].status = data.state ?? 'processing';
-      videoVariants[variantIndex].generationId = data.id;
-      if (data.video?.url) videoVariants[variantIndex].videoUrl = data.video.url;
-      await projectTable.update(body.projectId, {
-        videoVariants: JSON.stringify(videoVariants),
-        updatedAt: new Date().toISOString(),
-      });
-    }
+    const charged = await consumeExecuteRefund(
+      blink,
+      userId,
+      'ugc_video_generation',
+      `UGC Video Ad generation: ${project.productName} - ${script.angle}`,
+      creditReferenceId,
+      async () => {
+        if (!videoVariants[variantIndex]) {
+          videoVariants[variantIndex] = { index: variantIndex, status: 'queued', generationId: '', videoUrl: '', aspectRatio, visualPrompt: '', errorMessage: '' };
+        }
+        videoVariants[variantIndex].status = 'queued';
+        videoVariants[variantIndex].generationId = generationId;
+        videoVariants[variantIndex].aspectRatio = aspectRatio;
+        videoVariants[variantIndex].visualPrompt = visualPrompt;
+        videoVariants[variantIndex].errorMessage = '';
 
-    return c.json({
-      mode: 'async',
-      projectId: body.projectId,
-      variantIndex,
-      status: 'queued',
-      generationId,
-      creditsLeft: creditResult.balanceAfter,
-    });
-  } catch (queueErr: any) {
-    console.error('[UgcVideoAd] Queue enqueue failed:', queueErr);
+        await projectTable.update(body.projectId, { status: 'generating', videoVariants: JSON.stringify(videoVariants), updatedAt: new Date().toISOString() });
+        const queueFn = (blink as any).queue;
+        if (queueFn?.enqueue) {
+          await queueFn.enqueue('ugc-video-generate', { userId, projectId: body.projectId, variantIndex, visualPrompt, aspectRatio, generationId });
+        } else {
+          console.warn('[UgcVideoAd] Queue API not available, falling back to sync');
+          const res = await fetch('https://api.lumalabs.ai/dream-machine/v1/generations', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${lumaKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: visualPrompt, aspect_ratio: aspectRatio }),
+          });
+          if (!res.ok) {
+            const errText = await res.text();
+            videoVariants[variantIndex].status = 'failed';
+            videoVariants[variantIndex].errorMessage = errText;
+            await projectTable.update(body.projectId, { status: 'failed', videoVariants: JSON.stringify(videoVariants), updatedAt: new Date().toISOString() });
+            throw new Error(`Luma AI error: ${errText}`);
+          }
+          const data = await res.json() as { id: string; state: string; video?: { url: string } };
+          videoVariants[variantIndex].status = data.state ?? 'processing';
+          videoVariants[variantIndex].generationId = data.id;
+          if (data.video?.url) videoVariants[variantIndex].videoUrl = data.video.url;
+          await projectTable.update(body.projectId, { videoVariants: JSON.stringify(videoVariants), updatedAt: new Date().toISOString() });
+        }
+        return { mode: 'async', projectId: body.projectId, variantIndex, status: 'queued', generationId };
+      },
+      'ai',
+      { provider: 'luma', projectId: body.projectId, variantIndex },
+    );
+
+    return c.json({ ...charged.result, creditsLeft: charged.balanceAfter });
+  } catch (error: any) {
+    console.error('[UgcVideoAd] Queue enqueue failed:', error);
+    // Must stay above the failure marking: a replay must never flip a variant that
+    // another attempt already moved forward.
+    if (isIdempotentReplayError(error)) return c.json(replayConflictBody(error, 'génération vidéo UGC'), 409);
     videoVariants[variantIndex].status = 'failed';
-    videoVariants[variantIndex].errorMessage = queueErr.message ?? 'Queue enqueue failed';
-    await projectTable.update(body.projectId, {
-      status: 'failed',
-      videoVariants: JSON.stringify(videoVariants),
-      updatedAt: new Date().toISOString(),
-    });
-    return c.json({ error: queueErr.message ?? 'Failed to enqueue generation' }, 500);
+    videoVariants[variantIndex].errorMessage = error?.message ?? 'Queue enqueue failed';
+    await projectTable.update(body.projectId, { status: 'failed', videoVariants: JSON.stringify(videoVariants), updatedAt: new Date().toISOString() });
+    if (error?.message === 'Insufficient credits') return c.json({ error: 'NO_CREDITS', message: 'Crédits insuffisants pour la génération vidéo (10 crédits requis).', creditsLeft: 0 }, 402);
+    return c.json({ error: error?.message ?? 'UGC video generation failed' }, 502);
   }
 });
 
@@ -481,7 +396,6 @@ router.get('/api/ugc-video-ad/status/:projectId', async (c) => {
   try { scripts = JSON.parse(project.scripts); } catch { scripts = []; }
   try { videoVariants = JSON.parse(project.videoVariants); } catch { videoVariants = []; }
 
-  // Check Luma status for any 'processing' variants
   const lumaKey = (env as any).LUMAAI_API_KEY as string | undefined;
   if (lumaKey) {
     let updated = false;
@@ -510,7 +424,6 @@ router.get('/api/ugc-video-ad/status/:projectId', async (c) => {
       }
     }
     if (updated) {
-      // Check if all variants are done
       const allDone = videoVariants.every(v =>
         v.status === 'completed' || v.status === 'failed' || v.status === 'pending');
       const anyCompleted = videoVariants.some(v => v.status === 'completed');

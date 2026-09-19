@@ -36,7 +36,7 @@ export function NewMessageDialog({ open, onClose, onSent }: NewMessageDialogProp
     if (!senderName.trim() || !subject.trim() || !body.trim()) return;
     setSending(true);
     try {
-      await blink.db.messages.create({
+      await blink.db.table<any>('messages').create({
         id: `msg_${Date.now()}`,
         userId: user?.id ?? 'demo',
         senderName: senderName.trim(),

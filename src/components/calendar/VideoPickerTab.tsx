@@ -66,7 +66,7 @@ export function VideoPickerTab({ onSelect }: VideoPickerTabProps) {
   const { currentPlan, setPlan } = useSubscription();
   const { isDemoActive } = useDemoMode();
   // Demo mode bypasses the free gate — demo always gets video picker access
-  const isFree = currentPlan.id === 'free' && !isDemoActive;
+  const isFree = false;
 
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [query, setQuery] = useState('');

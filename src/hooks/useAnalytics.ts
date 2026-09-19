@@ -23,6 +23,8 @@ const ALLOWED_EVENT_PARAMS = new Set([
   'content_category', 'user_type', 'channel', 'source', 'medium', 'campaign',
   'method', 'trial_days', 'profile_type', 'plan', 'billing_interval', 'source_page',
   'cta_type', 'testimonial_section', 'destination',
+  'cta_name', 'cta_destination', 'section_name',
+  'sector', 'channels',
 ])
 
 function gtag(...args: unknown[]) {
@@ -78,6 +80,10 @@ export function setUserProperties(_userId: string, properties?: Record<string, s
     )
   )
   gtag('set', 'user_properties', safeProperties)
+}
+
+export function setAdAuditDimensions(dimensions: { sector?: string; channels?: string }) {
+  gtag('set', 'user_properties', safeParams(dimensions));
 }
 
 /** Convenience hook — returns pre-bound tracking functions */

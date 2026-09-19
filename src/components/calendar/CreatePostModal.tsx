@@ -94,6 +94,7 @@ export type PostStatus = 'draft' | 'pending' | 'approved';
 
 export interface ScheduledPost {
   id: string;
+  userId?: string;
   text: string;
   channels: string[];
   date: string;
@@ -464,7 +465,7 @@ Réponds uniquement avec l'objet JSON demandé, sans commentaires.`,
     if (!effectiveDate) { toast.error('Sélectionnez une date.'); return; }
 
     // Deduct 1 credit — blocks if balance is 0
-    const ok = deductCredit();
+    const ok = await deductCredit();
     if (!ok) { setInsufficientOpen(true); return; }
 
     setSaving(true);
@@ -1038,7 +1039,7 @@ Réponds uniquement avec l'objet JSON demandé, sans commentaires.`,
             />
 
             {/* ── White-label badge ── */}
-            {currentPlan.id === 'free' && !isDemoActive ? (
+            {currentPlan.id === 'pro' && !isDemoActive ? (
               <div className="w-full rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 flex items-start gap-2">
                 <span className="text-base shrink-0 leading-none mt-0.5">💡</span>
                 <p className="text-[11px] text-amber-800 leading-snug">
@@ -1102,7 +1103,7 @@ Réponds uniquement avec l'objet JSON demandé, sans commentaires.`,
             <div className="shrink-0 px-6 pb-3">
               <PostComments
                 postId={editingPost.id}
-                workspaceOwnerId={editingPost.userId}
+                workspaceOwnerId={editingPost.userId ?? ''}
               />
             </div>
           )}
@@ -1119,7 +1120,7 @@ Réponds uniquement avec l'objet JSON demandé, sans commentaires.`,
               <div className="flex items-center gap-3">
                 <span className={['text-xs font-semibold flex items-center gap-1', creditsEmpty ? 'text-red-500' : 'text-muted-foreground'].join(' ')}>
                   <Zap size={12} />
-                  {creditsEmpty ? 'Limite mensuelle atteinte' : `${usage} / ${limit} ${currentPlan.id === 'expert' ? 'contenus' : 'posts'} ce mois`}
+                  {creditsEmpty ? 'Limite mensuelle atteinte' : `${usage} / ${limit} ${currentPlan.id === 'agency' ? 'contenus' : 'posts'} ce mois`}
                 </span>
                 {teamModeEnabled ? (
                   <Button
@@ -1160,7 +1161,7 @@ Réponds uniquement avec l'objet JSON demandé, sans commentaires.`,
       <UpgradeModal
         open={storyPaywallOpen}
         onClose={() => setStoryPaywallOpen(false)}
-        targetPlan="expert"
+        targetPlan="agency"
         storiesPaywall
       />
 

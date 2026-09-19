@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * AgencyAffiliateLandingPage — /affilies/:code
  *
@@ -11,7 +12,7 @@ import { Link, useParams } from '@tanstack/react-router';
 import { Gift, Star, ArrowRight, Copy, Check, Sparkles, Zap, Shield, Users } from 'lucide-react';
 import { KompilotLogo } from '../components/brand/KompilotLogo';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || KOMPILOT_BACKEND_URL;
 
 function Logo() { return <KompilotLogo variant="icon" height={32} />; }
 
@@ -38,7 +39,7 @@ interface AffiliateData {
 }
 
 const BENEFITS = [
-  { icon: Zap, text: 'Essai gratuit 7 jours — sans carte bancaire' },
+  { icon: Zap, text: 'Essai gratuit 14 jours — sans carte bancaire' },
   { icon: Shield, text: 'Données sécurisées, jamais revendues' },
   { icon: Users, text: 'Utilisé par +2 400 commerçants en France' },
 ];
@@ -225,7 +226,7 @@ export default function AgencyAffiliateLandingPage() {
         </button>
 
         <p style={{ fontSize: '.75rem', color: 'hsl(var(--landing-subtle))', marginBottom: 40 }}>
-          Essai gratuit 7 jours · Sans carte bancaire · Accès immédiat
+          Essai gratuit 14 jours · Sans carte bancaire · Accès immédiat
         </p>
 
         {/* Benefits */}

@@ -58,12 +58,12 @@ export function PostComments({ postId, workspaceOwnerId, defaultOpen = false }: 
     queryKey: ['post-comments', postId],
     queryFn: async () => {
       if (!postId) return [];
-      const rows = await blink.db.postComments.list({
+      const rows = await blink.db.table<any>('postComments').list({
         where: { postId },
         orderBy: { createdAt: 'asc' },
         limit: 50,
       });
-      return (rows as Record<string, unknown>[]).map(normalise).filter(c => !c.isResolved || c.isResolved === false);
+      return (rows as Record<string, unknown>[]).map(normalise).filter(c => !c.isResolved);
     },
     enabled: !!postId && open,
     staleTime: 15_000,
@@ -72,7 +72,7 @@ export function PostComments({ postId, workspaceOwnerId, defaultOpen = false }: 
   const sendMutation = useMutation({
     mutationFn: async (content: string) => {
       if (!user?.id || !content.trim()) return;
-      await blink.db.postComments.create({
+      await blink.db.table<any>('postComments').create({
         id: `cmt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
         postId,
         workspaceOwnerId,
@@ -91,7 +91,7 @@ export function PostComments({ postId, workspaceOwnerId, defaultOpen = false }: 
 
   const resolveMutation = useMutation({
     mutationFn: async (commentId: string) => {
-      await blink.db.postComments.update(commentId, { isResolved: 1 });
+      await blink.db.table<any>('postComments').update(commentId, { isResolved: 1 });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ['post-comments', postId] }),
   });

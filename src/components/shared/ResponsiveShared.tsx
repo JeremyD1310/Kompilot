@@ -144,21 +144,21 @@ export function DetailButton({ isOpen, onClick, label }: DetailButtonProps) {
 
 interface PlanGateProps {
   currentPlan: string;
-  requiredPlan: 'agency' | 'expert';
+  requiredPlan: 'agency';
   children: ReactNode;
   fallback?: ReactNode;
   onUpgrade?: () => void;
 }
 
 export function PlanGate({ currentPlan, requiredPlan, children, fallback, onUpgrade }: PlanGateProps) {
-  const hierarchy: Record<string, number> = { starter: 1, pro: 2, agency: 3, expert: 4 };
+  const hierarchy: Record<string, number> = { starter: 1, agency: 2 };
   const hasAccess = (hierarchy[currentPlan] || 0) >= (hierarchy[requiredPlan] || 0);
 
   if (hasAccess) return <>{children}</>;
 
   if (fallback) return <>{fallback}</>;
 
-  return <UpgradeCTA feature={`Plan ${requiredPlan === 'agency' ? 'Agency' : 'Expert'} requis`} onUpgrade={onUpgrade} />;
+  return <UpgradeCTA feature="Plan Agency requis" onUpgrade={onUpgrade} />;
 }
 
 // ── Responsive Grid (mobile-first, adapts columns) ──────────────────────────

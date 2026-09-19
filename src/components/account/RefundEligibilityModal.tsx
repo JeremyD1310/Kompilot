@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * RefundEligibilityModal
  *
@@ -474,7 +475,7 @@ export function RefundEligibilityModal({ onClose, className }: Props) {
     async function check() {
       try {
         const token = await blink.auth.getValidToken();
-        const res = await fetch('https://gbrhsehk.backend.blink.new/api/billing/refund-eligibility', {
+        const res = await fetch(`${KOMPILOT_BACKEND_URL}/api/billing/refund-eligibility`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json() as RefundStatus & { error?: string };
@@ -518,7 +519,7 @@ export function RefundEligibilityModal({ onClose, className }: Props) {
     setLoading(true);
     try {
       const token = await blink.auth.getValidToken();
-      const res = await fetch('https://gbrhsehk.backend.blink.new/api/billing/process-refund', {
+      const res = await fetch(`${KOMPILOT_BACKEND_URL}/api/billing/process-refund`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'refund_now' }),
@@ -543,7 +544,7 @@ export function RefundEligibilityModal({ onClose, className }: Props) {
     setLoading(true);
     try {
       const token = await blink.auth.getValidToken();
-      const res = await fetch('https://gbrhsehk.backend.blink.new/api/billing/process-refund', {
+      const res = await fetch(`${KOMPILOT_BACKEND_URL}/api/billing/process-refund`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'cancel_at_period_end' }),
@@ -568,7 +569,7 @@ export function RefundEligibilityModal({ onClose, className }: Props) {
     setLoading(true);
     try {
       const token = await blink.auth.getValidToken();
-      await fetch('https://gbrhsehk.backend.blink.new/api/billing/process-refund', {
+      await fetch(`${KOMPILOT_BACKEND_URL}/api/billing/process-refund`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: alt === 'freeze' ? 'b2b_freeze_request' : 'b2b_transfer_request' }),
@@ -585,7 +586,7 @@ export function RefundEligibilityModal({ onClose, className }: Props) {
     setLoading(true);
     try {
       const token = await blink.auth.getValidToken();
-      await fetch('https://gbrhsehk.backend.blink.new/api/billing/process-refund', {
+      await fetch(`${KOMPILOT_BACKEND_URL}/api/billing/process-refund`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'b2b_escalate' }),
@@ -601,7 +602,7 @@ export function RefundEligibilityModal({ onClose, className }: Props) {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   const isB2B = status?.isB2B ?? false;
-  const planIsFree = currentPlan.id === 'free';
+  const planIsFree = false;
 
   return (
     <div className={cn('bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden', className)}>

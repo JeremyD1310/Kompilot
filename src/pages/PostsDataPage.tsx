@@ -311,7 +311,7 @@ export default function PostsDataPage() {
     queryKey: ['scheduledPosts', userId],
     queryFn: async () => {
       if (!userId) return [];
-      const rows = await blink.db.scheduledPosts.list({
+      const rows = await blink.db.table<any>('scheduledPosts').list({
         where: { userId },
         orderBy: { createdAt: 'desc' },
         limit: 50,
@@ -324,7 +324,7 @@ export default function PostsDataPage() {
   // Update status mutation
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: ScheduledPost['status'] }) => {
-      return blink.db.scheduledPosts.update(id, { status });
+      return blink.db.table<any>('scheduledPosts').update(id, { status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduledPosts', userId] });
@@ -336,7 +336,7 @@ export default function PostsDataPage() {
   // Delete mutation
   const deletePost = useMutation({
     mutationFn: async (id: string) => {
-      return blink.db.scheduledPosts.delete(id);
+      return blink.db.table<any>('scheduledPosts').delete(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduledPosts', userId] });

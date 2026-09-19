@@ -240,7 +240,7 @@ async function sendQuotaAlertEmail(
     limit: snapshot.limit,
     remaining: snapshot.remaining,
     planId,
-    creditPackUrl: creditPackUrl || 'https://kompilot.blinkpowered.com/account?tab=billing',
+    creditPackUrl: creditPackUrl || 'https://www.kompilot.fr/account?tab=billing',
   });
 
   // Send via Blink Notifications (built-in email service)
@@ -268,7 +268,7 @@ async function buildCreditPackCheckoutUrl(
 
   const blink = getBlink(env);
   const meta = await getUserMeta(blink, userId);
-  let customerId = meta.stripe_customer_id as string | undefined;
+  const customerId = meta.stripe_customer_id as string | undefined;
 
   if (!customerId) return undefined; // can't pre-fill without a customer
 
@@ -281,8 +281,8 @@ async function buildCreditPackCheckoutUrl(
       'line_items[0][price_data][product_data][description]': '50 générations vidéo Luma AI + 500 requêtes SerpApi',
       'line_items[0][price_data][unit_amount]': '2900',
       'line_items[0][quantity]': '1',
-      success_url: 'https://kompilot.blinkpowered.com/dashboard?checkout=credit_pack_aio',
-      cancel_url: 'https://kompilot.blinkpowered.com/account?tab=billing',
+      success_url: 'https://www.kompilot.fr/dashboard?checkout=credit_pack_aio',
+      cancel_url: 'https://www.kompilot.fr/account?tab=billing',
       customer: customerId,
       'metadata[userId]': userId,
       'metadata[creditPack]': 'true',
@@ -403,7 +403,7 @@ function buildQuotaAlertEmailHtml(params: {
     <div style="background:#F8FAFC;padding:20px 32px;border-top:1px solid #E2E8F0;text-align:center;">
       <p style="margin:0;font-size:11px;color:#94A3B8;">
         Kompilot — Pilotage marketing automatisé pour professionnels<br>
-        <a href="https://kompilot.blinkpowered.com/account" style="color:#0D9488;text-decoration:none;">Gérer mon compte</a>
+        <a href="https://www.kompilot.fr/account" style="color:#0D9488;text-decoration:none;">Gérer mon compte</a>
         &nbsp;·&nbsp;
         <a href="mailto:support@kompilot.fr" style="color:#0D9488;text-decoration:none;">Support</a>
       </p>

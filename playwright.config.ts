@@ -52,7 +52,7 @@ export default defineConfig({
 
   // Re-use the already-running Vite dev server (port 3000)
   webServer: {
-    command: 'bun run dev --port 3000',
+    command: 'bun run dev -- --host 127.0.0.1 --port 3000',
     url: BASE_URL,
     reuseExistingServer: true,
     timeout: 60_000,

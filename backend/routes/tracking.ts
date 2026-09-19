@@ -23,6 +23,7 @@
  *   GADS_GBRAID            — gbraid de session (URL parameter, si capturé côté client)
  *   GADS_WBRAID            — wbraid de session (URL parameter, si capturé côté client)
  */
+import { requireBlinkProjectId } from '../lib/blinkConfig';
 import { Hono } from 'hono';
 import { createClient } from '@blinkdotnew/sdk';
 import type { Env } from '../lib/types';
@@ -30,7 +31,7 @@ import type { Env } from '../lib/types';
 export const router = new Hono<{ Bindings: Env }>();
 
 const getBlink = (env: Env) =>
-  createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
 
 // ── Clés d'env lues via bracket notation pour éviter le scanner statique ──────
 // Toutes optionnelles (undefined si non configuré → canal ignoré)

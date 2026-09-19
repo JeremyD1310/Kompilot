@@ -13,13 +13,14 @@
  * Fail-open: if DB check errors, allow the scan (don't block legit users).
  */
 
+import { requireBlinkProjectId } from './blinkConfig';
 import { createClient } from '@blinkdotnew/sdk';
 
 const MAX_DEEP_SCANS_PER_HOUR = 3;
 
 function getBlink(env: Record<string, string>) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID,
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * ReferralLandingPage — /ref/:code
  *
@@ -12,7 +13,7 @@ import { Gift, Star, Zap, ArrowRight, CheckCircle2, Users, Shield, Sparkles, Cop
 import { blink } from '../blink/client';
 import { KompilotLogo } from '../components/brand/KompilotLogo';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Logo ────────────────────────────────────────────────────────────────────────
 function Logo() { return <KompilotLogo variant="icon" height={32} />; }
@@ -305,7 +306,7 @@ export default function ReferralLandingPage() {
         </button>
 
         <p style={{ fontSize: '.75rem', color: '#475569', marginBottom: 40 }}>
-          Essai gratuit 7 jours · Sans carte bancaire · Accès immédiat
+          Essai gratuit 14 jours · Sans carte bancaire · Accès immédiat
         </p>
 
         {/* Benefits */}

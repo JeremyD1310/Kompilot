@@ -1,10 +1,11 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 import { useState, useEffect, useCallback } from 'react';
 import { Page, PageHeader, PageTitle, PageDescription, PageBody, toast } from '@blinkdotnew/ui';
 import { Gift, Copy, Check, Send, Users, Zap, Star, ChevronRight, Trophy, TrendingUp, Clock } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { markReferralVisited } from '../components/dashboard/OnboardingChecklist';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

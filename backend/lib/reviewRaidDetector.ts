@@ -11,6 +11,7 @@
  * The check window is purely in-memory for performance (sliding window per call).
  */
 
+import { requireBlinkProjectId } from './blinkConfig';
 import { createClient } from '@blinkdotnew/sdk';
 
 const RAID_THRESHOLD = 10;   // negative reviews in the window
@@ -18,7 +19,7 @@ const RAID_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 function getBlink(env: Record<string, string>) {
   return createClient({
-    projectId: env.BLINK_PROJECT_ID,
+    projectId: requireBlinkProjectId(env),
     secretKey: env.BLINK_SECRET_KEY,
   });
 }

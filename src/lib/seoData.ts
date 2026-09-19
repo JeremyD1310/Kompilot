@@ -2,137 +2,102 @@ export const KOMPILOT_IDENTITY = {
   name: 'Kompilot',
   legalName: 'KOMPILOT SAS',
   domain: 'https://www.kompilot.fr',
-  supportEmail: 'support@kompilot.app',
-  definition: 'Kompilot est une plateforme SaaS B2B de marketing local qui aide les commerces, entreprises, réseaux et agences à piloter leurs contenus, avis clients et visibilité en ligne depuis un espace unifié.',
-  shortDefinition: 'Plateforme SaaS B2B de marketing local pour contenus, avis clients et visibilité en ligne.',
+  supportEmail: 'jeremy@kompilot.fr',
+  definition: 'Kompilot est un logiciel SaaS B2B qui centralise la création de contenus, les avis clients, les réseaux sociaux et le suivi de la visibilité locale et GEO.',
+  shortDefinition: 'Logiciel SaaS B2B de visibilité locale, communication multicanale et marketing assisté par IA.',
   address: 'France — adresse complète non publiée sur ce référentiel',
   leadership: 'Direction : information non publiée',
-  factualStatus: 'Référentiel public mis à jour le 14 septembre 2026 ; les résultats bêta non documentés ne sont pas publiés.',
+  lastModified: '2026-09-16',
 } as const;
 
-/** Public commercial facts. Keep this list aligned with the pricing source of truth. */
 import { KOMPILOT_PLANS_MONTHLY } from '../components/landing/pricing/PricingData';
 
-export const PUBLIC_PLANS = KOMPILOT_PLANS_MONTHLY.map(plan => ({
-  name: plan.name,
-  monthly: plan.monthlyPrice === null ? 'Sur devis' : `${plan.monthlyPrice} € HT / mois`,
-  annual: plan.yearlyTotal === null ? 'Sur devis' : `${plan.yearlyTotal} € HT / an`,
-  scope: plan.tagline,
-}));
+export const PUBLIC_PLANS = KOMPILOT_PLANS_MONTHLY
+  .filter(plan => plan.id === 'pro' || plan.id === 'multi' || plan.id === 'agency' || plan.id === 'enterprise')
+  .map(plan => ({
+    name: plan.name,
+    monthly: plan.monthlyPrice === null ? 'Sur devis' : `${plan.monthlyPrice} € HT / mois`,
+    annual: plan.yearlyTotal === null ? 'Sur devis' : `${plan.yearlyTotal} € HT / an`,
+    scope: plan.tagline,
+  }));
 
 export const PUBLIC_FEATURES = [
-  'Création et planification de contenus sociaux assistées par IA',
-  'Centralisation des messages et commentaires dans une inbox',
-  'Gestion et aide à la réponse aux avis clients',
-  'Suivi de visibilité locale et présence dans les réponses IA',
-  'Calendrier éditorial et pilotage multi-établissements',
-  'Rapports et espaces de travail pour agences',
+  'Création de contenus assistée par IA',
+  'Calendrier éditorial',
+  'Gestion des avis Google',
+  'Boîte de réception centralisée',
+  'Suivi de visibilité locale et GEO',
+  'Validation humaine avant publication',
 ] as const;
 
-export const USE_CASE_FAQS = [
-  { question: 'À qui s’adresse Kompilot ?', answer: 'Kompilot s’adresse aux commerces, entreprises locales, réseaux multi-établissements et agences qui veulent organiser leurs contenus, avis clients et actions de visibilité depuis un même espace.' },
-  { question: 'Kompilot publie-t-il automatiquement les contenus ?', answer: 'Kompilot propose de préparer et planifier des contenus. Les modalités de validation et de diffusion dépendent du canal connecté et des réglages du compte.' },
-  { question: 'Les contenus générés par IA sont-ils publiés sans contrôle ?', answer: 'Non. Les contenus générés doivent être relus et validés par l’utilisateur avant diffusion, conformément aux conditions d’utilisation de Kompilot.' },
-  { question: 'Kompilot fournit-il des résultats garantis ?', answer: 'Non. Kompilot fournit des outils de pilotage et d’analyse. Aucun gain de visibilité, de chiffre d’affaires ou de note d’avis n’est garanti.' },
+export const FAQ_ITEMS = [
+  { question: 'Qu’est-ce qu’un logiciel de visibilité locale ?', answer: 'Un logiciel de visibilité locale centralise les informations, contenus, avis et performances qui aident une entreprise à être trouvée par ses clients à proximité. Kompilot rassemble ces actions dans un cockpit destiné aux PME, commerces et agences.' },
+  { question: 'Qu’est-ce que le GEO ?', answer: 'Le GEO, ou Generative Engine Optimization, consiste à structurer les informations et les contenus d’une entreprise afin d’aider les moteurs de réponse comme ChatGPT, Gemini et Perplexity à mieux la comprendre et, lorsque leurs critères le permettent, à la mentionner dans leurs réponses.' },
+  { question: 'Kompilot garantit-il une apparition dans ChatGPT ou Gemini ?', answer: 'Non. Aucun outil ne peut garantir une citation dans un moteur de réponse. Kompilot aide à améliorer la clarté, la cohérence et la disponibilité des informations utilisées par les moteurs de recherche et les systèmes d’intelligence artificielle.' },
+  { question: 'Quelle différence entre Kompilot et ChatGPT ?', answer: 'ChatGPT est un assistant généraliste. Kompilot est un logiciel métier qui organise les informations d’une entreprise, centralise ses canaux, prépare ses contenus, structure ses validations et suit ses actions de visibilité locale et multicanale.' },
+  { question: 'Kompilot publie-t-il automatiquement ?', answer: 'Les contenus peuvent être préparés et planifiés dans Kompilot, mais la validation humaine reste obligatoire avant les publications, réponses, invitations et envois sensibles.' },
+  { question: 'Kompilot peut-il aider à répondre aux avis Google ?', answer: 'Oui. Kompilot centralise les avis et prépare des propositions de réponses adaptées au contexte. L’utilisateur relit et valide chaque réponse avant son envoi.' },
+  { question: 'Kompilot convient-il aux entreprises multi-établissements ?', answer: 'Oui. Les offres Multi et Agency permettent de gérer plusieurs établissements ou plusieurs clients depuis un même espace, avec des limites adaptées à chaque formule.' },
+  { question: 'À quels secteurs Kompilot s’adresse-t-il ?', answer: 'Kompilot s’adresse notamment aux restaurants, boutiques, commerces, professionnels de la beauté, coachs sportifs, artisans, professionnels de santé et du bien-être, acteurs de l’immobilier, PME et agences marketing.' },
+  { question: 'Combien de temps dure l’essai gratuit ?', answer: 'L’essai gratuit dure 14 jours et ne nécessite pas de carte bancaire. Il comprend un utilisateur, un établissement, 150 crédits IA et 10 SMS.' },
+  { question: 'Les données de mon entreprise sont-elles protégées ?', answer: 'Kompilot applique des mesures de sécurité et de contrôle d’accès adaptées à un logiciel SaaS B2B. Les traitements de données et les prestataires utilisés doivent être décrits précisément dans la politique de confidentialité et les documents contractuels.' },
+  { question: 'Puis-je résilier mon abonnement ?', answer: 'Les modalités de résiliation doivent correspondre aux conditions commerciales réellement appliquées. Afficher uniquement les conditions confirmées dans les CGV et dans le parcours Stripe.' },
 ] as const;
+
+export const USE_CASE_FAQS = FAQ_ITEMS;
 
 type GraphNode = Record<string, unknown>;
 
+function createOrganization() {
+  return {
+    '@type': 'Organization',
+    '@id': `${KOMPILOT_IDENTITY.domain}/#organization`,
+    name: KOMPILOT_IDENTITY.name,
+    legalName: KOMPILOT_IDENTITY.legalName,
+    url: `${KOMPILOT_IDENTITY.domain}/`,
+    logo: { '@type': 'ImageObject', url: `${KOMPILOT_IDENTITY.domain}/og-image.png`, width: 1200, height: 630 },
+    description: KOMPILOT_IDENTITY.definition,
+    email: KOMPILOT_IDENTITY.supportEmail,
+    contactPoint: { '@type': 'ContactPoint', contactType: 'customer service', email: KOMPILOT_IDENTITY.supportEmail, availableLanguage: ['fr'] },
+    areaServed: { '@type': 'Country', name: 'France' },
+  };
+}
+
+function createWebSite() {
+  return {
+    '@type': 'WebSite', '@id': `${KOMPILOT_IDENTITY.domain}/#website`, url: `${KOMPILOT_IDENTITY.domain}/`, name: 'Kompilot',
+    description: 'Logiciel de visibilité locale, communication B2B et marketing assisté par IA.', publisher: { '@id': `${KOMPILOT_IDENTITY.domain}/#organization` }, inLanguage: 'fr-FR',
+  };
+}
+
+function createWebPage(path: string, title: string, description: string) {
+  const url = `${KOMPILOT_IDENTITY.domain}${path === '/' ? '/' : path}`;
+  return { '@type': 'WebPage', '@id': `${url}#webpage`, url, name: title, description, isPartOf: { '@id': `${KOMPILOT_IDENTITY.domain}/#website` }, about: { '@id': `${KOMPILOT_IDENTITY.domain}/#software` }, publisher: { '@id': `${KOMPILOT_IDENTITY.domain}/#organization` }, inLanguage: 'fr-FR', dateModified: KOMPILOT_IDENTITY.lastModified };
+}
+
+function createSoftwareApplication() {
+  return {
+    '@type': 'SoftwareApplication', '@id': `${KOMPILOT_IDENTITY.domain}/#software`, name: 'Kompilot', url: `${KOMPILOT_IDENTITY.domain}/`, applicationCategory: 'BusinessApplication', applicationSubCategory: 'Marketing local, communication B2B et gestion de visibilité', operatingSystem: 'Web', description: 'Kompilot est un cockpit marketing assisté par IA pour centraliser la création de contenus, les avis clients, les messages, les réseaux sociaux et le suivi de la visibilité sur Google, ChatGPT et Gemini.', publisher: { '@id': `${KOMPILOT_IDENTITY.domain}/#organization` }, inLanguage: 'fr-FR', featureList: [...PUBLIC_FEATURES, 'Gestion multi-établissements', 'Gestion multi-clients pour les agences'], offers: KOMPILOT_PLANS_MONTHLY.filter(plan => plan.id === 'pro' || plan.id === 'multi' || plan.id === 'agency').map(plan => ({ '@type': 'Offer', name: `Kompilot ${plan.name} mensuel`, url: `${KOMPILOT_IDENTITY.domain}/pricing`, price: `${plan.monthlyPrice}.00`, priceCurrency: 'EUR', priceSpecification: { '@type': 'UnitPriceSpecification', price: `${plan.monthlyPrice}.00`, priceCurrency: 'EUR', billingDuration: 'P1M', valueAddedTaxIncluded: false }, availability: 'https://schema.org/InStock' })),
+  };
+}
+
 export function createBreadcrumbList(path: string, title: string) {
-  const items: Array<{ '@type': 'ListItem'; position: number; name: string; item: string }> = [
-    { '@type': 'ListItem', position: 1, name: 'Kompilot', item: `${KOMPILOT_IDENTITY.domain}/` },
-  ];
+  const items: Array<{ '@type': 'ListItem'; position: number; name: string; item: string }> = [{ '@type': 'ListItem', position: 1, name: 'Kompilot', item: `${KOMPILOT_IDENTITY.domain}/` }];
   if (path !== '/') items.push({ '@type': 'ListItem', position: 2, name: title, item: `${KOMPILOT_IDENTITY.domain}${path}` });
   return { '@type': 'BreadcrumbList', itemListElement: items };
 }
 
-function createWebPage(path: string, title: string, description: string) {
-  return {
-    '@type': 'WebPage',
-    '@id': `${KOMPILOT_IDENTITY.domain}${path}#webpage`,
-    url: `${KOMPILOT_IDENTITY.domain}${path}`,
-    name: title,
-    description,
-    isPartOf: { '@id': `${KOMPILOT_IDENTITY.domain}/#website` },
-    about: { '@id': `${KOMPILOT_IDENTITY.domain}/#organization` },
-    inLanguage: 'fr-FR',
-  };
-}
-
-/**
- * Page-specific structured data. Organization and WebSite are emitted once in
- * index.html; this graph only adds the schema that belongs to the current route.
- */
-export function createKompilotGraph(path: string, title: string, includeFaq = false, description = KOMPILOT_IDENTITY.shortDefinition) {
-  const graph: GraphNode[] = [createWebPage(path, title, description), createBreadcrumbList(path, title)];
-
-  if (path === '/pricing') {
-    graph.push({
-      '@type': 'Product',
-      '@id': `${KOMPILOT_IDENTITY.domain}/#product`,
-      name: 'Kompilot',
-      description: KOMPILOT_IDENTITY.definition,
-      brand: { '@type': 'Brand', name: 'Kompilot' },
-      category: 'Logiciel de marketing local',
-      offers: PUBLIC_PLANS.map(plan => ({
-        '@type': 'Offer',
-        name: plan.name,
-        description: plan.scope,
-        priceCurrency: 'EUR',
-        price: plan.monthly.replace(/[^0-9]/g, ''),
-        url: `${KOMPILOT_IDENTITY.domain}/pricing`,
-        availability: 'https://schema.org/InStock',
-      })),
-    });
-  }
-
-  if (includeFaq) {
-    graph.push({
-      '@type': 'FAQPage',
-      mainEntity: USE_CASE_FAQS.map(faq => ({
-        '@type': 'Question',
-        name: faq.question,
-        acceptedAnswer: { '@type': 'Answer', text: faq.answer },
-      })),
-    });
-  }
-
+export function createKompilotGraph(path: string, title: string, includeFaq = false, description: string = KOMPILOT_IDENTITY.shortDefinition) {
+  const graph: GraphNode[] = [createOrganization(), createWebSite(), createWebPage(path, title, description), createBreadcrumbList(path, title)];
+  if (path === '/' || path === '/pricing') graph.push(createSoftwareApplication());
+  if (includeFaq) graph.push({ '@type': 'FAQPage', '@id': `${KOMPILOT_IDENTITY.domain}/faq#faqpage`, url: `${KOMPILOT_IDENTITY.domain}/faq`, inLanguage: 'fr-FR', mainEntity: FAQ_ITEMS.map(faq => ({ '@type': 'Question', name: faq.question, acceptedAnswer: { '@type': 'Answer', text: faq.answer } })) });
   return { '@context': 'https://schema.org', '@graph': graph };
 }
 
-export function createFaqGraph(path: string, title: string, description: string, faqs: Array<{ question: string; answer: string }>) {
-  return {
-    '@context': 'https://schema.org',
-    '@graph': [
-      createWebPage(path, title, description),
-      createBreadcrumbList(path, title),
-      {
-        '@type': 'FAQPage',
-        mainEntity: faqs.map(faq => ({
-          '@type': 'Question',
-          name: faq.question,
-          acceptedAnswer: { '@type': 'Answer', text: faq.answer },
-        })),
-      },
-    ],
-  };
+export function createFaqGraph(path: string, title: string, description: string, faqs: ReadonlyArray<{ question: string; answer: string }> = FAQ_ITEMS) {
+  return { '@context': 'https://schema.org', '@graph': [createOrganization(), createWebSite(), createWebPage(path, title, description), createBreadcrumbList(path, title), { '@type': 'FAQPage', '@id': `${KOMPILOT_IDENTITY.domain}/faq#faqpage`, url: `${KOMPILOT_IDENTITY.domain}/faq`, inLanguage: 'fr-FR', mainEntity: faqs.map(faq => ({ '@type': 'Question', name: faq.question, acceptedAnswer: { '@type': 'Answer', text: faq.answer } })) }] };
 }
 
 export function createSectorGraph(path: string, title: string, sectorName: string, description: string) {
-  return {
-    '@context': 'https://schema.org',
-    '@graph': [
-      createWebPage(path, title, description),
-      createBreadcrumbList(path, title),
-      {
-        '@type': 'Service',
-        '@id': `${KOMPILOT_IDENTITY.domain}${path}#service`,
-        name: `Marketing local pour ${sectorName}`,
-        description,
-        serviceType: 'Marketing local et gestion de présence en ligne',
-        provider: { '@id': `${KOMPILOT_IDENTITY.domain}/#organization` },
-        areaServed: { '@type': 'Country', name: 'France' },
-      },
-    ],
-  };
+  return { '@context': 'https://schema.org', '@graph': [createOrganization(), createWebSite(), createWebPage(path, title, description), createBreadcrumbList(path, title), { '@type': 'Service', '@id': `${KOMPILOT_IDENTITY.domain}${path}#service`, name: `Marketing local pour ${sectorName}`, description, serviceType: 'Marketing local et gestion de présence en ligne', provider: { '@id': `${KOMPILOT_IDENTITY.domain}/#organization` }, areaServed: { '@type': 'Country', name: 'France' } }] };
 }

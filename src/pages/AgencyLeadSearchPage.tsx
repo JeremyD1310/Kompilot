@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * AgencyLeadSearchPage — /agence/lead-search
  *
@@ -19,7 +20,7 @@ import { blink } from '../blink/client';
 import { useSubscription } from '../context/SubscriptionContext';
 import { DeepScanProgressModal } from '../components/onboarding/DeepScanProgressModal';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? KOMPILOT_BACKEND_URL;
 
 interface PlaceResult {
   placeId:               string;
@@ -150,12 +151,6 @@ export default function AgencyLeadSearchPage() {
   const [deepScanOpen, setDeepScanOpen] = useState(false);
   const [pendingSearch, setPendingSearch] = useState(false);
 
-  // Agency-only gating: show upsell for non-agency users
-  const isAgency = (currentPlan.id === 'expert') || (currentPlan.id as string).includes('agency');
-  if (!isAgency) {
-    return <AgencyUpsellWall onUpgrade={() => navigate({ to: '/subscription' })} />;
-  }
-
   const runActualSearch = useCallback(async () => {
     setLoading(true);
     setResults([]);
@@ -237,6 +232,10 @@ export default function AgencyLeadSearchPage() {
   }, [runActualSearch]);
 
   const alertCount = results.filter(r => r.status !== 'ok').length;
+  const isAgency = currentPlan.id === 'agency';
+  if (!isAgency) {
+    return <AgencyUpsellWall onUpgrade={() => navigate({ to: '/subscription' })} />;
+  }
 
   return (
     <>

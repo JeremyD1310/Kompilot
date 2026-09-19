@@ -26,26 +26,24 @@ export function CurrentPlanBadge({ planId, status, className = '' }: CurrentPlan
     );
   }
 
-  if (status === 'active' && planId === 'pro') {
+  if (status === 'active' && (planId === 'pro' || planId === 'multi' || planId === 'agency')) {
+    const styles = planId === 'agency'
+      ? 'bg-violet-100 text-violet-700 border-violet-200'
+      : planId === 'multi'
+        ? 'bg-blue-100 text-blue-700 border-blue-200'
+        : 'bg-teal-100 text-teal-700 border-teal-200';
+    const label = planId === 'agency' ? 'Agency' : planId === 'multi' ? 'Multi' : 'Pro';
     return (
-      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-100 text-teal-700 border border-teal-200 ${className}`}>
-        Plan Pro ✓
+      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-semibold ${styles} ${className}`}>
+        Plan {label} ✓
       </span>
     );
   }
 
-  if (status === 'active' && planId === 'expert') {
-    return (
-      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700 border border-violet-200 ${className}`}>
-        Plan Expert ✓
-      </span>
-    );
-  }
-
-  // default / free
+  // Unknown or pending state.
   return (
     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200 ${className}`}>
-      Gratuit
+      En attente
     </span>
   );
 }

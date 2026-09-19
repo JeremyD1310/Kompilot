@@ -35,8 +35,8 @@ function useActivityLogs(userId: string | undefined) {
     queryFn: async () => {
       if (!userId) return [];
       const [posts, messages] = await Promise.all([
-        blink.db.scheduledPosts.list({ where: { userId }, orderBy: { createdAt: 'desc' }, limit: 6 }),
-        blink.db.messages.list({ where: { userId }, orderBy: { createdAt: 'desc' }, limit: 4 }),
+        blink.db.table<any>('scheduledPosts').list({ where: { userId }, orderBy: { createdAt: 'desc' }, limit: 6 }),
+        blink.db.table<any>('messages').list({ where: { userId }, orderBy: { createdAt: 'desc' }, limit: 4 }),
       ]);
       const logs: ActivityLog[] = [];
       for (const p of posts) {

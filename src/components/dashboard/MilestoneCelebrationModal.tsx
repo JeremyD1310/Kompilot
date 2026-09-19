@@ -172,16 +172,20 @@ const PALETTE = {
 
 interface Props {
   data: LocalVisibilityData;
+  recordedEventId: string;
+  recordedAt: string;
+  onAcknowledged?: (eventId: string) => void | Promise<void>;
   className?: string;
 }
 
-export function MilestoneCelebrationModal({ data }: Props) {
+export function MilestoneCelebrationModal({ data, recordedEventId, recordedAt, onAcknowledged }: Props) {
   const navigate = useNavigate();
   const [milestone, setMilestone] = useState<MilestoneEvent | null>(null);
   const [show, setShow] = useState(false);
 
-  // Detect milestone on data mount (with 2s delay to avoid immediate popup)
+  // A celebration is only eligible when the backend supplied a persisted event.
   useEffect(() => {
+    if (!recordedEventId || !recordedAt || Number.isNaN(Date.parse(recordedAt))) return;
     const timer = setTimeout(() => {
       const detected = detectMilestone(data);
       if (detected) {
@@ -190,30 +194,32 @@ export function MilestoneCelebrationModal({ data }: Props) {
       }
     }, 2000);
     return () => clearTimeout(timer);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [data, recordedAt, recordedEventId]);
 
   // Auto-dismiss after 8s
   useEffect(() => {
     if (!show) return;
-    const timer = setTimeout(() => setShow(false), 8000);
+    const timer = setTimeout(() => {
+      if (milestone) markCelebrated(milestone.id);
+      setShow(false);
+      void onAcknowledged?.(recordedEventId);
+    }, 8000);
     return () => clearTimeout(timer);
-  }, [show]);
-
-  const handleClose = useCallback(() => {
-    setShow(false);
-  }, []);
+  }, [milestone, onAcknowledged, recordedEventId, show]);
 
   const handleCTA = useCallback(() => {
     if (!milestone) return;
     markCelebrated(milestone.id);
     setShow(false);
+    void onAcknowledged?.(recordedEventId);
     navigate({ to: milestone.href as any });
-  }, [milestone, navigate]);
+  }, [milestone, navigate, onAcknowledged, recordedEventId]);
 
   const handleDismiss = useCallback(() => {
     if (milestone) markCelebrated(milestone.id);
     setShow(false);
-  }, [milestone]);
+    void onAcknowledged?.(recordedEventId);
+  }, [milestone, onAcknowledged, recordedEventId]);
 
   const palette = PALETTE[milestone?.color ?? 'emerald'];
 

@@ -69,7 +69,7 @@ function BreakdownBar({ item, index }: { item: BreakdownItem; index: number }) {
           style={{ backgroundColor: item.color }}
           initial={{ width: 0 }}
           animate={{ width: `${item.value}%` }}
-          transition={{ duration: 1.2, delay: 0.3 + index * 0.1, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ duration: 1.2, delay: 0.3 + index * 0.1, ease: [0.4, 0, 0.2, 1] as const }}
         />
       </div>
     </div>
@@ -100,7 +100,7 @@ export function VisibilityScoreWidget({
       className="bg-card border border-border rounded-2xl overflow-hidden"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] as const }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-border">

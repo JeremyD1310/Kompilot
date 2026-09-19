@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useAnnualPlanSwitch — Hook for switching from monthly to annual billing.
  *
@@ -5,14 +6,13 @@
  * monthly→yearly transitions with proration.
  *
  * The annual pricing is:
- *   Starter: 690€/an (69€ × 10 = 2 mois offerts, équivalent 57.50€/mois)
- *   Agency:  1490€/an (149€ × 10 = 2 mois offerts, équivalent 124.17€/mois)
+ * Annual prices come from the canonical commercial catalogue.
  */
 
 import { useState, useCallback } from 'react';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 export interface AnnualPlanInfo {
   planId: string;
@@ -24,21 +24,29 @@ export interface AnnualPlanInfo {
 }
 
 export const ANNUAL_PLANS: Record<string, AnnualPlanInfo> = {
-  starter: {
-    planId: 'starter',
+  pro: {
+    planId: 'pro',
     monthlyPrice: 69,
     annualTotal: 690,
     monthlyEquiv: 57.50,
     savings: 138,              // 69 × 2
-    stripeEnvKey: 'PRICE_STARTER_YEARLY_ID',
+    stripeEnvKey: 'kompilot_pro_annual',
+  },
+  multi: {
+    planId: 'multi',
+    monthlyPrice: 129,
+    annualTotal: 1290,
+    monthlyEquiv: 107.50,
+    savings: 258,
+    stripeEnvKey: 'kompilot_multi_annual',
   },
   agency: {
     planId: 'agency',
-    monthlyPrice: 149,
-    annualTotal: 1490,
-    monthlyEquiv: 124.17,
-    savings: 298,              // 149 × 2
-    stripeEnvKey: 'PRICE_AGENCY_YEARLY_ID',
+    monthlyPrice: 229,
+    annualTotal: 2290,
+    monthlyEquiv: 190.83,
+    savings: 458,
+    stripeEnvKey: 'kompilot_agency_annual',
   },
 };
 

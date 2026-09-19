@@ -79,7 +79,7 @@ export function TrendRadarWidget({ onOpenStoryCreator }: TrendRadarWidgetProps) 
   const sector = profile?.sector?.toLowerCase() ?? 'default';
   const trends: Trend[] = TRENDS_BY_SECTOR[sector] ?? TRENDS_BY_SECTOR.default;
   // Demo mode gives full access — bypass free plan gate
-  const isFreePlan = plan === 'free' && !isDemoActive;
+  const isFreePlan = false;
 
   return (
     <Card className="border-border/60 shadow-sm overflow-hidden">
@@ -125,7 +125,7 @@ export function TrendRadarWidget({ onOpenStoryCreator }: TrendRadarWidgetProps) 
               <TrendRow
                 key={i}
                 trend={trend}
-                locked={trend.type === 'audio' && plan === 'pro' ? 'expert' : 'none'}
+                locked={trend.type === 'audio' && plan === 'pro' ? 'agency' : 'none'}
                 onCtaClick={trend.type === 'audio' ? onOpenStoryCreator : undefined}
               />
             ))}
@@ -148,11 +148,11 @@ function TrendRow({
   onCtaClick,
 }: {
   trend: Trend;
-  locked: 'none' | 'expert' | 'preview';
+  locked: 'none' | 'agency' | 'preview';
   onCtaClick?: () => void;
 }) {
   const badgeClass = BADGE_COLORS[trend.badge] ?? 'bg-muted text-muted-foreground border-border';
-  const isBlurred  = locked === 'expert';
+  const isBlurred  = locked === 'agency';
 
   return (
     <div className="relative rounded-xl border border-border/50 bg-muted/20 px-4 py-3 flex items-start gap-3">

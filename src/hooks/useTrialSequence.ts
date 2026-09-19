@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useTrialSequence — fires the trial email sequence check once per session.
  *
@@ -10,7 +11,7 @@
 import { useEffect, useRef } from 'react';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = `https://gbrhsehk.backend.blink.new`;
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 const SESSION_KEY = 'trial_seq_checked_v1';
 
 export function useTrialSequence(userId: string | undefined) {

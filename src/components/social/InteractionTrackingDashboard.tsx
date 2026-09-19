@@ -270,7 +270,7 @@ export const InteractionTrackingDashboard: React.FC = () => {
                 </div>
               ) : (
                 <div className="[&_tr]:group">
-                  <DataTable columns={columns} data={filtered} className="border-0 shadow-none" />
+                  <DataTable columns={columns} data={filtered} />
                 </div>
               )}
             </CardContent>

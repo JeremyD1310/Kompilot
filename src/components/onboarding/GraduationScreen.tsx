@@ -61,7 +61,7 @@ function InlineParticles() {
           key={p.id}
           initial={{ opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 }}
           animate={{ opacity: 0, x: p.x, y: p.y, rotate: p.rotate, scale: 0.3 }}
-          transition={{ duration: 0.9 + p.delay, delay: p.delay, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.9 + p.delay, delay: p.delay, ease: [0.22, 1, 0.36, 1] as const }}
           className="absolute rounded-sm"
           style={{ width: p.size, height: p.size * 0.55, background: p.color }}
         />
@@ -224,7 +224,7 @@ function ShimmerButton({ onClick }: { onClick: () => void }) {
       whileTap={{ scale: 0.97 }}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 2.3, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay: 2.3, duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
       className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-primary via-teal-500 to-emerald-500 text-white text-sm font-extrabold py-4 shadow-xl shadow-primary/30 transition-shadow hover:shadow-2xl hover:shadow-primary/40"
     >
       {/* Shimmer sweep */}
@@ -345,7 +345,7 @@ export function GraduationScreen({ onClaimBonus }: Props) {
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ delay: 0.55, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ delay: 0.55, duration: 0.45, ease: [0.22, 1, 0.36, 1] as const }}
         className="relative rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/4 via-teal-50/50 to-emerald-50/30 dark:from-primary/8 dark:via-teal-950/20 dark:to-emerald-950/10 p-4 overflow-hidden text-left"
       >
         <DiplomaWatermark />
@@ -366,7 +366,7 @@ export function GraduationScreen({ onClaimBonus }: Props) {
               key={skill.label}
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.7 + i * 0.11, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ delay: 0.7 + i * 0.11, duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
               className="flex items-center gap-2.5"
             >
               <AnimatedCheck delay={0.75 + i * 0.11} />
@@ -401,7 +401,7 @@ export function GraduationScreen({ onClaimBonus }: Props) {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.3, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ delay: 1.3, duration: 0.45, ease: [0.22, 1, 0.36, 1] as const }}
         className="rounded-2xl border-2 border-amber-300 dark:border-amber-700 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 dark:from-amber-950/25 dark:via-yellow-950/15 dark:to-orange-950/10 p-4 space-y-3 text-left overflow-hidden relative"
       >
         {/* Glow blob */}

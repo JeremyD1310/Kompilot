@@ -1,3 +1,4 @@
+import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
 /**
  * useWeeklyAIOReport — Displays a weekly AIO performance summary in the dashboard.
  *
@@ -19,7 +20,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
 import { blink } from '../blink/client';
 
-const BACKEND_URL = 'https://gbrhsehk.backend.blink.new';
+const BACKEND_URL = KOMPILOT_BACKEND_URL;
 
 export interface WeeklyAIOReport {
   weekOf: string;

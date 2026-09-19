@@ -35,7 +35,7 @@ export function AddClientModal({ open, onClose, onAdd, userId }: {
     try {
       const id = crypto.randomUUID();
       const newClientUserId = crypto.randomUUID();
-      await blink.db.agencySubAccounts.create({
+      await blink.db.table<any>('agencySubAccounts').create({
         id,
         agencyUserId: userId,
         clientUserId: newClientUserId,
@@ -47,7 +47,7 @@ export function AddClientModal({ open, onClose, onAdd, userId }: {
       // If the agency has enabled sub-account inheritance, apply notification settings to the new client
       if (agencyNotifSettings.applyToSubAccounts) {
         try {
-          await blink.db.userNotificationSettings.create({
+          await blink.db.table<any>('userNotificationSettings').create({
             userId: newClientUserId,
             showGeoAlerts:    agencyNotifSettings.showGeoAlerts    ? 1 : 0,
             showStripeAlerts: agencyNotifSettings.showStripeAlerts ? 1 : 0,
