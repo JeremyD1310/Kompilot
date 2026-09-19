@@ -35,15 +35,22 @@ export default defineConfig({
       name: 'Chromium (Desktop)',
       use: { ...devices['Desktop Chrome'] },
     },
-    // Mobile Safari disabled: WebKit binary not available in this environment.
-    // Run `npx playwright install webkit` on a local machine to enable it.
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 14'] },
-    // },
+    {
+      name: 'Width 375',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true },
+    },
+    {
+      name: 'Width 390',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
+    },
+    {
+      name: 'Width 768',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 }, isMobile: false, hasTouch: true },
+    },
+    // Mobile Safari requires the WebKit browser binary, which is not installed in this environment.
   ],
   webServer: {
-    command: 'npm run dev -- --host 127.0.0.1 --port 3000',
+    command: 'bun run dev -- --host 127.0.0.1 --port 3000',
     url: BASE_URL,
     reuseExistingServer: true,
     timeout: 60_000,
