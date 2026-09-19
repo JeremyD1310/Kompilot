@@ -11,6 +11,8 @@ import {
   ShoppingCart, Search, FileText, Star, Calendar, BarChart2, Zap, ArrowRight,
 } from 'lucide-react';
 import { blink } from '../blink/client';
+import { usePageSeo } from '../hooks/usePageSeo';
+import { createKompilotGraph } from '../lib/seoData';
 
 interface WeekStep {
   title: string;
@@ -135,6 +137,9 @@ function WeekCard({ week, isOpen, onToggle }: { week: Week; isOpen: boolean; onT
 }
 
 export default function PlaybookEcommercePage() {
+  const seoTitle = 'Playbook marketing e-commerce sur 4 semaines | Kompilot';
+  const seoDescription = 'Un plan d’action Kompilot sur quatre semaines pour structurer les contenus, les avis, les données produit et la visibilité IA d’un e-commerce.';
+  usePageSeo(seoTitle, seoDescription, '/playbook/e-commerce', { structuredData: createKompilotGraph('/playbook/e-commerce', seoTitle, false, seoDescription) });
   const [openWeek, setOpenWeek] = useState<number | null>(1);
   const cta = () => blink.auth.login(window.location.origin + '/dashboard');
 

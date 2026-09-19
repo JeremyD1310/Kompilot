@@ -5,7 +5,6 @@
 import { motion } from 'framer-motion';
 import { Monitor, Moon, Sparkles, CheckCircle2, Zap, BatteryCharging, ShieldCheck } from 'lucide-react';
 import { useDarkMode, type ThemeMode } from '../../context/DarkModeContext';
-import { useObsidianTheme } from '../../context/ObsidianThemeContext';
 import { Switch } from '@blinkdotnew/ui';
 import { BrandTypographySection } from '../settings/BrandTypographySection';
 import { useAuth } from '../../hooks/useAuth';
@@ -52,7 +51,6 @@ const THEMES: ThemeOption[] = [
 
 export function AppearanceTab() {
   const { themeMode, setThemeMode } = useDarkMode();
-  const { obsidianEnabled, toggleObsidian } = useObsidianTheme();
   const { user } = useAuth();
 
   return (
@@ -151,8 +149,8 @@ export function AppearanceTab() {
             </p>
           </div>
           <Switch 
-            checked={obsidianEnabled} 
-            onCheckedChange={toggleObsidian}
+            checked={themeMode === 'obsidian'}
+            onCheckedChange={(checked) => setThemeMode(checked ? 'obsidian' : 'light')}
           />
         </div>
       </div>

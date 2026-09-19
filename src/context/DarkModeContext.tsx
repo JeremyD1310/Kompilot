@@ -32,9 +32,9 @@ const DarkModeContext = createContext<DarkModeContextType>({
 // Apply theme classes to <html>
 function applyTheme(mode: ThemeMode) {
   const el = document.documentElement;
-  el.classList.remove('dark', 'obsidian');
+  el.classList.remove('dark', 'obsidian', 'theme-obsidian');
   if (mode === 'dark')     el.classList.add('dark');
-  if (mode === 'obsidian') { el.classList.add('dark', 'obsidian'); }
+  if (mode === 'obsidian') { el.classList.add('dark', 'obsidian', 'theme-obsidian'); }
 }
 
 export function DarkModeProvider({ children }: { children: ReactNode }) {
@@ -45,6 +45,9 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
       // Legacy 'dark' / 'light' key migration
       const legacy = localStorage.getItem('kompilot_dark_mode');
       if (legacy === 'dark') return 'dark';
+      // Legacy ObsidianThemeContext migration. This key can be removed after
+      // users have had one release cycle to migrate to kompilot_theme_mode.
+      if (localStorage.getItem('nc_theme_obsidian') === '1') return 'obsidian';
     } catch {}
     return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
@@ -61,6 +64,7 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
   // Persist + apply on change
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, themeMode); } catch {}
+    try { localStorage.removeItem('nc_theme_obsidian'); } catch {}
     applyTheme(themeMode);
   }, [themeMode]);
 

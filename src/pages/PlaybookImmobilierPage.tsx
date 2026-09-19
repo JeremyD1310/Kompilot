@@ -14,6 +14,8 @@ import {
   MapPin, Search, FileText, Star, Calendar, BarChart2, Zap, ArrowRight,
 } from 'lucide-react';
 import { blink } from '../blink/client';
+import { usePageSeo } from '../hooks/usePageSeo';
+import { createKompilotGraph } from '../lib/seoData';
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
@@ -285,6 +287,9 @@ function WeekCard({ week, isOpen, onToggle }: { week: Week; isOpen: boolean; onT
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function PlaybookImmobilierPage() {
+  const seoTitle = 'Playbook marketing immobilier sur 4 semaines | Kompilot';
+  const seoDescription = 'Un plan d’action Kompilot sur quatre semaines pour structurer la visibilité locale, les contenus et les avis d’une agence immobilière.';
+  usePageSeo(seoTitle, seoDescription, '/playbook/immobilier', { structuredData: createKompilotGraph('/playbook/immobilier', seoTitle, false, seoDescription) });
   const [openWeek, setOpenWeek] = useState<number | null>(1);
   const cta = () => blink.auth.login(window.location.origin + '/dashboard');
 

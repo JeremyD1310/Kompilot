@@ -76,8 +76,14 @@ function createWebPage(path: string, title: string, description: string) {
 }
 
 function createSoftwareApplication() {
+  const offers = KOMPILOT_PLANS_MONTHLY
+    .filter(plan => plan.id === 'pro' || plan.id === 'multi' || plan.id === 'agency')
+    .flatMap(plan => [
+      { '@type': 'Offer', name: `Kompilot ${plan.name} mensuel`, url: `${KOMPILOT_IDENTITY.domain}/pricing`, price: `${plan.monthlyPrice}.00`, priceCurrency: 'EUR', priceSpecification: { '@type': 'UnitPriceSpecification', price: `${plan.monthlyPrice}.00`, priceCurrency: 'EUR', billingDuration: 'P1M', valueAddedTaxIncluded: false }, availability: 'https://schema.org/InStock' },
+      { '@type': 'Offer', name: `Kompilot ${plan.name} annuel`, url: `${KOMPILOT_IDENTITY.domain}/pricing`, price: `${plan.yearlyTotal}.00`, priceCurrency: 'EUR', priceSpecification: { '@type': 'UnitPriceSpecification', price: `${plan.yearlyTotal}.00`, priceCurrency: 'EUR', billingDuration: 'P1Y', valueAddedTaxIncluded: false }, availability: 'https://schema.org/InStock' },
+    ]);
   return {
-    '@type': 'SoftwareApplication', '@id': `${KOMPILOT_IDENTITY.domain}/#software`, name: 'Kompilot', url: `${KOMPILOT_IDENTITY.domain}/`, applicationCategory: 'BusinessApplication', applicationSubCategory: 'Marketing local, communication B2B et gestion de visibilité', operatingSystem: 'Web', description: 'Kompilot est un cockpit marketing assisté par IA pour centraliser la création de contenus, les avis clients, les messages, les réseaux sociaux et le suivi de la visibilité sur Google, ChatGPT et Gemini.', publisher: { '@id': `${KOMPILOT_IDENTITY.domain}/#organization` }, inLanguage: 'fr-FR', featureList: [...PUBLIC_FEATURES, 'Gestion multi-établissements', 'Gestion multi-clients pour les agences'], offers: KOMPILOT_PLANS_MONTHLY.filter(plan => plan.id === 'pro' || plan.id === 'multi' || plan.id === 'agency').map(plan => ({ '@type': 'Offer', name: `Kompilot ${plan.name} mensuel`, url: `${KOMPILOT_IDENTITY.domain}/pricing`, price: `${plan.monthlyPrice}.00`, priceCurrency: 'EUR', priceSpecification: { '@type': 'UnitPriceSpecification', price: `${plan.monthlyPrice}.00`, priceCurrency: 'EUR', billingDuration: 'P1M', valueAddedTaxIncluded: false }, availability: 'https://schema.org/InStock' })),
+    '@type': 'SoftwareApplication', '@id': `${KOMPILOT_IDENTITY.domain}/#software`, name: 'Kompilot', url: `${KOMPILOT_IDENTITY.domain}/`, applicationCategory: 'BusinessApplication', applicationSubCategory: 'Marketing local, communication B2B et gestion de visibilité', operatingSystem: 'Web', description: 'Kompilot est un cockpit marketing assisté par IA pour centraliser la création de contenus, les avis clients, les messages, les réseaux sociaux et le suivi de la visibilité sur Google, ChatGPT et Gemini.', publisher: { '@id': `${KOMPILOT_IDENTITY.domain}/#organization` }, inLanguage: 'fr-FR', featureList: [...PUBLIC_FEATURES, 'Gestion multi-établissements', 'Gestion multi-clients pour les agences'], offers,
   };
 }
 
@@ -100,4 +106,15 @@ export function createFaqGraph(path: string, title: string, description: string,
 
 export function createSectorGraph(path: string, title: string, sectorName: string, description: string) {
   return { '@context': 'https://schema.org', '@graph': [createOrganization(), createWebSite(), createWebPage(path, title, description), createBreadcrumbList(path, title), { '@type': 'Service', '@id': `${KOMPILOT_IDENTITY.domain}${path}#service`, name: `Marketing local pour ${sectorName}`, description, serviceType: 'Marketing local et gestion de présence en ligne', provider: { '@id': `${KOMPILOT_IDENTITY.domain}/#organization` }, areaServed: { '@type': 'Country', name: 'France' } }] };
+}
+
+export function createTestimonialsGraph(path: string, title: string, description: string, testimonials: ReadonlyArray<{ name: string; quote: string }>) {
+  const graph = createKompilotGraph(path, title, false, description);
+  graph['@graph'].push(...testimonials.map(testimonial => ({
+    '@type': 'Review',
+    itemReviewed: { '@id': `${KOMPILOT_IDENTITY.domain}/#software` },
+    author: { '@type': 'Person', name: testimonial.name },
+    reviewBody: testimonial.quote,
+  })));
+  return graph;
 }

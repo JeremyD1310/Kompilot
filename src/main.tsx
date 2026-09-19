@@ -22,7 +22,6 @@ function UserProfileProviderWithAuth({ children }: { children: React.ReactNode }
   return <UserProfileProvider userId={userId}>{children}</UserProfileProvider>;
 }
 import { DarkModeProvider, useDarkMode } from './context/DarkModeContext'
-import { ObsidianThemeProvider } from './context/ObsidianThemeContext'
 import { DemoModeProvider } from './context/DemoModeContext'
 import { DemoViewProvider } from './context/DemoViewContext'
 import { DemoDataProvider } from './context/DemoDataProvider'
@@ -127,12 +126,10 @@ function ThemedApp() {
 
 appRoot.render(
   <React.StrictMode>
-    <ObsidianThemeProvider>
-      <DarkModeProvider>
-        <QueryClientProvider client={queryClient}>
-          <ThemedApp />
-        </QueryClientProvider>
-      </DarkModeProvider>
-    </ObsidianThemeProvider>
+    <DarkModeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemedApp />
+      </QueryClientProvider>
+    </DarkModeProvider>
   </React.StrictMode>,
 )
