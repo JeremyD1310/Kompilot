@@ -386,6 +386,9 @@ export default function GeoAuthorityPage() {
         <PageDescription>
           Mesurez si ChatGPT, Gemini, Perplexity, Claude et Apple Intelligence recommandent votre établissement lors de recherches locales.
         </PageDescription>
+        <a href="/website-scan" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
+          <Globe size={14} /> Analyser aussi le site professionnel <ArrowRight size={14} />
+        </a>
       </PageHeader>
 
       <PageBody>

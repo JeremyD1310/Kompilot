@@ -12,7 +12,7 @@ const HELPDESK_FAQS = [
     iconColor: 'text-blue-600',
     iconBg: 'bg-blue-50',
     question: 'Comment connecter mes comptes LinkedIn et Instagram ?',
-    answer: 'Depuis votre Tableau de bord, cliquez sur le bouton "Connecter un compte" en haut à droite. Une fenêtre s\'ouvre avec la liste des réseaux disponibles (LinkedIn, Instagram Pro, TikTok, Google Business). Cliquez sur le réseau voulu pour déplier le formulaire, saisissez votre identifiant (email ou nom d\'utilisateur) ET votre mot de passe — les deux champs sont obligatoires. Le bouton "Lier le compte" s\'active automatiquement dès que les deux champs sont remplis. Une vérification de 2 secondes s\'effectue, puis vos statistiques s\'affichent immédiatement sur le Dashboard.',
+    answer: 'Depuis votre Tableau de bord, cliquez sur « Connecter un compte », choisissez LinkedIn, Instagram Pro, TikTok ou Google Business, puis autorisez Kompilot sur la page sécurisée du réseau. Kompilot ne demande et ne stocke jamais votre mot de passe. Vous pouvez révoquer l’accès depuis le réseau concerné.',
     tags: ['connexion', 'linkedin', 'instagram', 'identifiant'],
   },
   {
@@ -86,7 +86,7 @@ const GUIDE_CARDS = [
     tipColor: 'text-violet-700',
     description: 'Connectez vos réseaux, créez votre premier post et planifiez-le en moins de 2 minutes.',
     steps: [
-      { num: '1', title: 'Connectez un réseau social', text: 'Depuis le Tableau de bord, cliquez sur "Connecter un compte" et saisissez vos identifiants (LinkedIn, Instagram, TikTok ou Google Business).' },
+      { num: '1', title: 'Connectez un réseau social', text: 'Depuis le Tableau de bord, cliquez sur « Connecter un compte », puis autorisez Kompilot via la page OAuth sécurisée de LinkedIn, Instagram, TikTok ou Google Business. Votre mot de passe n’est jamais demandé par Kompilot.' },
       { num: '2', title: 'Créez votre premier post', text: 'Utilisez le bouton "+ Créer un post" dans le menu latéral. Rédigez votre message ou laissez l\'IA le générer à votre place.' },
       { num: '3', title: 'Planifiez ou publiez', text: 'Choisissez "Publier maintenant" ou "Ajouter à la file d\'attente" pour planifier automatiquement sur vos meilleurs créneaux.' },
     ],

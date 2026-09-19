@@ -8,7 +8,7 @@ import { BACKEND_URL as KOMPILOT_BACKEND_URL } from '@/lib/backend';
  * 3. Dedicated landing page URL for the merchant to share
  * 4. List of captured leads with SMS status
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   Page, PageHeader, PageTitle, PageDescription, PageBody,
   Button, Badge, Card, toast,
@@ -310,7 +310,7 @@ function LeadsTable({ leads }: { leads: CapturedLead[] }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function LeadGenPage() {
-  const { user } = useEstablishment ? useEstablishment() as any : { user: null };
+  const { user } = useEstablishment() as any;
   const [offerLabel,  setOfferLabel]  = useState('');
   const [couponCode,  setCouponCode]  = useState('');
   const [activeTab,  setActiveTab]    = useState<'widget' | 'leads'>('widget');
@@ -318,9 +318,9 @@ export default function LeadGenPage() {
 
   // Get auth user id
   const [userId, setUserId] = useState('');
-  useState(() => {
+  useEffect(() => {
     blink.auth.me().then(u => { if (u?.id) setUserId(u.id); }).catch(() => {});
-  });
+  }, []);
 
   const establishmentId = (user as any)?.id ?? '';
 

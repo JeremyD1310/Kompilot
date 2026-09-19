@@ -7,7 +7,11 @@
  * on the client side, but the server sends hashed data directly to the APIs).
  *
  * Usage:
- *   <script src="https://your-domain.com/kompilot-tracker.js" async></script>
+ *   <script
+ *     src="https://www.kompilot.fr/kompilot-tracker.js"
+ *     data-endpoint="https://api.kompilot.fr/api/tracking/conversion"
+ *     async
+ *   ></script>
  *   <script>
  *     // Fire a conversion event
  *     KompilotTracker.track('Purchase', {
@@ -28,8 +32,14 @@
 (function (window) {
   'use strict';
 
-  // ── Config — replace GATEWAY_URL with your backend domain ─────────────────
-  const GATEWAY_URL = 'https://gbrhsehk.backend.blink.new/api/tracking/conversion';
+  // ── Config — explicit and fail-closed; never fall back to a retired backend ─
+  const script = document.currentScript;
+  const configuredEndpoint = script && script.dataset ? script.dataset.endpoint : '';
+  let GATEWAY_URL = '';
+  try {
+    const endpoint = new URL(configuredEndpoint);
+    if (endpoint.protocol === 'https:') GATEWAY_URL = endpoint.toString();
+  } catch { /* invalid or missing endpoint: tracking remains disabled */ }
 
   // ── Collect URL click IDs on page load ────────────────────────────────────
   // These must be collected immediately (URL params are cleaned by redirects).
@@ -70,6 +80,10 @@
    */
   function track(eventName, userData) {
     if (!eventName) { console.warn('[KompilotTracker] eventName is required'); return; }
+    if (!GATEWAY_URL) {
+      console.warn('[KompilotTracker] A valid HTTPS data-endpoint is required; event not sent');
+      return;
+    }
 
     const payload = Object.assign(
       {},
