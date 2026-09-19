@@ -135,6 +135,7 @@ import { router as llmTrackerRouter }            from './routes/llmTracker';
 import { router as seoAgentRouter }              from './routes/seoAgent';
 import { router as referralRewardsRouter }        from './routes/referralRewards';
 import { router as dashboardStateRouter }          from './routes/dashboardState';
+import { router as cancellationRouter }             from './routes/cancellation';
 import { requireRole }                           from './lib/rbacMiddleware';
 import { createBlinkClient, requireBlinkProjectId, BLINK_PROJECT_CONFIG_MISSING, BlinkProjectConfigError, isBackendDependencyConfigError, backendDependencyUnavailable } from './lib/blinkConfig';
 
@@ -287,6 +288,7 @@ app.route('/', llmTrackerRouter);
 app.route('/', seoAgentRouter);
 app.route('/', referralRewardsRouter);
 app.route('/', dashboardStateRouter);
+app.route('/', cancellationRouter);
 
 // ── RBAC enforcement on sensitive routes ─────────────────────────────────────
 // Billing: admin only (prevents members/guests from changing plans)

@@ -15,7 +15,7 @@ import {
   AlertTriangle, CheckCircle2, ChevronDown, ChevronUp,
   Mail, Phone, XCircle, Download, ShieldCheck, Clock,
   MessageSquare, X, Pause, Tag, ArrowRight, Users,
-  Building2, Zap, RefreshCw, RotateCcw,
+  Building2, Zap, RefreshCw, RotateCcw, ExternalLink, CalendarDays, LifeBuoy,
 } from 'lucide-react';
 import { RefundEligibilityModal } from './RefundEligibilityModal';
 import { toast } from '@blinkdotnew/ui';
@@ -24,6 +24,15 @@ import { useSubscription } from '../../context/SubscriptionContext';
 import { useEstablishment } from '../../context/EstablishmentContext';
 import { useAuth } from '../../hooks/useAuth';
 import { cn } from '../../lib/utils';
+import {
+  DowngradeModal,
+  ExitSummary,
+  HelpReasonModal,
+  MissingFeatureModal,
+  PersonalizedConfirm,
+} from './CancellationExperience';
+import { useCancellationExperience } from './useCancellationExperience';
+import { fetchCancellationBillingStatus, scheduleCancellation } from '../../lib/cancellationClient';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type CancelStep =
@@ -32,7 +41,8 @@ type CancelStep =
   | 'retention_annual'   // Offer B: +1 month free (annual plans)
   | 'offer_c_pause'      // Offer C: 0€ freeze × 3 months (fallback after declining A or B)
   | 'already_benefited'  // Second-time too_expensive: no new offer
-  | 'agency_transfer' | 'confirm' | 'offer_accepted' | 'cancelled'
+  | 'agency_transfer' | 'confirm' | 'offer_accepted' | 'cancelled' | 'downgraded'
+  | 'help' | 'missing_feature'
   | 'refund_request';    // Refund eligibility flow (B2B vs consumer, 14-day rule)
 type CancelReason = 'too_expensive' | 'hard_to_use' | 'missing_feature' | 'other' | null;
 
@@ -567,73 +577,16 @@ function GenericRetentionModal({
   onConfirm,
   onBack,
   planName,
+  metrics,
+  loading,
 }: {
   onConfirm: () => void;
   onBack: () => void;
   planName: string;
+  metrics: import('../../lib/cancellationClient').CancellationMetrics | null;
+  loading?: boolean;
 }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        {/* Header */}
-        <div className="px-6 py-5 border-b border-border bg-amber-50 dark:bg-amber-950/30">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center shrink-0">
-              <AlertTriangle size={20} className="text-amber-600" />
-            </div>
-            <div className="flex-1">
-              <p className="font-extrabold text-foreground text-base">Avant de partir…</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Voici ce que vous allez perdre avec votre offre {planName}</p>
-            </div>
-            <button onClick={onBack} className="text-muted-foreground hover:text-foreground transition-colors p-1">
-              <X size={16} />
-            </button>
-          </div>
-        </div>
-
-        {/* Value at stake list */}
-        <div className="px-6 py-4 space-y-2.5 max-h-60 overflow-y-auto">
-          {VALUE_AT_STAKE.map((item) => (
-            <div key={item.title} className="flex items-start gap-3 rounded-xl border border-border bg-muted/20 px-3 py-2.5">
-              <span className="text-xl shrink-0 mt-0.5">{item.icon}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground leading-tight">{item.title}</p>
-                <p className="text-xs text-muted-foreground leading-snug mt-0.5">{item.desc}</p>
-              </div>
-              <XCircle size={14} className="text-red-400 shrink-0 mt-0.5" />
-            </div>
-          ))}
-        </div>
-
-        {/* End-of-period notice */}
-        <div className="px-6 py-3 bg-muted/30 border-t border-border">
-          <div className="flex items-start gap-2">
-            <Clock size={13} className="text-muted-foreground shrink-0 mt-0.5" />
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Si vous confirmez, votre accès restera actif jusqu'au{' '}
-              <strong className="text-foreground">{nextBillingDate()}</strong> (fin de la période en cours). Aucun montant supplémentaire ne sera prélevé.
-            </p>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="px-6 py-4 border-t border-border flex gap-2">
-          <button
-            onClick={onBack}
-            className="flex-1 rounded-xl border border-border bg-card hover:bg-muted/50 text-foreground font-semibold text-sm py-3 transition-colors"
-          >
-            ← Conserver mon abonnement
-          </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm py-3 transition-colors active:scale-[0.98]"
-          >
-            Confirmer la résiliation
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  return <PersonalizedConfirm planName={planName} metrics={metrics} loading={loading} onBack={onBack} onConfirm={onConfirm} />;
 }
 
 // ── Offer Accepted State ───────────────────────────────────────────────────────
@@ -679,7 +632,7 @@ function OfferAcceptedState({ offer }: { offer: 'discount' | 'annual_extension' 
 
 // ── Cancelled State ────────────────────────────────────────────────────────────
 
-function CancelledState({ planName, userId }: { planName: string; userId: string }) {
+function CancelledState({ planName, userId, periodEnd, onClose }: { planName: string; userId: string; periodEnd: string | null; onClose: () => void }) {
   return (
     <div className="space-y-4">
       {/* Persistent end-of-period banner */}
@@ -688,7 +641,7 @@ function CancelledState({ planName, userId }: { planName: string; userId: string
           <Clock size={18} className="text-amber-600 shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-extrabold text-foreground">
-              📅 Votre abonnement prendra fin le {nextBillingDate()}
+              📅 Votre abonnement prendra fin le {periodEnd ?? nextBillingDate()}
             </p>
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
               Votre bouclier No-Show et vos automatisations resteront actifs jusqu'à cette date. Aucun prélèvement ne sera effectué après.
@@ -734,6 +687,12 @@ function CancelledState({ planName, userId }: { planName: string; userId: string
             <Download size={12} /> 📥 Exporter toutes mes données (CSV)
           </button>
         </div>
+        <button
+          onClick={onClose}
+          className="mt-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm px-6 py-2.5 hover:opacity-90 transition-opacity"
+        >
+          Fermer
+        </button>
       </div>
     </div>
   );
@@ -836,7 +795,7 @@ function FranchiseContactModal({
 
               <div className="rounded-xl bg-muted/30 border border-border px-3 py-2.5 flex items-start gap-2">
                 <ShieldCheck size={13} className="text-teal-600 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                <p className="text-[11px] text-muted-foreground">
                   Vous disposez de <strong className="text-foreground">30 jours</strong> après la coupure pour exporter vos données.
                 </p>
               </div>
@@ -932,7 +891,8 @@ function SectionHeader() {
 
 // ── Solo Path ──────────────────────────────────────────────────────────────────
 
-function SoloPath({ planName, onStart, onRefundRequest }: { planName: string; onStart: () => void; onRefundRequest: () => void }) {
+function SoloPath({ onStart, onRefundRequest }: { onStart: () => void; onRefundRequest: () => void }) {
+  const { currentPlan } = useSubscription();
   return (
     <div className="space-y-4">
       {/* Info banner */}
@@ -941,7 +901,7 @@ function SoloPath({ planName, onStart, onRefundRequest }: { planName: string; on
         <div className="flex-1">
           <p className="text-sm font-extrabold text-foreground leading-tight">Souplesse totale</p>
           <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
-            Votre abonnement <strong className="text-foreground">{planName}</strong> est{' '}
+            Votre abonnement <strong className="text-foreground">{currentPlan.name}</strong> est{' '}
             <strong className="text-foreground">sans engagement</strong>. Vous pouvez mettre fin à votre renouvellement mensuel en un clic. Votre accès reste actif jusqu'à la fin de la période en cours.
           </p>
         </div>
@@ -955,7 +915,7 @@ function SoloPath({ planName, onStart, onRefundRequest }: { planName: string; on
             <span className="text-xl">📦</span>
           </div>
           <div className="flex-1">
-            <p className="font-bold text-foreground">{planName}</p>
+            <p className="font-bold text-foreground">{currentPlan.name}</p>
             <p className="text-xs text-muted-foreground">
               Prochain renouvellement : <strong className="text-foreground">{nextBillingDate()}</strong>
             </p>
@@ -1087,6 +1047,9 @@ export function CancellationTab() {
   const [franchiseModalOpen, setFranchiseModalOpen] = useState(false);
   const [alreadyBenefited, setAlreadyBenefited] = useState(false);
   const [discountLoading, setDiscountLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [periodEnd, setPeriodEnd] = useState<string | null>(null);
+  const { metrics, billing, setBilling } = useCancellationExperience();
 
   const userEmail = user?.email ?? 'votre-email@commerce.fr';
   const firstName = user?.displayName?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'Client';
@@ -1127,14 +1090,19 @@ export function CancellationTab() {
   const handleSurveyNext = (reason: CancelReason) => {
     setCancelReason(reason);
     if (reason === 'too_expensive') {
-      if (alreadyBenefited) {
+      if (currentPlan.id === 'multi' || currentPlan.id === 'agency') {
+        setStep('downgraded');
+      } else if (alreadyBenefited) {
         setStep('already_benefited');
       } else {
         // Route to the correct offer based on billing cycle
         setStep(isAnnual ? 'retention_annual' : 'retention_monthly');
       }
+    } else if (reason === 'hard_to_use') {
+      setStep('help');
+    } else if (reason === 'missing_feature') {
+      setStep('missing_feature');
     } else {
-      // Bugs / features / time / other → no offer, go to generic confirmation
       setStep('confirm');
     }
   };
@@ -1239,11 +1207,22 @@ export function CancellationTab() {
 
   const handleAgencyConfirm = () => setStep('confirm');
 
-  const handleConfirmCancel = () => {
-    setStep('cancelled');
-    toast.success('Résiliation programmée', {
-      description: `Accès actif jusqu'au ${nextBillingDate()}.`,
-    });
+  const handleConfirmCancel = async () => {
+    setCancelLoading(true);
+    try {
+      await scheduleCancellation();
+      const liveBilling = await fetchCancellationBillingStatus();
+      setBilling(liveBilling);
+      setPeriodEnd(liveBilling.currentPeriodEnd ?? billing.currentPeriodEnd ?? null);
+      setStep('cancelled');
+      toast.success('Résiliation programmée', {
+        description: `Accès actif jusqu'à ${liveBilling.currentPeriodEnd ? new Date(liveBilling.currentPeriodEnd).toLocaleDateString('fr-FR') : nextBillingDate()}.`,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'La résiliation n’a pas pu être programmée.');
+    } finally {
+      setCancelLoading(false);
+    }
   };
 
   // ── Free plan — nothing to cancel ────────────────────────────────────────────
@@ -1279,7 +1258,8 @@ export function CancellationTab() {
     return (
       <div className="space-y-6">
         <SectionHeader />
-        <CancelledState planName={currentPlan.name} userId={userId} />
+        <ExitSummary planName={currentPlan.name} periodEnd={periodEnd ?? billing.currentPeriodEnd} onClose={() => setStep('idle')} />
+        <CancelledState planName={currentPlan.name} userId={userId} periodEnd={periodEnd} onClose={() => setStep('idle')} />
         <DataRegulationBlock />
       </div>
     );
@@ -1318,7 +1298,7 @@ export function CancellationTab() {
   return (
     <div className="space-y-6">
       <SectionHeader />
-      <SoloPath planName={currentPlan.name} onStart={handleStartCancel} onRefundRequest={handleRefundRequest} />
+      <SoloPath onStart={handleStartCancel} onRefundRequest={handleRefundRequest} />
       <DataRegulationBlock />
 
       {/* Step 0 — MODULE 4: G.E.O. Warning (Siri/Perplexity/ChatGPT impact) */}
@@ -1399,8 +1379,30 @@ export function CancellationTab() {
       {step === 'confirm' && (
         <GenericRetentionModal
           planName={currentPlan.name}
+          metrics={metrics}
+          loading={cancelLoading}
           onConfirm={handleConfirmCancel}
           onBack={() => setStep('idle')}
+        />
+      )}
+
+      {step === 'help' && (
+        <HelpReasonModal firstName={firstName} onClose={() => setStep('confirm')} />
+      )}
+
+      {step === 'missing_feature' && (
+        <MissingFeatureModal onClose={() => setStep('confirm')} onContinue={() => setStep('confirm')} />
+      )}
+
+      {step === 'downgraded' && (
+        <DowngradeModal
+          currentPlan={currentPlan.id}
+          billing={billing}
+          onBack={() => setStep(isAnnual ? 'retention_annual' : 'retention_monthly')}
+          onDone={(newPeriodEnd) => {
+            setPeriodEnd(newPeriodEnd ?? null);
+            setStep('cancelled');
+          }}
         />
       )}
     </div>

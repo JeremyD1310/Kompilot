@@ -22,6 +22,9 @@ export interface BillingStatus {
   hasStripeCustomer: boolean;
   planId: string | null;
   stripeSubscriptionId: string | null;
+  currentPeriodEnd?: string | null;
+  cancelAtPeriodEnd?: boolean;
+  billingInterval?: 'monthly' | 'yearly';
 }
 
 export type PortalError =
