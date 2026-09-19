@@ -175,10 +175,13 @@ export function DashboardSidebar({
             {...primary}
           />
           <SidebarNavItem to="/calendrier" icon={Calendar} label="Calendrier" active={is('/calendrier')} collapsed={c} {...primary} />
-          <SidebarNavItem to="/mon-equipe" icon={Users} label="Équipe" sublabel="Membres · Chat · Activité" active={is('/mon-equipe')} collapsed={c} dataTour="nav-team"
+          <SidebarNavItem to="/equipe" icon={UsersRound} label="Équipe humaine" sublabel="Membres · Chat · Activité" active={is('/equipe')} collapsed={c} dataTour="nav-team"
             suffix={!c ? (
               <span className="text-[8px] bg-primary text-primary-foreground font-bold px-1.5 py-0.5 rounded-full shrink-0">NEW</span>
             ) : undefined}
+            {...primary}
+          />
+          <SidebarNavItem to="/mon-equipe" icon={BotMessageSquare} label="Agents IA" sublabel="Automatisations · Cowork" active={is('/mon-equipe')} collapsed={c} dataTour="nav-ai-agents"
             {...primary}
           />
           <SidebarNavItem to="/inbox" icon={Mail} label="Boîte de réception" active={is('/inbox')} collapsed={c} {...primary}

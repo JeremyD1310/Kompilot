@@ -125,12 +125,14 @@ export function MissingFeatureModal({ onClose, onContinue }: { onClose: () => vo
 }
 
 export function ValueAtStake({ metrics }: { metrics: CancellationMetrics | null }) {
-  const hasMetrics = Boolean(metrics?.hasPersonalMetrics);
-  const items = hasMetrics ? [
-    ...(metrics?.reviewsHandled ? [{ title: `${metrics.reviewsHandled} avis Google traités`, desc: 'Des réponses préparées automatiquement pour vous faire gagner du temps.' }] : []),
+  const personalizedItems = [
     ...(metrics?.postsPublished ? [{ title: `${metrics.postsPublished} publications réalisées`, desc: 'Votre contenu et vos validations sont centralisés dans Kompilot.' }] : []),
     ...(metrics?.geoScoreCurrent ? [{ title: `Score GEO : ${metrics.geoScoreCurrent}/100`, desc: metrics.geoScoreDelta !== null && metrics.geoScoreDelta !== undefined ? `${metrics.geoScoreDelta >= 0 ? '+' : ''}${metrics.geoScoreDelta} points depuis votre inscription.` : 'Votre progression de visibilité dans les réponses IA.' }] : []),
-  ] : fallbackValue;
+  ];
+  // Review handling is intentionally generic until the refactored reviews data is reliable.
+  const items = personalizedItems.length > 0
+    ? [...personalizedItems, fallbackValue[1]]
+    : fallbackValue;
   return <div className="space-y-2.5">{items.map(item => <div key={item.title} className="rounded-xl border border-border bg-muted/20 px-3 py-2.5"><p className="text-sm font-semibold text-foreground">{item.title}</p><p className="mt-0.5 text-xs leading-snug text-muted-foreground">{item.desc}</p></div>)}</div>;
 }
 
@@ -155,4 +157,3 @@ export function ExitSummary({ planName, periodEnd, onClose }: { planName: string
   const date = periodEnd ? new Date(periodEnd).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : 'la fin de votre période en cours';
   return <div className="space-y-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-6 dark:border-emerald-800/40 dark:bg-emerald-950/20"><div className="flex items-center gap-3"><CheckCircle2 className="text-emerald-600" size={23} /><div><h3 className="font-extrabold text-foreground">Votre résiliation est bien enregistrée</h3><p className="text-xs text-muted-foreground">Vous restez sur {planName} jusqu'au {date}.</p></div></div><div className="space-y-2 rounded-xl border border-border bg-card p-4 text-xs text-muted-foreground"><p><strong className="text-foreground">Revenir :</strong> reconnectez-vous et reprenez un abonnement quand vous le souhaitez, ou écrivez-nous à support@kompilot.fr.</p><p><strong className="text-foreground">Vos données :</strong> elles restent accessibles pendant la période active. Après la fin du délai d'export annoncé par Kompilot, elles suivent notre politique de conservation et de suppression.</p></div><button onClick={onClose} className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground">Retour aux paramètres</button></div>;
 }
-

@@ -146,6 +146,7 @@ export const emailMarketingRoute      = r('/email-marketing',      EmailMarketin
 export const creativeStudioHubRoute   = r('/creative-studio-hub',  CreativeStudioHubPage);
 export const websiteScanRoute      = r('/website-scan',         WebsiteScanPage);
 export const emailSequencesRoute   = r('/email-sequences',      EmailSequencesPage);
+export const humanTeamRoute        = r('/equipe',               TeamPage);
 export const monEquipeRoute        = r('/mon-equipe',           MonEquipePage);
 export const engagementRoute       = r('/engagement',           EngagementPage);
 export const seoGapRoute           = r('/espion',               SeoGapPage);
@@ -159,8 +160,7 @@ export const clientMessagesRoute = createRoute({
 // Canonical hubs keep the main navigation focused while preserving old bookmarks.
 export const calendarAliasRoute = createRoute({ getParentRoute: () => d, path: '/calendar', component: () => <Navigate to="/calendrier" /> });
 export const caisseAliasRoute = createRoute({ getParentRoute: () => d, path: '/caissier', component: () => <Navigate to="/caisse" /> });
-export const teamAliasRoute = createRoute({ getParentRoute: () => d, path: '/equipe', component: () => <Navigate to="/mon-equipe" /> });
-export const teamEnglishAliasRoute = createRoute({ getParentRoute: () => d, path: '/team', component: () => <Navigate to="/mon-equipe" /> });
+export const teamEnglishAliasRoute = createRoute({ getParentRoute: () => d, path: '/team', component: () => <Navigate to="/equipe" /> });
 export const creativeFactoryAliasRoute = createRoute({ getParentRoute: () => d, path: '/creative-studio', component: () => <Navigate to="/creative-studio-hub" /> });
 export const emailMarketingAliasRoute = createRoute({ getParentRoute: () => d, path: '/campagnes', component: () => <Navigate to="/email-marketing" /> });
 export const resultsAliasRoute = createRoute({ getParentRoute: () => d, path: '/resultats', component: () => <Navigate to="/performance" /> });
@@ -179,7 +179,7 @@ export const protectedChildRoutes = [
   qrCodeRoute, caisseRoute, brandRoute, creativeFactoryRoute,
   aiCreativeStudioRoute, featuresShowcaseRoute, tunnelsRoute,
   aioRoute, roasRoute, emailMarketingRoute, websiteScanRoute, emailSequencesRoute,
-  creativeStudioHubRoute, monEquipeRoute, engagementRoute, seoGapRoute,
-  calendarAliasRoute, caisseAliasRoute, teamAliasRoute, teamEnglishAliasRoute, creativeFactoryAliasRoute,
+  creativeStudioHubRoute, humanTeamRoute, monEquipeRoute, engagementRoute, seoGapRoute,
+  calendarAliasRoute, caisseAliasRoute, teamEnglishAliasRoute, creativeFactoryAliasRoute,
   emailMarketingAliasRoute, resultsAliasRoute, seoAuthorityAliasRoute,
 ];

@@ -44,17 +44,18 @@ router.get('/api/cancellation/context', async (c) => {
     const analytics = Array.isArray(rows) ? rows : [];
     const first = analytics[0];
     const latest = analytics[analytics.length - 1];
-    const reviewsHandled = analytics.reduce((sum, row) => sum + Number(row.reviewsHandled ?? 0), 0);
+    // Review metrics remain intentionally unavailable while the reviews table is being refactored.
+    // Keep this field null so cancellation never presents an unreliable personal count.
     const postsPublished = analytics.reduce((sum, row) => sum + Number(row.postsPublished ?? 0), 0);
     const geoStart = first ? Number(first.geoScore ?? 0) : null;
     const geoCurrent = latest ? Number(latest.geoScore ?? 0) : null;
     const hasPersonalMetrics = analytics.length > 0 && (
-      reviewsHandled > 0 || postsPublished > 0 || (geoCurrent ?? 0) > 0
+      postsPublished > 0 || (geoCurrent ?? 0) > 0
     );
 
     return c.json({
       hasPersonalMetrics,
-      reviewsHandled: reviewsHandled || null,
+      reviewsHandled: null,
       postsPublished: postsPublished || null,
       geoScoreStart: geoStart && geoStart > 0 ? geoStart : null,
       geoScoreCurrent: geoCurrent && geoCurrent > 0 ? geoCurrent : null,

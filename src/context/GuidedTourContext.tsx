@@ -71,12 +71,12 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'team-collaboration',
     target: '[data-tour="nav-team"]',
-    title: 'Étape 5 — Gérez votre équipe depuis un seul endroit',
+    title: 'Étape 5 — Gérez votre équipe humaine depuis un seul endroit',
     description: 'Invitez vos collaborateurs, attribuez des rôles (admin, éditeur, membre) et coordonnez-vous dans le chat d\'équipe intégré. Toutes les actions sont tracées dans le fil d\'activité commun.',
     placement: 'right',
     icon: '👥',
-    nextLabel: 'Configurer mon équipe →',
-    route: '/mon-equipe',
+    nextLabel: 'Configurer mon équipe humaine →',
+    route: '/equipe',
   },
   {
     id: 'ai-agents-cowork',
