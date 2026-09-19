@@ -28,3 +28,30 @@ router.post('/api/geo/citation-audit', async c => {
     return c.json({ error: 'GEO_AUDIT_FAILED', details: error instanceof Error ? error.message : 'Audit impossible' }, 502);
   }
 });
+
+router.post('/api/geo/score-feedback', async c => {
+  const env = c.env as Env & Record<string, string | undefined>;
+  const blink = createClient({ projectId: requireBlinkProjectId(env), secretKey: env.BLINK_SECRET_KEY });
+  const auth = await blink.auth.verifyToken(c.req.header('Authorization'));
+  if (!auth.valid || !auth.userId) return c.json({ error: 'Non autorisé' }, 401);
+
+  let body: { score?: number; reason?: string; brandName?: string; siteUrl?: string; auditType?: string };
+  try { body = await c.req.json(); } catch { return c.json({ error: 'JSON invalide' }, 400); }
+  const score = Number(body.score);
+  const reason = body.reason?.trim() ?? '';
+  if (!Number.isFinite(score) || score < 0 || score > 100) return c.json({ error: 'Score invalide' }, 400);
+  if (!reason || reason.length > 2000) return c.json({ error: 'Motif requis (2 000 caractères maximum)' }, 400);
+
+  await blink.db.table('geo_score_feedback').create({
+    id: crypto.randomUUID(),
+    userId: auth.userId,
+    auditType: body.auditType?.trim().slice(0, 50) || 'citation_audit',
+    score,
+    reason,
+    brandName: body.brandName?.trim().slice(0, 200) || '',
+    siteUrl: body.siteUrl?.trim().slice(0, 2000) || '',
+    status: 'new',
+    createdAt: new Date().toISOString(),
+  });
+  return c.json({ success: true }, 201);
+});

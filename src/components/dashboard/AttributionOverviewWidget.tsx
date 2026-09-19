@@ -23,6 +23,7 @@ export function AttributionOverviewWidget() {
   const query = useQuery<AttributionResponse>({
     queryKey: ['attribution-overview'],
     staleTime: 60_000,
+    refetchInterval: 60_000,
     queryFn: async () => {
       const token = await blink.auth.getValidToken();
       const response = await fetch(`${BACKEND_URL}/api/attribution/overview?days=30`, { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(10000) });

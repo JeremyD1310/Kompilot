@@ -231,6 +231,7 @@ export function KPICards() {
     },
     enabled: !!user?.id,
     staleTime: 60_000, // 1 minute
+    refetchInterval: 60_000,
   });
 
   // Filter to posts published this month and derive the real count

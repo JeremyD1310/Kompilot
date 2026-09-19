@@ -9,7 +9,7 @@ import { getApprovedBetaTestimonials } from '../data/betaTestimonials';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { useAuth } from '../hooks/useAuth';
 import { usePageSeo } from '../hooks/usePageSeo';
-import { createKompilotGraph } from '../lib/seoData';
+import { createTestimonialsGraph } from '../lib/seoData';
 
 const LAST_UPDATED = '14 septembre 2026';
 
@@ -18,10 +18,10 @@ export default function TestimonialsPage() {
   const { trackEvent } = useAnalytics();
   const title = 'Avis et retours bêta Kompilot | Cockpit IA marketing';
   const description = 'Découvrez les retours de bêta-testeurs utilisant Kompilot pour leurs contenus, leur visibilité GEO et leurs campagnes marketing.';
-  usePageSeo(title, description, '/temoignages', { structuredData: createKompilotGraph('/temoignages', title, false, description) });
+  const approvedTestimonials = getApprovedBetaTestimonials();
+  usePageSeo(title, description, '/temoignages', { structuredData: createTestimonialsGraph('/temoignages', title, description, approvedTestimonials) });
 
   const onCta = () => window.location.assign(user ? '/dashboard' : '/signup');
-  const approvedTestimonials = getApprovedBetaTestimonials();
   if (approvedTestimonials.length !== 4) {
     console.error('[testimonials] expected exactly four approved beta testimonials');
   }
@@ -31,7 +31,7 @@ export default function TestimonialsPage() {
       section_name: 'beta_testimonials',
     });
     // Tracking is consent-gated in useAnalytics and this effect runs once per mount.
-  }, []);
+  }, [trackEvent]);
   const trackCta = (ctaName: 'signup' | 'demo', destination: '/signup' | '/demo') => {
     trackEvent('testimonial_cta_click', {
       cta_name: ctaName,

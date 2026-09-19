@@ -5,6 +5,8 @@ import { useNavigate } from '@tanstack/react-router';
 import { DemoSafetyNotice } from '@/components/demo/DemoSafetyNotice';
 import { useDemoData } from '../context/DemoDataProvider';
 import type { DemoProfile } from '../lib/demoProductData';
+import { usePageSeo } from '../hooks/usePageSeo';
+import { createKompilotGraph } from '../lib/seoData';
 
 const profiles: Array<{ id: DemoProfile; label: string; detail: string; icon: typeof Store }> = [
   { id: 'commerce', label: 'Commerce local', detail: 'Avis, fiche Google et contenus locaux', icon: Store },
@@ -22,6 +24,11 @@ const journey = [
 ] as const;
 
 export default function DemoPage() {
+  const seoTitle = 'Démo Kompilot — Explorez le cockpit marketing sans compte';
+  const seoDescription = 'Découvrez la démonstration sécurisée de Kompilot pour commerces, artisans, agences et réseaux. Toutes les données et actions y sont fictives.';
+  usePageSeo(seoTitle, seoDescription, '/demo', {
+    structuredData: createKompilotGraph('/demo', seoTitle, false, seoDescription),
+  });
   const navigate = useNavigate();
   const { profile, setProfile } = useDemoData();
   const [demoInfoOpen, setDemoInfoOpen] = useState(false);
