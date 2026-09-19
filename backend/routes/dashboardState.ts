@@ -20,7 +20,7 @@ router.get('/api/dashboard/state', async (c) => {
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
   try {
-    const [preferences, milestoneRows] = await Promise.all([
+    const [preferencesResult, milestoneResult] = await Promise.all([
       (blink.db as any).sql(
         `SELECT action_id, resolution, snoozed_until, updated_at
          FROM dashboard_action_preferences
@@ -36,21 +36,23 @@ router.get('/api/dashboard/state', async (c) => {
         [userId],
       ),
     ]);
-
-    const milestone = milestoneRows?.[0]
+    
+    const preferences = preferencesResult?.rows ?? [];
+    const milestoneRows = milestoneResult?.rows ?? [];
+    const milestone = milestoneRows[0]
       ? {
           id: milestoneRows[0].id,
-          recordedAt: milestoneRows[0].recorded_at,
+          recordedAt: milestoneRows[0].recordedAt,
           data: JSON.parse(milestoneRows[0].payload || '{}'),
         }
-      : null;
-
+        : null;
+    
     return c.json({
-      preferences: (preferences ?? []).map((row: any) => ({
-        actionId: row.action_id,
+      preferences: preferences.map((row: any) => ({
+        actionId: row.actionId,
         resolution: row.resolution,
-        snoozedUntil: row.snoozed_until,
-        updatedAt: row.updated_at,
+        snoozedUntil: row.snoozedUntil,
+        updatedAt: row.updatedAt,
       })),
       milestone,
     });

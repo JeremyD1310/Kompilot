@@ -28,8 +28,8 @@ import {
 
 export const router = new Hono();
 
-const DASHBOARD_URL = 'https://kompilot.blinkpowered.com/dashboard';
-const BASE_URL = 'https://kompilot.blinkpowered.com';
+const DASHBOARD_URL = 'https://www.kompilot.fr/dashboard';
+const BASE_URL = 'https://www.kompilot.fr';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 

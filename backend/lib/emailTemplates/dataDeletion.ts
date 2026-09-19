@@ -3,7 +3,7 @@
  * Sent when inactive accounts approach data erasure (30-day and 7-day warnings).
  */
 
-const BASE_URL = 'https://kompilot.blinkpowered.com';
+const BASE_URL = 'https://www.kompilot.fr';
 
 const LOGO_SVG = `<svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="32" height="32" rx="8" fill="#0D9488"/>
@@ -101,7 +101,7 @@ export function getDataDeletionWarningHtml(
     <div style="background:#F8FAFC;border-radius:8px;padding:12px 16px;margin:0 0 16px">
       <p style="color:#64748B;font-size:12px;margin:0;line-height:1.6">
         💡 <strong>Besoin d'aide ?</strong> Répondez à cet email ou contactez-nous à
-        <a href="mailto:support@kompilot.blinkpowered.com" style="color:#0D9488">support@kompilot.blinkpowered.com</a>.
+        <a href="mailto:support@kompilot.fr" style="color:#0D9488">support@kompilot.fr</a>.
         Nous pouvons prolonger la conservation de vos données sur demande.
       </p>
     </div>

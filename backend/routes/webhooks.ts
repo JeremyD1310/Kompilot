@@ -120,7 +120,7 @@ router.post('/api/webhooks/stripe', async (c) => {
           const user      = userRows[0] as any;
           const userEmail = user?.email as string | undefined;
           const firstName = (user?.display_name as string)?.split(' ')[0] ?? 'là';
-          const resumeUrl = 'https://kompilot.blinkpowered.com/account?tab=billing';
+          const resumeUrl = 'https://www.kompilot.fr/account?tab=billing';
 
           if (userEmail) {
             const dunningSubjects = [
@@ -605,7 +605,7 @@ router.post('/api/webhooks/stripe/dunning', async (c) => {
     const amount      = invoice.amount_due ? `${Math.round(invoice.amount_due / 100)}€` : '';
 
     if (userEmail) {
-      const resumeUrl = 'https://kompilot.blinkpowered.com/account?tab=billing';
+      const resumeUrl = 'https://www.kompilot.fr/account?tab=billing';
       try {
         await blink.notifications.email({
           to:      userEmail,

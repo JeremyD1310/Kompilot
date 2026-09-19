@@ -33,7 +33,7 @@ const PRECACHE_URLS = [
 const SHELL_PATTERNS  = [/\.js$/, /\.css$/, /\.woff2?$/, /manifest\.webmanifest$/];
 const DATA_PATTERNS   = [/\/academy/, /\/invoices/, /\/profile/, /\/dashboard/];
 const IMAGE_PATTERNS  = [/\.(png|jpg|jpeg|svg|gif|webp|avif|ico)(\?.*)?$/i];
-const API_PATTERNS    = [/blink\.new\/api/, /core\.blink\.new/, /gbrhsehk\.backend\.blink\.new/, /\/api\//];
+const API_PATTERNS    = [/blink\.new\/api/, /core\.blink\.new/, /\/api\//];
 
 const MAX_SHELL_AGE   = 30 * 24 * 3600 * 1000; // 30 jours
 const MAX_DATA_AGE    =  5 *       60 * 1000;  // 5 minutes

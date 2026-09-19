@@ -1,6 +1,26 @@
 // Auto-generated from your database schema — do not edit by hand.
 // Regenerates automatically whenever a table is created or altered.
 
+export type DashboardActionPreferencesRow = {
+  id: string
+  userId: string
+  actionId: string
+  resolution: string
+  snoozedUntil: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type DashboardMilestoneEventsRow = {
+  id: string
+  userId: string
+  establishmentId: string | null
+  milestoneType: string
+  payload: string
+  recordedAt: string
+  acknowledgedAt: string | null
+}
+
 export type EstablishmentsRow = {
   id: string
   userId: string

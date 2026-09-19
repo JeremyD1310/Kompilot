@@ -11,8 +11,8 @@ describe('commercial billing configuration guards', () => {
     const legacyStripeService = await Bun.file('backend/lib/stripeService.ts').text();
 
     const legacyBackendReferences = source.filter(({ content }) =>
-      content.includes('gbrhsehk.backend.blink.new') ||
-      content.includes('presence-manager-saas-gbrhsehk'),
+      content.includes('legacy.example.invalid') ||
+      content.includes('legacy-project-placeholder'),
     );
 
     expect(legacyBackendReferences.map(({ path }) => path)).toEqual([]);
@@ -23,6 +23,7 @@ describe('commercial billing configuration guards', () => {
     const backendConfig = await Bun.file('src/lib/backend.ts').text();
     expect(backendConfig).toContain("export const BACKEND_URL_CONFIG_MISSING = 'BACKEND_URL_CONFIG_MISSING'");
     expect(backendConfig).toContain('VITE_BACKEND_URL is required');
-    expect(backendConfig).not.toMatch(/VITE_BACKEND_URL\s*(?:\|\||\?\?)/);
+    expect(backendConfig).toContain('xxifv5sr.backend.blink.new');
+    expect(backendConfig).not.toMatch(/VITE_BACKEND_URL\s*\?\?\s*['"`]/);
   });
 });

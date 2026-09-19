@@ -85,7 +85,7 @@ router.post('/api/trial/extension/generate', async (c) => {
   });
 
   // Build the magic link URL
-  const baseUrl = rawEnv.BASE_URL || 'https://kompilot.blinkpowered.com';
+  const baseUrl = rawEnv.BASE_URL || 'https://www.kompilot.fr';
   const magicLinkUrl = `${baseUrl}/extend-trial?token=${plainToken}`;
 
   return c.json({

@@ -15,7 +15,7 @@
  *      • At least 6 posts published this month
  */
 
-const BASE_URL = 'https://kompilot.blinkpowered.com';
+const BASE_URL = 'https://www.kompilot.fr';
 const TEAL     = '#0D9488';
 const DARK     = '#0F172A';
 const BORDER   = '#E2E8F0';

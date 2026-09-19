@@ -75,7 +75,7 @@ router.get('/api/referral-rewards/link', async (c) => {
 
   if (existing.length > 0 && existing[0].referralCode) {
     const r = existing[0];
-    const baseUrl = 'https://kompilot.blinkpowered.com';
+    const baseUrl = 'https://www.kompilot.fr';
     return c.json({
       code: r.referralCode,
       link: `${baseUrl}/ref/${r.referralCode}`,
@@ -86,7 +86,7 @@ router.get('/api/referral-rewards/link', async (c) => {
   const users = await blink.db.table<any>('users').list({ where: { id: userId }, limit: 1 });
   const displayName = users[0]?.displayName || '';
   const code = generateReferralCode(displayName);
-  const baseUrl = 'https://kompilot.blinkpowered.com';
+  const baseUrl = 'https://www.kompilot.fr';
 
   if (existing.length > 0) {
     await blink.db.table<any>('referral_rewards').update(existing[0].id, { referralCode: code });

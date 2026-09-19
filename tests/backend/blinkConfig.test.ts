@@ -30,7 +30,7 @@ describe('backend Blink project configuration', () => {
   });
 
   it('accepts the explicitly configured production fixture without making it a default', () => {
-    expect(requireBlinkProjectId({ BLINK_PROJECT_ID: 'presence-manager-saas-gbrhsehk' })).toBe('presence-manager-saas-gbrhsehk');
+    expect(requireBlinkProjectId({ BLINK_PROJECT_ID: 'kompilot-ai-suite-xxifv5sr' })).toBe('kompilot-ai-suite-xxifv5sr');
   });
 
   it('rejects missing and whitespace-only configuration with a stable error', () => {
@@ -40,7 +40,7 @@ describe('backend Blink project configuration', () => {
         requireBlinkProjectId(environment);
       } catch (error) {
         expect(error).toBeInstanceOf(BlinkProjectConfigError);
-        expect((error as Error).message).not.toContain('presence-manager-saas-gbrhsehk');
+        expect((error as Error).message).not.toContain('kompilot-ai-suite-xxifv5sr');
       }
     }
   });

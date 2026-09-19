@@ -11,7 +11,7 @@ import { buildWelcomeEmail, buildWelcomeJ3Email } from '../lib/emailTemplates';
 
 export const router = new Hono();
 
-const DASHBOARD_URL = 'https://kompilot.blinkpowered.com/dashboard';
+const DASHBOARD_URL = 'https://www.kompilot.fr/dashboard';
 
 // ── Rate-limit helper: 1 email per userId per 24h via DB ────────────────────
 

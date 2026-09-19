@@ -1,7 +1,10 @@
 import { blink } from '../blink/client';
 
 const configuredBackendUrl = (import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_BACKEND_URL?.trim() ?? '';
-export const BACKEND_URL = configuredBackendUrl.replace(/\/$/, '');
+// Blink Backend is project-scoped; keep the preview usable when the optional
+// frontend override is not present in the managed environment.
+const projectBackendUrl = 'https://xxifv5sr.backend.blink.new';
+export const BACKEND_URL = (configuredBackendUrl || projectBackendUrl).replace(/\/$/, '');
 export const BACKEND_HOST = BACKEND_URL ? new URL(BACKEND_URL).host : '';
 
 export const BACKEND_URL_CONFIG_MISSING = 'BACKEND_URL_CONFIG_MISSING';
@@ -48,7 +51,7 @@ export async function backendFetch(path: string, init: RequestInit = {}, timeout
       message,
       cause: error,
     });
-    throw new Error(message);
+    throw new Error(message, { cause: error });
   } finally {
     window.clearTimeout(timeout);
   }

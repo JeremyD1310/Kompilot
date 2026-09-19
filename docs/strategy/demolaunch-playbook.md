@@ -191,7 +191,7 @@ En moins de 5 minutes, j'ai :
 Kompilot, c'est un cockpit IA pour les commerces et agences qui veulent booster leur présence en ligne — sans y passer des heures.
 
 Lancement officiel le 7 septembre. Démo gratuite ici 👇
-https://kompilot.blinkpowered.com
+https://www.kompilot.fr
 
 #MarketingLocal #IntelligenceArtificielle #PME #Visibilité
 ```
@@ -206,7 +206,7 @@ Un cockpit IA pour gérer :
 → Visibilité locale (score GEO)
 
 Lancement le 7 sept. Essai gratuit 👇
-https://kompilot.blinkpowered.com
+https://www.kompilot.fr
 
 #MarketingLocal #IA
 ```
@@ -264,7 +264,7 @@ https://kompilot.blinkpowered.com
 
 | Critère | Meta Ads | LinkedIn Ads |
 |---------|----------|-------------|
-| Audience | Visiteurs kompilot.blinkpowered.com (pixel) — 30 derniers jours, excluant /signup | Visiteurs site (Insight Tag) — 30j, titre : gérant, directeur, freelance, agence |
+| Audience | Visiteurs www.kompilot.fr (pixel) — 30 derniers jours, excluant /signup | Visiteurs site (Insight Tag) — 30j, titre : gérant, directeur, freelance, agence |
 | Exclusion | Utilisateurs ayant visité /subscription ou complété /signup | Idem |
 | Géographie | France, Belgique, Suisse (francophone) | France |
 | Fréquence max | 3 impressions / semaine / personne | 2 impressions / semaine |
@@ -303,10 +303,10 @@ Passer à l'action, c'est maintenant :
 
 🎁 Offre de lancement : 1er mois offert sur l'abonnement annuel (jusqu'au 7 sept.)
 
-https://kompilot.blinkpowered.com/pricing
+https://www.kompilot.fr/pricing
 ```
 
-**CTA :** "Profiter de l'offre" → `https://kompilot.blinkpowered.com/pricing`
+**CTA :** "Profiter de l'offre" → `https://www.kompilot.fr/pricing`
 
 ---
 
@@ -345,10 +345,10 @@ Ce que vous obtenez avec un vrai plan :
 
 Starter : 69 €/mois | Agence : 149 €/mois
 
-https://kompilot.blinkpowered.com/pricing
+https://www.kompilot.fr/pricing
 ```
 
-**CTA :** "Réclamer mon offre" → `https://kompilot.blinkpowered.com/pricing`
+**CTA :** "Réclamer mon offre" → `https://www.kompilot.fr/pricing`
 
 ---
 

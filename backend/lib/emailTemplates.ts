@@ -4,8 +4,8 @@
 
 // ── Shared constants ─────────────────────────────────────────────────────────
 
-const DASHBOARD_URL = 'https://kompilot.blinkpowered.com/dashboard';
-const BASE_URL      = 'https://kompilot.blinkpowered.com';
+const DASHBOARD_URL = 'https://www.kompilot.fr/dashboard';
+const BASE_URL      = 'https://www.kompilot.fr';
 
 const LOGO_SVG = `<svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="32" height="32" rx="8" fill="#0D9488"/>
@@ -942,7 +942,7 @@ export function getDunningFollowUpHtml(
     </p>
   </div>
   <div style="background:#F8FAFC;padding:16px 32px;text-align:center;border-top:1px solid #E2E8F0">
-    <p style="color:#94A3B8;font-size:11px;margin:0">© ${new Date().getFullYear()} Kompilot · <a href="https://kompilot.blinkpowered.com/cgv" style="color:#94A3B8">CGV</a></p>
+    <p style="color:#94A3B8;font-size:11px;margin:0">© ${new Date().getFullYear()} Kompilot · <a href="https://www.kompilot.fr/cgv" style="color:#94A3B8">CGV</a></p>
   </div>
 </div>
 </body></html>`;

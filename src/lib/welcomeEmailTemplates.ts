@@ -16,7 +16,7 @@
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-const BASE_URL = 'https://kompilot.blinkpowered.com';
+const BASE_URL = 'https://www.kompilot.fr';
 
 const sharedFooter = `
   <div style="margin-top:32px;padding-top:20px;border-top:1px solid #e2e8f0;text-align:center;">

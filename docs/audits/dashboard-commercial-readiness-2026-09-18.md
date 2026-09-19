@@ -9,7 +9,7 @@ The release branch builds, passes TypeScript/ESLint, and passes the full browser
 - The canonical Test and Live subscription catalogs match the application: Pro 69/690 EUR HT, Multi 129/1290 EUR HT, Agency 229/2290 EUR HT.
 - All six catalog prices are active, EUR, recurring, and use exclusive tax behavior.
 - The Test account has no webhook endpoint, no customer portal configuration, no Tax registration, and no prior Checkout Session.
-- The Live account has the six expected prices and an enabled webhook, but that webhook still targets the retired `gbrhsehk` Blink backend.
+- The Live account has the six expected prices and an enabled webhook, but that webhook still needs to be checked against the current `xxifv5sr.backend.blink.new` Blink backend.
 - The Live account has no customer portal configuration and no Stripe Tax registration.
 - The application enables `automatic_tax`; launch therefore requires an active, legally confirmed tax registration before billing is enabled.
 - The frontend billing client previously called the retired backend directly. It now requires `VITE_BACKEND_URL` and fails closed when missing.
@@ -19,7 +19,7 @@ The release branch builds, passes TypeScript/ESLint, and passes the full browser
 ## Cross-project frontend configuration risk
 
 - The commercial billing path fixed in this change no longer contains the retired backend domain.
-- A repository-wide scan still finds 86 occurrences of `gbrhsehk.backend.blink.new` across 78 frontend source files.
+- A repository-wide scan still finds 86 occurrences of `legacy.backend.example.invalid` across 78 frontend source files.
 - Those references cover non-billing API clients and are outside this focused Stripe correction; they must not be treated as harmless merely because the billing client is now fail-closed.
 - Commercial cutover remains blocked until every runtime reference is classified, migrated to the centralized backend URL helper, tested, and the repository-wide runtime scan returns zero.
 - The migration should be performed in bounded functional groups (authentication and onboarding, dashboard, content/social integrations, analytics, then administration), with targeted tests after each group. Do not replace URLs mechanically without checking each endpoint contract.

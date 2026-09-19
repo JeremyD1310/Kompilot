@@ -152,7 +152,7 @@ function EmbedScriptCard({ userId, establishmentId, offerLabel }: {
 <script>
   (function() {
     var s = document.createElement('script');
-    s.src = 'https://kompilot.blinkpowered.com/widget/leadgen.js';
+    s.src = 'https://www.kompilot.fr/widget/leadgen.js';
     s.dataset.userId = '${userId}';
     s.dataset.estId = '${establishmentId || 'default'}';
     s.dataset.offer = '${(offerLabel || 'Offre exclusive').replace(/'/g, "\\'")}';
@@ -203,7 +203,7 @@ function LandingPageCard({ userId, establishmentId, offerLabel }: {
     eid: establishmentId || 'default',
     offer: offerLabel || 'Offre exclusive',
   });
-  const url = `https://kompilot.blinkpowered.com/capture?${params}`;
+  const url = `https://www.kompilot.fr/capture?${params}`;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(url);

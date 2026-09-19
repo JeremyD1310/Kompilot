@@ -146,10 +146,8 @@ app.use('*', cors({
     'https://kompilot.fr',
     'https://www.kompilot.fr',
     'https://demo.kompilot.fr',
-    'https://kompilot.blinkpowered.com',
-    // Allow the current Blink preview/backend origins only; never every blink.new origin.
+    // Allow the current Blink preview origin without opening CORS to every blink.new site.
     /^https:\/\/3000-[a-z0-9-]+\.preview-blink\.com$/,
-    /^https:\/\/[a-z0-9-]+\.blink\.new$/,
   ],
   allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Kompilot-Internal-Secret'],
@@ -423,7 +421,7 @@ app.post('/api/queue', async (c) => {
     // ── Data Deletion Warning (J+60 cron) ─────────────────────────────
     case 'data-deletion-warning': {
       const { getDataDeletionWarningHtml } = await import('./lib/emailTemplates/dataDeletion');
-      const DASHBOARD_URL = 'https://kompilot.blinkpowered.com/dashboard';
+      const DASHBOARD_URL = 'https://www.kompilot.fr/dashboard';
 
       try {
         // Find users with metadata.last_sign_in older than 55 days
@@ -574,7 +572,7 @@ app.post('/api/queue', async (c) => {
                 ` : ''}
                 
                 <p style="margin-top: 24px;">
-                  <a href="https://kompilot.blinkpowered.com/dashboard" 
+                  <a href="https://www.kompilot.fr/dashboard" 
                      style="background: #0D9488; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
                     Voir mon dashboard →
                   </a>

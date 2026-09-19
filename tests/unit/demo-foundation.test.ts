@@ -32,7 +32,7 @@ describe('demo data foundation', () => {
   test('blocks sensitive integrations in demo mode', () => {
     expect(isDemoExternalUrl('https://api.stripe.com/v1/checkout/sessions')).toBe(true);
     expect(isDemoExternalUrl('https://graph.facebook.com/v20.0/me')).toBe(true);
-    expect(isDemoExternalUrl('https://gbrhsehk.backend.blink.new/api/posts')).toBe(true);
+    expect(isDemoExternalUrl('https://legacy.example.invalid/api/posts')).toBe(true);
     expect(DEMO_ACTION_MESSAGE).toBe('Mode démo : action simulée, aucun envoi réel.');
   });
 
@@ -40,7 +40,7 @@ describe('demo data foundation', () => {
     expect(isDemoAllowedUrl('/demo/workspace', 'https://demo.kompilot.fr')).toBe(true);
     expect(isDemoAllowedUrl('https://demo.kompilot.fr/assets/app.js', 'https://demo.kompilot.fr')).toBe(true);
     expect(isDemoAllowedUrl('https://demo.kompilot.fr/api/billing/status', 'https://demo.kompilot.fr')).toBe(false);
-    expect(isDemoAllowedUrl('https://gbrhsehk.backend.blink.new/health', 'https://demo.kompilot.fr')).toBe(false);
+    expect(isDemoAllowedUrl('https://legacy.example.invalid/health', 'https://demo.kompilot.fr')).toBe(false);
     const response = createDemoBlockedResponse();
     expect(response.status).toBe(403);
     expect(await response.json()).toMatchObject({ blocked: true, simulated: true, message: DEMO_ACTION_MESSAGE });

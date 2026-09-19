@@ -8,7 +8,7 @@ Ce document distingue les contrôles de code déjà automatisables des preuves q
 
 ## 1. Blink et nouveau backend
 
-- Confirmer dans Blink que le projet cible est `kompilot-ai-suite-xxifv5sr` et non l'ancien projet `presence-manager-saas-gbrhsehk`.
+- Confirmer dans Blink que le projet cible est `kompilot-ai-suite-xxifv5sr` et non l'ancien projet `legacy-project-placeholder`.
 - Confirmer le commit exact affiché pour `release/kompilot-commercial-launch` après intégration contrôlée du lot.
 - Configurer explicitement `VITE_BACKEND_URL`, `BACKEND_URL`, `VITE_BLINK_PROJECT_ID`, `BLINK_PROJECT_ID` et les secrets requis dans le coffre Blink.
 - Déployer le backend cible, puis vérifier `GET /health` et une route authentifiée.
