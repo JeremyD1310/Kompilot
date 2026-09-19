@@ -20,6 +20,13 @@ ignorées/reportées et la file des jalons réellement enregistrés. Elle doit �
 appliquée dans Blink avant d'activer ces fonctions en production. Le frontend
 échoue proprement si la migration n'est pas encore présente.
 
+`003_website_visibility_audits.sql` ajoute l'historique des audits de sites,
+les profils de pages observés et les recommandations. Toutes les lectures et
+écritures applicatives sont filtrées par `user_id`. Elle doit être appliquée
+manuellement dans « Kompilot - Commercial Release » après sauvegarde et contrôle
+du schéma. Tant qu'elle n'est pas appliquée, un audit ponctuel peut être retourné
+mais il est explicitement marqué `persisted: false` et l'historique reste indisponible.
+
 ## Verification apres application
 
 Relancer `sqlite_master`, `pragma_table_info` et `pragma_index_list`, puis comparer les noms, types, valeurs par defaut et index avec le fichier SQL. Verifier aussi qu'aucune table ou colonne existante n'a ete supprimee.
