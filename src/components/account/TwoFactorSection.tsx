@@ -62,7 +62,13 @@ function CopyButton({ text }: { text: string }) {
 // ── 6-digit code input ────────────────────────────────────────────────────────
 
 function OtpInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const refs = Array.from({ length: 6 }, () => useRef<HTMLInputElement>(null));
+  const ref0 = useRef<HTMLInputElement>(null);
+  const ref1 = useRef<HTMLInputElement>(null);
+  const ref2 = useRef<HTMLInputElement>(null);
+  const ref3 = useRef<HTMLInputElement>(null);
+  const ref4 = useRef<HTMLInputElement>(null);
+  const ref5 = useRef<HTMLInputElement>(null);
+  const refs = [ref0, ref1, ref2, ref3, ref4, ref5];
   const digits = value.padEnd(6, '').slice(0, 6).split('');
 
   const handleKey = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {

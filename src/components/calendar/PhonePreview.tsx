@@ -265,6 +265,9 @@ function GoogleBusinessPreview({
 
 export function PhonePreview({ mediaUrl, mediaType, text, channels, actionLink = '', actionLabel = 'Réserver', contentFormat = 'post', textStyle }: PhonePreviewProps) {
   const typoCss = textStyleToCSS(textStyle ?? DEFAULT_TEXT_STYLE);
+  type Tab = 'reels' | 'linkedin' | 'facebook' | 'google';
+  const [activeTab, setActiveTab] = useState<Tab>('reels');
+
   // Story format → dedicated 9:16 preview
   if (contentFormat === 'story') {
     return <StoryPreview mediaUrl={mediaUrl} mediaType={mediaType} text={text} channels={channels} />;
@@ -277,8 +280,6 @@ export function PhonePreview({ mediaUrl, mediaType, text, channels, actionLink =
   const hasInstagram = channels.includes('instagram');
   const hasTiktok    = channels.includes('tiktok');
 
-  type Tab = 'reels' | 'linkedin' | 'facebook' | 'google';
-
   const availableTabs: { id: Tab; label: string }[] = [
     ...(hasInstagram || hasTiktok ? [{ id: 'reels' as Tab, label: hasTiktok ? 'TikTok' : 'Reels' }] : []),
     ...(hasLinkedin  ? [{ id: 'linkedin'  as Tab, label: 'LinkedIn'  }] : []),
@@ -286,14 +287,9 @@ export function PhonePreview({ mediaUrl, mediaType, text, channels, actionLink =
     ...(hasGoogle    ? [{ id: 'google'    as Tab, label: 'Google'    }] : []),
   ];
 
-  const defaultTab: Tab =
-    hasInstagram || hasTiktok ? 'reels'
-    : hasLinkedin  ? 'linkedin'
-    : hasFacebook  ? 'facebook'
-    : hasGoogle    ? 'google'
-    : 'reels';
-
-  const [activeTab, setActiveTab] = useState<Tab>(defaultTab);
+  const resolvedActiveTab: Tab = availableTabs.some(tab => tab.id === activeTab)
+    ? activeTab
+    : availableTabs[0]?.id ?? 'reels';
   const hasMedia = !!mediaUrl;
   const isTiktok = hasTiktok && !hasInstagram;
   const platform: 'instagram' | 'tiktok' = isTiktok ? 'tiktok' : 'instagram';
@@ -301,7 +297,7 @@ export function PhonePreview({ mediaUrl, mediaType, text, channels, actionLink =
   const hasAction = actionLink.trim().length > 0;
 
   // ── Flat views (LinkedIn / Facebook / Google) ─────────────────────────────
-  if (activeTab !== 'reels' && availableTabs.length > 0) {
+  if (resolvedActiveTab !== 'reels' && availableTabs.length > 0) {
     return (
       <div className="flex flex-col items-center gap-3 w-full">
         {/* Tab row */}
@@ -313,7 +309,7 @@ export function PhonePreview({ mediaUrl, mediaType, text, channels, actionLink =
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
-                  activeTab === tab.id ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  resolvedActiveTab === tab.id ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {tab.id === 'reels' && (hasInstagram ? <InstagramIcon /> : <TikTokIcon />)}

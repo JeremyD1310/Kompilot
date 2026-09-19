@@ -14,6 +14,19 @@ interface ScanResult {
   promoEmailBody: string;
   adHeadline: string;
   adDescription: string;
+  seoScore: number;
+  geoScore: number;
+  contentScore: number;
+  technicalScore: number;
+  structuredDataScore: number;
+  aiCrawlerAccessibility: 'accessible' | 'partial' | 'blocked' | 'unknown';
+  criticalIssues: string[];
+  recommendations: Array<{
+    priority: 'high' | 'medium' | 'low';
+    title: string;
+    evidence: string;
+    action: string;
+  }>;
 }
 
 export default function WebsiteScanPage() {
@@ -37,9 +50,9 @@ export default function WebsiteScanPage() {
 
   const steps = [
     { label: "Connexion au site web...", icon: <Globe className="w-5 h-5 text-primary" /> },
-    { label: "Analyse de la charte graphique...", icon: <Palette className="w-5 h-5 text-primary" /> },
-    { label: "Extraction du ton de marque...", icon: <Scan className="w-5 h-5 text-primary" /> },
-    { label: "Génération des assets marketing...", icon: <Sparkles className="w-5 h-5 text-primary" /> },
+    { label: "Analyse SEO, technique et données structurées...", icon: <Scan className="w-5 h-5 text-primary" /> },
+    { label: "Évaluation GEO et accessibilité aux moteurs IA...", icon: <Globe className="w-5 h-5 text-primary" /> },
+    { label: "Priorisation des améliorations et contenus...", icon: <Sparkles className="w-5 h-5 text-primary" /> },
   ];
 
   const handleCopy = (id: string, text: string) => {
@@ -65,19 +78,22 @@ export default function WebsiteScanPage() {
       
       try {
         const { markdown, metadata } = await blink.data.scrape(url);
-        scrapedContent = markdown?.slice(0, 3000) || '';
+        scrapedContent = markdown?.slice(0, 12000) || '';
         detectedTitle = metadata?.title || '';
       } catch (e) {
         console.error('Scrape failed', e);
       }
 
       const { object: scanResult } = await blink.ai.generateObject({
-        prompt: `Analyse ce site web et génère des assets marketing en français.
+        prompt: `Réalise un audit professionnel du site en français, puis génère des assets marketing.
 URL: ${url}
-Contenu détecté: ${scrapedContent.slice(0, 2000)}
+Contenu détecté: ${scrapedContent.slice(0, 10000)}
 Titre: ${detectedTitle}
 
-Génère une analyse de marque complète et 3 propositions de contenu marketing.`,
+Évalue uniquement ce qui est observable. N'invente aucune performance, note, balise ou preuve absente.
+Analyse : SEO on-page, clarté de l'offre, contenu, entités et informations locales, citabilité GEO/AEO, données structurées, signaux de confiance, accessibilité apparente aux moteurs IA, cohérence de marque et conversion.
+Pour chaque recommandation, indique la preuve observée et une action concrète. Si un contrôle technique n'est pas possible avec le contenu fourni, marque-le comme inconnu.
+Génère aussi 3 propositions de contenu marketing cohérentes avec la marque.`,
         schema: {
           type: 'object',
           properties: {
@@ -94,8 +110,28 @@ Génère une analyse de marque complète et 3 propositions de contenu marketing.
             promoEmailBody: { type: 'string', description: 'Corps email promotionnel court (3-4 phrases), professionnel' },
             adHeadline: { type: 'string', description: 'Titre publicité Google/Meta (max 30 chars)' },
             adDescription: { type: 'string', description: 'Description pub Google/Meta (max 90 chars)' },
+            seoScore: { type: 'number', description: 'Score SEO observable de 0 à 100' },
+            geoScore: { type: 'number', description: 'Score de citabilité GEO/AEO observable de 0 à 100' },
+            contentScore: { type: 'number', description: 'Score de qualité et clarté du contenu de 0 à 100' },
+            technicalScore: { type: 'number', description: 'Score technique limité aux éléments réellement observables, de 0 à 100' },
+            structuredDataScore: { type: 'number', description: 'Score des données structurées observables, de 0 à 100' },
+            aiCrawlerAccessibility: { type: 'string', enum: ['accessible', 'partial', 'blocked', 'unknown'] },
+            criticalIssues: { type: 'array', items: { type: 'string' }, description: 'Maximum 5 problèmes critiques fondés sur des éléments observés' },
+            recommendations: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  priority: { type: 'string', enum: ['high', 'medium', 'low'] },
+                  title: { type: 'string' },
+                  evidence: { type: 'string', description: 'Élément observé qui justifie la recommandation' },
+                  action: { type: 'string', description: 'Amélioration concrète et vérifiable' },
+                },
+                required: ['priority', 'title', 'evidence', 'action'],
+              },
+            },
           },
-          required: ['businessName', 'description', 'editorialTone', 'industry', 'colorPalette', 'igPost', 'promoEmailSubject', 'promoEmailBody', 'adHeadline', 'adDescription']
+          required: ['businessName', 'description', 'editorialTone', 'industry', 'colorPalette', 'igPost', 'promoEmailSubject', 'promoEmailBody', 'adHeadline', 'adDescription', 'seoScore', 'geoScore', 'contentScore', 'technicalScore', 'structuredDataScore', 'aiCrawlerAccessibility', 'criticalIssues', 'recommendations']
         }
       });
 
@@ -117,9 +153,9 @@ Génère une analyse de marque complète et 3 propositions de contenu marketing.
           <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-2xl mb-2">
             <Globe className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight">Studio Créatif & Marque</h1>
+          <h1 className="text-4xl font-bold tracking-tight">Audit IA/GEO du site professionnel</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Scannez un site web et générez instantanément vos assets marketing IA
+            Analysez le SEO, la citabilité GEO, le contenu, la technique observable et les améliorations prioritaires de votre site.
           </p>
         </div>
 
@@ -212,6 +248,46 @@ Génère une analyse de marque complète et 3 propositions de contenu marketing.
                 </div>
               </div>
             </div>
+
+            <section className="rounded-2xl border border-border bg-card p-6 space-y-6">
+              <div>
+                <h3 className="text-xl font-bold">Diagnostic SEO et GEO du site</h3>
+                <p className="text-sm text-muted-foreground mt-1">Scores fondés sur le contenu observable au moment du scan, sans garantie de positionnement ni de citation par une IA.</p>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                {[
+                  ['SEO', result.seoScore], ['GEO/AEO', result.geoScore], ['Contenu', result.contentScore],
+                  ['Technique', result.technicalScore], ['Données structurées', result.structuredDataScore],
+                ].map(([label, score]) => (
+                  <div key={String(label)} className="rounded-xl border border-border bg-muted/30 p-4 text-center">
+                    <p className="text-2xl font-black text-primary">{Number(score) || 0}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{label}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm"><strong>Accès apparent aux moteurs IA :</strong> {result.aiCrawlerAccessibility}</p>
+              {result.criticalIssues?.length > 0 && (
+                <div>
+                  <h4 className="font-semibold">Points critiques observés</h4>
+                  <ul className="mt-2 space-y-2 text-sm text-muted-foreground list-disc pl-5">
+                    {result.criticalIssues.map((issue, index) => <li key={index}>{issue}</li>)}
+                  </ul>
+                </div>
+              )}
+              <div className="space-y-3">
+                <h4 className="font-semibold">Plan d'amélioration priorisé</h4>
+                {result.recommendations?.map((item, index) => (
+                  <article key={index} className="rounded-xl border border-border p-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase text-primary">{item.priority}</span>
+                      <h5 className="font-semibold">{item.title}</h5>
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground"><strong>Preuve :</strong> {item.evidence}</p>
+                    <p className="mt-1 text-sm"><strong>Action :</strong> {item.action}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
 
             {/* Content Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
